@@ -12,13 +12,60 @@ class DDL extends OnePiece5
 		$this->driver = $driver;
 	}
 	
+	function GetPassword( $args )
+	{
+		$user = isset($args['name']) ? $args['name']: null;
+		$user = isset($args['user']) ? $args['user']: $user;
+		$host = $args['host'];
+		$password = $args['password'];
+		
+		//  SET PASSWORD FOR 'op_model_opuser'@'localhost' = PASSWORD( '***' )
+		$query = "SET PASSWORD FOR '{$user}'@'{$host}' = PASSWORD('{$password}')";
+		
+		return $query;
+	}
+	
+	function GetCreateUser( $args )
+	{
+		$user = isset($args['name']) ? $args['name']: null;
+		$user = isset($args['user']) ? $args['user']: $user;
+		$host = $args['host'];
+		$password = $args['password'];
+	
+		if(!$host){
+			$this->StackError("Empty host name.");
+			return false;
+		}
+	
+		if(!$user){
+			$this->StackError("Empty user name.");
+			return false;
+		}
+	
+		if(!$password){
+			$this->StackError("Empty password name.");
+			return false;
+		}
+	
+		//	CREATE USER 'user-name'@'host-name' IDENTIFIED BY '***';
+		$query = "CREATE USER '{$user}'@'{$host}' IDENTIFIED BY '{$password}'";
+	
+		return $query;
+	}
+	
 	function GetCreateDatabase( $args )
 	{
+		//  Check 
+		if( empty($args['database']) ){
+			$this->StackError("Database name is empty.");
+			return false;
+		}
+		
 		//	IF NOT EXIST
 		$if_not_exist = 'IF NOT EXISTS';
 		
 		//	Database
-		$database = PDO5::Quote($args['database'], $this->driver );
+		$database = ConfigSQL::Quote( $args['database'], $this->driver );
 		
 		//	COLLATE
 		if( isset($args['collate']) ){
@@ -59,7 +106,6 @@ class DDL extends OnePiece5
 			return false;
 		}
 		
-		
 		//	TEMPORARY
 		$temporary = isset($args['temporary']) ? 'TEMPORARY': null;
 		
@@ -68,7 +114,7 @@ class DDL extends OnePiece5
 		
 		//	Database
 		if( isset($args['database']) ){
-			$database = PDO5::Quote($args['database'], $this->driver );
+			$database = ConfigSQL::Quote($args['database'], $this->driver );
 			$database .= ' . ';
 		}else{
 			$database = null;
@@ -76,7 +122,7 @@ class DDL extends OnePiece5
 		
 		//	Table
 		if( isset($args['table']) ){
-			$table = PDO5::Quote($args['table'], $this->driver );
+			$table = ConfigSQL::Quote($args['table'], $this->driver );
 		}
 		
 		//  Column
@@ -121,36 +167,48 @@ class DDL extends OnePiece5
 		return $query;
 	}
 	
-	function GetCreateColumn()
+	function GetAlterTable( $args )
 	{
+		if( !isset($args['database']) ){
+			$this->StackError("Does not set database name.");
+		}
 		
-	}
+		if( !isset($args['table']) ){
+			$this->StackError("Does not set database name.");
+		}
+		
+		if( !isset($args['driver']) ){
+			$args['driver'] = $this->driver;
+		}
+		
+		//  Escape  
+		$database = ConfigSQL::Quote( $args['database'], $args['driver']);
+		$table    = ConfigSQL::Quote( $args['table'],    $args['driver'] );
+		
+		//	Added
+		if( isset($args['add']) ){
+			if(!$add = $this->ConvertColumn( $args['add'], 'ADD' )){
+				return false;
+			}
+		}else{ $add = null; }
 	
-	function GetCreateUser( $args )
-	{
-		$user = isset($args['name']) ? $args['name']: null;
-		$user = isset($args['user']) ? $args['user']: $user;
-		$host = $args['host'];
-		$password = $args['password'];
-		
-		if(!$host){
-			$this->StackError("Empty host name.");
-			return false;
-		}
-
-		if(!$user){
-			$this->StackError("Empty user name.");
-			return false;
-		}
-
-		if(!$password){
-			$this->StackError("Empty password name.");
-			return false;
-		}
-		
-		//	CREATE USER 'user-name'@'host-name' IDENTIFIED BY '***';
-		$query = "CREATE USER '{$user}'@'{$host}' IDENTIFIED BY '{$password}'";
-		
+		//	Change
+		if( isset($args['change']) ){
+			if(!$change = $this->ConvertColumn( $args['change'], 'CHANGE' )){
+				return false;
+			}
+		}else{ $change = null; }
+	
+		//	 Remove
+		if( isset($args['drop']) ){
+			if(!$drop = $this->ConvertColumn( $args['drop'], 'DROP' )){
+				return false;
+			}
+		}else{ $drop = null; }
+	
+		//	Create SQL
+		$query = "ALTER TABLE {$database}{$table} {$add} {$change} {$drop}";
+	
 		return $query;
 	}
 	
@@ -161,7 +219,7 @@ class DDL extends OnePiece5
 			return false;
 		}
 		
-		$database  = PDO5::Quote( $args['database'], $this->driver );
+		$database  = ConfigSQL::Quote( $args['database'], $this->driver );
 		
 		$query = "DROP DATABASE IF EXISTS {$database}";
 		
@@ -180,8 +238,8 @@ class DDL extends OnePiece5
 			return false;
 		}
 
-		$database  = PDO5::Quote( $args['database'], $this->driver );
-		$table     = PDO5::Quote( $args['table'],    $this->driver );
+		$database  = ConfigSQL::Quote( $args['database'], $this->driver );
+		$table     = ConfigSQL::Quote( $args['table'],    $this->driver );
 		$temporary = empty($args['temporary']) ? null: 'TEMPORARY';
 		
 		$query = "DROP {$temporary} TABLE IF EXISTS {$database}.{$table}";
@@ -197,7 +255,7 @@ class DDL extends OnePiece5
 	function ConvertColumn( $args, $ACD='' )
 	{
 		//  Get quote.
-		list( $ql, $qr ) = PDO5::GetQuote($this->driver);
+		list( $ql, $qr ) = ConfigSQL::GetQuote($this->driver);
 		
 		//  loop from many columns
 		foreach($args['column'] as $name => $temp){

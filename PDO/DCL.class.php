@@ -45,18 +45,18 @@ class DCL extends OnePiece5
 		}
 		
 		//  Do quote
-		$database = PDO5::Quote( $database, $this->driver );
+		$database = ConfigSQL::Quote( $database, $this->driver );
 		
 		//  All tables, not quote. 
 		if( $table !== '*' ){
-			$table = PDO5::Quote( $table,    $this->driver );
+			$table = ConfigSQL::Quote( $table,    $this->driver );
 		}
 		
 		//  Quote columns
 		if( $column ){
 			$join = array();
 			foreach( explode(',',$column) as $temp ){
-				$join[] = PDO5::Quote( $temp, $this->driver );
+				$join[] = ConfigSQL::Quote( $temp, $this->driver );
 			}
 			$column = implode(', ', $join);
 		}

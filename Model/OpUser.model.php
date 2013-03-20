@@ -2,10 +2,8 @@
 
 class Model_OpUser extends Model_Model
 {
-	private $table_name = 'op_user';
-	const TABLE_OP_USER			 = 'op_user';
-	const TABLE_OP_USER_INFO	 = 'op_user_info';
-	const TABLE_OP_USER_AGENT	 = 'op_user_agent';
+	const KEY_SESSION_USER_ID = 'op_user_id';
+	const KEY_COOKIE_UA_ID    = 'op_ua_id';
 	
 	private $isFirstVisit = false;
 	private $isReVisit    = false;
@@ -13,135 +11,256 @@ class Model_OpUser extends Model_Model
 	function Init($config=null)
 	{
 		parent::Init($config);
-		self::InitOpUserId();
-		self::InitOpUserInfo();
-		self::InitOpUserAgent();
+		$this->InitOpUser();
+	//	$this->InitOpUserInfo();
+	//	$this->InitOpUserAgent();
 	}
 	
-	function Config($name='ConfigMgrModelOpUser')
+	function Config($name='ConfigOpUser')
 	{
 		return parent::Config($name);
 	}
-		
-	function InitOpUserId()
+	
+	function Selftest()
 	{
-		if( $this->GetSession('op_user_id') ){
+		$config = ConfigOpUser::Selftest();
+		$wz = new Wizard();
+		$wz->selftest($config);
+	}
+	
+	function InitOpUser()
+	{
+		//  Already init.
+		if( $user_id = $this->GetSession( self::KEY_SESSION_USER_ID ) ){
 			return true;
 		}
 		
-		//  onepiece uniq id
-		$op_uniq_id = $this->GetCookie('op-uniq-id');
-		
-		//  get config
-		$select = $this->config()->select($this->table_name);
-		$select->where->op_uniq_id = $op_uniq_id;
-		$select->limit = 1;
-		
-		//  get record
+		//  Select op_user record.
+		$select = $this->config()->select_user();
 		$record = $this->pdo()->select($select);
+		
 		if( isset($record['user_id']) ){
-
 			//  Re-visit
 			$this->isReVisit = true;
 			
-			//  have already registration
+			//  Already registration
 			$user_id = $record['user_id'];
 		}else{
-			//  First Registration
-			$insert = $this->config()->insert($this->table_name);
-			$insert->set->op_uniq_id = $op_uniq_id;
-			if(!$user_id = $this->pdo()->insert($insert)){
-				return false;
-			}
-
 			//  first-visit
 			$this->isFirstVisit = true;
+			
+			//  User registration for first time visitor.
+			$insert  = $this->config()->insert_user();
+			$user_id = $this->pdo()->insert($insert);
+			
+			//  Save user agent (Op-User-ID is Browser(cookie) related.)
+			$this->InitOpUserAgent();
 		}
 		
-		$this->SetSession('op_user_id',$user_id);
+		//  Update user info.
+		$this->InitOpUserInfo();
+		
+		//  Save op_user.user_id to session. (Init complete)
+		$this->SetSession(self::KEY_SESSION_USER_ID, $user_id );
+		
+		return true;
 	}
 	
 	function InitOpUserInfo()
 	{
-		if(!$user_id = $this->GetOpUserId()){
-			return false;
-		}
-		
 		//  First visit
 		if( $this->isFirstVisit ){
-			$insert = $this->config()->insert( self::TABLE_OP_USER_INFO );
-			$insert->set->user_id = $user_id;
+			$insert = $this->config()->insert_user_info();
 			$this->pdo()->insert($insert);
 		}
 		
 		// Re visit
 		if( $this->isReVisit ){
-			$update = $this->config()->update( self::TABLE_OP_USER_INFO );
-			$update->set->visits = '+1';
-			$update->where->user_id = $user_id;
-			$update->limit = 1;
+			$update = $this->config()->update_user_info();
 			$this->pdo()->update($update);
 		}
 	}
 	
 	function InitOpUserAgent()
 	{
-		$key = 'op_ua_id';
+		//  Save to user agent.
+		$insert = $this->config()->insert_user_agent( self::TABLE_OP_USER_AGENT );
+		$op_ua_id = $this->pdo()->insert($insert);
 		
-		if( $op_ua_id = $this->GetSession($key) ){
-			return;
+		//  If error occourd.
+		if(!$op_ua_id){
+			$op_ua_id = -1;
 		}
 		
-		if( $op_ua_id = $this->GetCookie($key) ){
-			$this->SetSession($key,$op_ua_id);
-			return;
-		}
+		//  Save user agent to cookie.
+		$this->SetCookie( self::KEY_COOKIE_UA_ID, $op_ua_id );
 		
-		$ua = $_SERVER['HTTP_USER_AGENT'];
-		
-		$insert = $this->config()->insert( self::TABLE_OP_USER_AGENT );
-		$insert->set->user_agent = $ua;
-		$id = $this->pdo()->insert($insert);
-		
-		if( $id ){
-			$this->SetSession($key,$id);
-			$this->SetCookie($key,$id);
-		}
+		return $op_ua_id;
 	}
 	
 	function GetOpUserId()
 	{
-		return $this->GetSession('op_user_id');
+		return $this->GetSession( self::KEY_SESSION_USER_ID );
 	}
-	
-	function GetStatus()
+
+	function GetOpUaId()
 	{
-		
-	}
-	
-	function SetMessage($message)
-	{
-		return $this->SetSession('message',$message);
-	}
-	
-	function GetMessage()
-	{
-		return $this->GetSession('message');
+		return $this->GetCookie( self::KEY_COOKIE_UA_ID );
 	}
 	
 	function GetNickName()
 	{
 		return 'guest';
 	}
+
+	function SetMessage( $message )
+	{
+		$this->message = $message;
+		return null;
+	}
+	
+	function GetMessage()
+	{
+		return null;
+	}
+	
+	/**
+	 * All in one.
+	 * 
+	 * @return Config
+	 */
+	function Get()
+	{
+		$data = new Config();
+		$data->op_user_id = $this->GetOpUserId();
+		$data->nickname   = $this->GetNickName();
+		$data->message    = $this->GetMessage();
+		return $data;
+	}
 }
 
-class ConfigMgrModelOpUser extends ModelConfig
+class ConfigOpUser extends ConfigModel
 {
-	function database()
+	const TABLE_OP_USER			 = 'op_user';
+	const TABLE_OP_USER_INFO	 = 'op_user_info';
+	const TABLE_OP_USER_AGENT	 = 'op_user_agent';
+	
+	static function database()
 	{
 		$config = parent::database();
 		$config->user     = 'op_model_opuser';
 		return $config;
 	}
 	
+	function select_user()
+	{
+		$config = parent::select( self::TABLE_OP_USER );
+		$config->where->op_uniq_id = $this->GetCookie( OnePiece5::KEY_COOKIE_UNIQ_ID);
+		$config->limit = 1;
+		return $config;
+	} 
+	
+	function insert_user()
+	{
+		$config = parent::insert( self::TABLE_OP_USER );
+		$config->set->op_uniq_id = $this->GetCookie( OnePiece5::KEY_COOKIE_UNIQ_ID );
+		return $config;
+	}
+	
+	function insert_user_info()
+	{
+		$config = parent::insert( self::TABLE_OP_USER_INFO );
+		$insert->set->user_id = $this->GetSession( OnePiece5::KEY_SESSION_USER_ID );
+		return $config;
+	}
+	
+	function insert_user_agent()
+	{
+		//  Get user agent.
+		$ua  = $_SERVER['HTTP_USER_AGENT'];
+		$md5 = md5($ua);
+		
+		//  Config
+		$config = parent::insert( self::TABLE_OP_USER_AGENT );
+		$config->set->user_agent     = $ua;
+	//	$config->set->user_agent_md5 = $md5;
+		return $config;
+	}
+
+	function update_user_info()
+	{
+		$config = parent::update( self::TABLE_OP_USER_INFO );
+		$config->set->visits = '+1';
+		$config->where->user_id = $this->GetSession( Model_OpUser::KEY_SESSION_USER_ID );
+		$config->limit = 1;
+		return $config;
+	}
+	
+	static function Selftest()
+	{
+		//  Get config
+		$config = new Config();
+		$config->database = self::database();
+		
+		//  Tables (op_user)
+		$table_name = 'op_user';
+		$config->table->{$table_name}->table   = $table_name;
+		$config->table->{$table_name}->comment = 'This is wizard test.';
+			
+			//  Columns
+			$column_name = 'user_id';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->ai   = true;
+			
+			$column_name = 'op_uniq_id';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->type = 'text';
+			
+			//  created, updated, deleted
+			$config->table->{$table_name}->column->merge(parent::Column());
+
+			
+		//  Tables (op_user_info)
+		$table_name = 'op_user_info';
+		$config->table->{$table_name}->table   = $table_name;
+		$config->table->{$table_name}->comment = 'This is wizard test.';
+			
+			//  Primary ID
+			$column_name = 'user_id';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->ai   = true;
+			
+			//  Visit frequency.
+			$column_name = 'visits';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->type = 'int';
+			
+			//  Messages
+			$column_name = 'message';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->type = 'text';
+			
+			//  created, updated, deleted
+			$config->table->{$table_name}->column->merge(parent::Column());
+			
+
+		//  Tables (op_user_agent)
+		$table_name = 'op_user_agent';
+		$config->table->{$table_name}->table   = $table_name;
+		$config->table->{$table_name}->comment = 'This is wizard test.';
+			
+			//  Columns
+			$column_name = 'user_id';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->ai   = true;
+			
+			$column_name = 'user_agent';
+			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->type = 'text';
+			
+			//  created, updated, deleted
+			$config->table->{$table_name}->column->merge(parent::Column());
+			
+		return $config;
+	}
 }

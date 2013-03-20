@@ -1,7 +1,13 @@
 <?php
-
+/**
+ * What is this?
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ *
+ */
 class Model_Helper extends Model_Model
 {
+	//  TODO: What is this?
 	function GetFormOptionsDateYear($config=null)
 	{
 		$num   = isset($config->num)   ? $config->num:   20;
@@ -18,7 +24,8 @@ class Model_Helper extends Model_Model
 		
 		return $options;
 	}
-	
+
+	//  TODO: What is this?
 	function GetFormOptionsDateMonth($config=null)
 	{
 		if( isset($config->padding) ){

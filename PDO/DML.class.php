@@ -34,6 +34,7 @@ class DML extends OnePiece5
 		}
 	}
 	
+	/*
 	function Quote( $var )
 	{
 		if( is_array($var) ){
@@ -49,6 +50,7 @@ class DML extends OnePiece5
 		}
 		return $safe;
 	}
+	*/
 	
 	function GetSelect( $conf )
 	{
@@ -554,9 +556,11 @@ class DML extends OnePiece5
 			$temp = array();
 			foreach( $cols as $key => $var ){
 				if( is_numeric($key) ){
-					$temp[] = $this->Quote($var);
+					$temp[] = ConfigSQL::Quote( $var, $this->driver );
 				}else{
-					$temp[] = $this->Quote($key)." AS ".$this->Quote($var);
+					$temp[] = ConfigSQL::Quote( $key, $this->driver )
+							 ." AS "
+							 .ConfigSQL::Quote( $var, $this->driver );
 				}
 			}
 			$cols = join(', ',$temp);

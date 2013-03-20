@@ -40,11 +40,17 @@ abstract class Model_Model extends OnePiece5
 			
 			//  database connection
 			if(!$io = $pdo->Connect($config)){
-				//  notice to admin
+
+				//  Notice to admin
 				$config->myname = get_class($this);
 				$config->Caller = $this->GetCallerLine();
-				$this->d($config);
-			//	throw new OpModelException('PDO has failed to connect to the database.');
+				
+				//  Selftest
+				if( method_exists( $this, 'Selftest') ){
+					$this->Selftest();
+				}else{
+					$this->d($config);
+				}
 			}
 		}
 		
@@ -89,19 +95,25 @@ abstract class Model_Model extends OnePiece5
 	}
 }
 
-class ModelConfig extends ConfigMgr
+class ConfigModel extends ConfigMgr
 {
 	const TABLE_PREFIX = 'op';
 	
 	static function database()
 	{
+		
+		$password  = OnePiece5::GetEnv('admin-mail');
+		$password .= isset($this) ? get_class($this): null;
+		
 		$config = parent::database();
 		$config->user     = 'op_model';
-		$config->password = md5($this->GetEnv('admin-mail') . get_class($this));
+		$config->password = md5( $password );
 		return $config;
 	}
+	
 }
 
 class OpModelException extends Exception
 {
+	
 }

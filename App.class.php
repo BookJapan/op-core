@@ -32,10 +32,16 @@ class App extends NewWorld5
 	 */
 	function Config( $cmgr=null )
 	{
-		if( $cmgr ){
-			$this->cmgr = $cmgr;
+		if( isset( $this->cmgr ) ){
+			return $this->cmgr;
 		}
-
+		
+		if( $cmgr instanceof ConfigMgr ){
+			$this->cmgr = $cmgr;
+		}else if( is_string($cmgr) ){
+			$this->cmgr = $cmgr();
+		}
+		
 		return $this->cmgr;
 	}
 	

@@ -126,6 +126,36 @@ abstract class ConfigMgr extends OnePiece5
 		return $config;
 	}
 	
+	static function Column()
+	{
+		$config = new Config();
+		
+		//  Created date time
+		$column_name = 'created';
+		$config->{$column_name}->name = $column_name;
+		$config->{$column_name}->type = 'datetime';
+		$config->{$column_name}->null = true;
+		
+		//  Updated date time
+		$column_name = 'updated';
+		$config->{$column_name}->name = $column_name;
+		$config->{$column_name}->type = 'datetime';
+		$config->{$column_name}->null = true;
+		
+		//  Deleted date time
+		$column_name = 'deleted';
+		$config->{$column_name}->name = $column_name;
+		$config->{$column_name}->type = 'datetime';
+		$config->{$column_name}->null = true;
+
+		//  timestamp
+		$column_name = 'timestamp';
+		$config->{$column_name}->name = $column_name;
+		$config->{$column_name}->type = 'timestamp';
+		
+		return $config;
+	}
+	
 	function insert( $table_name=null ){
 		$config = new Config();
 		$config->table = $table_name;
