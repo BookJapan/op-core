@@ -420,6 +420,7 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
 		switch( $type = strtolower(gettype($value)) ){
@@ -479,8 +480,15 @@ class Form5 extends OnePiece5
 			$joint = isset($input->joint) ? $input->joint: '';
 		}
 		
-		//  GetSaveValue is search session
-		$value = $this->GetSaveValue( $input_name, $form_name );
+		//  If button
+		if( $input->type === 'submit' or $input->type === 'button' or $input->type === 'img' ){
+			$value = $this->GetRequest($input_name, $form_name);	
+		}else{
+			//  GetSaveValue is search session
+			$value = $this->GetSaveValue( $input_name, $form_name );
+		}
+		
+		//  If array
 		if(is_array($value)){
 			//  not check value is removed. 
 			$value = array_diff($value,array(''));
@@ -488,13 +496,11 @@ class Form5 extends OnePiece5
 		
 		//  If null, default value is used.
 		if( is_null($value) ){
-			$value = isset($input->value) ? $input->value: null; // this is null!! use to cookie routine.
-		}else{
-			/*
-			if( $input->type == 'file' ){
-				$this->d($value);
+			if( !empty($input->cookie) ){
+				$value = $this->GetCookie($form_name.'/'.$input_name);
+			}else if( isset($input->value) ){
+				$value = $input->value;
 			}
-			*/
 		}
 		
 		return $value;
@@ -633,11 +639,12 @@ class Form5 extends OnePiece5
 		foreach( $request as $input_name => $value ){
 			
 			//  this form name
-			if($input_name === 'form_name'){
+			if( $input_name === 'form_name' ){
 				continue;
 			}
+			
 			//  token key
-			if($input_name === $this->GetTokenKeyName($form_name)){
+			if( $input_name === $this->GetTokenKeyName($form_name) ){
 				continue;
 			}
 			
@@ -690,7 +697,11 @@ class Form5 extends OnePiece5
 				}
 				
 				// save cookie
-				if(isset($input->cookie) and $input->cookie and !is_null($value)){
+				if( isset($input->cookie) and $input->cookie and !is_null($value) ){
+					//  Remove check index.
+					if( empty($value[0]) ){
+						unset($value[0]);
+					}
 					$this->SetCookie($form_name.'/'.$input_name, $value );
 				}
 			}else{
@@ -765,7 +776,6 @@ class Form5 extends OnePiece5
 		
 		if( isset($_FILES[$input->name]) ){
 			$_file = $_FILES[$input->name];
-			
 			$name  = $_file['name'];
 			$type  = $_file['type'];
 			$tmp   = $_file['tmp_name'];
@@ -775,7 +785,6 @@ class Form5 extends OnePiece5
 			// extention
 			$temp = explode('.',$name);
 			$ext  = array_pop($temp);
-			
 		}else{
 			$value = $this->GetRequest($input_name, $form_name);
 			if( is_array($value) ){
@@ -788,9 +797,8 @@ class Form5 extends OnePiece5
 		}
 		
 		switch($error){
-				
 			case 0:
-				$op_uniq_id = $this->GetCookie( self::OP_UNIQ_ID );
+				$op_uniq_id = $this->GetCookie( self::KEY_COOKIE_UNIQ_ID );
 				
 				if( isset($input->save) and $input->save ){
 					if( isset($input->save->path) ){
@@ -819,9 +827,10 @@ class Form5 extends OnePiece5
 				}else{
 					$path = sys_get_temp_dir() .DIRECTORY_SEPARATOR. md5($name . $op_uniq_id).".$ext";
 				}
-
+				
                 //  Check directory exists
                 if(!file_exists( dirname($path) )){
+                	$this->mark("Does not exists. ($path)");
                     if(!$io = mkdir( dirname($path), 0766, true ) ){                    	
                     	$this->StackError("Failed make directory. (".dirname($path).")");
                     	return false;
@@ -829,7 +838,10 @@ class Form5 extends OnePiece5
                 }
 				
 				//  file is copy
-                $io = copy($tmp, $path);
+                if(!$io = copy($tmp, $path)){
+                	$this->StackError("Does not copy at upload file. ($tmp, $path)");
+                	return false;
+                }
                 
 				//$this->mark("tmp: $tmp, path: $path, io: $io");
 				

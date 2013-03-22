@@ -1718,7 +1718,10 @@ __EOL__;
 					return $args;
 					
 				case 'dot':
-					$tmp_root = getcwd() . '/';
+					$route = $this->GetEnv('route');
+				//	$this->d( $route );
+				//	$tmp_root = getcwd() . '/';
+					$tmp_root = rtrim( $route['path'], '/' ) . '/'; 
 					break;
 				default:
 					$tmp_root = $this->GetEnv( $match[1] . '_root' );
@@ -1755,6 +1758,7 @@ __EOL__;
 	function ConvertPath( $path )
 	{
 		if( preg_match('/^(op|site):\//',$path,$match) ){
+			//  Does not relate document-root.
 			$temp = $match[1].'-root';
 			if( $root = $this->GetEnv($temp) ){
 				$path = str_replace($match[0], $root, $path);
@@ -1762,7 +1766,7 @@ __EOL__;
 				$this->StackError("$temp is not set.");
 			}
 		}else{
-			$url = self::ConvertURL($path);
+			$url  = self::ConvertURL($path);
 			$path = $_SERVER['DOCUMENT_ROOT'] .'/'. ltrim($url,'/');
 		}
 		
