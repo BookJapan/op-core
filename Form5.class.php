@@ -399,6 +399,14 @@ class Form5 extends OnePiece5
 	}
 	*/
 	
+	/**
+	 * Get value
+	 * 
+	 * @param string $input_name
+	 * @param string $form_name
+	 * @param string $joint
+	 * @return Ambigous <boolean, NULL, string, mixed, Ambigous, multitype:, string|array, stdClass, number>
+	 */
 	public function GetValue( $input_name, $form_name=null, $joint=null )
 	{
 		return $this->GetInputValue( $input_name, $form_name, $joint );
@@ -1630,16 +1638,22 @@ class Form5 extends OnePiece5
 		return $tag . $nl;
 	}
 	
-	function CreateOption( $args, $save_value )
+	function CreateOption( $options, $save_value )
 	{
-		$options = '';
-		foreach( $args as $option ){
-			//  
-			$value = $option->value;
+		$result = '';
+		foreach( $options as $option ){
+			//	
+			$value = isset($option->value) ? $option->value: null;
 			$label = isset($option->label) ? $option->label: $value;
-			$selected = $value == $save_value ? 'selected="selected"': '';
 			
-			//  attributes
+			//  defalut select
+			if( !empty($option->selected) or !empty($option->checked) ){
+				$selected = 'selected="selected"';
+			}else{
+				$selected = null;
+			}
+			
+			//	attributes
 			$attr = array();
 			foreach( $option as $key => $var ){
 				switch( $key ){
@@ -1651,11 +1665,11 @@ class Form5 extends OnePiece5
 			}
 			$attr = implode(' ', $attr);
 			
-			//  joint
-			$options .= sprintf('<option value="%s" %s %s>%s</option>', $value, $attr, $selected, $label);
+			//	joint
+			$result .= sprintf('<option value="%s" %s %s>%s</option>', $value, $attr, $selected, $label);
 		}
 		
-		return $options;
+		return $result;
 	}
 	
 	function GetInput( $input_name, $value=null, $form_name=null )
@@ -1674,13 +1688,13 @@ class Form5 extends OnePiece5
 	
 	function Label( $input_name, $form_name=null )
 	{
-		print $this->GetInputLabel( $input_name, $form_name=null );
+		print $this->GetInputLabel( $input_name, $form_name );
 		return 'This method(function) is print.';
 	}
 	
 	function InputLabel( $input_name, $form_name=null )
 	{
-		$label = $this->GetInputLabel( $input_name, $form_name=null );
+		$label = $this->GetInputLabel( $input_name, $form_name );
 		print $label;
 		return 'This method(function) is print.';
 	}
@@ -1732,30 +1746,55 @@ class Form5 extends OnePiece5
 		Dump::d($temp);
 	}
 	
+	/**
+	 * Print error message.
+	 * 
+	 * @param string $input_name
+	 * @param string $html
+	 * @param string $form_name
+	 */
 	function Error( $input_name, $html='span 0xff0000', $form_name=null )
 	{
-		print $this->GetInputError( $input_name, $html, $form_name=null );
+		print $this->GetInputError( $input_name, $form_name, $html );
 		return $this->i18n()->Get('This method(function) is print.');
 	}
 	
+	/*
 	function InputError( $input_name, $html='span 0xff0000', $form_name=null )
 	{
-		print $this->GetInputError( $input_name, $html, $form_name=null );
+		print $this->GetInputError( $input_name, $html, $form_name );
 		return $this->i18n()->Get('This method(function) is print.');
 	}
+	*/
 
+	/**
+	 * Get error message.
+	 * 
+	 * @param string $input_name
+	 * @param string $html
+	 * @param string $form_name
+	 * @return Ambigous <boolean, string>
+	 */
 	function GetError( $input_name, $html='span 0xff0000', $form_name=null )
     {
-        return $this->GetInputError( $input_name, $html, $form_name );
+        return $this->GetInputError( $input_name, $form_name, $html );
     }
 
-	function GetInputError( $input_name, $html='span 0xff0000', $form_name=null )
+    /**
+     * Get error message.
+     * 
+     * @param  string $input_name
+     * @param  string $form_name
+     * @param  string $html
+     * @return boolean|string
+     */
+	function GetInputError( $input_name, $form_name=null, $html='span 0xff0000' )
 	{
 		if(!$this->CheckConfig($form_name,$input_name)){
 			return false;
 		}
 		
-		if(isset($this->status->$form_name->error->$input_name)){
+		if( isset($this->status->$form_name->error->$input_name) ){
 			
 			$message = '';
 			$value2  = '';
@@ -2388,7 +2427,7 @@ class Form5 extends OnePiece5
 //		$size   = $_FILES[$input->name]['size'];
 		list($type,$ext) = explode('/',$mime);
 		
-		if($type !== 'image'){
+		if( $type !== 'image' ){
 			$this->SetInputError( $input->name, $form_name, 'image', "not image ($type, ext=$ext)" );
 			return false;
 		}
