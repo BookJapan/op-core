@@ -4,15 +4,15 @@ include_once('OnePiece5.class.php');
 
 class Form5 extends OnePiece5
 {
-	public	$status;
+	private	$status;
 	private $config;
 	private	$session;
 	
 	function Init()
 	{
 		parent::Init();
-		$this->config = new Config();
 		$this->status = new Config();
+		$this->config = new Config();
 //		$io = session_regenerate_id(true);
 	}
 	
@@ -116,8 +116,6 @@ class Form5 extends OnePiece5
 	
 	private function SetStatus( $form_name, $message )
 	{
-		//$this->mark( $message );
-		
 		if(!$this->CheckConfig( $form_name )){
 			return false;
 		}
@@ -1040,9 +1038,6 @@ class Form5 extends OnePiece5
 	
 	public function AddForms( $args )
 	{
-		//  debug
-		//$this->d(Toolbox::toArray( $args ));
-		
 		if(!$config = $this->GenerateConfig($args)){
 			return false;
 		}
@@ -1194,18 +1189,29 @@ class Form5 extends OnePiece5
 			$this->config->$form_name->multipart = true;
 		}
 		
-		//  checkbox
+		//  Options
 		if( in_array($type,array('checkbox','radio','select')) ){
-
+			
+			//	Supports option (not options)
 			if( empty($input->options) ){
 				if( isset($input->option) ){
 					$input->options = $input->option;
 				}
 			}
 			
+			//	Check value. (Why necessary is this?)
 			if(!isset($input->options) and (!isset($input->value) or !strlen($input->value)) ){
 				$this->mark("![.red[Empty $type value. ($form_name, $input_name)]]");
 				$this->StackError("Empty $type value. ($form_name, $input_name)");
+			}
+			
+			//  
+			foreach( $input->options as $option_name => $option ){
+				if( !empty($option->selected) or !empty($option->checked) ){
+					if( isset($option->value) ){
+						$input->value = $option->value;
+					}
+				}
 			}
 		}
 		
@@ -1217,7 +1223,7 @@ class Form5 extends OnePiece5
 			}
 		}
 		
-		//  save config
+		//  Set config
 		$this->config->$form_name->input->$input_name = $input;
 		
 		//	support type=image
@@ -1478,10 +1484,10 @@ class Form5 extends OnePiece5
 			$value = $_request[$input_name];
 		}else if('checkbox' === $type or 'radio' === $type){
 			$value = $this->GetSaveValue($input_name, $form_name);
-		}else{
+		}else{			
 			$value = $this->GetInputValueRaw($input_name, $form_name);
 		}
-		
+				
 		// get cookie
 		if( is_null($value) ){
 			$value = $this->GetCookie($form_name.'/'.$input_name);
@@ -1537,10 +1543,6 @@ class Form5 extends OnePiece5
 			case 'select':
 				if( isset($input->options) ){
 					$options = $input->options;
-					/*
-				}else if( isset($input->option) ){
-					$options = $input->option;
-					*/
 				}else{
 					$options = array();
 				}
@@ -1649,8 +1651,18 @@ class Form5 extends OnePiece5
 			$value = isset($option->value) ? $option->value: null;
 			$label = isset($option->label) ? $option->label: $value;
 			
-			//  defalut select
-			if( !empty($option->selected) or !empty($option->checked) ){
+			if( $value == $save_value and strlen($value) === strlen($save_value) ){
+
+				/*
+				
+				//  selected
+				$selected = 'selected="selected"';
+			}else if( !empty($option->selected) or !empty($option->checked) ){
+				
+				$this->mark("$value, $save_value");
+				*/
+				
+				//  defalut select
 				$selected = 'selected="selected"';
 			}else{
 				$selected = null;
@@ -1831,25 +1843,17 @@ class Form5 extends OnePiece5
 		}
 	}
 	
+	function GetErrorList( $form_name )
+	{
+		return $this->status->$form_name->error;
+	}
+	
 	function SetInputError( $input_name, $form_name, $key, $value='' )
 	{
 		if( !$input_name or !$form_name or !$key /* or !$value or !strlen($value) */ ){
 			$this->StackError("One or more empty. form_name=$form_name, input_name=$input_name, key=$key, value=$value");
 			return false;
 		}
-
-		/*
-		if(!isset($this->status->$form_name->error)){
-			$this->status->$form_name->error = new Config();
-		}
-		*/
-		
-		/*
-		if(!isset($this->status->$form_name->error->$input_name)){
-			$this->status->$form_name->error->$input_name = new Config();
-		}
-		*/
-		
 		$this->status->$form_name->error->$input_name->$key = $value;
 	}
 	
