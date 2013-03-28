@@ -28,7 +28,7 @@ class Model_Nav extends Model_Model
 		$join = array();
 		foreach( $this->_stack as $stack ){
 			$href  = $this->ConvertURL($stack['href']);
-			$label = $stack['label'];
+			$label = $stack['label'] ? $stack['label']: $stack['href'];
 			$join[] = sprintf('<a href="%s">%s</a>',$href,$label);
 		}
 		
@@ -40,7 +40,7 @@ class Model_Nav extends Model_Model
 		if(!$format ){
 			//  Init
 			$format = new Config();
-			$format->join = ' &lt; ';
+			$format->join = ' &gt; ';
 		}
 		
 		//  

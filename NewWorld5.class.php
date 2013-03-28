@@ -80,12 +80,6 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function GetRoute($request_uri=null)
 	{
-		// controller file name
-		if(!$controller = $this->GetEnv('controller-name')){
-			$this->StackError('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
-			return false;
-		}
-		
 		// get request uri
 		if(!$request_uri){
 			$request_uri = $_SERVER['REQUEST_URI'];
@@ -119,27 +113,43 @@ abstract class NewWorld5 extends OnePiece5
 		//	absolute from current dir
 		$file_path = preg_replace("|$app_root|",'',$absolute_path);
 		
-		/*
-		$this->mark($absolute_path);
-		$this->mark( getcwd() );
-		$this->mark(dirname($_SERVER['SCRIPT_FILENAME']));
-		$this->mark($app_root);
-		$this->mark($file_path);
-		*/
-		
 		//	search controller
+		$this->_getController( $dirs, $args, $file_path, $controller );
+		
+		//  build
+		$route['path'] = '/'.join('/',$dirs);
+		$route['file'] = $controller;
+		$route['args'] = array_reverse($args);
+				
+		//  escape
+		$route = $this->Escape($route);
+		
+		return $route;
+	}
+	
+	private function _getController( &$dirs, &$args, $file_path, &$controller )
+	{
+		// controller file name
+		if(!$controller = $this->GetEnv('controller-name')){
+			$this->StackError('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
+			return false;
+		}
+		
+		//  Init
+		$app_root = $this->GetEnv('AppRoot');
+		$app_root = rtrim($app_root,'/').'/';
 		$dirs = explode( '/', rtrim($file_path,'/') );
 		$args = array();
+		
+		//  Loop
 		while( count($dirs) ){
 			
-			$file_name = rtrim($app_root,'/').'/'.trim(join('/',$dirs)).'/'.$controller;
-		//	$io = file_exists($file_name) ? 'true': 'false';
-		//	$this->mark("file_name = $file_name, dir = $dir, io = $io");
-			
+			$file_name = $app_root.trim(join('/',$dirs)).'/'.$controller;
+				
 			if( file_exists($file_name) ){
 				break;
 			}
-			
+				
 			$args[] = array_pop($dirs);
 		}
 		
@@ -148,16 +158,7 @@ abstract class NewWorld5 extends OnePiece5
 			$args[0] = null;
 		}
 		
-		//  build
-		$route['path'] = '/'.join('/',$dirs);
-		$route['file'] = $controller;
-		$route['args'] = array_reverse($args);
-		//$this->d($route);
-		
-		//  escape
-		$route = $this->Escape($route);
-		
-		return $route;
+		return true;
 	}
 	
 	function HtmlPassThrough( $match, $full_path )
@@ -186,7 +187,7 @@ abstract class NewWorld5 extends OnePiece5
 			$route['fullpath'] = $full_path;
 			$route['path'] = dirname($app_path);
 			$route['file'] = $file_name;
-			$route['args'] = null;
+			$route['args'] = array(null);
 			$route['pass'] = true;
 			$route['ctrl'] = null;
 			$route = $this->Escape($route);
