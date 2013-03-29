@@ -1020,12 +1020,11 @@ __EOL__;
 		// TODO: file system encoding
 		$encode_file_system = PHP_OS == 'WINNT' ? 'sjis': 'utf-8';
 		
-		// init
+		//  init
 		$call_line = '';
 		$depth++;
-		
 		$nl = self::GetEnv('nl');
-		
+		//  debug_backtrace
 		if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
 			$back = debug_backtrace(false);
 		}else{
@@ -1313,13 +1312,23 @@ __EOL__;
 	
 	static function Decode( $args, $charset=null)
 	{
+		//  Accelerate
+		static $charset = null;
 		if(!$charset){
 			$charset = self::GetEnv('charset');
 		}
-
+		
 		switch($type = gettype($args)){
 			
 			case 'array':
+				foreach( $args as $key => $var ){
+					$key  = self::Decode( $key, $charset );
+					$var  = self::Decode( $var, $charset );
+					$temp[$key] = $var;
+				}
+				$args = $temp;
+				break;
+				
 			case 'object':
 				foreach( $args as $key => $var ){
 					$key  = self::Decode( $key, $charset );
@@ -1791,6 +1800,11 @@ __EOL__;
 				throw new OpModelException($msg);
 			}
 			
+			//  Notice
+			if( strpos( $name, '_') ){
+				$this->mark('Underscore(_) is reserved. For the feature functions. (maybe, namespace)');
+			}
+			
 			//  already instanced?
 			if( isset( $_SERVER[__CLASS__]['model'][$name] ) ){
 				return $_SERVER[__CLASS__]['model'][$name];
@@ -1805,13 +1819,13 @@ __EOL__;
 				}
 			}
 			
-			//  op-core
+			//  include from master dir
 			$path = self::ConvertPath("op:/Model/{$name}.model.php");
 			if( $io = file_exists($path) ){
 				$io = include_once($path);
 			}
 			
-			//  user-dir
+			//  include from user dir
 			if(!$io ){
 				$model_dir = $this->GetEnv('model-dir');
 				$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
@@ -1820,7 +1834,7 @@ __EOL__;
 				}
 			}
 			
-			//  Could be include?
+			//  include check 
 			if(!$io){
 				$msg = "Failed to include the $name. ($path)";
 				throw new OpModelException($msg);
@@ -1907,7 +1921,7 @@ __EOL__;
 			
 			//  Instance is success.
 			return $_SERVER[__CLASS__]['module'][$name];
-				
+			
 		}catch( Exception $e ){
 			$this->mark( $e->getMessage() );
 			$this->StackError( $e->getMessage() );
@@ -1990,11 +2004,6 @@ __EOL__;
 	}
 	
 	/**
-	 *  @var $i18n i18n
-	 */
-	private $i18n = null;
-	
-	/**
 	 * i18n is translate object.
 	 * 
 	 * @param  string $name Object name
@@ -2011,16 +2020,6 @@ __EOL__;
 		}
 		
 		return $obj;
-		
-		/*
-		if( empty($this->i18n) ){
-			if(!$this->i18n = new $name()){
-				return $this;
-			}
-		}
-		
-		return $this->i18n;
-		*/
 	}
 	
 	/**
@@ -2062,11 +2061,11 @@ __EOL__;
 		if(!$this->cache){
 			if(!class_exists($name)){				
 				if(!include("$name.class.php") ){
-					throw new Exception("Include is failed. ($name)");
+					throw new OpException("Include is failed. ($name)");
 				}
 			}
-			if(!$this->cache = new $name() ){				
-				throw new Exception("Instance object is failed. ($name)");
+			if(!$this->cache = new $name() ){
+				throw new OpException("Instance object is failed. ($name)");
 			}
 		}
 		return $this->cache;

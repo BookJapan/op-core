@@ -359,7 +359,7 @@ class Form5 extends OnePiece5
 	/*******************************************************************************/
 	
 	/**
-	 * Direct print
+	 * Print the value of specified Input.
 	 * 
 	 * @param  unknown $input_name
 	 * @param  string  $joint
@@ -367,26 +367,29 @@ class Form5 extends OnePiece5
 	 */
 	public function Value( $input_name, $form_name=null, $joint=null )
 	{
-		//  Get input value.
+		//  Get input value
 		$value = $this->GetInputValue( $input_name, $form_name, $joint );
 		
-		//  Get config.
+		//  Get config
 		$input = $this->GetConfig( $form_name, $input_name );
 		
+		//  Supports the options value (Get option's label)
 		if( in_array( $input->type, array('select','checkbox','radio') ) ){
-			//  
-			if( isset($input->options->$value) ){
-				//  Label has been set then. 
-				if( isset($input->options->$value->label) ){
-					$value = $input->options->$value->label;
+			//  If exists option
+			if( isset($input->options) ){
+				
+				//  Accelerate
+				if( isset($input->options->$value) ){
+					if( isset($input->options->$value->label) ){
+						$value = $input->options->$value->label;
+					}
 				}else{
-					$value = $input->options->$value->value;
-				}
-			}else{
-				if( !empty($input->options) ){
+					//  Brute search
 					foreach( $input->options as $option ){
 						if( $option->value == $value ){
-							$value = isset($option->label) ? $option->label: $value;
+							if( isset($option->label) ) {
+								$value = $option->label;
+							}
 							break;
 						}
 					}
@@ -1762,7 +1765,8 @@ class Form5 extends OnePiece5
 		$temp['Error']	 = Toolbox::toArray($this->status->$form_name->error);
 		$temp['Errors']	 = $this->status->$form_name->stack;
 		$temp['session'] = $this->GetSession('form');
-		
+
+		//  Print debug information
 		$call = $this->GetCallerLine();
 		$this->p("Form debugging[ ![.small[ $call ]] ]");
 		Dump::d($temp);

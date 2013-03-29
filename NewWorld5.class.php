@@ -24,12 +24,7 @@ abstract class NewWorld5 extends OnePiece5
 		//  output is buffering.
 		$io = ob_start();
 		$io = parent::__construct($args);
-
-		//$this->StackLog('START');
-		
-		//  init
-		//$this->Init();
-		
+				
 		//  Vivre
 		$this->vivre(true);
 		
@@ -521,4 +516,3 @@ abstract class NewWorld5 extends OnePiece5
 		}
 	}
 }
-

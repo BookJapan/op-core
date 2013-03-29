@@ -36,15 +36,15 @@ class Cache extends OnePiece5
 		}
 		
 		//  Instance
-		if( $memcache ){
-			$this->cache = new Memcache();
-			$this->InitMemcache();
-		}
-		
-		//  Instance
 		if( $memcached ){
 			$this->cache = new Memcached();
 			$this->InitMemcached();
+		}
+		
+		//  Instance
+		if( $memcache ){
+			$this->cache = new Memcache();
+			$this->InitMemcache();
 		}
 		
 		return true;
@@ -58,9 +58,14 @@ class Cache extends OnePiece5
 		}
 		ini_set('memcache.hash_strategy', $hash_strategy);
 		
+		//  Added server
+		if(!$io = $this->cache->addServer( $host, $port, $persistent, $weight )){
+			throw new Exception("Failed addServer method.");
+		}
+		
 		$this->AddMemcacheServer();
 	}
-
+	
 	function InitMemcached( $host='localhost', $port='11211', $weight=10 )
 	{
 		if(!$io = $this->cache->addServer( $host, $port, $weight )){
@@ -106,15 +111,12 @@ class Cache extends OnePiece5
 	
 	function Get( $key )
 	{
-		//  Does not installed memcache module.
 		static $skip;
-		
-		//	
 		if( $skip ){
 			return null;
 		}
 		
-		//	Check
+		//	Check (forever skipping?)
 		if( empty($this->cache) ){
 			$skip = true;
 			return null;
