@@ -218,7 +218,6 @@ class ConfigOpUser extends ConfigModel
 			
 			//  created, updated, deleted
 			$config->table->{$table_name}->column->merge(parent::Column());
-
 			
 		//  Tables (op_user_info)
 		$table_name = 'op_user_info';
@@ -250,13 +249,18 @@ class ConfigOpUser extends ConfigModel
 		$config->table->{$table_name}->comment = 'This is wizard test.';
 			
 			//  Columns
-			$column_name = 'user_id';
-			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
-			$config->table->{$table_name}->column->{$column_name}->ai   = true;
+			$column_name = 'ua_id';
+			$config->table->{$table_name}->column->{$column_name}->name   = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->ai     = true;
+			
+			$column_name = 'user_agent_md5';
+			$config->table->{$table_name}->column->{$column_name}->name   = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->type   = 'char';
+			$config->table->{$table_name}->column->{$column_name}->length = '32';
 			
 			$column_name = 'user_agent';
-			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
-			$config->table->{$table_name}->column->{$column_name}->type = 'text';
+			$config->table->{$table_name}->column->{$column_name}->name   = $column_name;
+			$config->table->{$table_name}->column->{$column_name}->type   = 'text';
 			
 			//  created, updated, deleted
 			$config->table->{$table_name}->column->merge(parent::Column());

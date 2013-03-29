@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ *
+ */
 class PDO5 extends OnePiece5
 {
 	private $pdo = null;
@@ -84,36 +88,6 @@ class PDO5 extends OnePiece5
 	{
 		return $this->qus;
 	}
-	
-	/*
-	function GetQuote( $driver )
-	{
-		switch( strtolower($driver) ){
-			case 'mysql':
-				$ql = $qr = '`';
-				break;
-		}
-		return array($ql,$qr);
-	}
-	
-	function Quote( $var, $driver )
-	{
-		list( $ql, $qr ) = self::GetQuote($driver);
-		
-		if( is_array($var) ){
-			foreach( $var as $tmp ){
-				$safe[] = $this->Quote($tmp);
-			}
-		}else if( strpos($var,'.') ){
-			$temp = explode('.',$var);
-			$this->d($temp);
-			$safe = $ql.trim($temp[0]).$qr.'.'.$ql.trim($temp[1]).$qr;
-		}else{
-			$safe = $ql.trim($var).$qr;
-		}
-		return $safe;
-	}
-	*/
 	
 	function Query( $qu, $key=null )
 	{
@@ -237,7 +211,12 @@ class PDO5 extends OnePiece5
 		return true;
 	}
 	
-	function Database( $db_name, $charset=null )
+	function Database( $db_name, $charset=null, $locale=null )
+	{
+		return $this->SetDatabase( $db_name, $charset, $locale );
+	}
+	
+	function SetDatabase( $db_name, $charset=null, $locale=null )
 	{
 		if(!is_string($db_name)){
 			$type = gettype($db_name);
@@ -255,14 +234,27 @@ class PDO5 extends OnePiece5
 		}
 		
 		if( $charset ){
-			//  Set charset
-			$charset = $this->ConvertCharset($charset);
-			if( $this->query("SET NAMES $charset") === false ){
-				return false;
-			}
+			$this->SetCharset($charset);
+		}
+		
+		if( $locale ){
+			$this->SetLocale($locale);
 		}
 		
 		return true;
+	}
+	
+	function SetCharset( $charset )
+	{
+		$charset = $this->ConvertCharset($charset);
+		$io = $this->query("SET NAMES '$charset'");
+		return $io !== false ? true: false;
+	}
+	
+	function SetLocale( $locale )
+	{
+		$io = $this->query("SET lc_time_names = '$locale'");
+		return $io !== false ? true: false;
 	}
 	
 	function GetDatabaseList($config=null)
@@ -870,7 +862,7 @@ class ConfigSQL extends OnePiece5
 		if( empty($safe) ){
 			var_dump($var);
 			var_dump($driver);
-			$this->StackError("Empty args.");
+			OnePiece5::StackError("Empty args.");
 		}
 		
 		return $safe;

@@ -166,10 +166,35 @@ abstract class ConfigMgr extends OnePiece5
 	
 	function select( $table_name=null )
 	{
+		//	Avoid of ambiguous.
+		if( $table_name ){
+			if( $pos = strpos( $table_name, '=' ) ){
+				//  Join table
+				foreach( explode('=',$table_name) as $temp ){
+					list( $name, $column ) = explode('.',$temp);
+					//  perse　table name
+					$tables[] = trim($name);
+				}
+				foreach( $tables as $name ){
+					$deleteds[] = "$name.deleted";
+				}
+			}else{
+				//  Single table
+				$deleteds[] = isset($table_name) ? "$table_name.deleted": 'deleted';
+			}
+		}else{
+			$deleteds = null;
+		}
+		
+		//	Create select config.
 		$config = new Config();
 		$config->table = $table_name;
-		$config->where->deleted = null;
+		//	Avoid of ambiguous.
+		foreach( $deleteds as $deleted ){
+			$config->where->$deleted = null;
+		}
 		$config->cache = 1;
+		
 		return $config;
 	}
 	
