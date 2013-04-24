@@ -508,6 +508,8 @@ class OnePiece5
 	 */
 	function PrintError()
 	{
+		$this->mark();
+		
 		// init
 		$nl = $this->GetEnv('nl');
 		$class = __CLASS__;
@@ -568,7 +570,10 @@ __EOL__;
 		}
 		
 		// admmin
-		if( !self::Admin() or !self::GetEnv('Pacifista') ){
+		if( self::GetEnv('Pacifista') ){
+			//	
+		}else if( !self::Admin() ){
+			//	
 			$ua   = $this->GetEnv('UserAgent');
 			$ip   = $this->GetEnv('RemoteIp');
 			$href = $this->GEtEnv('href');
