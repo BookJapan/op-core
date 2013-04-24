@@ -25,11 +25,8 @@ class Pacifista extends OnePiece5
 	}
 	
 	function GetArgs()
-	{	
-		for( $i=1; $i<count($_SERVER['argv']); $i++ ){
-			$args[$i-1] = $_SERVER['argv'][$i];
-		}
-		return $args;
+	{
+		return isset($_SERVER['argv']) ? $_SERVER['argv']: array();
 	}
 }
 

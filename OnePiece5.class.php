@@ -569,11 +569,16 @@ __EOL__;
 			$print = strip_tags( $print, null );
 		}
 		
-		// admmin
+		// Finish
 		if( self::GetEnv('Pacifista') ){
-			//	
-		}else if( !self::Admin() ){
-			//	
+			//	Pacifista
+			print strip_tags( html_entity_decode( $print, ENT_QUOTES, $this->GetEnv('charset') ) );
+		}else if( self::Admin() ){
+			//	Admin
+			print $javascript . $nl;
+			print $print;	
+		}else{
+			//	Mail
 			$ua   = $this->GetEnv('UserAgent');
 			$ip   = $this->GetEnv('RemoteIp');
 			$href = $this->GEtEnv('href');
@@ -616,9 +621,6 @@ __EOL__;
 			$mail['subject'] = $subject;
 			$mail['message'] = html_entity_decode( $message, ENT_QUOTES, 'utf-8');
 			self::Mail($mail);
-		}else{
-			print $javascript . $nl;
-			print $print;
 		}
 		
 		return true;
@@ -1267,11 +1269,11 @@ __EOL__;
 		$nl = self::GetEnv('nl');
 		$attr['class'] = array('OnePiece','mark');
 		$attr['style'] = array('font-size'=>'9pt','background-color'=>'white');
-		$string = self::Html("$nl\t$call_line - $str $memory$nl",'div',$attr);
+		$string = self::Html("$nl$call_line - $str $memory$nl",'div',$attr);
 		if( self::GetEnv('cli') ){
 			$string = strip_tags($string);
 			if( self::GetEnv('css') ){
-				$string = "/* ". trim($string) ." */".PHP_EOL;
+				$string = "/* ". trim($string) ." */$nl";
 			}
 		}
 		
@@ -1792,11 +1794,12 @@ __EOL__;
 				//	$tmp_root = getcwd() . '/';
 					$tmp_root = rtrim( $route['path'], '/' ) . '/'; 
 					break;
+					
 				default:
 					$tmp_root = $this->GetEnv( $match[1] . '_root' );
 			}
 			
-			//  Anti Windows
+			//  Windows
 			if( PHP_OS == 'WINNT' ){
 				$tmp_root = str_replace( '\\', '/', $tmp_root );
 			}
@@ -1843,7 +1846,9 @@ __EOL__;
 			}
 		}else{
 			$url  = self::ConvertURL($path,false);
-			$path = $_SERVER['DOCUMENT_ROOT'] .'/'. ltrim($url,'/');
+			if(!$this->GetEnv('Pacifista')){
+				$path = $_SERVER['DOCUMENT_ROOT'] .'/'. ltrim($url,'/');
+			}
 		}
 		
 		return $path;
@@ -1876,6 +1881,8 @@ __EOL__;
 			$path = self::ConvertPath("op:/Model/{$name}.model.php");
 			if( $io = file_exists($path) ){
 				$io = include_once($path);
+			}else{
+			//	$this->mark($path);
 			}
 			
 			//  user-dir
@@ -1884,6 +1891,8 @@ __EOL__;
 				$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
 				if( $io = file_exists($path) ){
 					$io = include_once($path);
+				}else{
+					$this->mark($path);
 				}
 			}
 			
