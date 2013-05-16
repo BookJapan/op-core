@@ -254,12 +254,15 @@ class DDL extends OnePiece5
 	
 	function ConvertColumn( $args, $ACD='' )
 	{
-		//  Get quote.
+		//	INIT
+		$indexes = array();
+		
+		//	Quote mark
 		list( $ql, $qr ) = ConfigSQL::GetQuote($this->driver);
 		
 		//  loop from many columns
 		foreach($args['column'] as $name => $temp){
-				
+			
 			//	column name
 			if( empty($temp['name']) ){
 				if( isset($temp['field']) ){
@@ -285,17 +288,17 @@ class DDL extends OnePiece5
 			$collation	 = isset($temp['collation'])  ? $temp['collation']        : $collate;
 			$default	 = isset($temp['default'])	  ? "DEFAULT '{$temp['default']}'": null;
 			$comment	 = isset($temp['comment'])    ? "COMMENT '{$temp['comment']}'": null;
-			$index		 = isset($temp['index'])      ? strtoupper($temp['index'])    : null;
 			$first		 = isset($temp['first'])      ? $temp['first']            : null; // 先頭に追加
 			$after		 = isset($temp['after'])      ? "AFTER {$ql}{$temp['after']}{$qr}": null; // 指定カラムの後ろに追加
 			$null		 = isset($temp['null'])	      ? $temp['null']: null;
 			
 			$ai			 = isset($temp['auto_increment']) ? $temp['auto_increment']: null;
-			$ai			 = isset($temp['a_i'])  ? $temp['a_i']  : null;
-			$ai			 = isset($temp['ai'])   ? $temp['ai']   : null;
-			$pkey		 = isset($temp['pkey']) ? $temp['pkey'] : null;
+			$ai			 = isset($temp['a_i'])    ? $temp['a_i']  : null;
+			$ai			 = isset($temp['ai'])     ? $temp['ai']   : null;
+			$pkey		 = isset($temp['pkey'])   ? $temp['pkey'] : null;
+			$index		 = isset($temp['index'])  ? $temp['index']: null;
+			$unique		 = isset($temp['unique']) ? $temp['unique']: null;
 			$pkeys       = null;
-			$indexes     = array();
 			
 			//	type
 			switch($type){
@@ -327,31 +330,33 @@ class DDL extends OnePiece5
 			//	auto_increment
 			if( $ai ){
 				$attributes = "AUTO_INCREMENT";
-				$index = 'PKEY'; // AUTO
 				$type = 'INT';
+				$pkey = true;
 			}
 				
 			//	PRIMARY KEY
 			if( $pkey ){
-				$index = '';
+				$pkey = 'PRIMARY KEY';
 				$pkeys[] = $name;
 			}
-				
+			
 			//	index
-			switch( strtoupper($index) ){
-				case '':
-					break;
-						
-				case 'PKEY':
-					$index = 'PRIMARY KEY';
-					break;
-		
-				default:
-					$index_type = 'USING BTREE';
-					$indexes[] = sprintf('INDEX %s %s (%s)', 'index_'.count($indexes), $index_type, $name );
-					$index = '';
+			if( empty($index) ){
+				$index = null;
+			}else if( $index === 'unique' ){
+				$unique = true;
+			}else{
+			//	$index_type = 'USING BTREE';
+			//	$indexes[] = sprintf('INDEX %s %s (%s)', 'index_'.count($indexes), $index_type, $name );
+				$indexes[] = $name;
+				$index = null;
 			}
 			
+			//	uniques
+			if( $unique ){
+				$uniques[] = $name;
+			}
+				
 			//  default
 			if( isset($temp['default']) ){
 				if( $temp['default'] == 'null' or $temp['default'] === null ){
@@ -408,7 +413,8 @@ class DDL extends OnePiece5
 //					`text` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
 //					`timestamp` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 //					$this->mark("$name, $type, $charset, $collate, $attributes, $index, $null, $default, $comment");
-					$definition = "$name $type $charset $collate $attributes $index $null $default $comment";
+//					$definition = "$name $type $charset $collate $attributes $index $null $default $comment";
+					$definition = "$name $type $charset $collate $attributes $pkey  $null $default $comment";
 					break;
 		
 					case 'CHANGE':
@@ -460,7 +466,13 @@ class DDL extends OnePiece5
 		
 		// indexes
 		if( $indexes ){
-			$column[] = join(',',$indexes);
+		//	$column[] = join(',',$indexes);
+			$column[] = sprintf("INDEX( ".join(", ",$indexes)." )");
+		}
+		
+		// uniques
+		if( $uniques ){
+			$column[] = sprintf("UNIQUE( ".join(", ",$uniques)." )");
 		}
 		
 		return join(', ', $column);

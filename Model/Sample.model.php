@@ -5,7 +5,7 @@
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  *
  */
-class Test_model extends Model_model
+class Test_Model extends Model_Model
 {
 	function Init()
 	{
@@ -18,18 +18,15 @@ class Test_model extends Model_model
 		return true;
 	}
 
-	function Insert($text=null)
+	function Insert($config)
 	{
-		$config = $this->config()->insert($text);
 		return $this->pdo()->insert($config);
 	}
 	
-	function Select()
+	function Select($config)
 	{
-		$config = $this->config()->select();
 		return $this->pdo()->select($config);
 	}
-	
 }
 
 class TestConfig extends ConfigMgr
@@ -44,18 +41,15 @@ class TestConfig extends ConfigMgr
 		return $config;
 	}
 	
-	function insert($text)
+	function insert($table_name)
 	{
-		$config = parent::insert();
-		$config->table = $this->table_name;
-		$config->set->text = $text;
+		$config = parent::insert($table_name);
 		return $config;
 	}
 	
-	function select()
+	function select($table_name)
 	{
-		$config = parent::select();
-		$config->table = $this->table_name;
+		$config = parent::select($table_name);
 		return $config;
 	}
 }

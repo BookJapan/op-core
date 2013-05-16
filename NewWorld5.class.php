@@ -42,6 +42,13 @@ abstract class NewWorld5 extends OnePiece5
 		//  flush buffer
 		ob_end_flush();
 		
+		//  Check content
+		if( $this->content ){
+			$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
+			$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
+			$this->content();
+		}
+		
 		//  Vivre
 		$this->vivre(false);
 		
@@ -131,8 +138,15 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		// controller file name
 		if(!$controller = $this->GetEnv('controller-name')){
-			$this->StackError('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
+			$m = 'Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");';
+		//	$this->StackError($m);
+			throw new OpNwException($m);
+			
+			/*
+			$dirs = array();
+			$args = array();
 			return false;
+			*/
 		}
 		
 		//  Init
@@ -268,15 +282,6 @@ abstract class NewWorld5 extends OnePiece5
 		//  layout
 		$this->doLayout();
 		
-		//  
-		if( $this->content ){
-			$message = 'Does not call Content-method. Please call to Content-method from layout.'.PHP_EOL.
-					   'Example: <?php $this->Content(); ?>';
-			$this->p("![ .big .bold .red [$message]]");
-			print $this->content;
-			$this->content = '';
-		}
-		
 		return true;
 	}
 	
@@ -297,7 +302,6 @@ abstract class NewWorld5 extends OnePiece5
 			$this->content .= $this->GetTemplate($path);
 		}catch( Exception $e ){
 			$this->StackError($e);
-		//	$this->StackError(__METHOD__);
 		}
 		
 		return true;
@@ -321,7 +325,8 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  Search settings file, and execute settings.
 		$save_dir = getcwd();
-		foreach(explode('/', $route['path']) as $dir){
+		
+		foreach(explode('/', rtrim($route['path'],'/') ) as $dir){
 			$dirs[] = $dir;
 			$path = $app_root.join('/',$dirs)."/$setting";
 			
@@ -340,13 +345,10 @@ abstract class NewWorld5 extends OnePiece5
 	function doLayout()
 	{
 		//  check the layout is set. 
-		if( $layout = $this->GetEnv('layout') ){
-			//	layout has been set.
-		}else{
-			//  does not set layout.
-			print $this->content;
+		if(!$layout = $this->GetEnv('layout') ){
+			//  Does not set layout.
 			if( $this->admin() ){
-				$this->mark("![ .gray [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
+				$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
 			}
 			return;
 		}
@@ -379,11 +381,18 @@ abstract class NewWorld5 extends OnePiece5
 		//  include controller
 		if( file_exists($path) ){
 			//  OK
-			include($path);
+			if(!include($path) ){
+				throw new OpNwException("include is failed. ($path)");
+			}
+			if(!isset($_layout)){
+				throw new OpNwException("Not set \$_layout variable.");
+			}
 		}else{
 			//  NG
 			print $this->content;
-			$this->StackError("does not exists layout controller.($path)",'layout');
+			$m = "does not exists layout controller.($path)";
+			$this->StackError( $m,'layout');
+			throw new OpNwException($m);
 			return;
 		}
 		
@@ -462,7 +471,7 @@ abstract class NewWorld5 extends OnePiece5
 	function Location( $url, $exit=true )
 	{
 		$url = $this->ConvertUrl($url);
-	
+		
 		$location = $this->GetSession('Location');
 		if( $url === $location['referer'] ){
 			$this->StackError("Redirect is roop. ($url)");
@@ -483,6 +492,11 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}
 		return $io;
+	}
+	
+	function Forward()
+	{
+		
 	}
 	
 	function GetContent()
@@ -516,3 +530,9 @@ abstract class NewWorld5 extends OnePiece5
 		}
 	}
 }
+class OpNwException extends OpException
+{
+	
+}
+
+

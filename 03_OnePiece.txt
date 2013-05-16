@@ -3,8 +3,8 @@
  	
  	* Overview
  	
- 		* Auto start
- 		* Name space
+ 		* Auto start.
+ 		* Name space.
  	
  	* Set
  	
@@ -18,7 +18,7 @@
  	
  	* Overview
  	
- 		* Easy use
+ 		* Easy to use.
  	
  	* Set
  	
@@ -28,8 +28,19 @@
  	
 	 	$value = $op->GetCookie('key');
 
+[Admin]
+
+	* Switch processing from the IP-address.
+	  Can live coding a commercial environment.
+
+		if( $this->admin() ){
+			print "Your access is from admin's IP-address.";
+		}
 		
-	Mark & D method.
+
+[Debug]
+
+	* Mark & D method.
 		
 		
 [Mark]

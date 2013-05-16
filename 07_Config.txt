@@ -1,16 +1,30 @@
 
-[config]
+[About]
 	
 	See example.
 	
+	//	Use stdClass.
 	$config = new stdClass();
-	$config->foo->bar = 'This is print notice error.';
+	$config->foo->bar = 'Notice error is printed here.';
 	
+	//	Use Config.
 	$config = new Config();
-	$config->foo->bar = 'This is anti notice error';
+	$config->foo->bar = 'Notice error is not printed.';
 
-[ConfigMgr]
 
+[Dump]
 	
+	Dump the Config object.
 	
+		$config->d();
+
+[Merge]
+
+	Merge the Config object.
 	
+		$a = new Config();
+		$b = new Config();
+		
+		$a->test = true;
+		$b->merge($a);
+

@@ -5,13 +5,23 @@ abstract class ConfigMgr extends OnePiece5
 	protected $config;
 	protected $_init_pdo;
 	
+	protected function Set( $key, $var )
+	{
+		$this->config->$key = $var;
+	}
+	
+	protected function Get( $key )
+	{
+		return isset($this->config->$key) ? $this->config->$key: null;
+	}
+	
 	function config()
 	{
-		$this->mark('Your misstake','misstake');
+		$this->mark('Your misstake','misstake'); // TODO: Whta is this?
 		return $this;
 	}
 	
-	function Init($config=null)
+	function init($config=null)
 	{
 		parent::Init();
 		$this->config = new Config();
@@ -25,16 +35,6 @@ abstract class ConfigMgr extends OnePiece5
 			$this->_init_pdo = true;
 		}
 		return parent::pdo($name);
-	}
-	
-	protected function Set( $key, $var )
-	{
-		$this->config->$key = $var;
-	}
-	
-	protected function Get( $key )
-	{
-		return isset($this->config->$key) ? $this->config->$key: null;
 	}
 
 	function form_prefix( $value=null )
@@ -114,7 +114,7 @@ abstract class ConfigMgr extends OnePiece5
 		return $prefix.$table;;
 	}
 	
-	static function database()
+	static function Database()
 	{
 		$config = new Config();
 		$config->driver   = 'mysql';
@@ -183,7 +183,7 @@ abstract class ConfigMgr extends OnePiece5
 				$deleteds[] = isset($table_name) ? "$table_name.deleted": 'deleted';
 			}
 		}else{
-			$deleteds = null;
+			$deleteds = array();
 		}
 		
 		//	Create select config.
@@ -215,9 +215,6 @@ abstract class ConfigMgr extends OnePiece5
 
 	function GenerateFormFromDatabase( $struct, $record=null )
 	{
-	//	$this->d($struct);
-		
-		
 		//  init form config
 		$config = new Config();
 		
@@ -247,7 +244,7 @@ abstract class ConfigMgr extends OnePiece5
 				case 'int':
 					$input->type  = 'text';
 					$input->convert = 'zen->han';
-					$input->validate->permit  = 'number';
+					$input->validate->permit  = 'numeric';
 					break;
 						
 				case 'char':

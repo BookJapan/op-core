@@ -8,6 +8,9 @@ class Wizard extends OnePiece5
 {
 	private $config = null;
 	
+	/**
+	 * @return WizardConfig
+	 */
 	function Config()
 	{
 		if(!$this->config){
@@ -18,7 +21,10 @@ class Wizard extends OnePiece5
 	
 	function Selftest( Config $config )
 	{
-		$this->mark( $this->GetCallerLine() );
+		if(!$this->admin()){
+			return;
+		}
+		$this->p( 'Call: ' . $this->GetCallerLine() );
 		
 		//  Start
 		$this->model('Log')->Set("START: Selftest.");
@@ -53,13 +59,86 @@ class Wizard extends OnePiece5
 		return $io;
 	}
 	
+	function Execute( Config $config )
+	{
+		//	Form
+		$form_name = $this->config()->GetFormName();
+		
+		//  Database
+		$database = Toolbox::Copy( $config->database );
+		$database->user     = $this->form()->GetInputValue('user',$form_name);
+		$database->password = $this->form()->GetInputValue('password',$form_name);
+		
+		//	Check user account.
+		if( empty($database->user) ){
+			return false;
+		}
+		
+		//  Remove database name. (only connection, If not exists database.)
+		unset($database->database);
+		
+		//  Connect to administrator account.
+		if(!$io = $this->pdo()->Connect( $database ) ){
+			//	$database->d();
+		}else{
+			$this->model('Log')->Set("Connect {$database->user} account.",true);
+		}
+		
+		//  Create
+		$this->CreateDatabase($config);
+		$this->CreateTable($config);
+		$this->CreateColumn($config);
+		$this->CreateUser($config);
+		$this->CreateGrant($config);
+		
+		return true;
+	}
+	
+	function CallWizard( Config $config )
+	{
+		if(!$this->admin()){
+			return;
+		}
+		$this->p( 'Call: ' . $this->GetCallerLine() );
+		
+		//  Start
+		$this->model('Log')->Set("START: Wizard.");
+
+		//  Get form name.
+		$form_name = $this->config()->GetFormName();
+		
+		//  Init form config.
+		$this->form()->AddForm( $this->config()->MagicForm() );
+		
+		//  Check secure
+		if( $this->form()->Secure($form_name) ){
+			$io = $this->Execute($config);
+		}else{
+			$io = false;
+			$this->model('Log')->Set("Wizard-Form is not secure.");
+		//	$this->form()->Debug($form_name);
+		}
+		
+		//  Print form.
+		if(!$io){
+			$this->PrintForm( $config );
+		}
+		
+		//  Finish
+		$this->model('Log')->Set("FINISH: Wizard.", $io);
+		$this->model('Log')->Out();
+		
+		//	Exception
+		throw new OpModelException('Call Wizard.('.__LINE__.')');
+	}
+	
 	function DoWizard( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
 		
 		//  Get form name.
-		$form_name = $this->config()->FormName();
+		$form_name = $this->config()->GetFormName();
 		
 		//  Init form config.
 		$this->form()->AddForm( $this->config()->MagicForm() );
@@ -93,21 +172,29 @@ class Wizard extends OnePiece5
 		}
 		
 		//  Print form.
-		$this->PrintForm();
-
+		$this->PrintForm( $config );
+		
 		//  Finish
 		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
 		
 		return true;
 	}
 	
-	function PrintForm()
-	{
+	function PrintForm( $config )
+	{	
+		if( isset($config->title) ){
+			$this->p( $config->title, 'h1' );
+		}
+		
+		if( isset($config->message) ){
+			$this->p( $config->message );
+		}
+		
 		//  Get input decorate.
 		$decorate = $this->config()->InputDecorate();
 		
 		//  Print form.
-		$form_name = $this->config()->FormName();
+		$form_name = $this->config()->GetFormName();
 		$this->form()->Start($form_name);
 		foreach ( array('user','password','submit') as $input_name ){
 			printf(
@@ -229,7 +316,9 @@ class Wizard extends OnePiece5
 				$table->database = $config->database->database;
 			}
 			
-			if(!$io = $this->pdo()->CreateTable($table) ){
+			if( $io = $this->pdo()->CreateTable($table) ){
+				$this->model('Log')->Set( $this->pdo()->qu(), 'green');
+			}else{
 				$this->model('Log')->Set("CreateTable is failed. ({$table->table})", false);
 				return false;
 			}
@@ -337,9 +426,11 @@ class Wizard extends OnePiece5
 
 class WizardConfig extends ConfigMgr
 {
-	function FormName()
+	const FORM_NAME = 'op_magic_form';
+	
+	function GetFormName()
 	{
-		return 'op_magic_form';
+		return self::FORM_NAME;
 	}
 	
 	function MagicForm()
@@ -347,7 +438,7 @@ class WizardConfig extends ConfigMgr
 		$config = new Config();
 		
 		//  form name
-		$config->name = $this->FormName();
+		$config->name = self::FORM_NAME;
 		
 		//  user
 		$input_name = 'user';

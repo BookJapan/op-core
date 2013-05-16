@@ -111,7 +111,7 @@ class Toolbox
 	
 	static function toObjectFromArray($arr)
 	{
-		$obj = new stdClass();
+		$obj = new Config();
 		foreach($arr as $key => $var){
 			switch($type = gettype($var)){
 				case 'array':
@@ -292,6 +292,7 @@ class Toolbox
 		return $config;
 	}
 	
+	/*
 	function ConvertConfigToObject( $args )
 	{
 		$obj = new stdClass();
@@ -300,6 +301,7 @@ class Toolbox
 		
 		return $obj;
 	}
+	*/
 
 	function ConvertConfigToArray( $args )
 	{
@@ -467,6 +469,7 @@ class Toolbox
 			$isPrint = true;
 		}
 		
+		//	CLI
 		if( OnePiece5::GetEnv('cli') ){
 			return;
 		}

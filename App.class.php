@@ -32,7 +32,12 @@ class App extends NewWorld5
 	 */
 	function Config( $cmgr=null )
 	{
-		if( isset( $this->cmgr ) ){
+		if( /*isset( $this->cmgr )*/ $this->cmgr instanceof ConfigMgr ){
+			/*
+			$a = get_class($this->cmgr);
+			$b = get_class($cmgr);
+			$this->StackError("Already instance( $a, $b )");
+			*/
 			return $this->cmgr;
 		}
 		
@@ -77,8 +82,9 @@ class App extends NewWorld5
 	
 	function SetLayoutDir( $var )
 	{
-		$this->SetEnv('layout-root',$this->ConvertURL($var));
-		return $this->SetEnv('layout-dir', $var);
+		$this->SetEnv('layout-root',$this->ConvertPath($var));
+		$this->SetEnv('layout-dir', $var);
+		return true;
 	}
 	
 	function SetLayoutName( $var )
