@@ -1772,6 +1772,7 @@ __EOL__;
 	 */
 	function ConvertURL( $args, $domain=true )
 	{
+		//	Check if abstract path.
 		if( preg_match('|^([a-z][a-z0-9]+):/(.*)|i',$args,$match) ){
 			switch($match[1]){
 				case 'http':
@@ -1798,6 +1799,7 @@ __EOL__;
 			
 			//	replace document root.
 			$args = preg_replace( '|^'.rtrim($this->GetEnv('doc-root'),'/').'|', '', $args );
+			$args = str_replace('\\','/',$args);
 			
 			return $args;
 		}

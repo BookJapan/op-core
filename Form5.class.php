@@ -434,7 +434,7 @@ class Form5 extends OnePiece5
 	 */
     public function GetInputValue( $input_name, $form_name=null, $joint=null )
 	{
-		//  more fast.
+		//  more fast
 		if(!$input = $this->GetConfig( $form_name, $input_name )){
 			$this->StackError("Does not exists config.(form: $form_name, input: $input_name)");
 			return false;
@@ -443,6 +443,16 @@ class Form5 extends OnePiece5
 		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
+		//	Check input's type.
+		switch( $type = strtolower($input->type) ){
+			case 'file':
+				//  Convert Full-path to Document-root-path.
+			//	$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
+				$value = $this->ConvertURL($value);
+				return $value;
+		}
+		
+		//	Check value's type
 		switch( $type = strtolower(gettype($value)) ){
 			case 'null':
 				return null;
@@ -451,17 +461,12 @@ class Form5 extends OnePiece5
 				return nl2br($value);
 			
 			case 'boolean':
+			case 'integer':
 			case 'array':
 				break;
 				
 			default:
 				$this->mark("undefined type. ($type)");
-		}
-
-		switch( $type = strtolower($input->type) ){
-			case 'file':
-				//  Convert Full-path to Document-root-path.
-				return str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
 		}
 		
 		if( is_array($value) ){
@@ -761,7 +766,7 @@ class Form5 extends OnePiece5
 		
 		if( $save_value ){
 			
-			//  delete routine
+			//  Submit is remover
 			if( is_array($post_value) and count($post_value) == 1 and empty($post_value[0]) ){
 				
 				//  challenge to delete the upload file.
@@ -814,8 +819,7 @@ class Form5 extends OnePiece5
 					$error = 4;
 				}
 			}else if( is_null($value) ){
-				$this->mark("$input_name, $form_name");
-				return true;
+				return $this->GetInputValueRaw( $input_name, $form_name );
 			}
 		}
 		
@@ -868,6 +872,7 @@ class Form5 extends OnePiece5
                 
 			//	$this->mark("tmp: $tmp, path: $path, io: $io");
 				if( $io ){
+					//	Saved value
 					$this->SetStatus( $form_name, "OK: file copy to $path");
 					$this->SetInputValue( $path, $input_name, $form_name );
 					return $path;
@@ -1438,17 +1443,6 @@ class Form5 extends OnePiece5
 					$join[] = sprintf('%s="%s"',$key,$var);
 			}
 		}
-
-		/**
-		 * This comment out, to save memory usage.
-		//	init
-		if( empty($input->index) ){
-			$input->index = null;
-		}
-		if( empty($input->joint) ){
-			$input->joint = null;
-		}
-		*/
 		
         //  name
         if(empty($name)){
@@ -1481,30 +1475,6 @@ class Form5 extends OnePiece5
 		// request
 		$_request = $this->GetRequest( null, $form_name );
 		
-		/*
-		if( $type === 'submit' or $type === 'button' ){
-		
-			if( $value_default ){
-				$value = $value_default;
-			}
-			
-		}else if( $type === 'radio' or $type === 'checkbox'){
-			
-			$value = $this->GetSaveValue($input_name, $form_name);
-			
-		}else{
-			
-			//  value is submit value
-			if(!$value = $_request[$input_name] ){
-				
-				// value is save value
-				$value = $this->GetSaveValue($input_name, $form_name);
-				//$value = $this->GetInputValueRaw($input_name, $form_name);
-			}
-			
-		}
-		*/
-
 		// Value
 		if( !empty($input->group) ){
 		//	$this->mark( $value );
@@ -1531,10 +1501,6 @@ class Form5 extends OnePiece5
 		
 		//  tail
 		$tail = $this->Decode($tail);
-		
-		//  Escape
-		//var_dump($value);
-		//$value = $this->Escape($value);
 		
 		// radio
 		if('radio' === $type){
@@ -1589,6 +1555,7 @@ class Form5 extends OnePiece5
 			case 'file':
 				//  remove checkbox
 				$value = $this->GetInputValue($input_name);
+				
 				if( is_string($value) and $value ){
 					if( method_exists( $this, 'GetInputConfigRemover')){
 						//  If you can method over ride.
