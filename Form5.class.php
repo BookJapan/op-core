@@ -440,14 +440,25 @@ class Form5 extends OnePiece5
 		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
+		//	input's type
+		switch( $type = strtolower($input->type) ){
+			case 'file':
+				//  Convert Full-path to Document-root-path.
+				$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
+				return $value;
+			default:
+		}
+		
+		//	value's type
 		switch( $type = strtolower(gettype($value)) ){
 			case 'null':
 				return null;
 				
 			case 'string':
 				return nl2br($value);
-			
+				
 			case 'boolean':
+			case 'integer':
 			case 'array':
 				break;
 				
@@ -455,12 +466,6 @@ class Form5 extends OnePiece5
 				$this->mark("undefined type. ($type)");
 		}
 
-		switch( $type = strtolower($input->type) ){
-			case 'file':
-				//  Convert Full-path to Document-root-path.
-				return str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
-		}
-		
 		if( is_array($value) ){
 			if( strlen(join('',$value)) ){
 				//  joint
@@ -812,7 +817,7 @@ class Form5 extends OnePiece5
 				}
 			}else if( is_null($value) ){
 				$this->mark("$input_name, $form_name");
-				return true;
+				return $this->form()->GetInputValueRaw($input_name,$form_name);
 			}
 		}
 		
