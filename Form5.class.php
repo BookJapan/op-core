@@ -443,23 +443,24 @@ class Form5 extends OnePiece5
 		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
-		//	Check input's type.
+		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
 				//  Convert Full-path to Document-root-path.
 			//	$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
 				$value = $this->ConvertURL($value);
 				return $value;
+			default:
 		}
-		
-		//	Check value's type
+				
+		//	value's type
 		switch( $type = strtolower(gettype($value)) ){
 			case 'null':
 				return null;
 				
 			case 'string':
 				return nl2br($value);
-			
+				
 			case 'boolean':
 			case 'integer':
 			case 'array':
