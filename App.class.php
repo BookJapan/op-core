@@ -214,6 +214,11 @@ class App extends NewWorld5
 	}
 }
 
+class OpAppException extends OpException
+{
+	
+}
+
 /**
  * Create NewWorld uses action class.
  * 
