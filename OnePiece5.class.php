@@ -493,7 +493,7 @@ class OnePiece5
 		$error['message']  = $message;
 		$error['trace']	   = $trace;
 		
-		$_SERVER[__CLASS__]['errors'][] = $error;
+		$_SERVER['OnePiece5']['errors'][] = $error;
 	}
 	
 	/**
@@ -503,11 +503,11 @@ class OnePiece5
 	{
 		// init
 		$nl = $this->GetEnv('nl');
-		$class = __CLASS__;
+		$class = 'OnePiece5';
 		
-		if(isset($_SERVER[__CLASS__]['errors'])){
-			$errors = $_SERVER[__CLASS__]['errors'];
-			unset($_SERVER[__CLASS__]['errors']);
+		if(isset($_SERVER[$class]['errors'])){
+			$errors = $_SERVER[$class]['errors'];
+			unset($_SERVER[$class]['errors']);
 		}else{
 			return true;
 		}
