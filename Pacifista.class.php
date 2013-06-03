@@ -4,19 +4,20 @@ class Pacifista extends OnePiece5
 {	
 	function Init()
 	{
+		parent::init();
+		
 		//	Env
 		$this->SetEnv('pacifista',true);
 		$this->SetEnv('cli',true);
 		
 		//	Change Current Directory.(into a calling file)
 		$temp = debug_backtrace();
-		$separator = DIRECTORY_SEPARATOR;
-		$path = preg_replace( "|[^$separator]+$|", '', $temp[0]['file']);
-		chdir($path);
+		chdir(dirname( $temp[count($temp)-1]['file'] ));
 		
 		//	SERVER
-		$_SERVER['REMOTE_ADDR']  = null;
-		$_SERVER['SERVER_ADDR']  = null;
+		$_SERVER['REMOTE_ADDR']  = '127.0.0.1';
+		$_SERVER['SERVER_ADDR']  = '127.0.0.1';
+		$_SERVER['SERVER_ADMIN'] = 'root';
 		$_SERVER['SERVER_PORT']  = null;
 		$_SERVER['HTTP_HOST']    = null;
 		$_SERVER['REQUEST_URI']  = null;
@@ -24,11 +25,8 @@ class Pacifista extends OnePiece5
 	}
 	
 	function GetArgs()
-	{	
-		for( $i=1; $i<count($_SERVER['argv']); $i++ ){
-			$args[$i-1] = $_SERVER['argv'][$i];
-		}
-		return $args;
+	{
+		return isset($_SERVER['argv']) ? $_SERVER['argv']: array();
 	}
 }
 

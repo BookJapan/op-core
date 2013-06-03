@@ -13,7 +13,9 @@ class Form5 extends OnePiece5
 		parent::Init();
 		$this->status = new Config();
 		$this->config = new Config();
-//		$io = session_regenerate_id(true);
+		if( $this->admin() ){
+			$io = session_regenerate_id(true);
+		}
 	}
 	
 	private function GetRequest( $input_name, $form_name )
@@ -84,9 +86,6 @@ class Form5 extends OnePiece5
 	
 	public function Secure( $form_name )
 	{
-//		$this->mark( $this->GetCallerLine() );
-//		$this->mark( $this->status->$form_name->message );
-		
 		if(!$this->CheckConfig( $form_name )){
 			return false;
 		}
@@ -371,7 +370,9 @@ class Form5 extends OnePiece5
 		$value = $this->GetInputValue( $input_name, $form_name, $joint );
 		
 		//  Get config.
-		$input = $this->GetConfig( $form_name, $input_name );
+		if(!$input = $this->GetConfig( $form_name, $input_name )){
+			return "form_name=$form_name, input_name=$input_name";
+		}
 		
 		if( in_array( $input->type, array('select','checkbox','radio') ) ){
 			//  
@@ -413,7 +414,7 @@ class Form5 extends OnePiece5
 	 * @param string $input_name
 	 * @param string $form_name
 	 * @param string $joint
-	 * @return Ambigous <boolean, NULL, string, mixed, Ambigous, multitype:, string|array, stdClass, number>
+	 * @return Ambigous <boolean, NULL, string, mixed, Ambigous, multitype:, string|array, number>
 	 */
 	public function GetValue( $input_name, $form_name=null, $joint=null )
 	{
@@ -809,6 +810,9 @@ class Form5 extends OnePiece5
 				}else{
 					$error = 4;
 				}
+			}else if( is_null($value) ){
+				$this->mark("$input_name, $form_name");
+				return true;
 			}
 		}
 		
@@ -816,7 +820,9 @@ class Form5 extends OnePiece5
 			case 0:
 				$op_uniq_id = $this->GetCookie( self::KEY_COOKIE_UNIQ_ID );
 				
-				if( isset($input->save) and $input->save ){
+				if( empty($input->save) ){
+					$path = sys_get_temp_dir() .DIRECTORY_SEPARATOR. md5($name . $op_uniq_id).".$ext";
+				}else{
 					if( isset($input->save->path) ){
 						//  hard path
 						$path = $this->ConvertPath( $input->save->path );
@@ -840,14 +846,12 @@ class Form5 extends OnePiece5
 							$path = $dir .DIRECTORY_SEPARATOR. md5($name . $op_uniq_id).".$ext";
 						}
 					}
-				}else{
-					$path = sys_get_temp_dir() .DIRECTORY_SEPARATOR. md5($name . $op_uniq_id).".$ext";
 				}
 				
                 //  Check directory exists
-                if(!file_exists( dirname($path) )){
-                	$this->mark("Does not exists. ($path)");
-                    if(!$io = mkdir( dirname($path), 0766, true ) ){                    	
+                if(!file_exists( $dirname = dirname($path) )){
+                	$this->mark("Does not exists directory. ($dirname)");
+                    if(!$io = mkdir( $dirname, 0766, true ) ){            	
                     	$this->StackError("Failed make directory. (".dirname($path).")");
                     	return false;
                     }
@@ -1225,7 +1229,7 @@ class Form5 extends OnePiece5
 		
 		//  added permit
 		if( isset($input->validate->range) ){
-			$input->validate->permit = 'number';
+			$input->validate->permit = 'numeric';
 			if(!isset($input->validate->length)){
 				$input->validate->length = '0-16';
 			}
@@ -1242,6 +1246,9 @@ class Form5 extends OnePiece5
 		
 		//  required
 		if( isset($input->required) and $input->required ){
+			if(empty($input->validate)){
+				$input->validate = new Config();
+			}
 			$input->validate->required = true;
 		}
 		
@@ -2258,7 +2265,7 @@ class Form5 extends OnePiece5
 
 			// Use for password
 			case 'password':
-				//  Array is convert string.
+				//  Array is convert to string.
 				if(is_array($value)){
 					$value = implode('',$value);
 				}
@@ -2273,8 +2280,8 @@ class Form5 extends OnePiece5
 				}
 				break;
 				
-			// including decimal
-			case 'number':
+			//	including decimal
+			//	case 'number':
 			case 'numeric':
 				if(is_array($value)){
 					$value = implode('',$value);
@@ -2345,13 +2352,13 @@ class Form5 extends OnePiece5
 					$io = true;
 					break;
 				}
-				
+				/*
 				if(!preg_match('/^[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}$/',$date)){
 					$io = false;
 					$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
 					break;
 				}
-				
+				*/
 				$time = strtotime($date);
 				if(!$io = checkdate( date('m',$time), date('d',$time), date('Y',$time))){
 					$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
@@ -2370,7 +2377,7 @@ class Form5 extends OnePiece5
 				
 			default:
                 $io = false;
-				$this->StackError("undefined permit key. ($key)");
+				$this->StackError("undefined permit key. ($input->name, $key)");
 		}
 		
 		if( $io ){
@@ -2449,13 +2456,6 @@ class Form5 extends OnePiece5
 	
 	function ValidateImage( $input, $form_name, $value )
 	{
-		/*
-		$this->d(Toolbox::toArray($input));
-		$this->d($value);
-		$this->d($_FILES);
-		$this->d($_FILES[$input->name]['tmp_name']);
-		*/
-		
 		if(!isset($_FILES[$input->name])){
 			$this->SetStatus($form_name,"NG: Does not find in \$_FILES. ({$input->name})");
 			return false;
@@ -2477,8 +2477,6 @@ class Form5 extends OnePiece5
 			$this->SetInputError( $input->name, $form_name, 'image', 'not match mime (camouflage)' );
 			return false;
 		}
-		
-		//$this->d($info);
 		
 //		$width  = $info[0];
 //		$height = $info[1];

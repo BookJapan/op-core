@@ -496,8 +496,15 @@ class DML extends OnePiece5
 	protected function ConvertSet( $conf )
 	{
 		foreach( $conf['set'] as $key => $var ){
+			/*
 			if(!(is_string($var) or is_numeric($var)) ){
 				$this->StackError("Set is only string. ($key)");
+				continue;
+			}
+			*/
+			if( is_array($var) or is_object($var) ){
+				$type = gettype($var);
+				$this->StackError("Does not supports this type. (key=$key, type=$type)");
 				continue;
 			}
 			switch(strtoupper($var)){

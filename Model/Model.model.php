@@ -49,7 +49,7 @@ abstract class Model_Model extends OnePiece5
 				if( method_exists( $this, 'Selftest') ){
 					$this->Selftest();
 				}else{
-					$this->d($config);
+					$config->d();
 				}
 			}
 		}
@@ -65,22 +65,22 @@ abstract class Model_Model extends OnePiece5
 	 */
 	function Config($name=null)
 	{
-		if(!$name){
-		//	return;
-		}
-		
 		if(!$this->cmgr ){
+			
+			//	Check
+			if(!$name){
+				throw new OpModelException("Failed to instance of the $name.");
+			}
+			
 			if(!class_exists( $name, true ) ){
-				$this->StackError("Does not exists this class.($name)");
-				return false;
+				throw new OpModelException("Does not exists this class.($name)");
 			}
 			
 			if(!$this->cmgr = new $name()){
 				throw new OpModelException("Failed to instance of the $name.");
 			}
-			
-			//throw new OpModelException('Does not init ConfigMgr.');
 		}
+		
 		return $this->cmgr;
 	}
 	

@@ -3,7 +3,7 @@ Welcome to OnePiece-Framework!!
 
 1. Download
 
-	- OnePiece-Framework Core Library
+	- OnePiece-Framework's Core Library
 		https://github.com/TomoakiNagahara/op-core/archive/stable.zip
 	
 	- Sandbox

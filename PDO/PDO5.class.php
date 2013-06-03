@@ -6,6 +6,7 @@
  */
 class PDO5 extends OnePiece5
 {
+	/* @var $pdo PDO */
 	private $pdo = null;
 	private $dcl = null;
 	private $ddl = null;
@@ -212,9 +213,11 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Database select
+		/*
 		if( $this->database ){
 			$this->Database( $this->database, $this->charset );
 		}
+		*/
 		
 		//  connected flag
 		$this->isConnect = true;
@@ -229,6 +232,11 @@ class PDO5 extends OnePiece5
 	
 	function SetDatabase( $db_name, $charset=null, $locale=null )
 	{
+		//	
+		if( version_compare(PHP_VERSION, '5.1.0', '<') ){
+			$this->mark('This PHP version is not supported?('.PHP_VERSION.')');
+		}
+		
 		if(!is_string($db_name)){
 			$type = gettype($db_name);
 			$me = "Database name is not string. ($type)";
@@ -775,7 +783,12 @@ class PDO5 extends OnePiece5
 		
 		//  new id
 		$id = $this->pdo->lastInsertId(/* $name */);
-			
+		
+		//	Does not auto increments
+		if( $id === '0' ){
+			$id = true;
+		}
+		
 		return $id;
 	}
 	

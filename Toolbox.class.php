@@ -469,6 +469,7 @@ class Toolbox
 			$isPrint = true;
 		}
 		
+		//	CLI
 		if( OnePiece5::GetEnv('cli') ){
 			return;
 		}

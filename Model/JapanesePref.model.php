@@ -77,6 +77,7 @@ class Model_JapanesePref extends Model_Model
 		$pref = self::Get();
 		
 		//  init options
+		$options = new Config();
 		$options->{0}->value = '';
 		
 		foreach( $pref as $value => $label ){

@@ -4,7 +4,7 @@
  	Print last query.
  	$this->mark( $this->pdo()->qu() );
  	
- 	Pint all queries.
+ 	Print all queries.
  	$this->mark( $this->pdo()->qus() );
 
 
