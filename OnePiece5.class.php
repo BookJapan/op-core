@@ -76,7 +76,7 @@ if(!function_exists('OnePieceShutdown')){
 		$status  = connection_status();
 
 		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
-		if($error = error_get_last()){
+		if( function_exists('error_get_last') and $error = error_get_last()){
 			switch($error['type']){
 				case E_WARNING: // 2
 					$er = 'E_WARNING';
