@@ -19,12 +19,17 @@ abstract class Model_Model extends OnePiece5
 		$this->config = new Config();
 	//	$this->config();
 	}
-
+	
 	function Test()
 	{
 		$this->mark( $this->GetCallerLine() );
 		$this->mark('Called test method: ' . get_class($this));
 		return true;
+	}
+	
+	function Help()
+	{
+		$this->mark("Does not implements help.");
 	}
 	
 	function pdo($name=null)

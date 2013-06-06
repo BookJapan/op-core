@@ -63,7 +63,7 @@ class Model_JapanesePref extends Model_Model
 	{
 		$pref = $this->Get();
 		$index = sprintf('%02d',$index);
-		return $pref[$index];
+		return isset($pref[$index]) ? $pref[$index]: null;
 	}
 	
 	function UsedToForm( $args=null )
