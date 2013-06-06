@@ -88,7 +88,12 @@ abstract class NewWorld5 extends OnePiece5
 	function GetRoute($request_uri=null)
 	{
 		// get request uri
-		if(!$request_uri){
+		if( $request_uri ){
+			if( preg_match( '|^http://|', $request_uri ) ){
+				$this->mark("![ .red [Domain name is not required. 
+						Please Document root path. ($request_uri)]]");
+			}
+		}else{
 			$request_uri = $_SERVER['REQUEST_URI'];
 		}
 		
@@ -241,7 +246,7 @@ abstract class NewWorld5 extends OnePiece5
 		// Deny two time dispatch
 		if( $this->isDispatch ){
 			$this->StackError("Dispatched two times. (Dispatched only one time.)");
-			return;
+			return false;
 		}else{
 			$this->isDispatch = true;
 		}
@@ -257,7 +262,9 @@ abstract class NewWorld5 extends OnePiece5
 		$this->SetEnv('route',$route);
 		
 		// setting
-		$this->doSetting($route);
+		if(!$this->doSetting($route)){
+			return true;
+		}
 		
 		// controller root
 		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
@@ -332,14 +339,16 @@ abstract class NewWorld5 extends OnePiece5
 			
 			if( file_exists($path) ){
 				chdir( dirname($path) );
-				$io = include($path);
+				if(!$io = include($path) ){
+					break;
+				}
 			}
 		}
 		
 		//  Recovery current directory.
 		chdir($save_dir);
 		
-		return true;
+		return $io ? true: false;
 	}
 	
 	function doLayout()
@@ -494,9 +503,30 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
-	function Forward()
+	function Forward( $url )
 	{
+		//	Convert URL
+		$url = $this->ConvertPath($url);
+		$app_root = rtrim($this->GetEnv('app-root'),'/');
+		$url = preg_replace( "|^$app_root|", '', $url );
 		
+		//	Before route
+		$route_old = $this->GetEnv('route');
+		
+		//	Get change route info.
+		$route = $this->GetRoute($url);
+		
+		//	Compare
+		if( $route == $route_old ){
+			//	This is already been forwarding.
+			return true;
+		}
+		
+		//	Dispatched.
+		$this->isDispatch = false;
+		$this->Dispatch($route);
+		
+		return false;
 	}
 	
 	function GetContent()

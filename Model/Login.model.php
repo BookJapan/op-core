@@ -49,4 +49,29 @@ class Model_Login extends Model_Model
 		$id = $this->GetSession( self::SESSION_KEY );
 		return $id ? true: false;
 	}
+	
+	function GetLoginFormConfig()
+	{
+		$config = new Config();
+		
+		//	Form
+		$config->name = 'model_login';
+		
+		//	ID
+		$name = 'id';
+		$config->input->$name->type = 'text';
+		$config->input->$name->validate->required = true;
+		
+		//	Password
+		$name = 'password';
+		$config->input->$name->type = 'password';
+		$config->input->$name->validate->required = true;
+		
+		//	Submit
+		$name = 'submit';
+		$config->input->$name->type  = 'submit';
+		$config->input->$name->value = ' Login ';
+		
+		return $config;
+	}
 }
