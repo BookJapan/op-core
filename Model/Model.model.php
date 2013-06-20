@@ -102,7 +102,6 @@ abstract class Model_Model extends OnePiece5
 
 class ConfigModel extends ConfigMgr
 {
-//	const TABLE_PREFIX = 'op';
 	private $_table_prefix = 'op';
 	
 	static function Database()
@@ -115,7 +114,15 @@ class ConfigModel extends ConfigMgr
 		$config->password = md5( $password );
 		return $config;
 	}
-
+	
+	function GetDatabaseConfig()
+	{
+		$config = parent::GetDatabaseConfig();
+		$config->user = 'op_model';
+		return $config;
+	}
+	
+	/*
 	function SetPrefix( $prefix )
 	{
 		$this->_table_prefix = $prefix;
@@ -125,6 +132,7 @@ class ConfigModel extends ConfigMgr
 	{
 		return 'op' .'_'. $label;
 	}
+	*/
 }
 
 class OpModelException extends Exception

@@ -14,17 +14,28 @@ abstract class ConfigMgr extends OnePiece5
 	{
 		return isset($this->config->$key) ? $this->config->$key: null;
 	}
-	
+	/* 
 	function config()
 	{
 		$this->mark('Your misstake','misstake'); // TODO: Whta is this?
 		return $this;
 	}
-	
+	 */
 	function init($config=null)
 	{
 		parent::Init();
+		
+		//	Init config
 		$this->config = new Config();
+		
+		//	Init database
+		$this->config->database->driver   = 'mysql';
+		$this->config->database->host     = 'localhost';
+		$this->config->database->database = 'onepiece';
+		$this->config->database->user     = 'onepiece';
+		$this->config->database->password = md5( OnePiece5::GetEnv('admin-mail') . get_class($this) );
+		$this->config->database->charset  = 'utf8';
+		$this->config->database->prefix   = 'op';
 	}
 	
 	function pdo($name=null)
@@ -36,7 +47,7 @@ abstract class ConfigMgr extends OnePiece5
 		}
 		return parent::pdo($name);
 	}
-
+	
 	function form_prefix( $value=null )
 	{
 		//  set
@@ -83,13 +94,28 @@ abstract class ConfigMgr extends OnePiece5
 		
 		return $prefix.$this->config->form->$key;
 	}
-
+	
+	function SetTablePrefix( $value )
+	{
+		$this->config->database->prefix = $value;
+	}
+	
+	function GetTablePrefix()
+	{
+		return isset($this->config->database->prefix) ? $this->config->database->prefix: null;
+	}
+	
 	function table_prefix( $value=null )
 	{
 		if( $value ){
 			$this->config->database->prefix = $value;
 		}
 		return isset($this->config->database->prefix) ? $this->config->database->prefix: null;
+	}
+	
+	function GetTableName( $label )
+	{
+		return $this->config->database->prefix .'_'. $label; 
 	}
 	
 	/**
@@ -118,6 +144,11 @@ abstract class ConfigMgr extends OnePiece5
 		}
 		
 		return $prefix.$table;;
+	}
+	
+	function GetDatabaseConfig()
+	{
+		return $this->config->database;
 	}
 	
 	static function Database()
@@ -162,7 +193,8 @@ abstract class ConfigMgr extends OnePiece5
 		return $config;
 	}
 	
-	function insert( $table_name=null ){
+	function insert( $table_name=null )
+	{
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->created    = gmdate('Y-m-d H:i:s');
@@ -345,6 +377,20 @@ abstract class ConfigMgr extends OnePiece5
 		$config->tag   = false;
 		$config->class = true;
 		$config->style = false;
+		return $config;
+	}
+	
+	function Selftest()
+	{
+		$config = new Config();
+		
+		//	Form
+		$config->form->title   = 'Wizard Magic';
+		$config->form->message = 'Please enter root(or alter) password.';
+		
+		//	Database
+		$config->database = $this->Database();
+		
 		return $config;
 	}
 }

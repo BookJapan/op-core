@@ -1375,11 +1375,13 @@ class Form5 extends OnePiece5
 				return false;
 			}
 		}
-
+		
         //  Submit value is clear
 		$form = $this->GetSession('form');
 		if( isset($form[$form_name]) ){
 			unset($form[$form_name]);
+		}else{
+			$this->mark("$form_name is does not exists.");
 		}
 		if( true /*$_POST['form_name'] === $form_name*/ ){
 			$_POST = array();
@@ -1387,6 +1389,11 @@ class Form5 extends OnePiece5
 		$this->SetSession('form',$form);
 		
 		return true;
+	}
+	
+	public function Flash( $form_name, $force=false )
+	{
+		return $this->Clear($form_name, $force=false);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )

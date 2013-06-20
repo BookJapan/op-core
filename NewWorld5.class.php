@@ -307,6 +307,33 @@ abstract class NewWorld5 extends OnePiece5
 		try{
 			$this->content  = ob_get_contents(); ob_clean();
 			$this->content .= $this->GetTemplate($path);
+		
+		}catch( OpWzException $e ){
+			
+			$this->mark();
+			
+			$config = $e->GetConfig();
+			$wz = new Wizard();
+			$wz->DoWizard($config);
+			
+			$this->mark();
+			
+			$wz->PrintForm( $config->form );
+			
+			$this->mark();
+			
+			$this->content  = ob_get_contents(); ob_clean();
+		/* 
+		}catch( OpException $e ){
+			if( $config = $e->GetWizard() ){
+				$config->d();
+				$wz = new Wizard();
+				$wz->Selftest($config);
+			}else{
+				$this->StackError($e);
+			}
+		*/
+		
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}

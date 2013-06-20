@@ -195,11 +195,10 @@ if(!function_exists('OnePieceExceptionHandler')){
 	function OnePieceExceptionHandler($e)
 	{
 		//  TODO: 
-		//print "<h1>Please implement the e-mail alert.</h1>";
+		print "<h1>Please implement the e-mail alert.</h1>";
 		$op = new OnePiece5();
 		$op->StackError( $e->getMessage() );
 		printf('<div><p>[%s] %s</p><p>%s : %s</p></div>', get_class($e), $e->GetMessage(), $e->GetFile(), $e->GetLine() );
-	//	dump::d(Toolbox::toArray($e));
 	}
 	set_exception_handler('OnePieceExceptionHandler');
 }
@@ -473,6 +472,8 @@ class OnePiece5
 			$line     = $e->getLine();
 			$prev     = $e->getPrevious();
 			$code     = $e->getCode();
+			
+			$file     = self::CompressPath($file);
 			$incident = "$file [$line]";
 			
 			$file = $traceArr[0]['file'];
@@ -481,8 +482,9 @@ class OnePiece5
 			$class= $traceArr[0]['class'];
 			$type = $traceArr[0]['type'];
 			$args = var_export( $traceArr[0]['args'], true);
-			$trace = "$file [$line] {$class}{$type}{$func}($args)";
 			
+			$file = self::CompressPath($file);
+			$trace = "$file [$line] {$class}{$type}{$func}($args)";
 		}else{
 			$incident = self::GetCallerLine( 1, 1, 'incident');
 			$message  = self::Escape( $args, $encoding );
@@ -773,6 +775,7 @@ __EOL__;
 					if( $match[2] === 'mail' ){
 						//  mail
 					}else if( $ope === 'set' ){
+						$var = str_replace( '\\', '/', $var);
 						$var = rtrim($var,'/') . '/';
 					}
 				}
@@ -1049,8 +1052,8 @@ __EOL__;
 	 */
 	static function GetCallerLine( $depth=0, $num=1, $format=null )
 	{
-		// TODO: file system encoding
-		$encode_file_system = PHP_OS == 'WINNT' ? 'sjis': 'utf-8';
+		// file system encoding
+		$encode_file_system = PHP_OS === 'WINNT' ? 'sjis-win': 'utf-8';
 		
 		//  init
 		$call_line = '';
@@ -1074,7 +1077,7 @@ __EOL__;
 			$func  = $back[$depth]['function'];
 			$args  = $back[$depth]['args'];
 			$file  = isset($back[$depth]['file'])  ? $back[$depth]['file']:  '';
-			$line  = isset($back[$depth]['line'])  ? $back[$depth]['line']: '';;
+			$line  = isset($back[$depth]['line'])  ? $back[$depth]['line']:  '';
 			$type  = isset($back[$depth]['type'])  ? $back[$depth]['type']:  '';
 			$class = isset($back[$depth]['class']) ? $back[$depth]['class']: '';
 			
@@ -1149,7 +1152,11 @@ __EOL__;
 			}
 			
 			// method
-			$method = "$class$type$func($args)";
+			if( $type ){
+				$method = "$class$type$func($args)";
+			}else{
+				$method = null;
+			}
 			
 			switch(strtolower($format)){
 				case 'incident':
@@ -1162,8 +1169,20 @@ __EOL__;
 					
 				case '':
 				case 'null':
-					$format = '$file [$line] ';
+					if( $func ){
+						if( $method ){
+							$format = '$file [$line] - $method : ';
+						}else if( $class ){
+							$format = '$file ($class$type$func) [$line] ';
+						}else{
+							$format = '$file ($func) [$line] ';
+						}
+					}else{
+						$format = '$file [$line] ';
+					}
 					break;
+				default:
+				//	$format = 'This format is undefined. ($format)';
 			}
 			
 			$patt = array('/\$filefull/','/\$file/','/\$line1m/','/\$line/','/\$class/','/\$type/','/\$function/','/\$func/','/\$args/','/\$method/');
@@ -1182,7 +1201,7 @@ __EOL__;
 	static function CompressPath( $path )
 	{
 		// TODO: file system encoding. (Does not support multi language, yet)
-		$encode_file_system = PHP_OS == 'WINNT' ? 'sjis': 'utf-8';
+		$encode_file_system = PHP_OS === 'WINNT' ? 'sjis-win': 'utf-8';
 		if( PHP_OS == 'WINNT' ){
 			$path = str_replace( '\\', '/', $path );
 		}
@@ -2186,5 +2205,15 @@ __EOL__;
 
 class OpException extends Exception
 {
+	private $_wizard = null;
 	
+	function SetWizard()
+	{
+		OnePiece5::SetEnv('wizard',true);
+	}
+	
+	function GetWizard()
+	{
+		return OnePiece5::GetEnv('wizard');
+	}
 }

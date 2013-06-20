@@ -19,30 +19,55 @@ class Wizard extends OnePiece5
 		return $this->config;
 	}
 	
+	function _Selftest( Config $conifg )
+	{
+		//	Check
+		if(!$this->admin()){
+			return;
+		}
+		
+		//  Start
+		$this->model('Log')->Set("START: Selftest.");
+		
+		//  Finish
+		$this->model('Log')->Set("FINISH: Selftest.",$io);
+		$this->model('Log')->Out();
+		return $io;
+	}
+	
 	function Selftest( Config $config )
 	{
 		if(!$this->admin()){
 			return;
 		}
-		$this->p( 'Call: ' . $this->GetCallerLine() );
 		
 		//  Start
 		$this->model('Log')->Set("START: Selftest.");
 		
+		//	Database connection test
 		if(!$this->pdo()->Connect($config->database) ){
+			
+			//	Logger
 			$dns = $config->database->user.'@'.$config->database->host;
 			$this->model('Log')->Set("FAILED: Database connect is failed.($dns)",false);
-			$io = $this->DoWizard( $config );
-
-			$this->model('Log')->Set("FINISH: Selftest.",$io);
 			$this->model('Log')->Out();
 			
-			return $io;
+			//	Do wizard in NewWorld.
+			$e = new OpWzException();
+			$e->SetConfig($config);
+			throw $e;
 		}
 		
+		$this->mark();
+		
+		return true;
+		
+		//===========================================================================//
+		
+				
 		try{
-			$this->CheckDatabase($config);
-			$this->CheckTable($config);
+			$this->_CheckDatabase($config);
+			$this->_CheckTable($config);
 		//	$this->CheckColumn($config);
 			$io = true;
 		}catch( Exception $e ){
@@ -50,7 +75,7 @@ class Wizard extends OnePiece5
 			$me = $e->getMessage();
 			$this->p( $me );
 			$this->model('Log')->Set($me,false);
-			$this->DoWizard( $config );
+			$this->_DoWizard( $config );
 		}	
 		
 		//  Finish
@@ -59,7 +84,7 @@ class Wizard extends OnePiece5
 		return $io;
 	}
 	
-	function Execute( Config $config )
+	private function _Execute( Config $config )
 	{
 		//	Form
 		$form_name = $this->config()->GetFormName();
@@ -85,16 +110,16 @@ class Wizard extends OnePiece5
 		}
 		
 		//  Create
-		$this->CreateDatabase($config);
-		$this->CreateTable($config);
-		$this->CreateColumn($config);
-		$this->CreateUser($config);
-		$this->CreateGrant($config);
+		$this->_CreateDatabase($config);
+		$this->_CreateTable($config);
+		$this->_CreateColumn($config);
+		$this->_CreateUser($config);
+		$this->_CreateGrant($config);
 		
 		return true;
 	}
 	
-	function CallWizard( Config $config )
+	private function _CallWizard( Config $config )
 	{
 		if(!$this->admin()){
 			return;
@@ -155,29 +180,29 @@ class Wizard extends OnePiece5
 			
 			//  Connect to administrator account.
 			if(!$io = $this->pdo()->Connect( $database ) ){
-			//	$database->d();
+				$database->d();
+				$this->mark( $form_name );
+				$io = $this->form()->Flash($form_name);
+				$this->mark( $io );
 			}else{
 				$this->model('Log')->Set("Connect {$database->user} account.",true);
 			}
 			
 			//  Create 
-			$this->CreateDatabase($config);
-			$this->CreateTable($config);
-			$this->CreateColumn($config);
-			$this->CreateUser($config);
-			$this->CreateGrant($config);
+			$this->_CreateDatabase($config);
+			$this->_CreateTable($config);
+			$this->_CreateColumn($config);
+			$this->_CreateUser($config);
+			$this->_CreateGrant($config);
 		}else{
 			$this->model('Log')->Set("Wizard-Form is not secure.");
 		//	$this->form()->Debug($form_name);
 		}
 		
-		//  Print form.
-		$this->PrintForm( $config );
-		
 		//  Finish
 		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
 		
-		return true;
+		return empty($io) ? false: true;
 	}
 	
 	function PrintForm( $config )
@@ -207,7 +232,7 @@ class Wizard extends OnePiece5
 		$this->form()->Finish($form_name);
 	}
 	
-	function CheckDatabase( Config $config )
+	private function _CheckDatabase( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -219,7 +244,7 @@ class Wizard extends OnePiece5
 		//  Check database exists.
 		$io = array_search( $db_name, $db_list);
 		if( $io === false){
-			throw new OpException("Database can not be found. ($db_name)");
+			throw new OpWzException("Database can not be found. ($db_name)");
 		}
 
 		//  Finish
@@ -227,7 +252,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	function CheckTable( Config $config )
+	private function _CheckTable( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -241,7 +266,7 @@ class Wizard extends OnePiece5
 		foreach( $config->table as $table_name => $table ){
 			//  Check table exists.
 			if( array_search( $table_name, $table_list) === false ){
-				throw new OpException("Does not find table. ($table_name)");
+				throw new OpWzException("Does not find table. ($table_name)");
 			}
 			//  Check column.
 			$this->CheckColumn( $config, $table_name );
@@ -252,7 +277,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	function CheckColumn( Config $config, $table_name )
+	private function _CheckColumn( Config $config, $table_name )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -264,7 +289,7 @@ class Wizard extends OnePiece5
 		if( count($diff) ){
 			$join = join(', ', array_keys($diff) );
 			$me = "Does not match column. ($join)";
-			throw new OpException($me);
+			throw new OpWzException($me);
 		}
 		
 		//  Check detail
@@ -280,7 +305,7 @@ class Wizard extends OnePiece5
 			//  Check type
 			if( $column['type'] !=  $type){
 				$me = "Does not match column type. ($column_name is $type, not {$column['type']}.)";
-				throw new OpException($me);
+				throw new OpWzException($me);
 			}
 		}
 		
@@ -289,7 +314,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	function CreateDatabase( Config $config)
+	private function _CreateDatabase( Config $config)
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -302,7 +327,7 @@ class Wizard extends OnePiece5
 		return $io;
 	}
 	
-	function CreateTable( Config $config )
+	private function _CreateTable( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -329,7 +354,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	function CreateColumn( Config $config )
+	private function _CreateColumn( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -356,7 +381,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	function CreateUser($config)
+	private function _CreateUser($config)
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -390,7 +415,7 @@ class Wizard extends OnePiece5
 		
 		if(!$io){
 			$me = "Create user is failed. ({$config->user->user})";
-			throw new OpException($me);
+			throw new OpWzException($me);
 		}
 		
 		//  Finish
@@ -398,7 +423,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 
-	function CreateGrant($config)
+	private function _CreateGrant($config)
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -414,7 +439,7 @@ class Wizard extends OnePiece5
 			$config->grant->table = $table_name;
 			if(!$this->pdo()->Grant($config->grant) ){
 				$me = "Grant is failed. ($table_name)";
-				throw new OpException($me);
+				throw new OpWzException($me);
 			}
 		}
 		
@@ -489,12 +514,21 @@ class WizardHelper extends OnePiece5
 
 		$config = new Config();
 		$config->database = $database;
-				
+		
 		return $config;
 	}
 }
 
 class OpWzException extends OpException
 {
+	private $_config = null;
+	function SetConfig( Config $config )
+	{
+		$this->_config = $config;
+	}
 	
+	function GetConfig()
+	{
+		return $this->_config;
+	}
 }

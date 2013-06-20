@@ -57,6 +57,11 @@ class Model_Account extends Model_Model
 	 */
 	function Auto()
 	{
+		//	Selftest
+		if( $this->Admin() ){
+			$this->Selftest();
+		}
+		
 		if(!$this->form()->Secure( AccountConfig::FORM_NAME ) ){
 			$this->Debug("Does not secure.");
 			return false;
@@ -76,9 +81,11 @@ class Model_Account extends Model_Model
 			return false;
 		}
 		
+		/*
 		if(!$io = $this->pdo()->Connect( $this->Config()->Database() )){
-			$this->mark("Do wizard!!");
+			$this->Selftest();
 		}
+		*/
 		
 		//	Reset.
 		$config = $this->config()->update_reset($id);
@@ -106,6 +113,21 @@ class Model_Account extends Model_Model
 		return $io;
 	}
 	
+	function Selftest()
+	{
+		$wz = new Wizard();
+		$wz->Selftest( $this->Config()->Selftest() );
+		
+		return;
+		
+		$config = $this->Config()->Selftest();
+		
+		//	Throw Wizard Exception
+		$e = new OpException('WIZARD');
+		$e->SetWizard($config);
+		throw new $e;
+	}
+	
 	function Debug( $log=null )
 	{
 		if( $log ){
@@ -119,7 +141,7 @@ class Model_Account extends Model_Model
 	}
 }
 
-class AccountConfig extends ConfigMgr
+class AccountConfig extends ConfigModel
 {
 	const FORM_NAME = 'model_account_login';
 	
@@ -128,7 +150,7 @@ class AccountConfig extends ConfigMgr
 	private $limit_time   = 600; // ten minutes.
 	private $limit_count  = 10; // failed.
 	
-	function table_name()
+	function table_name( $key=null, $value=null )
 	{
 		return $this->table_prefix.'_'.$this->table_name;
 	}
@@ -145,21 +167,27 @@ class AccountConfig extends ConfigMgr
 		return $this->limit_count;
 	}
 	
-	static function Database()
+	function GetDatabaseConfig()
 	{
-		$config = parent::Database();
-		$config->user     = 't_test';
-		$config->password = 't_test';
+		$config = parent::GetDatabaseConfig();
+		$config->user = 'op_model_account';
 		return $config;
 	}
 	
-	function insert()
+	static function Database()
+	{
+		$config = parent::Database();
+		$config->user     = 'op_model_account';
+		return $config;
+	}
+	
+	function insert( $table_name=null )
 	{
 		$config = parent::insert( $this->table_name() );
 		return $config;
 	}
 	
-	function select()
+	function select( $table_name=null )
 	{
 		$config = parent::select( $this->table_name() );
 		$config->limit = 1;
@@ -237,6 +265,12 @@ class AccountConfig extends ConfigMgr
 		$config->input->$name->type  = 'submit';
 		$config->input->$name->value = ' Login ';
 		
+		return $config;
+	}
+	
+	function Selftest()
+	{
+		$config = parent::Selftest();
 		return $config;
 	}
 }
