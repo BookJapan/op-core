@@ -773,6 +773,7 @@ __EOL__;
 					if( $match[2] === 'mail' ){
 						//  mail
 					}else if( $ope === 'set' ){
+						$var = str_replace( '\\', '/', $var);
 						$var = rtrim($var,'/') . '/';
 					}
 				}
