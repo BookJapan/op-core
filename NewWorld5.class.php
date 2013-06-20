@@ -333,6 +333,7 @@ abstract class NewWorld5 extends OnePiece5
 		//  Search settings file, and execute settings.
 		$save_dir = getcwd();
 		
+		$io = true;
 		foreach(explode('/', rtrim($route['path'],'/') ) as $dir){
 			$dirs[] = $dir;
 			$path = $app_root.join('/',$dirs)."/$setting";

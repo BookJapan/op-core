@@ -92,6 +92,12 @@ abstract class ConfigMgr extends OnePiece5
 		return isset($this->config->database->prefix) ? $this->config->database->prefix: null;
 	}
 	
+	/**
+	 * 
+	 * @param  string $key   This is table label.
+	 * @param  string $value What is this?
+	 * @return boolean|string
+	 */
 	function table_name( $key, $value=null )
 	{
 		if(!$key){

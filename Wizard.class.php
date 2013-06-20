@@ -489,7 +489,12 @@ class WizardHelper extends OnePiece5
 
 		$config = new Config();
 		$config->database = $database;
-		
+				
 		return $config;
 	}
+}
+
+class OpWzException extends OpException
+{
+	
 }

@@ -5,11 +5,29 @@
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  *
  */
-class Account_Model extends Model_Model
+class Model_Account extends Model_Model
 {
+	private $log = array();
+	
+	/**
+	 * @return AccountConfig
+	 */
+	function Config($name='AccountConfig')
+	{
+		return parent::Config($name);
+	}
+	
 	function Init()
 	{
+		parent::Init();
 		$this->Config('AccountConfig');
+	}
+	
+	function InitForm()
+	{
+		$config = $this->Config()->form_login();
+		$this->form()->AddForm($config);
+		return AccountConfig::FORM_NAME;
 	}
 	
 	function Insert($config)
@@ -32,10 +50,38 @@ class Account_Model extends Model_Model
 		return $this->pdo()->delete($config);
 	}
 	
-	function Auth( $id, $pw )
+	/**
+	 * Auto authorizetion.
+	 * 
+	 * @return unknown
+	 */
+	function Auto()
 	{
+		if(!$this->form()->Secure( AccountConfig::FORM_NAME ) ){
+			$this->Debug("Does not secure.");
+			return false;
+		}
+		
+		$form_name = AccountConfig::FORM_NAME;
+		$id       = $this->form()->GetInputValue('id',$form_name);
+		$password = $this->form()->GetInputValue('password',$form_name);
+		
+		return $this->Auth( $id, $password );
+	}
+	
+	function Auth( $id=null, $pw=null )
+	{
+		if( empty($id) or empty($pw) ){
+			$this->Debug("Empty id or password.");
+			return false;
+		}
+		
+		if(!$io = $this->pdo()->Connect( $this->Config()->Database() )){
+			$this->mark("Do wizard!!");
+		}
+		
 		//	Reset.
-		$config = $this->config()->update_reset();
+		$config = $this->config()->update_reset($id);
 		$this->pdo()->update($config);
 		
 		//	
@@ -60,14 +106,32 @@ class Account_Model extends Model_Model
 		return $io;
 	}
 	
+	function Debug( $log=null )
+	{
+		if( $log ){
+			$this->log[] = $log;
+		}else{
+			if( $this->admin() ){
+				$this->p('Debug information','div');
+				Dump::d($log);
+			}
+		}
+	}
 }
 
 class AccountConfig extends ConfigMgr
 {
+	const FORM_NAME = 'model_account_login';
+	
 	private $table_prefix = 'op';
 	private $table_name   = 'account';
 	private $limit_time   = 600; // ten minutes.
 	private $limit_count  = 10; // failed.
+	
+	function table_name()
+	{
+		return $this->table_prefix.'_'.$this->table_name;
+	}
 	
 	function limit_date()
 	{
@@ -81,9 +145,9 @@ class AccountConfig extends ConfigMgr
 		return $this->limit_count;
 	}
 	
-	function database()
+	static function Database()
 	{
-		$config = parent::database();
+		$config = parent::Database();
 		$config->user     = 't_test';
 		$config->password = 't_test';
 		return $config;
@@ -121,6 +185,12 @@ class AccountConfig extends ConfigMgr
 		return $config;
 	}
 	
+	/**
+	 * Reset login failed count.
+	 * 
+	 * @param  string $id
+	 * @return Config
+	 */
 	function update_reset( $id )
 	{
 		$gmdate = $this->limit_date();
@@ -142,6 +212,31 @@ class AccountConfig extends ConfigMgr
 	{
 		$config = parent::update( $this->table_name() );
 		$config->set->failed = '+1';
+		return $config;
+	}
+	
+	function form_login()
+	{
+		$config = new Config();
+		
+		//	Form
+		$config->name = self::FORM_NAME;
+		
+		//	ID
+		$name = 'id';
+		$config->input->$name->type = 'text';
+		$config->input->$name->validate->required = true;
+		
+		//	Password
+		$name = 'password';
+		$config->input->$name->type = 'password';
+		$config->input->$name->validate->required = true;
+		
+		//	Submit
+		$name = 'submit';
+		$config->input->$name->type  = 'submit';
+		$config->input->$name->value = ' Login ';
+		
 		return $config;
 	}
 }
