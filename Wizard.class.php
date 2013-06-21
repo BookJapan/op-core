@@ -180,15 +180,22 @@ class Wizard extends OnePiece5
 			
 			//  Connect to administrator account.
 			if(!$io = $this->pdo()->Connect( $database ) ){
-				$database->d();
-				$this->mark( $form_name );
-				$io = $this->form()->Flash($form_name);
-				$this->mark( $io );
+				//	Log
+				$this->model('Log')->Set("Wizard-Form is not secure.",false);
+				//	Flash post value.
+				$this->form()->Flash($form_name);
+				//	Show post value.
+				dump::d( Toolbox::toArray($database));
+				
+				return false;
+				
+				//	Throw the Exception.
+				throw new OpWzException("");
 			}else{
 				$this->model('Log')->Set("Connect {$database->user} account.",true);
 			}
 			
-			//  Create 
+			//  Create
 			$this->_CreateDatabase($config);
 			$this->_CreateTable($config);
 			$this->_CreateColumn($config);
