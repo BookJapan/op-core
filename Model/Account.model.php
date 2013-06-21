@@ -59,7 +59,8 @@ class Model_Account extends Model_Model
 	{
 		//	Selftest
 		if( $this->Admin() ){
-			$this->Selftest();
+			$wz = new Wizard();
+			$wz->Selftest( $this->Config()->Selftest() );
 		}
 		
 		if(!$this->form()->Secure( AccountConfig::FORM_NAME ) ){
@@ -111,21 +112,6 @@ class Model_Account extends Model_Model
 		}
 		
 		return $io;
-	}
-	
-	function Selftest()
-	{
-		$wz = new Wizard();
-		$wz->Selftest( $this->Config()->Selftest() );
-		
-		return;
-		
-		$config = $this->Config()->Selftest();
-		
-		//	Throw Wizard Exception
-		$e = new OpException('WIZARD');
-		$e->SetWizard($config);
-		throw new $e;
 	}
 	
 	function Debug( $log=null )

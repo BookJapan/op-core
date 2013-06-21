@@ -58,17 +58,9 @@ class Wizard extends OnePiece5
 			throw $e;
 		}
 		
-		$this->mark();
-		
-		return true;
-		
-		//===========================================================================//
-		
-				
 		try{
 			$this->_CheckDatabase($config);
 			$this->_CheckTable($config);
-		//	$this->CheckColumn($config);
 			$io = true;
 		}catch( Exception $e ){
 			$io = false;
@@ -208,7 +200,7 @@ class Wizard extends OnePiece5
 		
 		//  Finish
 		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
-		
+		$this->model('Log')->Out();
 		return empty($io) ? false: true;
 	}
 	
@@ -407,18 +399,27 @@ class Wizard extends OnePiece5
 		//  Check user exists.
 		$io = array_search( $config->user->user, $list ) !== false ? true: false;
 		if( $io ){
-			$this->model('Log')->Set("New user {$config->user->user} is already exists.",true);
+			$this->model('Log')->Set("New user {$config->user->user} is already exists.",'blue');
 			
 			//  Change password
 			$io = $this->pdo()->Password($config->user);
 			
+			//  Log
+			$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			
+			if( $io ){
+				$this->model('Log')->Set("Change password is successful.",'blue');
+			}else{
+				$this->model('Log')->Set("Change password is failed.",'red');
+			}
+			
 		}else{
 			//  Create user
 			$io = $this->pdo()->CreateUser($config->user);
+			
+			//  Log
+			$this->model('Log')->Set( $this->pdo()->qu(), $io);
 		}
-		
-		//  Log
-		$this->model('Log')->Set( $this->pdo()->qu(), 'green');
 		
 		if(!$io){
 			$me = "Create user is failed. ({$config->user->user})";

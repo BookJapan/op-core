@@ -323,6 +323,8 @@ abstract class NewWorld5 extends OnePiece5
 			//	Print wizard form.
 			if( empty($io) ){
 				$wz->PrintForm( $config->form );
+			}else{
+				$this->mark($io);
 			}
 			
 			//	Join the content. 

@@ -1,5 +1,5 @@
 <?php
-
+# vim: tabstop=4
 /**
  * Added "op-root" to include_path.
  */
