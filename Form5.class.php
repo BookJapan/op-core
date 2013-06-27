@@ -1366,7 +1366,7 @@ class Form5 extends OnePiece5
 		return null;
 	}
 	
-	public function Clear( $form_name, $force=false )
+	public function Erase( $form_name, $force=false )
 	{
 		if(!$this->CheckConfig($form_name)){
 			if( $force ){
@@ -1376,24 +1376,42 @@ class Form5 extends OnePiece5
 			}
 		}
 		
-        //  Submit value is clear
+		//	Reset token key.
+		$this->SetTokenKey($form_name, md5(time()));
+		
+        //  Erase the saved value.
 		$form = $this->GetSession('form');
 		if( isset($form[$form_name]) ){
 			unset($form[$form_name]);
-		}else{
-			$this->mark("$form_name is does not exists.");
 		}
-		if( true /*$_POST['form_name'] === $form_name*/ ){
-			$_POST = array();
-		}
+		
+		//	Empty the $_POST
+		$_POST = array();
+		
+		//	Save empty value to session.
 		$this->SetSession('form',$form);
 		
 		return true;
 	}
 	
+	public function Delete( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
+	}
+	
+	public function Remove( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
+	}
+	
+	public function Clear( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
+	}
+	
 	public function Flash( $form_name, $force=false )
 	{
-		return $this->Clear($form_name, $force=false);
+		$this->Erase($form_name, $force=false);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )

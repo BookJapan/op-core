@@ -59,7 +59,8 @@ class Model_Account extends Model_Model
 	{
 		//	Selftest
 		if( $this->Admin() ){
-			$this->Selftest();
+			$wz = new Wizard();
+			$wz->Selftest( $this->Config()->Selftest() );
 		}
 				
 		if(!$this->form()->Secure( AccountConfig::FORM_NAME ) ){

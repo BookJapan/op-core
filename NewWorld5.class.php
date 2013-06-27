@@ -292,34 +292,38 @@ abstract class NewWorld5 extends OnePiece5
 		return true;
 	}
 	
+	/**
+	 * Execute controller.
+	 * 
+	 * @return boolean
+	 */
 	function doContent()
 	{	
-		//  route
+		//  Route
 		if(!$route = $this->GetEnv('route')){
 			$this->StackError('Empty route.');
 			return false;
 		}
 		
-		//  contrller file path
+		//  Controller file path.
 		$path = getcwd().'/'.$route['file'];
 		
-		//  content
+		//  Content
 		try{
+			//	Execute controller.
 			$this->content  = ob_get_contents(); ob_clean();
 			$this->content .= $this->GetTemplate($path);
-		
 		}catch( OpWzException $e ){
-			
+
+			//	Begin the Wizard.
 			$config = $e->GetConfig();
 			$wz = new Wizard();
-			$io = $wz->DoWizard($config);
-			
-			if(!$io){
-				$config->d();
-			}
-			
+			$wz->DoWizard($config);
 			$wz->PrintForm( $config->form );
 			
+			$this->d($_SESSION);
+			
+			//	Join the content.
 			$this->content  = ob_get_contents(); ob_clean();
 		}catch( Exception $e ){
 			$this->StackError($e);

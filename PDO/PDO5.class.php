@@ -602,10 +602,9 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  get select query
-		if(!$qu = $this->ddl()->GetPassword($conf)){
-			return false;
-		}
-		
+		$qu = $this->ddl()->GetPassword($conf);
+		$this->mark( $qu );
+			
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
