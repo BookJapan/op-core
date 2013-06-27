@@ -61,7 +61,7 @@ class Model_Account extends Model_Model
 		if( $this->Admin() ){
 			$this->Selftest();
 		}
-		
+				
 		if(!$this->form()->Secure( AccountConfig::FORM_NAME ) ){
 			$this->Debug("Does not secure.");
 			return false;
@@ -119,13 +119,14 @@ class Model_Account extends Model_Model
 		$wz->Selftest( $this->Config()->Selftest() );
 		
 		return;
-		
+		/*
 		$config = $this->Config()->Selftest();
 		
 		//	Throw Wizard Exception
 		$e = new OpException('WIZARD');
 		$e->SetWizard($config);
 		throw new $e;
+		*/
 	}
 	
 	function Debug( $log=null )
@@ -270,7 +271,38 @@ class AccountConfig extends ConfigModel
 	
 	function Selftest()
 	{
+		//	Base config
 		$config = parent::Selftest();
+		
+		//	Table name
+		$table_name = $this->table_name();
+		
+		//	Column
+		$name = 'account_id';
+		$config->table->$table_name->column->$name->type = 'int';
+		$config->table->$table_name->column->$name->ai   = true;
+
+		$name = 'account';
+		$config->table->$table_name->column->$name->type = 'text';
+		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
+		
+		$name = 'password';
+		$config->table->$table_name->column->$name->type = 'varchar';
+		$config->table->$table_name->column->$name->length = 32;
+		$config->table->$table_name->column->$name->comment = 'MD5 hash';
+		
+		$name = 'created';
+		$config->table->$table_name->column->$name->type = 'datetime';
+
+		$name = 'updated';
+		$config->table->$table_name->column->$name->type = 'datetime';
+
+		$name = 'deleted';
+		$config->table->$table_name->column->$name->type = 'datetime';
+
+		$name = 'timestamp';
+		$config->table->$table_name->column->$name->type = 'timestamp';
+		
 		return $config;
 	}
 }
