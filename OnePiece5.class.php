@@ -1171,7 +1171,7 @@ __EOL__;
 				case 'null':
 					if( $func ){
 						if( $method ){
-							$format = '$file [$line] - $method : ';
+							$format = '$file [$line] ';
 						}else if( $class ){
 							$format = '$file ($class$type$func) [$line] ';
 						}else{

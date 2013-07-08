@@ -119,14 +119,6 @@ class Model_Account extends Model_Model
 		$wz->Selftest( $this->Config()->Selftest() );
 		
 		return;
-		/*
-		$config = $this->Config()->Selftest();
-		
-		//	Throw Wizard Exception
-		$e = new OpException('WIZARD');
-		$e->SetWizard($config);
-		throw new $e;
-		*/
 	}
 	
 	function Debug( $log=null )
@@ -150,7 +142,17 @@ class AccountConfig extends ConfigModel
 	private $_limit_time	 = 600; // ten minutes.
 	private $_limit_count	 = 10; // failed.
 	
-	function GetTableName( $key=null, $value=null )
+	function SetTableName( $table_name )
+	{
+		$this->_table_name = $table_name;
+	}
+	
+	function GetTableName()
+	{
+		return $this->table_name();
+	}
+	
+	function table_name( $key=null, $value=null )
 	{
 		return $this->_table_prefix.'_'.$this->_table_name;
 	}
@@ -167,12 +169,14 @@ class AccountConfig extends ConfigModel
 		return $this->_limit_count;
 	}
 	
+	/*
 	function GetDatabaseConfig()
 	{
 		$config = parent::GetDatabaseConfig();
 		$config->user = 'op_model_account';
 		return $config;
 	}
+	*/
 	
 	static function Database()
 	{
@@ -278,17 +282,25 @@ class AccountConfig extends ConfigModel
 		
 		//	Column
 		$name = 'account_id';
-		$config->table->$table_name->column->$name->type = 'int';
-		$config->table->$table_name->column->$name->ai   = true;
-
-		$name = 'account';
-		$config->table->$table_name->column->$name->type = 'text';
-		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
+		$config->table->$table_name->column->$name->type    = 'int';
+		$config->table->$table_name->column->$name->ai      = true;
 		
-		$name = 'password';
-		$config->table->$table_name->column->$name->type = 'varchar';
-		$config->table->$table_name->column->$name->length = 32;
+		$name = 'account_enc';
+		$config->table->$table_name->column->$name->type    = 'text';
+		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
+		$config->table->$table_name->column->$name->null    = null;
+		
+		$name = 'account_md5';
+		$config->table->$table_name->column->$name->type    = 'char';
+		$config->table->$table_name->column->$name->length  = 32;
 		$config->table->$table_name->column->$name->comment = 'MD5 hash';
+		$config->table->$table_name->column->$name->null    = null;
+		
+		$name = 'password_md5';
+		$config->table->$table_name->column->$name->type    = 'char';
+		$config->table->$table_name->column->$name->length  = 32;
+		$config->table->$table_name->column->$name->comment = 'MD5 hash';
+		$config->table->$table_name->column->$name->null    = null;
 		
 		$name = 'created';
 		$config->table->$table_name->column->$name->type = 'datetime';

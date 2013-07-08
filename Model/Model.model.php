@@ -18,6 +18,13 @@ abstract class Model_Model extends OnePiece5
 		//  init config
 		$this->config = new Config();
 	//	$this->config();
+	
+		//	selftest
+		if( $this->Admin() ){			
+			if( method_exists( $this, 'Selftest') ){				
+				$this->Selftest();
+			}
+		}
 	}
 	
 	function Test()
@@ -52,7 +59,12 @@ abstract class Model_Model extends OnePiece5
 				
 				//  Selftest
 				if( method_exists( $this, 'Selftest') ){
-					$this->Selftest();
+					$selftest = $this->Selftest();
+					if( $selftest instanceof Config ){
+						$_SESSION['OnePiece5']['selftest'] = $selftest;
+						$wz = new Wizard();
+						$wz->Selftest($selftest);
+					}
 				}else{
 					$config->d();
 				}

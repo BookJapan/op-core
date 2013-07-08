@@ -50,7 +50,6 @@ class Wizard extends OnePiece5
 			//	Logger
 			$dns = $config->database->user.'@'.$config->database->host;
 			$this->model('Log')->Set("FAILED: Database connect is failed.($dns)",false);
-		//	$this->model('Log')->Out();
 			
 			//	Do wizard in NewWorld.
 			$e = new OpWzException();

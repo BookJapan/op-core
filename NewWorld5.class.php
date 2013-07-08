@@ -316,18 +316,32 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  Content
 		try{
-			//	Execute controller.
+			//	Flash buffer
 			$this->_content  = ob_get_contents(); ob_clean();
+			
+			//	Check selftest
+			$config = isset($_SESSION['OnePiece5']['selftest']) ? $_SESSION['OnePiece5']['selftest']: null;
+			if( $config ){
+				$wz = new Wizard();
+				$io = $wz->Selftest( $config );
+				if( $io ){
+					$this->SetSession('selftest',null);
+				}
+			}
+			
+			//	Execute controller.
 			$this->_content .= $this->GetTemplate($path);
 		}catch( OpWzException $e ){
 			
 			//	Begin the Wizard.
 			$config = $e->GetConfig();
 			$wz = new Wizard();
-			$wz->DoWizard($config);
-			$wz->PrintForm( $config->form );
-			
-			$this->d($_SESSION);
+			$io = $wz->DoWizard($config);
+			if( $io ){
+				$this->p("Wizard is successful. Please reload this page.");
+			}else{
+				$wz->PrintForm( $config->form );
+			}
 			
 			//	Join the content.
 			$this->_content  = ob_get_contents(); ob_clean();
