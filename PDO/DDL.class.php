@@ -47,6 +47,11 @@ class DDL extends OnePiece5
 			return false;
 		}
 	
+		if( strlen($user) > 16 ){
+			$this->StackError("User name is maximum 16 character.");
+			return false;
+		}
+		
 		//	CREATE USER 'user-name'@'host-name' IDENTIFIED BY '***';
 		$query = "CREATE USER '{$user}'@'{$host}' IDENTIFIED BY '{$password}'";
 	
