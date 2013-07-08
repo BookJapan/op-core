@@ -15,9 +15,9 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var array
 	 */
-	private $isDispatch = null;
-	private $routeTable = null;
-	private $content    = null;
+	private $_isDispatch = null;
+	private $_routeTable = null;
+	private $_content    = null;
 	
 	function __construct($args=array())
 	{
@@ -35,7 +35,7 @@ abstract class NewWorld5 extends OnePiece5
 	function __destruct()
 	{
 		//  Called dispatch?
-		if(!$this->isDispatch){
+		if(!$this->_isDispatch){
 			$this->StackError('App has not dispatched. Please call $app->Dispatch();');
 		}
 		
@@ -43,10 +43,10 @@ abstract class NewWorld5 extends OnePiece5
 		ob_end_flush();
 		
 		//  Check content
-		if( $this->content ){
+		if( $this->_content ){
 			$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
 			$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
-			$this->content();
+			$this->Content();
 		}
 		
 		//  Vivre
@@ -76,7 +76,7 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		@list( $path, $query_string ) = explode('?',$request_uri);
 		$route = $this->Escape($route);
-		$this->routeTable[md5($path)] = $route;
+		$this->_routeTable[md5($path)] = $route;
 	}
 	
 	/**
@@ -102,7 +102,7 @@ abstract class NewWorld5 extends OnePiece5
 		$full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
 		
 		// Does path exist?
-		if( $route = @$this->routeTable[md5($path)] ){
+		if( $route = $this->_routeTable[md5($path)] ){
 			return $route;
 		}
 		
@@ -244,27 +244,30 @@ abstract class NewWorld5 extends OnePiece5
 	function Dispatch($route=null)
 	{
 		// Deny two time dispatch
-		if( $this->isDispatch ){
+		if( $this->_isDispatch ){
 			$this->StackError("Dispatched two times. (Dispatched only one time.)");
 			return false;
 		}else{
-			$this->isDispatch = true;
+			$this->_isDispatch = true;
 		}
 		
-		// if route is emtpy, get route.
+		//	if route is emtpy, get route.
 		if(!$route){
 			if(!$route = $this->GetRoute()){
 				return false;
 			}
 		}
 		
-		// route info
+		//	route info
 		$this->SetEnv('route',$route);
 		
-		// setting
+		//	setting
 		if(!$this->doSetting($route)){
 			return true;
 		}
+		
+		//	Forward
+		$this->doForward();
 		
 		// controller root
 		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
@@ -311,8 +314,8 @@ abstract class NewWorld5 extends OnePiece5
 		//  Content
 		try{
 			//	Execute controller.
-			$this->content  = ob_get_contents(); ob_clean();
-			$this->content .= $this->GetTemplate($path);
+			$this->_content  = ob_get_contents(); ob_clean();
+			$this->_content .= $this->GetTemplate($path);
 		}catch( OpWzException $e ){
 
 			//	Begin the Wizard.
@@ -324,7 +327,7 @@ abstract class NewWorld5 extends OnePiece5
 			$this->d($_SESSION);
 			
 			//	Join the content.
-			$this->content  = ob_get_contents(); ob_clean();
+			$this->_content  = ob_get_contents(); ob_clean();
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
@@ -417,7 +420,7 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}else{
 			//  NG
-			print $this->content;
+			print $this->_content;
 			$m = "does not exists layout controller.($path)";
 			$this->StackError( $m,'layout');
 			throw new OpNwException($m);
@@ -522,15 +525,45 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
-	function Forward( $url )
+	/**
+	 * Save the forward URL
+	 * 
+	 * @param string $url
+	 */
+	function SetForward( $url )
 	{
+		//	Reset forward URL
+		if( empty($url) ){
+			$this->SetEnv('forward', null);
+			return;
+		}
+		
 		//	Convert URL
 		$url = $this->ConvertPath($url);
 		$app_root = rtrim($this->GetEnv('app-root'),'/');
 		$url = preg_replace( "|^$app_root|", '', $url );
 		
+		//	Save forward URL
+		$this->SetEnv('forward', $url);
+	}
+	
+	/**
+	 * Execute forward from saved forward url.
+	 * 
+	 * @return void|boolean
+	 */
+	function doForward()
+	{
+		$this->mark();
+		
+		//	Forward URL
+		if(!$url = $this->GetEnv('forward')){
+			return;
+		}
+		
 		//	Before route
 		$route_old = $this->GetEnv('route');
+		
 		
 		//	Get change route info.
 		$route = $this->GetRoute($url);
@@ -542,7 +575,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	Dispatched.
-		$this->isDispatch = false;
+		$this->_isDispatch = false;
 		$this->Dispatch($route);
 		
 		return false;
@@ -550,13 +583,13 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function GetContent()
 	{
-		return $this->content;
+		return $this->_content;
 	}
 	
 	function Content()
 	{
-		print $this->content;
-		$this->content = '';
+		print $this->_content;
+		$this->_content = '';
 	}
 	
 	function GetArgs()
