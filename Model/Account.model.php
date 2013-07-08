@@ -82,11 +82,10 @@ class Model_Account extends Model_Model
 			return false;
 		}
 		
-		/*
-		if(!$io = $this->pdo()->Connect( $this->Config()->Database() )){
-			$this->Selftest();
-		}
-		*/
+		//	Convert
+		$blowfish = new Blowfish();
+		$id = $blowfish->Encrypt($id);
+		$pw = md5($pw);
 		
 		//	Reset.
 		$config = $this->config()->update_reset($id);
@@ -97,7 +96,7 @@ class Model_Account extends Model_Model
 		$record = $this->pdo()->select($config);
 		
 		//	
-		$count = isset($record['failed']) ? $record['failed']: 100;
+		$count = isset($record['failed']) ? $record['failed']: 100000;
 		
 		//	
 		$limit = $this->config()->limit_count();
@@ -145,28 +144,27 @@ class Model_Account extends Model_Model
 
 class AccountConfig extends ConfigModel
 {
-	const FORM_NAME = 'model_account_login';
+	private $_form_name		 = 'model_account_login';
+	private $_table_prefix	 = 'op';
+	private $_table_name	 = 'account';
+	private $_limit_time	 = 600; // ten minutes.
+	private $_limit_count	 = 10; // failed.
 	
-	private $table_prefix = 'op';
-	private $table_name   = 'account';
-	private $limit_time   = 600; // ten minutes.
-	private $limit_count  = 10; // failed.
-	
-	function table_name( $key=null, $value=null )
+	function GetTableName( $key=null, $value=null )
 	{
-		return $this->table_prefix.'_'.$this->table_name;
+		return $this->_table_prefix.'_'.$this->_table_name;
 	}
 	
 	function limit_date()
 	{
-		$gmtime = time() + date('Z') + $this->limit_time;
+		$gmtime = time() + date('Z') + $this->_limit_time;
 		$gmdate = gmdate('Y-m-d H:i:s',$gmtime);
 		return $gmdate;
 	}
 	
 	function limit_count()
 	{
-		return $this->limit_count;
+		return $this->_limit_count;
 	}
 	
 	function GetDatabaseConfig()
@@ -307,4 +305,3 @@ class AccountConfig extends ConfigModel
 		return $config;
 	}
 }
-

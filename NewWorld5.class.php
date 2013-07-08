@@ -18,6 +18,7 @@ abstract class NewWorld5 extends OnePiece5
 	private $_isDispatch = null;
 	private $_routeTable = null;
 	private $_content    = null;
+	private $_data		 = array();
 	
 	function __construct($args=array())
 	{
@@ -267,7 +268,9 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	Forward
-		$this->doForward();
+		if( $this->doForward() ){
+			return true;
+		}
 		
 		// controller root
 		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
@@ -317,7 +320,7 @@ abstract class NewWorld5 extends OnePiece5
 			$this->_content  = ob_get_contents(); ob_clean();
 			$this->_content .= $this->GetTemplate($path);
 		}catch( OpWzException $e ){
-
+			
 			//	Begin the Wizard.
 			$config = $e->GetConfig();
 			$wz = new Wizard();
@@ -550,20 +553,17 @@ abstract class NewWorld5 extends OnePiece5
 	/**
 	 * Execute forward from saved forward url.
 	 * 
-	 * @return void|boolean
+	 * @return boolean.
 	 */
 	function doForward()
 	{
-		$this->mark();
-		
 		//	Forward URL
 		if(!$url = $this->GetEnv('forward')){
-			return;
+			return false;
 		}
 		
 		//	Before route
 		$route_old = $this->GetEnv('route');
-		
 		
 		//	Get change route info.
 		$route = $this->GetRoute($url);
@@ -571,14 +571,14 @@ abstract class NewWorld5 extends OnePiece5
 		//	Compare
 		if( $route == $route_old ){
 			//	This is already been forwarding.
-			return true;
+			return false;
 		}
 		
 		//	Dispatched.
 		$this->_isDispatch = false;
 		$this->Dispatch($route);
 		
-		return false;
+		return true;
 	}
 	
 	function GetContent()
@@ -610,6 +610,28 @@ abstract class NewWorld5 extends OnePiece5
 		}else{
 			$this->StackError('Does not set env "NotFound" page path. Please call $this->SetEnv("NotFound").');
 		}
+	}
+	
+	/**
+	 * Save temporary data pass to template inside.
+	 * 
+	 * @param string $key
+	 * @param mixed  $data
+	 */
+	function SetData( $key, $data )
+	{
+		$this->_data[$key] = $data;
+	}
+	
+	/**
+	 * Get temporary data.
+	 * 
+	 * @param  string $key
+	 * @return mixed
+	 */
+	function GetData( $key )
+	{
+		return isset($this->_data[$key]) ? $this->_data[$key]: null; 
 	}
 }
 
