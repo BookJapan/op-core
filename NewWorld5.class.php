@@ -267,6 +267,11 @@ abstract class NewWorld5 extends OnePiece5
 			return true;
 		}
 		
+		//	Forward
+		if( $this->doForward() ){
+			return true;
+		}
+		
 		// controller root
 		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
 		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
@@ -507,12 +512,39 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
-	function Forward( $url )
+	/**
+	 * Save the forward URL
+	 * 
+	 * @param string $url
+	 */
+	function SetForward( $url )
 	{
+		//	Reset forward URL
+		if( empty($url) ){
+			$this->SetEnv('forward', null);
+			return;
+		}
+		
 		//	Convert URL
 		$url = $this->ConvertPath($url);
 		$app_root = rtrim($this->GetEnv('app-root'),'/');
 		$url = preg_replace( "|^$app_root|", '', $url );
+		
+		//	Save forward URL
+		$this->SetEnv('forward', $url);
+	}
+	
+	/**
+	 * Execute forward from saved forward url.
+	 * 
+	 * @return boolean.
+	 */
+	function doForward()
+	{
+		//	Forward URL
+		if(!$url = $this->GetEnv('forward')){
+			return false;
+		}
 		
 		//	Before route
 		$route_old = $this->GetEnv('route');
@@ -523,14 +555,14 @@ abstract class NewWorld5 extends OnePiece5
 		//	Compare
 		if( $route == $route_old ){
 			//	This is already been forwarding.
-			return true;
+			return false;
 		}
 		
 		//	Dispatched.
 		$this->isDispatch = false;
 		$this->Dispatch($route);
 		
-		return false;
+		return true;
 	}
 	
 	function GetContent()
