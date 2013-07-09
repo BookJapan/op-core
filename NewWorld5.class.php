@@ -18,6 +18,7 @@ abstract class NewWorld5 extends OnePiece5
 	private $isDispatch = null;
 	private $routeTable = null;
 	private $content    = null;
+	private $_data      = null;
 	
 	function __construct($args=array())
 	{
@@ -561,6 +562,28 @@ abstract class NewWorld5 extends OnePiece5
 		}else{
 			$this->StackError('Does not set env "NotFound" page path. Please call $this->SetEnv("NotFound").');
 		}
+	}
+	
+	/**
+	 * Save temporary data pass to template inside.
+	 * 
+	 * @param string $key
+	 * @param mixed  $data
+	 */
+	function SetData( $key, $data )
+	{
+		$this->_data[$key] = $data;
+	}
+	
+	/**
+	 * Get temporary data.
+	 * 
+	 * @param  string $key
+	 * @return mixed
+	 */
+	function GetData( $key )
+	{
+		return isset($this->_data[$key]) ? $this->_data[$key]: null; 
 	}
 }
 
