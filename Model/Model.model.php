@@ -17,8 +17,7 @@ abstract class Model_Model extends OnePiece5
 		
 		//  init config
 		$this->config = new Config();
-	//	$this->config();
-	
+		
 		//	selftest
 		if( $this->Admin() ){			
 			if( method_exists( $this, 'Selftest') ){				

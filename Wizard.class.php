@@ -305,8 +305,9 @@ class Wizard extends OnePiece5
 		
 		if( count($diff) ){
 			$join = join(', ', array_keys($diff) );
-			$me = "Does not match column. ($join)";
-			throw new OpWzException($me);
+			$wz = new OpWzException("Does not match column. ($join)");
+			$wz->SetConfig($config);
+			throw $wz;
 		}
 		
 		//  Check detail
@@ -321,8 +322,9 @@ class Wizard extends OnePiece5
 			
 			//  Check type
 			if( $column['type'] !=  $type){
-				$me = "Does not match column type. ($column_name is $type, not {$column['type']}.)";
-				throw new OpWzException($me);
+				$wz = new OpWzException("Does not match column type. ($column_name is $type, not {$column['type']}.)");
+				$wz->SetConfig($config);
+				throw $wz;
 			}
 		}
 		
@@ -469,8 +471,9 @@ class Wizard extends OnePiece5
 		}
 		
 		if(!$io){
-			$me = "Create user is failed. ({$config->user->user})";
-			throw new OpWzException($me);
+			$wz = new OpWzException("Create user is failed. ({$config->user->user})");
+			$wz->SetConfig($config);
+			throw $wz;
 		}
 		
 		//  Finish
@@ -502,8 +505,9 @@ class Wizard extends OnePiece5
 			foreach( $tables as $table_name => $table ){
 				$config->grant->table = $table_name;
 				if(!$this->pdo()->Grant($config->grant) ){
-					$me = "Grant is failed. ($table_name)";
-					throw new OpWzException($me);
+					$wz = new OpWzException("Grant is failed. ($table_name)");
+					$wz->SetConfig($config);
+					throw $wz;
 				}
 			}
 		}

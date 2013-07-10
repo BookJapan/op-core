@@ -241,6 +241,7 @@ abstract class ConfigMgr extends OnePiece5
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->updated = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
 		return $config;
 	}
 	

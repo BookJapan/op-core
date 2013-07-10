@@ -603,7 +603,6 @@ class PDO5 extends OnePiece5
 		
 		//  get select query
 		$qu = $this->ddl()->GetPassword($conf);
-		$this->mark( $qu );
 			
 		//  execute
 		return $this->query( $qu, 'create' );
@@ -895,9 +894,9 @@ class ConfigSQL extends OnePiece5
 			var_dump($var);
 			var_dump($driver);
 			OnePiece5::StackError("Empty args.");
+			$safe = null;
 		}
 		
 		return $safe;
-	}
-		
+	}	
 }

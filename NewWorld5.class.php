@@ -492,8 +492,8 @@ abstract class NewWorld5 extends OnePiece5
 		exit(0);
 	}
 	
-	function Header( $str, $replace=null, $code=null ){
-	
+	function Header( $str, $replace=null, $code=null )
+	{
 		if( null === $replace ){
 			switch($str){
 				case 'hoge':

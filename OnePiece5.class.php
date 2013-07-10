@@ -393,7 +393,7 @@ class OnePiece5
 	function Init()
 	{
 		$this->isInit = true;
-
+		
 		//  No use self.
 		if( $this instanceof i18n ){
 			return true;
@@ -405,8 +405,6 @@ class OnePiece5
 		//  Include configuration file.
 		if( file_exists($path) ){
 			$this->i18n()->SetByFile($path);
-		}else{
-			//$this->mark( $path );
 		}
 		
 		return true;
@@ -1933,13 +1931,42 @@ __EOL__;
 			//  Instance is success.
 			return $_SERVER[__CLASS__]['model'][$name];
 			
+		}catch( OpWzException $e ){
+			
+			//	Pass to NewWorld			
+			$_SESSION['OnePiece5']['selftest'] = $e->GetConfig();
+			
+			/*
+			var_dump( get_class( $this ) );
+			
+			//	Debug
+			$file = $e->getFile();
+			$line = $e->getLine();
+			$this->mark( __METHOD__ . "($file, $line)" );
+			*/
+			
+			/*
+			//	Begin the Wizard.
+			$config = $e->GetConfig();
+			$wz = new Wizard();
+			$io = $wz->DoWizard($config);
+			if( $io ){
+				$this->p("Wizard is successful. Please reload this page.");
+			}else{
+				$wz->PrintForm( $config->form );
+			}
+			*/
+
+			throw $e;
+			
 		}catch( Exception $e ){
-			$this->mark( $e->getMessage() );
-			$this->StackError( $e->getMessage() );
+			$file = $e->getFile();
+			$line = $e->getLine();
+			$this->StackError( $e->getMessage() . "($file, $line)" );
 			return new OnePiece5();
 		}
 	}
-
+	
 	function Module($name)
 	{
 		try{

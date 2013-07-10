@@ -7,7 +7,8 @@
  */
 class Model_Account extends Model_Model
 {
-	private $log = array();
+	private $_log = array('test');
+	private $_status = null;
 	
 	/**
 	 * @return AccountConfig
@@ -27,7 +28,7 @@ class Model_Account extends Model_Model
 	{
 		$config = $this->Config()->form_login();
 		$this->form()->AddForm($config);
-		return AccountConfig::FORM_NAME;
+		return $this->Config()->form_name();
 	}
 	
 	function Insert($config)
@@ -57,80 +58,104 @@ class Model_Account extends Model_Model
 	 */
 	function Auto()
 	{
+		/*
 		//	Selftest
 		if( $this->Admin() ){
 			$wz = new Wizard();
 			$wz->Selftest( $this->Config()->Selftest() );
 		}
-				
-		if(!$this->form()->Secure( AccountConfig::FORM_NAME ) ){
+		*/
+			
+		if(!$this->form()->Secure( $this->Config()->form_name() ) ){
 			$this->Debug("Does not secure.");
 			return false;
 		}
 		
-		$form_name = AccountConfig::FORM_NAME;
-		$id       = $this->form()->GetInputValue('id',$form_name);
-		$password = $this->form()->GetInputValue('password',$form_name);
+		$form_name = $this->Config()->form_name();
+		$account   = $this->form()->GetInputValue('account', $form_name);
+		$password  = $this->form()->GetInputValue('password',$form_name);
 		
-		return $this->Auth( $id, $password );
+		return $this->Auth( $account, $password );
 	}
 	
-	function Auth( $id=null, $pw=null )
+	function Auth( $account=null, $password=null )
 	{
-		if( empty($id) or empty($pw) ){
+		if( empty($account) or empty($password) ){
 			$this->Debug("Empty id or password.");
 			return false;
 		}
 		
 		//	Convert
-		$blowfish = new Blowfish();
-		$id = $blowfish->Encrypt($id);
-		$pw = md5($pw);
+		$account  = md5($account);
+		$password = md5($password);
+		
+		$this->mark( $account );
+		$this->mark( $password );
 		
 		//	Reset.
-		$config = $this->config()->update_reset($id);
-		$this->pdo()->update($config);
+		/*
+		$config = $this->config()->update_failed_reset();
+		if( $this->pdo()->update($config) ){
+			$this->Debug('Reset failed count');
+		}
+		*/
 		
-		//	
-		$config = $this->config()->select_auth( $id, $pw );
+		//	Check password from id.
+		$config = $this->config()->select_auth( $account, $password );
 		$record = $this->pdo()->select($config);
-		
-		//	
-		$count = isset($record['failed']) ? $record['failed']: 100000;
-		
-		//	
-		$limit = $this->config()->limit_count();
-		
-		//	
-		$io = $count < $limit ? true: false;
-		
-		//	failed process.
-		if(!$io){
-			//	record of failed times.
-			$config = $this->config()->update_failed( $id );
+		if( is_array($record) and count($record) ){
+			$this->Debug('Match password from id.');
+		}else{
+			$this->Debug('Does not match password from id.');
+			return false;
 		}
 		
-		return $io;
+		$this->d($record);
+		
+		//	Failed num
+		$failed = isset($record['failed']) ? $record['failed']: 0;
+		
+		//	Permit failed limit.
+		$limit = $this->config()->limit_count();
+		
+		//	Check
+		$io = $failed < $limit ? true: false;
+		
+		//	failed.
+		if(!$io){
+			$this->Debug("Over the failed.($failed < $limit)");
+			return false;
+		}
+		
+		//	ID
+		$id = $record[AccountConfig::COLUMN_ID];
+		$this->Debug("ID is $id");
+		
+		return $id;
 	}
 	
 	function Selftest()
 	{
 		$wz = new Wizard();
-		$wz->Selftest( $this->Config()->Selftest() );
-		
-		return;
+		$io = $wz->Selftest( $this->Config()->Selftest() );
+		return $io;
 	}
 	
 	function Debug( $log=null )
 	{
 		if( $log ){
-			$this->log[] = $log;
+			$this->_log[] = $log;
 		}else{
 			if( $this->admin() ){
 				$this->p('Debug information','div');
-				Dump::d($log);
+				Dump::d($this->_log);
 			}
 		}
+	}
+	
+	function GetStatus()
+	{
+		return $this->_status;
 	}
 }
 
@@ -198,21 +223,19 @@ class AccountConfig extends ConfigModel
 		return $config;
 	}
 	
-	function select_auth( $id, $pw )
+	function select_auth( $account, $password )
 	{
 		$config = $this->select();
-		$config->where->id = $id;
-		$config->where->password = $pw;
+		$config->where->{self::COLUMN_MD5}		 = $account;
+		$config->where->{self::COLUMN_PASSWORD}	 = $password;
 		return $config;
 	}
 	
 	function select_failed()
 	{
-		$gmdate = $this->limit_date();
-		
 		$config = $this->select();
-		$config->where->id = $id;
-		$config->where->updated = '> $gmdate';
+		$config->where->{self::COLUMN_ID} = $id;
+		$config->where->updated = '> '.$this->limit_date();
 		
 		return $config;
 	}
@@ -223,13 +246,12 @@ class AccountConfig extends ConfigModel
 	 * @param  string $id
 	 * @return Config
 	 */
-	function update_reset( $id )
+	function update_failed_reset( $id )
 	{
-		$gmdate = $this->limit_date();
-		
 		$config = parent::update( $this->table_name() );
 		$config->set->failed = null;
-		$config->where->updated = '< $gmdate';
+		$config->where->{self::COLUMN_ID} = $id;
+	//	$config->where->updated = '< '.$this->limit_date();
 		return $config;
 	}
 	
@@ -247,15 +269,20 @@ class AccountConfig extends ConfigModel
 		return $config;
 	}
 	
+	function form_name($key=null)
+	{
+		return $this->_form_name;
+	}
+	
 	function form_login()
 	{
 		$config = new Config();
 		
 		//	Form
-		$config->name = self::FORM_NAME;
+		$config->name = $this->form_name();
 		
 		//	ID
-		$name = 'id';
+		$name = 'account';
 		$config->input->$name->type = 'text';
 		$config->input->$name->validate->required = true;
 		
@@ -272,6 +299,12 @@ class AccountConfig extends ConfigModel
 		return $config;
 	}
 	
+	const COLUMN_ID			 = 'account_id';
+	const COLUMN_MD5		 = 'account_md5';
+	const COLUMN_ACCOUNT	 = 'account_enc';
+	const COLUMN_PASSWORD	 = 'password_md5';
+	const COLUMN_FAILED		 = 'failed';
+	
 	function Selftest()
 	{
 		//	Base config
@@ -281,26 +314,29 @@ class AccountConfig extends ConfigModel
 		$table_name = $this->table_name();
 		
 		//	Column
-		$name = 'account_id';
+		$name = self::COLUMN_ID;
 		$config->table->$table_name->column->$name->type    = 'int';
 		$config->table->$table_name->column->$name->ai      = true;
+
+		$name = self::COLUMN_MD5;
+		$config->table->$table_name->column->$name->type    = 'char';
+		$config->table->$table_name->column->$name->length  = 32;
+		$config->table->$table_name->column->$name->comment = 'MD5 hash';
+		$config->table->$table_name->column->$name->null    = null;
 		
-		$name = 'account_enc';
+		$name = self::COLUMN_ACCOUNT;
 		$config->table->$table_name->column->$name->type    = 'text';
 		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
 		$config->table->$table_name->column->$name->null    = null;
 		
-		$name = 'account_md5';
+		$name = self::COLUMN_PASSWORD;
 		$config->table->$table_name->column->$name->type    = 'char';
 		$config->table->$table_name->column->$name->length  = 32;
 		$config->table->$table_name->column->$name->comment = 'MD5 hash';
 		$config->table->$table_name->column->$name->null    = null;
-		
-		$name = 'password_md5';
-		$config->table->$table_name->column->$name->type    = 'char';
-		$config->table->$table_name->column->$name->length  = 32;
-		$config->table->$table_name->column->$name->comment = 'MD5 hash';
-		$config->table->$table_name->column->$name->null    = null;
+
+		$name = self::COLUMN_FAILED;
+		$config->table->$table_name->column->$name->type    = 'int';
 		
 		$name = 'created';
 		$config->table->$table_name->column->$name->type = 'datetime';
