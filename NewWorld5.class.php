@@ -629,12 +629,16 @@ abstract class NewWorld5 extends OnePiece5
 	/**
 	 * Save temporary data pass to template inside.
 	 * 
-	 * @param string $key
-	 * @param mixed  $data
+	 * @param string  $key
+	 * @param mixed   $data
+	 * @param boolean $session Save to session. (Load is once)
 	 */
-	function SetData( $key, $data )
+	function SetData( $key, $data, $session=false )
 	{
 		$this->_data[$key] = $data;
+		if( $session ){
+			$this->SetSession($key, $data);
+		}
 	}
 	
 	/**
@@ -645,6 +649,14 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function GetData( $key )
 	{
+		if( isset($this->_data[$key]) ){
+			$data = $this->_data[$key];
+		}else{
+			$data = $this->GetSession($key);
+			//	Load is once.
+			$this->SetSession($key,null);
+		}
+		return $data;
 		return isset($this->_data[$key]) ? $this->_data[$key]: null; 
 	}
 }
