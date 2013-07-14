@@ -7,7 +7,7 @@
  */
 class Model_Account extends Model_Model
 {
-	private $_log = array('test');
+	private $_log = array();
 	private $_status = null;
 	
 	/**
@@ -68,6 +68,7 @@ class Model_Account extends Model_Model
 			
 		if(!$this->form()->Secure( $this->Config()->form_name() ) ){
 			$this->Debug("Does not secure.");
+		//	$this->form()->debug( $this->Config()->form_name() );
 			return false;
 		}
 		
@@ -147,7 +148,8 @@ class Model_Account extends Model_Model
 			$this->_log[] = $log;
 		}else{
 			if( $this->admin() ){
-				$this->p('Debug information','div');
+				$call = $this->GetCallerLine();
+				$this->p("Debug information ($call)",'div');
 				Dump::d($this->_log);
 			}
 		}

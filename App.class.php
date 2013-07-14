@@ -88,7 +88,11 @@ class App extends NewWorld5
 	
 	function SetLayoutName( $var )
 	{
-		$this->SetEnv('layout-root',rtrim($this->GetEnv('layout-dir'),'/') .'/'. $var);
+		//	Set layout root. (full path)
+		$layout_root = $this->GetEnv('layout-dir');
+		$layout_root = $this->ConvertPath($layout_root);
+		$this->SetEnv('layout-root',$layout_root.$var);
+		
 		return $this->SetEnv('layout', $var);
 	}
 	

@@ -19,9 +19,13 @@ abstract class NewWorld5 extends OnePiece5
 	private $_routeTable = null;
 	private $_content    = null;
 	private $_data		 = array();
+	private $_log		 = null;
 	
 	function __construct($args=array())
 	{
+		//	Log
+		if( $this->_log){ $this->_log[] = __METHOD__; }
+		
 		//  output is buffering.
 		$io = ob_start();
 		$io = parent::__construct($args);
@@ -35,6 +39,9 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function __destruct()
 	{
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__; }
+		
 		//  Called dispatch?
 		if(!$this->_isDispatch){
 			$this->StackError('App has not dispatched. Please call $app->Dispatch();');
@@ -55,6 +62,9 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  
 		$io = parent::__destruct();
+		
+		//	Log
+		if( $this->_log ){ $this->d( $this->_log ); }
 		
 		return $io;
 	}
@@ -272,12 +282,15 @@ abstract class NewWorld5 extends OnePiece5
 			return true;
 		}
 		
+		//	Reload route info
+		$route = $this->GetEnv('route');
+		
 		// controller root
 		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
 		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
 		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
 		$this->SetEnv('Ctrl-Root',$ctrl_root);
-				
+		
 		// change dir
 		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
 		
@@ -358,7 +371,10 @@ abstract class NewWorld5 extends OnePiece5
 		 * Search begins from AppRoot.
 		 * settings-file is looked for forward Dispatch-dir, from AppRoot
 		 */
-		 
+
+		//	Log
+		if( isset($this->_log) ){ $this->_log[] = __METHOD__.", {$route['path']}"; }
+		
 		//  Get settings file name.
 		if(!$setting = $this->GetEnv('setting-name') ){
 			return true;
@@ -516,15 +532,32 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
+	/**
+	 * Forward local location.(not external URL)
+	 * 
+	 * @param unknown $url
+	 * @param string $exit
+	 * @return void|boolean
+	 */
 	function Location( $url, $exit=true )
 	{
-		$url = $this->ConvertUrl($url);
-	
+		//	Document root path
+		$url = $this->ConvertUrl($url,false);
+		
+		//	Check infinity loop.
+		$temp = explode('?',$_SERVER['REQUEST_URI']);
+		if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
+			if( $this->_log ){ $this->_log[] = __METHOD__.", Infinith loop."; }
+			return false;
+		}
+		
+		/*
 		$location = $this->GetSession('Location');
 		if( $url === $location['referer'] ){
 			$this->StackError("Redirect is roop. ($url)");
 			return false;
 		}
+		*/
 	
 		$io = $this->Header("Location: " . $url);
 		if( $io ){
@@ -549,6 +582,9 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function SetForward( $url )
 	{
+		//	Log
+		if( isset($this->_log) ){ $this->_log[] = __METHOD__.", $url"; }
+		
 		//	Reset forward URL
 		if( empty($url) ){
 			$this->SetEnv('forward', null);
@@ -571,6 +607,9 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function doForward()
 	{
+		//	Log
+		if( isset($this->_log) ){ $this->_log[] = __METHOD__; }
+		
 		//	Forward URL
 		if(!$url = $this->GetEnv('forward')){
 			return false;

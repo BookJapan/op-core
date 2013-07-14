@@ -7,9 +7,25 @@ class Form5 extends OnePiece5
 	private	$status;
 	private $config;
 	private	$session;
+	private $_log = null;//array('active');
+	
+	function __destruct()
+	{
+		//	Log
+		if( $this->_log ){
+			$this->_log[] = __METHOD__;
+			$this->d( $this->_log ); 
+		}
+		
+		//	Destruct
+		parent::__destruct();
+	}
 	
 	function Init()
 	{
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__; }
+		
 		parent::Init();
 		$this->status = new Config();
 		$this->config = new Config();
@@ -86,6 +102,9 @@ class Form5 extends OnePiece5
 	
 	public function Secure( $form_name )
 	{
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__ .', '. $this->status->$form_name->message; }
+		
 		if(!$this->CheckConfig( $form_name )){
 			return false;
 		}
@@ -135,8 +154,14 @@ class Form5 extends OnePiece5
 	}
 	
 	private function GenerateTokenKey( $form_name )
-	{
+	{	
+		//	Create Token-key
 		$token_key = md5( $form_name . microtime() . $_SERVER['REMOTE_ADDR'] );
+
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__.", $form_name, $token_key"; }
+		
+		//	Set new token-key
 		$this->SetTokenKey($form_name, $token_key);
 	}
 	
@@ -146,9 +171,16 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		//	Get token table
 		$token = $this->GetSession('token');
+		
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__." | Current Token key: $token_key"; }
+		
+		//	Save new token
 		$token[$form_name] = $token_key;
 		$this->SetSession('token',$token);
+
 	}
 	
 	private function GetTokenKey( $form_name )
@@ -158,7 +190,12 @@ class Form5 extends OnePiece5
 		}
 		
 		$token = $this->GetSession('token');
-		return isset($token[$form_name]) ? $token[$form_name]: null;
+		$token_key = isset($token[$form_name]) ? $token[$form_name]: null;
+		
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__." | Current Token key: $token_key"; }
+		
+		return $token_key;
 	}
 	
 	const STATUS_VISIT_FIRST       = '1st visit';
@@ -174,15 +211,19 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		//	TODO: Please leave comment.
 		$token_key_name = $this->GetTokenKeyName($form_name);
 		$save_token = $this->GetTokenKey($form_name);
 		$post_token = Toolbox::GetRequest( $token_key_name );
 		
-		/*
-		$this->mark("key=$token_key_name");
-		$this->mark("save=$save_token");
-		$this->mark("post=$post_token");
-		*/
+		if( $this->_log ){
+			/*
+			$this->_log[] = __METHOD__." | form_name: $form_name";
+			$this->_log[] = __METHOD__." | saved key: $save_token";
+			$this->_log[] = __METHOD__." | posts key: $post_token";
+			$this->d($_SESSION['OnePiece5']['Form5']);
+			*/
+		}
 		
 		if( !$save_token and !$post_token ){
 			
@@ -1121,6 +1162,13 @@ class Form5 extends OnePiece5
 		if(isset($config->inputs) and empty($config->input)){
 			$config->input = $config->inputs;
 		}
+
+		//	Debug
+		if( $this->_log ){
+		//	$this->_log[] = __METHOD__ . " | " . $_SERVER['REQUEST_URI'];
+			$this->_log[] = __METHOD__ . " | Last time: " . $this->GetSession('request_uri');
+			$this->SetSession('request_uri',$_SERVER['REQUEST_URI']);
+		}
 		
 		// default
 		$this->status->$form_name = new Config();
@@ -1328,6 +1376,9 @@ class Form5 extends OnePiece5
 		//  print form tag.
 		printf('<form name="%s" action="%s" method="%s" %s Accept-Charset="%s" %s %s>'.$nl, $form_name, $action, $method, $enctype, $charset, $class, $style);
 		printf('<input type="hidden" name="%s" value="%s" />'.$nl, $token_key_name, $token_key);
+
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__." | $form_name, $token_key"; }
 		
 		$this->SetCurrentFormName($form_name);
 	}
