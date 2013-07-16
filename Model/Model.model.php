@@ -123,6 +123,7 @@ class ConfigModel extends ConfigMgr
 		$config = parent::database();
 		$config->user     = 'op_model';
 		$config->password = md5( $password );
+		
 		return $config;
 	}
 	

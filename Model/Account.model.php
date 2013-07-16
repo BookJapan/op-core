@@ -309,11 +309,11 @@ class AccountConfig extends ConfigModel
 	
 	function Selftest()
 	{
-		//	Base config
-		$config = parent::Selftest();
-		
 		//	Table name
 		$table_name = $this->table_name();
+		
+		//	Base config
+		$config = parent::Selftest( $table_name );
 		
 		//	Column
 		$name = self::COLUMN_ID;

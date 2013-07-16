@@ -272,38 +272,59 @@ abstract class NewWorld5 extends OnePiece5
 		//	route info
 		$this->SetEnv('route',$route);
 		
-		//	setting
-		if(!$this->doSetting($route)){
-			return true;
+		try{
+			//	Flash buffer
+			$this->_content  = ob_get_contents(); ob_clean();
+			
+			//	Check selftest
+			$config = isset($_SESSION['OnePiece5']['_selftest']) ? $_SESSION['OnePiece5']['selftest']: null;
+			
+			if( $config ){
+			
+				$wz = new Wizard();
+				$io = $wz->Selftest( $config );
+				
+				if( $io ){
+					$_SESSION['OnePiece5']['selftest'] = null;
+				}else{
+					//	$_SESSION['OnePiece5']['selftest'] = null;
+				}
+			}
+		
+			//	setting
+			if(!$this->doSetting($route)){
+				return true;
+			}
+			
+			//	Forward
+			if( $this->doForward() ){
+				return true;
+			}
+			
+			//	Reload route info
+			$route = $this->GetEnv('route');
+			
+			//  content
+			$this->doContent();
+			
+		}catch( OpWzException $e ){
+			
+			//	Begin the Wizard.
+			$config = $e->GetConfig();
+			$wz = new Wizard();
+			$io = $wz->DoWizard($config);
+			if( $io ){
+				$this->p("Wizard is successful. Please reload this page.");
+			}else{
+				$wz->PrintForm( $config->form );
+			}
+			
+			//	Join the content.
+			$this->_content  = ob_get_contents(); ob_clean();
+			
+		}catch( Exception $e ){
+			$this->StackError($e);
 		}
-		
-		//	Forward
-		if( $this->doForward() ){
-			return true;
-		}
-		
-		//	Reload route info
-		$route = $this->GetEnv('route');
-		
-		// controller root
-		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
-		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
-		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
-		$this->SetEnv('Ctrl-Root',$ctrl_root);
-		
-		// change dir
-		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
-		
-		if( isset($route['pass']) and $route['pass'] ){
-		//	$this->mark( $chdir );
-			chdir( dirname($route['fullpath']) );
-		//	$this->mark( getcwd() );
-		}else{
-			chdir( $chdir );
-		}
-		
-		//  content
-		$this->doContent();
 		
 		//  layout
 		$this->doLayout();
@@ -323,44 +344,29 @@ abstract class NewWorld5 extends OnePiece5
 			$this->StackError('Empty route.');
 			return false;
 		}
+
+		// controller root
+		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
+		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
+		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
+		$this->SetEnv('Ctrl-Root',$ctrl_root);
+		
+		// change dir
+		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
+		
+		if( isset($route['pass']) and $route['pass'] ){
+			//	$this->mark( $chdir );
+			chdir( dirname($route['fullpath']) );
+			//	$this->mark( getcwd() );
+		}else{
+			chdir( $chdir );
+		}
 		
 		//  Controller file path.
 		$path = getcwd().'/'.$route['file'];
-		
-		//  Content
-		try{
-			//	Flash buffer
-			$this->_content  = ob_get_contents(); ob_clean();
-			
-			//	Check selftest
-			$config = isset($_SESSION['OnePiece5']['selftest']) ? $_SESSION['OnePiece5']['selftest']: null;
-			if( $config ){
-				$wz = new Wizard();
-				$io = $wz->Selftest( $config );
-				if( $io ){
-					$this->SetSession('selftest',null);
-				}
-			}
-			
-			//	Execute controller.
-			$this->_content .= $this->GetTemplate($path);
-		}catch( OpWzException $e ){
-			
-			//	Begin the Wizard.
-			$config = $e->GetConfig();
-			$wz = new Wizard();
-			$io = $wz->DoWizard($config);
-			if( $io ){
-				$this->p("Wizard is successful. Please reload this page.");
-			}else{
-				$wz->PrintForm( $config->form );
-			}
-			
-			//	Join the content.
-			$this->_content  = ob_get_contents(); ob_clean();
-		}catch( Exception $e ){
-			$this->StackError($e);
-		}
+
+		//	Execute controller.
+		$this->_content .= $this->GetTemplate($path);
 		
 		return true;
 	}
@@ -410,9 +416,11 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		//  check the layout is set. 
 		if(!$layout = $this->GetEnv('layout') ){
-			//  Does not set layout.
-			if( $this->admin() ){
-				$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
+			if(is_null($layout)){
+				//  Does not set layout.
+				if( $this->admin() ){
+					$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
+				}
 			}
 			return;
 		}

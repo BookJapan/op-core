@@ -19,22 +19,6 @@ class Wizard extends OnePiece5
 		return $this->config;
 	}
 	
-	function _Selftest( Config $conifg )
-	{
-		//	Check
-		if(!$this->admin()){
-			return;
-		}
-		
-		//  Start
-		$this->model('Log')->Set("START: Selftest.");
-		
-		//  Finish
-		$this->model('Log')->Set("FINISH: Selftest.",$io);
-		$this->model('Log')->Out();
-		return $io;
-	}
-	
 	function Selftest( Config $config )
 	{
 		if(!$this->admin()){
@@ -62,25 +46,6 @@ class Wizard extends OnePiece5
 		$this->_CheckTable($config);
 		
 		return true;
-		
-		//===========================================================================//
-		
-		try{
-			$this->_CheckDatabase($config);
-			$this->_CheckTable($config);
-			$io = true;
-		}catch( Exception $e ){
-			$io = false;
-			$me = $e->getMessage();
-			$this->p( $me );
-			$this->model('Log')->Set($me,false);
-			$this->_DoWizard( $config );
-		}	
-		
-		//  Finish
-		$this->model('Log')->Set("FINISH: Selftest.",$io);
-		$this->model('Log')->Out();
-		return $io;
 	}
 	
 	private function _Execute( Config $config )

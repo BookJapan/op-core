@@ -381,7 +381,7 @@ abstract class ConfigMgr extends OnePiece5
 		return $config;
 	}
 	
-	function Selftest()
+	function Selftest( $table_name=null )
 	{
 		$config = new Config();
 		
@@ -391,6 +391,21 @@ abstract class ConfigMgr extends OnePiece5
 		
 		//	Database
 		$config->database = $this->Database();
+
+		//	Column
+		if( $table_name ){
+			$name = 'created';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'updated';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'deleted';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'timestamp';
+			$config->table->$table_name->column->$name->type = 'timestamp';
+		}
 		
 		return $config;
 	}

@@ -29,9 +29,11 @@ class Form5 extends OnePiece5
 		parent::Init();
 		$this->status = new Config();
 		$this->config = new Config();
+		
+		//	Test implements.
 		if( $this->admin() ){
 			$io = session_regenerate_id(true);
-	}
+		}
 	}
 	
 	private function GetRequest( $input_name, $form_name )
@@ -50,10 +52,17 @@ class Form5 extends OnePiece5
 				$input = $form->input->$input_name;
 			}
 		}
-
+		
 		//  If case of file upload.
 		if( isset($_FILES[$input_name]) ){
-			$request = $_FILES[$input_name]['name']."({$_FILES[$input_name]['type']})";
+		//	$this->d( $_FILES[$input_name] );
+			
+			if( $_FILES[$input_name]['size'] == 0 ){
+				$request = null;
+			}else{
+				$request = $_FILES[$input_name]['name']."({$_FILES[$input_name]['type']})";
+			}
+			
 		}else{
 			$request = Toolbox::GetRequest( $input_name, $form->method );
 		}
@@ -376,7 +385,7 @@ class Form5 extends OnePiece5
 			if( $this->GetTokenKeyName($form_name) === $input_name ){
 				return false;
 			}
-			$this->mark("![.red[Does not exists this input-name into form-config. ($input_name, $form_name)]]");
+			$this->mark("![.red[This input-name doesn't exist in form-config. ($input_name, $form_name)]]");
 			return false;
 		}
 		
@@ -443,14 +452,6 @@ class Form5 extends OnePiece5
 		
 		return 'This method(function) is print.';
 	}
-
-	/*
-    public function InputValue( $input_name, $form_name=null, $joint=null )
-	{
-		print $this->GetInputValue( $input_name, $form_name, $joint );
-		return 'This method(function) is print.';
-	}
-	*/
 	
 	/**
 	 * Get value
@@ -484,6 +485,7 @@ class Form5 extends OnePiece5
 		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
+		
 		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
@@ -493,8 +495,8 @@ class Form5 extends OnePiece5
 				return $value;
 			default:
 		}
-				
-		//	value's type
+		
+		//	TODO: Please add comment.
 		switch( $type = strtolower(gettype($value)) ){
 			case 'null':
 				return null;
@@ -511,6 +513,7 @@ class Form5 extends OnePiece5
 				$this->mark("undefined type. ($type)");
 		}
 		
+		//	TODO: Please add comment.
 		if( is_array($value) ){
 			if( strlen(join('',$value)) ){
 				//  joint
@@ -826,11 +829,11 @@ class Form5 extends OnePiece5
 					
 					return false;
 				}
-			
+				
 				//  Reset form config. 
 				$this->SetInputValue( null, $input_name, $form_name );
 			
-				//	TODO: SetInputValue　Fails permit=image case.
+				//	TODO: SetInputValue　Fails permit=image case. (This English is not through...)
 				$_SESSION['OnePiece5']['Form5']['form'][$form_name][$input_name]['value'] = '';
 				
 				//  Status
@@ -870,7 +873,7 @@ class Form5 extends OnePiece5
 				$op_uniq_id = $this->GetCookie( self::KEY_COOKIE_UNIQ_ID );
 				
 				if( empty($input->save) ){
-					$path = sys_get_temp_dir() .DIRECTORY_SEPARATOR. md5($name . $op_uniq_id).".$ext";
+					$path = sys_get_temp_dir() .'/'. md5($name . $op_uniq_id).".$ext";
 				}else{
 					if( isset($input->save->path) ){
 						//  hard path
@@ -890,9 +893,8 @@ class Form5 extends OnePiece5
 						if( isset($input->save->name) ){
 							$name = $input->save->name;
 							$path = $dir.'/'.$name.'.'.$ext;
-                            //$this->mark(" $dir, $name, $ext ");
 						}else{
-							$path = $dir .DIRECTORY_SEPARATOR. md5($name . $op_uniq_id).".$ext";
+							$path = $dir .'/'. md5($name . $op_uniq_id).".$ext";
 						}
 					}
 				}
@@ -957,6 +959,9 @@ class Form5 extends OnePiece5
 	
 	/*******************************************************************************/
 	
+	/**
+	 * Convert to Form-Config from Array.
+	 */
 	private function GenerateConfig( $args )
 	{
 		if( is_null($args) ){
@@ -978,12 +983,7 @@ class Form5 extends OnePiece5
 				break;
 				
 			default:
-				$this->stackError('Undefined args type.');
-
-				$this->mark($type);
-				$this->d($args);
-				$this->d(Toolbox::toArray($config));
-				
+				$this->stackError('Undefined args type.');				
 		}
 		
 		return $config;
@@ -996,8 +996,6 @@ class Form5 extends OnePiece5
 	 */
 	private function GenerateConfigFromPath($path)
 	{
-		$this->mark(__METHOD__.": $path");
-		
 		//  Convert from abstract path to absolute path.
 		$path = $this->ConvertPath($path);
 		
@@ -1027,29 +1025,10 @@ class Form5 extends OnePiece5
 		if(isset($_forms)){
 			$config = Toolbox::toObject($_forms);
 		}else if(isset($_form)){
-//			$config->{$_form['name']} = Toolbox::toObject($_form);
 			$config = Toolbox::toObject($_form);
 		}else if(isset($config)){
 			// OK
 		}else{
-			/*
-			include($path);
-			if(isset($_forms)){
-				$config = Toolbox::toObject($_forms);
-			}else if(isset($_form)){
-
-			//	$config->default = Toolbox::toObject($_form);
-				$config = Toolbox::toObject($_form);
-				
-				
-			}else if(isset($config)){
-				// OK
-			}else{
-				$this->StackError('Does not find form config.');
-				return false;
-			}
-			*/
-
 			$this->StackError('Does not find form config.');
 			return false;
 		}
@@ -1234,10 +1213,15 @@ class Form5 extends OnePiece5
 		}
 		
 		//  str to lower
+		/*
 		if( isset($input->name) ){
 			$input->name = strtolower($input->name);
 			$input_name  = $input->name;
 		}
+		*/
+		
+		//	Stop the convert to lowercase.
+		$input_name = $input->name;
 		
 		if( isset($input->type) ){
 			$input->type = strtolower($input->type);
@@ -1556,7 +1540,8 @@ class Form5 extends OnePiece5
 		if( !empty($input->group) ){
 		//	$this->mark( $value );
 		//	$this->d( Toolbox::toArray($input) );
-		}else if( $type === 'submit' or $type === 'button' ){
+		}else if( $type === 'submit' or $type === 'button' or $type === 'file' ){
+			//	Over write input label.
 			if( $value_default ){
 				$value = $value_default;
 			}
@@ -1644,7 +1629,7 @@ class Form5 extends OnePiece5
 						$remover->name    = $input->name;
 						$remover->type    = 'checkbox';
 						$remover->value   = $value;
-						$remover->label   = $value;
+						$remover->label   = $value_default ? $value_default: $value;
 						$remover->checked = true;
 					}
 					//  Create remover
@@ -1983,7 +1968,7 @@ class Form5 extends OnePiece5
 		}
 		
 		//  validate
-		if(isset($input->validate)){
+		if(!empty($input->validate)){
 			if(!$this->CheckValidate($input, $form_name, $value)){					
 				return false;
 			}
@@ -2063,9 +2048,9 @@ class Form5 extends OnePiece5
 			// send value
 			$value = $this->GetRequest( $input->name, $form_name );
 		}
-
+			
 		//  trim
-		if( isset($input->trim) and $input->trim ){
+		if(!empty($input->trim)){
 			$this->SetStatus($form_name,"XX: trim ({$input->name})");
 			//  normal
 			$value = trim($value);
@@ -2081,7 +2066,7 @@ class Form5 extends OnePiece5
 		}
 		
 		// check required
-		if( isset($input->validate->required) and $input->validate->required ){
+		if(!empty($input->validate->required)){
 			if(!$this->ValidateRequied($input, $form_name, $value)){
 				return false;
 			}
