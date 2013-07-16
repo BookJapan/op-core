@@ -82,13 +82,17 @@ class App extends NewWorld5
 	
 	function SetLayoutDir( $var )
 	{
-		$this->SetEnv('layout-root',$this->ConvertPath($var));
 		$this->SetEnv('layout-dir', $var);
 		return true;
 	}
 	
 	function SetLayoutName( $var )
 	{
+		//	Set layout root. (full path)
+		$layout_root = $this->GetEnv('layout-dir');
+		$layout_root = $this->ConvertPath($layout_root);
+		$this->SetEnv('layout-root',$layout_root.$var);
+		
 		return $this->SetEnv('layout', $var);
 	}
 	
@@ -212,6 +216,11 @@ class App extends NewWorld5
 	{
 		print $this->GetEnv('description');
 	}
+}
+
+class OpAppException extends OpException
+{
+	
 }
 
 /**

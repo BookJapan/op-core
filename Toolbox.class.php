@@ -535,6 +535,10 @@ class Toolbox
   color: gray;
 }
 
+.green{
+  color: green;
+}
+
 .purple{
   color: #cf00fc;
 }

@@ -1,5 +1,5 @@
 <?php
-
+# vim: tabstop=4
 /**
  * Added "op-root" to include_path.
  */
@@ -195,11 +195,10 @@ if(!function_exists('OnePieceExceptionHandler')){
 	function OnePieceExceptionHandler($e)
 	{
 		//  TODO: 
-		//print "<h1>Please implement the e-mail alert.</h1>";
+		print "<h1>Please implement the e-mail alert.</h1>";
 		$op = new OnePiece5();
 		$op->StackError( $e->getMessage() );
 		printf('<div><p>[%s] %s</p><p>%s : %s</p></div>', get_class($e), $e->GetMessage(), $e->GetFile(), $e->GetLine() );
-	//	dump::d(Toolbox::toArray($e));
 	}
 	set_exception_handler('OnePieceExceptionHandler');
 }
@@ -394,7 +393,7 @@ class OnePiece5
 	function Init()
 	{
 		$this->isInit = true;
-
+		
 		//  No use self.
 		if( $this instanceof i18n ){
 			return true;
@@ -406,8 +405,6 @@ class OnePiece5
 		//  Include configuration file.
 		if( file_exists($path) ){
 			$this->i18n()->SetByFile($path);
-		}else{
-			//$this->mark( $path );
 		}
 		
 		return true;
@@ -473,6 +470,8 @@ class OnePiece5
 			$line     = $e->getLine();
 			$prev     = $e->getPrevious();
 			$code     = $e->getCode();
+			
+			$file     = self::CompressPath($file);
 			$incident = "$file [$line]";
 			
 			$file = $traceArr[0]['file'];
@@ -481,8 +480,9 @@ class OnePiece5
 			$class= $traceArr[0]['class'];
 			$type = $traceArr[0]['type'];
 			$args = var_export( $traceArr[0]['args'], true);
-			$trace = "$file [$line] {$class}{$type}{$func}($args)";
 			
+			$file = self::CompressPath($file);
+			$trace = "$file [$line] {$class}{$type}{$func}($args)";
 		}else{
 			$incident = self::GetCallerLine( 1, 1, 'incident');
 			$message  = self::Escape( $args, $encoding );
@@ -493,7 +493,7 @@ class OnePiece5
 		$error['message']  = $message;
 		$error['trace']	   = $trace;
 		
-		$_SERVER[__CLASS__]['errors'][] = $error;
+		$_SERVER['OnePiece5']['errors'][] = $error;
 	}
 	
 	/**
@@ -503,11 +503,11 @@ class OnePiece5
 	{
 		// init
 		$nl = $this->GetEnv('nl');
-		$class = __CLASS__;
+		$class = 'OnePiece5';
 		
-		if(isset($_SERVER[__CLASS__]['errors'])){
-			$errors = $_SERVER[__CLASS__]['errors'];
-			unset($_SERVER[__CLASS__]['errors']);
+		if(isset($_SERVER[$class]['errors'])){
+			$errors = $_SERVER[$class]['errors'];
+			unset($_SERVER[$class]['errors']);
 		}else{
 			return true;
 		}
@@ -1050,8 +1050,8 @@ __EOL__;
 	 */
 	static function GetCallerLine( $depth=0, $num=1, $format=null )
 	{
-		// TODO: file system encoding
-		$encode_file_system = PHP_OS == 'WINNT' ? 'sjis': 'utf-8';
+		// file system encoding
+		$encode_file_system = PHP_OS === 'WINNT' ? 'sjis-win': 'utf-8';
 		
 		//  init
 		$call_line = '';
@@ -1075,7 +1075,7 @@ __EOL__;
 			$func  = $back[$depth]['function'];
 			$args  = $back[$depth]['args'];
 			$file  = isset($back[$depth]['file'])  ? $back[$depth]['file']:  '';
-			$line  = isset($back[$depth]['line'])  ? $back[$depth]['line']: '';;
+			$line  = isset($back[$depth]['line'])  ? $back[$depth]['line']:  '';
 			$type  = isset($back[$depth]['type'])  ? $back[$depth]['type']:  '';
 			$class = isset($back[$depth]['class']) ? $back[$depth]['class']: '';
 			
@@ -1150,7 +1150,11 @@ __EOL__;
 			}
 			
 			// method
-			$method = "$class$type$func($args)";
+			if( $type ){
+				$method = "$class$type$func($args)";
+			}else{
+				$method = null;
+			}
 			
 			switch(strtolower($format)){
 				case 'incident':
@@ -1163,8 +1167,20 @@ __EOL__;
 					
 				case '':
 				case 'null':
-					$format = '$file [$line] ';
+					if( $func ){
+						if( $method ){
+							$format = '$file [$line] ';
+						}else if( $class ){
+							$format = '$file ($class$type$func) [$line] ';
+						}else{
+							$format = '$file ($func) [$line] ';
+						}
+					}else{
+						$format = '$file [$line] ';
+					}
 					break;
+				default:
+				//	$format = 'This format is undefined. ($format)';
 			}
 			
 			$patt = array('/\$filefull/','/\$file/','/\$line1m/','/\$line/','/\$class/','/\$type/','/\$function/','/\$func/','/\$args/','/\$method/');
@@ -1183,7 +1199,7 @@ __EOL__;
 	static function CompressPath( $path )
 	{
 		// TODO: file system encoding. (Does not support multi language, yet)
-		$encode_file_system = PHP_OS == 'WINNT' ? 'sjis': 'utf-8';
+		$encode_file_system = PHP_OS === 'WINNT' ? 'sjis-win': 'utf-8';
 		if( PHP_OS == 'WINNT' ){
 			$path = str_replace( '\\', '/', $path );
 		}
@@ -1773,6 +1789,7 @@ __EOL__;
 	 */
 	function ConvertURL( $args, $domain=true )
 	{
+		//	Check if abstract path.
 		if( preg_match('|^([a-z][a-z0-9]+):/(.*)|i',$args,$match) ){
 			switch($match[1]){
 				case 'http':
@@ -1799,6 +1816,7 @@ __EOL__;
 			
 			//	replace document root.
 			$args = preg_replace( '|^'.rtrim($this->GetEnv('doc-root'),'/').'|', '', $args );
+			$args = str_replace('\\','/',$args);
 			
 			return $args;
 		}
@@ -1913,13 +1931,42 @@ __EOL__;
 			//  Instance is success.
 			return $_SERVER[__CLASS__]['model'][$name];
 			
+		}catch( OpWzException $e ){
+			
+			//	Pass to NewWorld			
+			$_SESSION['OnePiece5']['selftest'] = $e->GetConfig();
+			
+			/*
+			var_dump( get_class( $this ) );
+			
+			//	Debug
+			$file = $e->getFile();
+			$line = $e->getLine();
+			$this->mark( __METHOD__ . "($file, $line)" );
+			*/
+			
+			/*
+			//	Begin the Wizard.
+			$config = $e->GetConfig();
+			$wz = new Wizard();
+			$io = $wz->DoWizard($config);
+			if( $io ){
+				$this->p("Wizard is successful. Please reload this page.");
+			}else{
+				$wz->PrintForm( $config->form );
+			}
+			*/
+
+			throw $e;
+			
 		}catch( Exception $e ){
-			$this->mark( $e->getMessage() );
-			$this->StackError( $e->getMessage() );
+			$file = $e->getFile();
+			$line = $e->getLine();
+			$this->StackError( $e->getMessage() . "($file, $line)" );
 			return new OnePiece5();
 		}
 	}
-
+	
 	function Module($name)
 	{
 		try{
@@ -2185,5 +2232,15 @@ __EOL__;
 
 class OpException extends Exception
 {
+	private $_wizard = null;
 	
+	function SetWizard()
+	{
+		OnePiece5::SetEnv('wizard',true);
+	}
+	
+	function GetWizard()
+	{
+		return OnePiece5::GetEnv('wizard');
+	}
 }

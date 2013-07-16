@@ -13,6 +13,17 @@ class Config extends stdClass
 		
 	}
 	
+	function Set( $key,  $val )
+	{
+		$this->$key = $val;
+		return $this;
+	}
+	
+	function Get( $key )
+	{
+		return $this->$key;
+	}
+	
 	function __set( $name, $value )
 	{
 		if(!isset($this->{$name})){
@@ -89,4 +100,5 @@ class Config extends stdClass
 			Dump::D(Toolbox::toArray($this));
 		}
 	}
+	
 }

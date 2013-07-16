@@ -17,14 +17,25 @@ abstract class Model_Model extends OnePiece5
 		
 		//  init config
 		$this->config = new Config();
-	//	$this->config();
+		
+		//	selftest
+		if( $this->Admin() ){			
+			if( method_exists( $this, 'Selftest') ){				
+				$this->Selftest();
+			}
+		}
 	}
-
+	
 	function Test()
 	{
 		$this->mark( $this->GetCallerLine() );
 		$this->mark('Called test method: ' . get_class($this));
 		return true;
+	}
+	
+	function Help()
+	{
+		$this->mark("Does not implements help.");
 	}
 	
 	function pdo($name=null)
@@ -47,7 +58,12 @@ abstract class Model_Model extends OnePiece5
 				
 				//  Selftest
 				if( method_exists( $this, 'Selftest') ){
-					$this->Selftest();
+					$selftest = $this->Selftest();
+					if( $selftest instanceof Config ){
+						$_SESSION['OnePiece5']['selftest'] = $selftest;
+						$wz = new Wizard();
+						$wz->Selftest($selftest);
+					}
 				}else{
 					$config->d();
 				}
@@ -97,7 +113,6 @@ abstract class Model_Model extends OnePiece5
 
 class ConfigModel extends ConfigMgr
 {
-//	const TABLE_PREFIX = 'op';
 	private $_table_prefix = 'op';
 	
 	static function Database()
@@ -108,9 +123,18 @@ class ConfigModel extends ConfigMgr
 		$config = parent::database();
 		$config->user     = 'op_model';
 		$config->password = md5( $password );
+		
 		return $config;
 	}
-
+	
+	function GetDatabaseConfig()
+	{
+		$config = parent::GetDatabaseConfig();
+		$config->user = 'op_model';
+		return $config;
+	}
+	
+	/*
 	function SetPrefix( $prefix )
 	{
 		$this->_table_prefix = $prefix;
@@ -120,6 +144,7 @@ class ConfigModel extends ConfigMgr
 	{
 		return 'op' .'_'. $label;
 	}
+	*/
 }
 
 class OpModelException extends Exception

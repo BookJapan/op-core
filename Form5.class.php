@@ -7,9 +7,25 @@ class Form5 extends OnePiece5
 	private	$status;
 	private $config;
 	private	$session;
+	private $_log = null;//array('active');
+	
+	function __destruct()
+	{
+		//	Log
+		if( $this->_log ){
+			$this->_log[] = __METHOD__;
+			$this->d( $this->_log ); 
+		}
+		
+		//	Destruct
+		parent::__destruct();
+	}
 	
 	function Init()
 	{
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__; }
+		
 		parent::Init();
 		$this->status = new Config();
 		$this->config = new Config();
@@ -95,6 +111,9 @@ class Form5 extends OnePiece5
 	
 	public function Secure( $form_name )
 	{
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__ .', '. $this->status->$form_name->message; }
+		
 		if(!$this->CheckConfig( $form_name )){
 			return false;
 		}
@@ -144,8 +163,14 @@ class Form5 extends OnePiece5
 	}
 	
 	private function GenerateTokenKey( $form_name )
-	{
+	{	
+		//	Create Token-key
 		$token_key = md5( $form_name . microtime() . $_SERVER['REMOTE_ADDR'] );
+
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__.", $form_name, $token_key"; }
+		
+		//	Set new token-key
 		$this->SetTokenKey($form_name, $token_key);
 	}
 	
@@ -155,9 +180,16 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		//	Get token table
 		$token = $this->GetSession('token');
+		
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__." | Current Token key: $token_key"; }
+		
+		//	Save new token
 		$token[$form_name] = $token_key;
 		$this->SetSession('token',$token);
+
 	}
 	
 	private function GetTokenKey( $form_name )
@@ -167,7 +199,12 @@ class Form5 extends OnePiece5
 		}
 		
 		$token = $this->GetSession('token');
-		return isset($token[$form_name]) ? $token[$form_name]: null;
+		$token_key = isset($token[$form_name]) ? $token[$form_name]: null;
+		
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__." | Current Token key: $token_key"; }
+		
+		return $token_key;
 	}
 	
 	const STATUS_VISIT_FIRST       = '1st visit';
@@ -183,15 +220,19 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		//	TODO: Please leave comment.
 		$token_key_name = $this->GetTokenKeyName($form_name);
 		$save_token = $this->GetTokenKey($form_name);
 		$post_token = Toolbox::GetRequest( $token_key_name );
 		
-		/*
-		$this->mark("key=$token_key_name");
-		$this->mark("save=$save_token");
-		$this->mark("post=$post_token");
-		*/
+		if( $this->_log ){
+			/*
+			$this->_log[] = __METHOD__." | form_name: $form_name";
+			$this->_log[] = __METHOD__." | saved key: $save_token";
+			$this->_log[] = __METHOD__." | posts key: $post_token";
+			$this->d($_SESSION['OnePiece5']['Form5']);
+			*/
+		}
 		
 		if( !$save_token and !$post_token ){
 			
@@ -435,7 +476,7 @@ class Form5 extends OnePiece5
 	 */
     public function GetInputValue( $input_name, $form_name=null, $joint=null )
 	{
-		//  more fast.
+		//  more fast
 		if(!$input = $this->GetConfig( $form_name, $input_name )){
 			$this->StackError("Does not exists config.(form: $form_name, input: $input_name)");
 			return false;
@@ -444,11 +485,15 @@ class Form5 extends OnePiece5
 		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
-		//	TODO: Please add comment.
+		
+		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
-				//  Convert to Document-root-path from Full-path.
-				return str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
+				//  Convert Full-path to Document-root-path.
+			//	$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
+				$value = $this->ConvertURL($value);
+				return $value;
+			default:
 		}
 		
 		//	TODO: Please add comment.
@@ -458,8 +503,9 @@ class Form5 extends OnePiece5
 				
 			case 'string':
 				return nl2br($value);
-			
+				
 			case 'boolean':
+			case 'integer':
 			case 'array':
 				break;
 				
@@ -765,7 +811,7 @@ class Form5 extends OnePiece5
 		
 		if( $save_value ){
 			
-			//  delete routine
+			//  Submit is remover
 			if( is_array($post_value) and count($post_value) == 1 and empty($post_value[0]) ){
 				
 				//  challenge to delete the upload file.
@@ -818,8 +864,7 @@ class Form5 extends OnePiece5
 					$error = 4;
 				}
 			}else if( is_null($value) ){
-				$this->mark("$input_name, $form_name");
-				return true;
+				return $this->GetInputValueRaw( $input_name, $form_name );
 			}
 		}
 		
@@ -871,6 +916,7 @@ class Form5 extends OnePiece5
                 
 			//	$this->mark("tmp: $tmp, path: $path, io: $io");
 				if( $io ){
+					//	Saved value
 					$this->SetStatus( $form_name, "OK: file copy to $path");
 					$this->SetInputValue( $path, $input_name, $form_name );
 					return $path;
@@ -1095,6 +1141,13 @@ class Form5 extends OnePiece5
 		if(isset($config->inputs) and empty($config->input)){
 			$config->input = $config->inputs;
 		}
+
+		//	Debug
+		if( $this->_log ){
+		//	$this->_log[] = __METHOD__ . " | " . $_SERVER['REQUEST_URI'];
+			$this->_log[] = __METHOD__ . " | Last time: " . $this->GetSession('request_uri');
+			$this->SetSession('request_uri',$_SERVER['REQUEST_URI']);
+		}
 		
 		// default
 		$this->status->$form_name = new Config();
@@ -1307,6 +1360,9 @@ class Form5 extends OnePiece5
 		//  print form tag.
 		printf('<form name="%s" action="%s" method="%s" %s Accept-Charset="%s" %s %s>'.$nl, $form_name, $action, $method, $enctype, $charset, $class, $style);
 		printf('<input type="hidden" name="%s" value="%s" />'.$nl, $token_key_name, $token_key);
+
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__." | $form_name, $token_key"; }
 		
 		$this->SetCurrentFormName($form_name);
 	}
@@ -1345,7 +1401,7 @@ class Form5 extends OnePiece5
 		return null;
 	}
 	
-	public function Clear( $form_name, $force=false )
+	public function Erase( $form_name, $force=false )
 	{
 		if(!$this->CheckConfig($form_name)){
 			if( $force ){
@@ -1354,18 +1410,43 @@ class Form5 extends OnePiece5
 				return false;
 			}
 		}
-
-        //  Submit value is clear
+		
+		//	Reset token key.
+		$this->SetTokenKey($form_name, md5(time()));
+		
+        //  Erase the saved value.
 		$form = $this->GetSession('form');
 		if( isset($form[$form_name]) ){
 			unset($form[$form_name]);
 		}
-		if( true /*$_POST['form_name'] === $form_name*/ ){
-			$_POST = array();
-		}
+		
+		//	Empty the $_POST
+		$_POST = array();
+		
+		//	Save empty value to session.
 		$this->SetSession('form',$form);
 		
 		return true;
+	}
+	
+	public function Delete( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
+	}
+	
+	public function Remove( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
+	}
+	
+	public function Clear( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
+	}
+	
+	public function Flash( $form_name, $force=false )
+	{
+		$this->Erase($form_name, $force=false);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
@@ -1423,17 +1504,6 @@ class Form5 extends OnePiece5
 					$join[] = sprintf('%s="%s"',$key,$var);
 			}
 		}
-
-		/**
-		 * This comment out, to save memory usage.
-		//	init
-		if( empty($input->index) ){
-			$input->index = null;
-		}
-		if( empty($input->joint) ){
-			$input->joint = null;
-		}
-		*/
 		
         //  name
         if(empty($name)){
@@ -1466,30 +1536,6 @@ class Form5 extends OnePiece5
 		// request
 		$_request = $this->GetRequest( null, $form_name );
 		
-		/*
-		if( $type === 'submit' or $type === 'button' ){
-		
-			if( $value_default ){
-				$value = $value_default;
-			}
-			
-		}else if( $type === 'radio' or $type === 'checkbox'){
-			
-			$value = $this->GetSaveValue($input_name, $form_name);
-			
-		}else{
-			
-			//  value is submit value
-			if(!$value = $_request[$input_name] ){
-				
-				// value is save value
-				$value = $this->GetSaveValue($input_name, $form_name);
-				//$value = $this->GetInputValueRaw($input_name, $form_name);
-			}
-			
-		}
-		*/
-
 		// Value
 		if( !empty($input->group) ){
 		//	$this->mark( $value );
@@ -1517,10 +1563,6 @@ class Form5 extends OnePiece5
 		
 		//  tail
 		$tail = $this->Decode($tail);
-		
-		//  Escape
-		//var_dump($value);
-		//$value = $this->Escape($value);
 		
 		// radio
 		if('radio' === $type){
