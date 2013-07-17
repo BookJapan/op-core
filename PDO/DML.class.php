@@ -725,6 +725,13 @@ class DML extends OnePiece5
 					case 'IN':
 					case 'NOT IN':
 						foreach( $var as $column => $arr ){
+							
+							//	Check format (missing column name)
+							if( is_numeric($column) ){
+								$this->StackError('Missing column name into "IN" ');
+								break;
+							}
+							
 							foreach( $arr as $temp ){
 								$in[] = $this->pdo->quote($temp);
 							}
