@@ -134,17 +134,15 @@ class ConfigModel extends ConfigMgr
 		return $config;
 	}
 	
-	/*
-	function SetPrefix( $prefix )
+	function GetTablePrefix()
+	{
+		return $this->_table_prefix;
+	}
+	
+	function SetTablePrefix($prefix)
 	{
 		$this->_table_prefix = $prefix;
 	}
-	
-	function GetTableName( $label )
-	{
-		return 'op' .'_'. $label;
-	}
-	*/
 }
 
 class OpModelException extends Exception

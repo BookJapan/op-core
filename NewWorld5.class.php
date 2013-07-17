@@ -15,6 +15,12 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var array
 	 */
+	/*
+	private $isDispatch = null;
+	private $routeTable = null;
+	private $content    = null;
+	private $_data      = null;
+	*/
 	private $_isDispatch = null;
 	private $_routeTable = null;
 	private $_content    = null;
@@ -286,8 +292,6 @@ abstract class NewWorld5 extends OnePiece5
 				
 				if( $io ){
 					$_SESSION['OnePiece5']['selftest'] = null;
-				}else{
-					//	$_SESSION['OnePiece5']['selftest'] = null;
 				}
 			}
 		
@@ -704,7 +708,6 @@ abstract class NewWorld5 extends OnePiece5
 			$this->SetSession($key,null);
 		}
 		return $data;
-		return isset($this->_data[$key]) ? $this->_data[$key]: null; 
 	}
 }
 

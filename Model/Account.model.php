@@ -169,7 +169,7 @@ class AccountConfig extends ConfigModel
 		$this->_table_name = $table_name;
 	}
 	
-	function GetTableName()
+	function GetTableName( $label=null )
 	{
 		return $this->table_name();
 	}
@@ -266,7 +266,7 @@ class AccountConfig extends ConfigModel
 		return $config;
 	}
 	
-	function form_name($key=null)
+	function form_name( $key=null, $value=null )
 	{
 		return $this->_form_name;
 	}
@@ -302,7 +302,7 @@ class AccountConfig extends ConfigModel
 	const COLUMN_PASSWORD	 = 'password_md5';
 	const COLUMN_FAILED		 = 'failed';
 	
-	function Selftest()
+	function Selftest( $table_name=null )
 	{
 		//	Table name
 		$table_name = $this->table_name();
