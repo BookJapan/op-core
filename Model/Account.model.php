@@ -90,9 +90,6 @@ class Model_Account extends Model_Model
 		$account  = md5($account);
 		$password = md5($password);
 		
-		$this->mark( $account );
-		$this->mark( $password );
-		
 		//	Reset.
 		/*
 		$config = $this->config()->update_failed_reset();
@@ -110,8 +107,6 @@ class Model_Account extends Model_Model
 			$this->Debug('Does not match password from id.');
 			return false;
 		}
-		
-		$this->d($record);
 		
 		//	Failed num
 		$failed = isset($record['failed']) ? $record['failed']: 0;
