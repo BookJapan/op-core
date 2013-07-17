@@ -584,14 +584,16 @@ class Form5 extends OnePiece5
 		}
 		
 		//  Init config.
-		$config = new Config();
+//		$config = new Config();
+		$config = array();
 		
 		//  Get saved value.
 		foreach( $form->input as $input_name => $input ){
 			if( $input_name == 'submit' ){
 				continue;
 			}
-			$config->$input_name = $this->GetInputValue( $input_name, $form_name );
+//			$config->$input_name = $this->GetInputValue( $input_name, $form_name );
+			$config[$input_name] = $this->GetInputValue( $input_name, $form_name );
 		}
 		
 		return $config;
@@ -603,14 +605,18 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-		$config = new Config();
+	//	$config = new Config();
+		$config = array();
 		foreach( $form->input as $input_name => $input ){
-			$config->$input_name = $this->GetInputValueRaw( $input_name, $form_name );
+		//	$config->$input_name = $this->GetInputValueRaw( $input_name, $form_name );
+			$config[$input_name] = $this->GetInputValueRaw( $input_name, $form_name );
 		}
 		
 		//  remove submit button
-		unset($config->submit);
-		unset($config->submit_button);
+	//	unset($config->submit);
+	//	unset($config->submit_button);
+		unset($config['submit']);
+		unset($config['submit_button']);
 		
 		return $config;
 	}
