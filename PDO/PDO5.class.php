@@ -20,6 +20,12 @@ class PDO5 extends OnePiece5
 	private $database	 = null;
 	private $charset	 = null;
 	
+	/**
+	 * 
+	 * @param unknown_type $name
+	 * @throws Exception
+	 * @return DML
+	 */
 	function DML( $name=null )
 	{
 		if( empty($this->dml) ){
