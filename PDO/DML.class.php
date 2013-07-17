@@ -562,7 +562,9 @@ class DML extends OnePiece5
 			
 			$temp = array();
 			foreach( $cols as $key => $var ){
-				if( is_numeric($key) ){
+				if( is_bool($var) and $var ){
+					$temp[] = ConfigSQL::Quote( $key, $this->driver );
+				}else if( is_numeric($key) ){
 					$temp[] = ConfigSQL::Quote( $var, $this->driver );
 				}else{
 					$temp[] = ConfigSQL::Quote( $key, $this->driver )
