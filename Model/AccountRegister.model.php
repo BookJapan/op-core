@@ -56,7 +56,7 @@ class AccountRegisterConfig extends ConfigModel
 	static function Database()
 	{
 		$config = parent::Database();
-		$config->user = 'op_mdl_register';
+		$config->user = 'op_model_account';
 		return $config;
 	}
 }
