@@ -559,6 +559,7 @@ abstract class NewWorld5 extends OnePiece5
 		//	Check infinity loop.
 		$temp = explode('?',$_SERVER['REQUEST_URI']);
 		if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
+			$this->mark("Infinith loop");
 			if( $this->_log ){ $this->_log[] = __METHOD__.", Infinith loop."; }
 			return false;
 		}
