@@ -731,7 +731,6 @@ class Form5 extends OnePiece5
 			
 			//	readonly is skip
 			if( !empty($input->readonly) or !empty($input->disabled) ){
-				$this->mark($input_name.', readonly');
 				continue;
 			}				
 			
@@ -1491,12 +1490,13 @@ class Form5 extends OnePiece5
 				
 				case 'readonly':
 				case 'disabled':
+					$readonly = true;
 					if( $var ){
 						$join[] = sprintf('%s="%s"',$key,$key);
 					}
 					break;
 					
-				case 'session':
+				case 'session': // What is this? Where do use?
 				//	$input->save = $input->session;
 					$input->save = $var;
 				case 'error':
@@ -1551,14 +1551,13 @@ class Form5 extends OnePiece5
 		
 		// Value
 		if( !empty($input->group) ){
-		//	$this->mark( $value );
-		//	$this->d( Toolbox::toArray($input) );
+			//	Bulk input value
 		}else if( $type === 'submit' or $type === 'button' or $type === 'file' ){
 			//	Over write input label.
 			if( $value_default ){
 				$value = $value_default;
 			}
-		}else if( isset($_request[$input_name]) ){
+		}else if( isset($_request[$input_name]) and empty($readonly) ){
 			$value = $_request[$input_name];
 		}else if('checkbox' === $type or 'radio' === $type){
 			$value = $this->GetSaveValue($input_name, $form_name);
