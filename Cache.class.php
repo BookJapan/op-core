@@ -59,6 +59,10 @@ class Cache extends OnePiece5
 		ini_set('memcache.hash_strategy', $hash_strategy);
 		
 		//  Added server
+		$host = 'localhost';
+		$port = 11211;
+		$persistent = null;
+		$weight = 1;
 		if(!$io = $this->cache->addServer( $host, $port, $persistent, $weight )){
 			throw new Exception("Failed addServer method.");
 		}

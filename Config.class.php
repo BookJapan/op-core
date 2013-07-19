@@ -13,9 +13,27 @@ class Config extends stdClass
 		
 	}
 	
+	function Set( $key,  $val )
+	{
+		$this->$key = $val;
+		return $this;
+	}
+	
+	function Get( $key )
+	{
+		return $this->$key;
+	}
+	
 	function __set( $name, $value )
 	{
 		if(!isset($this->{$name})){
+			
+			if( empty($name) ){
+			//	var_dump($name);
+			//	var_dump($value);
+				return null;
+			}
+			
 			$this->{$name} = new Config();
 			$this->{$name} = $value;
 			return $this->{$name};
@@ -27,6 +45,12 @@ class Config extends stdClass
 	function __get($name)
 	{
 		if(!isset($this->{$name})){
+			
+			if( empty($name) ){
+			//	var_dump($name);
+				return null;
+			}
+			
 			//  Use to property chain.
 			$this->{$name} = new Config();
 			return $this->{$name};
@@ -76,4 +100,5 @@ class Config extends stdClass
 			Dump::D(Toolbox::toArray($this));
 		}
 	}
+	
 }

@@ -20,6 +20,12 @@ class PDO5 extends OnePiece5
 	private $database	 = null;
 	private $charset	 = null;
 	
+	/**
+	 * 
+	 * @param unknown_type $name
+	 * @throws Exception
+	 * @return DML
+	 */
 	function DML( $name=null )
 	{
 		if( empty($this->dml) ){
@@ -192,6 +198,10 @@ class PDO5 extends OnePiece5
 		
 		try {
 			//	Supports PHP 5.1 ( USE db_name is not supports. )
+			/*
+			$io = version_compare( PHP_VERSION, 5.1 );
+			$this->mark($io);
+			*/
 			$db  = $this->database ? 'dbname='.$this->database.';': null;
 			if( $this->charset ){
 				if( $this->driver == 'mysql' ){
@@ -213,11 +223,9 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Database select
-		/*
 		if( $this->database ){
 			$this->Database( $this->database, $this->charset );
 		}
-		*/
 		
 		//  connected flag
 		$this->isConnect = true;
@@ -600,10 +608,8 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  get select query
-		if(!$qu = $this->ddl()->GetPassword($conf)){
-			return false;
-		}
-		
+		$qu = $this->ddl()->GetPassword($conf);
+			
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
@@ -894,9 +900,9 @@ class ConfigSQL extends OnePiece5
 			var_dump($var);
 			var_dump($driver);
 			OnePiece5::StackError("Empty args.");
+			$safe = null;
 		}
 		
 		return $safe;
-	}
-		
+	}	
 }

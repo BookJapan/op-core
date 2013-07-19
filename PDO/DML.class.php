@@ -562,7 +562,9 @@ class DML extends OnePiece5
 			
 			$temp = array();
 			foreach( $cols as $key => $var ){
-				if( is_numeric($key) ){
+				if( is_bool($var) and $var ){
+					$temp[] = ConfigSQL::Quote( $key, $this->driver );
+				}else if( is_numeric($key) ){
 					$temp[] = ConfigSQL::Quote( $var, $this->driver );
 				}else{
 					$temp[] = ConfigSQL::Quote( $key, $this->driver )
@@ -723,6 +725,13 @@ class DML extends OnePiece5
 					case 'IN':
 					case 'NOT IN':
 						foreach( $var as $column => $arr ){
+							
+							//	Check format (missing column name)
+							if( is_numeric($column) ){
+								$this->StackError('Missing column name into "IN" ');
+								break;
+							}
+							
 							foreach( $arr as $temp ){
 								$in[] = $this->pdo->quote($temp);
 							}
