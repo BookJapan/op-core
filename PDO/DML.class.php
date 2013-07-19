@@ -496,26 +496,41 @@ class DML extends OnePiece5
 	protected function ConvertSet( $conf )
 	{
 		foreach( $conf['set'] as $key => $var ){
+			
+			//	Escape
+			$key = $this->ql.$key.$this->qr;
+			
 			/*
 			if(!(is_string($var) or is_numeric($var)) ){
 				$this->StackError("Set is only string. ($key)");
 				continue;
 			}
 			*/
+			
+			//	Case of not support value.
 			if( is_array($var) or is_object($var) ){
 				$type = gettype($var);
 				$this->StackError("Does not supports this type. (key=$key, type=$type)");
 				continue;
 			}
-			switch(strtoupper($var)){
+			
+			//	Case of null value.
+			if( is_null($var) ){
+				$join[] = "{$key}=NULL";
+				continue;
+			}
+			
+			//	Case of string or integer
+			switch( is_string($var) ? strtoupper($var): $var ){
 				case 'NULL':
 				case 'NOW()':
 					break;
 				default:
 					$var = $this->pdo->quote($var);
 			}
-			$join[] = $this->ql.$key.$this->qr.'='.$var;
+			$join[] = "{$key}={$var}";
 		}
+		
 		return join(', ',$join);
 	}
 	
@@ -793,10 +808,8 @@ class DML extends OnePiece5
 	
 	protected function ConvertHaving( $having, $joint )
 	{
-	//	$this->d($having);
 		foreach( $having as $key => $var ){
 			if(preg_match('/^([><!]?=?) /i',$var,$match)){
-			//	$this->d($match);
 				$ope = $match[1];
 				$var = preg_replace("/^$ope /i",'',$var);
 			}else{
@@ -807,7 +820,7 @@ class DML extends OnePiece5
 			$var = $this->pdo->quote($var);
 			$join[] = "$key $ope $var";
 		}
-		//$this->d($join);
+		
 		return '( '.join(" $joint ",$join).' )';
 	}
 	
@@ -846,87 +859,4 @@ class DML extends OnePiece5
 	{
 		return "LIMIT ".(int)$conf['limit'];
 	}
-	
-	/*
-	function ConvertBetween()
-	{
-		
-	}
-	
-	function ConvertLikes( $likes )
-	{
-		
-	}
-	
-	function ConvertLike( $column, $value )
-	{
-		$key = 'LIKE';
-		return $this->ConvertX( $column, $key, $value );
-	}
-	
-	function ConvertNotLike( $column, $value )
-	{
-		$key = 'LIKE';
-		return $this->ConvertX( $column, $key, $value );
-	}
-	
-	function ConvertX( $column, $key, $value)
-	{
-		if(!is_string($value)){
-			$this->StackError('Does match type. not string.');
-			return false;
-		}
-		
-		if( is_null($value) ){
-			$value = 'NULL';
-		}else{
-			$value = $this->pdo->quote($value);
-		}
-		
-		return "$column $key $value";
-	}
-	
-			$column = $this->EscapeColumn($key);
-			
-			//  
-			if( is_array($var) ){
-				
-				//  WHERE id IN ( 1, 2, 3 )
-				switch($key = strtoupper(trim($key))){
-					case 'LIKE':
-					case 'NOT LIKE':
-						foreach( $var as $column => $value ){
-							$column = $this->EscapeColumn($column);
-							$value  = $this->pdo->quote($value);
-							$join[] = ;
-						}
-						break;
-						
-					case 'BETWEEN':
-						foreach( $var as $column => $value ){
-							$column = $this->EscapeColumn($column);
-							$temp   = explode('-',$value);
-							$less   = (int)$temp[0];
-							$grat   = (int)$temp[1];
-							$join[] = "$column BETWEEN $less TO $grat";
-						}
-						break;
-						
-					case 'IN':
-					case 'NOT IN':
-						foreach( $var as $column => $arr ){
-							foreach( $arr as $temp ){
-								$in[] = $this->pdo->quote($temp);
-							}
-							$column = $this->EscapeColumn($column);
-							$temp   = join(', ', $in);
-							$join[] = "$column $key ( $temp )";
-						}
-						break;
-					default:
-						$this->mark("Does not support this. ($key)");
-				}
-				
-				continue;
-	*/
 }
