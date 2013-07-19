@@ -727,13 +727,20 @@ class Form5 extends OnePiece5
 			//  get input
 //			$input = $this->GetConfig( $form_name, $input_name );
 			$input = $form->input->$input_name;
+		//	$this->d($input);
+			
+			//	readonly is skip
+			if( !empty($input->readonly) or !empty($input->disabled) ){
+				$this->mark($input_name.', readonly');
+				continue;
+			}				
 			
 			if(!isset($form->input->$input_name)){
 				$this->StackError("Does not set input config.($form_name, $input_name)");
 				continue;
 			}
 			
-			//  submit
+			//  submit is skip
 			if( $input->type === 'submit' ){
 				if(!isset($input->save) or !$input->save){
 					continue;
