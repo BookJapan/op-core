@@ -80,6 +80,7 @@ if(!function_exists('OnePieceShutdown')){
 			return;
 		}
 		
+		//	check duplicate
 		static $init;
 		if(!is_null($init)){
 			return;
@@ -130,17 +131,24 @@ if(!function_exists('OnePieceShutdown')){
 			}
 		}
 		
-		if( OnePiece5::GetEnv('cli') ){
-			if( OnePiece5::GetEnv('json') ){
-				//	JSON
-			}else{
+		//	mime
+		switch( strtolower(OnePiece5::GetEnv('mime')) ){
+			case 'text':
 				print PHP_EOL . '/* OnePiece is shutdown. */' . PHP_EOL;
-			}
-		}else{
-			// Toolbox
-			Toolbox::PrintStyleSheet();
-			Toolbox::PrintGetFlagList();
-			print PHP_EOL.'<OnePiece/>'.PHP_EOL;
+				break;
+				
+			case 'json':
+				break;
+
+			case 'csv':
+				break;
+				
+			case 'html':
+			default:
+				Toolbox::PrintStyleSheet();
+				Toolbox::PrintGetFlagList();
+				print PHP_EOL.'<OnePiece/>'.PHP_EOL;
+				break;
 		}
 	}
 	register_shutdown_function('OnePieceShutdown');

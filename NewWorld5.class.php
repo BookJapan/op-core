@@ -63,20 +63,37 @@ abstract class NewWorld5 extends OnePiece5
 			$this->StackError('App has not dispatched. Please call $app->Dispatch();');
 		}
 		
-		//  flush buffer
-		ob_end_flush();
-		
-		//  Check content
-		if( $this->_content ){
-			if( $this->GetEnv('cli') ){
+		//	mime
+		$mime = strtolower($this->GetEnv('mime'));
+		switch( $mime ){
+			case 'csv':
+			case 'text':
 				//	CLI mode
+				break;
+					
+			case 'json':
+				if( $this->admin() ){
+					if( $this->_content ){
+						$this->SetJson('Error',$this->_content);
+					}
+				}
 				$this->doJson();
-			}else{
-				//	HTML mode
-				$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
-				$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
-				$this->content();
-			}
+				break;
+					
+			case 'html':
+			default:
+				
+				//  flush buffer
+				ob_end_flush();
+				
+				//  Check content
+				if( $this->_content ){
+					//	HTML mode
+					$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
+					$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
+					$this->content();
+				}
+				break;
 		}
 		
 		//  Vivre
@@ -427,7 +444,8 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function doLayout()
 	{
-		if( $this->GetEnv('cli') ){
+		$mime = $this->GetEnv('mime');
+		if( !is_null($mime) and $mime != 'html' ){
 			return true;
 		}
 		
@@ -560,8 +578,8 @@ abstract class NewWorld5 extends OnePiece5
 	/**
 	 * Forward local location.(not external URL)
 	 * 
-	 * @param unknown $url
-	 * @param string $exit
+	 * @param string  $url  transfer url.
+	 * @param boolean $exit default is true.
 	 * @return void|boolean
 	 */
 	function Location( $url, $exit=true )
@@ -691,25 +709,10 @@ abstract class NewWorld5 extends OnePiece5
 		}
 	}
 	
-	/**
-	 * Set environment value.
-	 * 
-	 * @param string $key
-	 * @param boolen|string|array $var
-	 */
-	static function SetEnv( $key, $var )
-	{
-		switch( strtolower($key) ){
-			case 'json':
-				parent::SetEnv( 'cli', true );
-				break;
-		}
-		parent::SetEnv( $key , $var );
-	}
-	
 	function doJson()
 	{
-		header('Content-type: application/json');
+	//	header('Content-type: application/json');
+		header('Content-type: text/html');
 		print json_encode($this->_json);
 	}
 	
@@ -717,14 +720,14 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		static $init = null;
 		if( !$init ){
-			$this->SetEnv('json',true);
+			$this->SetEnv('mime','json');
 		}
-		$this->json[$key] = $var;
+		$this->_json[$key] = $var;
 	}
 	
 	function GetJson( $key )
 	{
-		return $this->json[$key];
+		return $this->_json[$key];
 	}
 	
 	/* Save temporary data pass to template inside.
