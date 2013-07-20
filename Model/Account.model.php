@@ -58,16 +58,9 @@ class Model_Account extends Model_Model
 	 */
 	function Auto()
 	{
-		/*
-		//	Selftest
-		if( $this->Admin() ){
-			$wz = new Wizard();
-			$wz->Selftest( $this->Config()->Selftest() );
-		}
-		*/
-			
 		if(!$this->form()->Secure( $this->Config()->form_name() ) ){
-			$this->Debug("Does not secure.");
+		//	$this->Debug("Does not secure.");
+			$this->Debug("Form5: " . $this->form()->getstatus( $this->Config()->form_name() ) );
 		//	$this->form()->debug( $this->Config()->form_name() );
 			return false;
 		}
@@ -82,7 +75,7 @@ class Model_Account extends Model_Model
 	function Auth( $account=null, $password=null )
 	{
 		if( empty($account) or empty($password) ){
-			$this->Debug("Empty id or password.");
+			$this->SetStatus("Empty id or password.");
 			return false;
 		}
 		
@@ -102,9 +95,9 @@ class Model_Account extends Model_Model
 		$config = $this->config()->select_auth( $account, $password );
 		$record = $this->pdo()->select($config);
 		if( is_array($record) and count($record) ){
-			$this->Debug('Match password from id.');
+			$this->SetStatus('Match password from account.');
 		}else{
-			$this->Debug('Does not match password from id.');
+			$this->SetStatus('Does not match password from account.');
 			return false;
 		}
 		
@@ -119,13 +112,13 @@ class Model_Account extends Model_Model
 		
 		//	failed.
 		if(!$io){
-			$this->Debug("Over the failed.($failed < $limit)");
+			$this->SetStatus("Over the failed.($failed < $limit)");
 			return false;
 		}
 		
 		//	ID
 		$id = $record[AccountConfig::COLUMN_ID];
-		$this->Debug("ID is $id");
+		$this->SetStatus("ID is $id");
 		
 		return $id;
 	}
@@ -148,6 +141,12 @@ class Model_Account extends Model_Model
 				Dump::d($this->_log);
 			}
 		}
+	}
+	
+	function SetStatus( $status )
+	{
+		$this->_status = $status;
+		$this->_log[]  = $status;
 	}
 	
 	function GetStatus()
