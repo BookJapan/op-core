@@ -11,9 +11,15 @@ abstract class Model_Model extends OnePiece5
 	//  Status
 	private $statusStack = null;
 	
+	//	secret key
+	private $_secret_key = null;
+	
 	function Init()
 	{
 		parent::Init();
+
+		//	init secret key
+		$this->_secret_key = $this->SetSecretKey($this->GetEnv('admin-mail'));
 		
 		//  init config
 		$this->config = new Config();
@@ -24,6 +30,7 @@ abstract class Model_Model extends OnePiece5
 				$this->Selftest();
 			}
 		}
+		
 	}
 	
 	function Test()
@@ -109,6 +116,16 @@ abstract class Model_Model extends OnePiece5
 	{
 		return $this->statusStack[count($this->statusStack)-1];
 	}
+	
+	function SetSecretKey( $var )
+	{
+		$this->_secret_key = md5($var);
+	}
+	
+	function GetSecretKey()
+	{
+		return $this->_secret_key;
+	}
 }
 
 class ConfigModel extends ConfigMgr
@@ -143,6 +160,7 @@ class ConfigModel extends ConfigMgr
 	{
 		$this->_table_prefix = $prefix;
 	}
+	
 }
 
 class OpModelException extends Exception
