@@ -1424,7 +1424,7 @@ class Form5 extends OnePiece5
 		}
 		
 		//	Reset token key.
-		$this->SetTokenKey($form_name, md5(time()));
+		$this->SetTokenKey($form_name, md5(microtime(true)));
 		
         //  Erase the saved value.
 		$form = $this->GetSession('form');
@@ -1443,22 +1443,22 @@ class Form5 extends OnePiece5
 	
 	public function Delete( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	public function Remove( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	public function Clear( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	public function Flash( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
