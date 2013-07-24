@@ -141,7 +141,7 @@ abstract class NewWorld5 extends OnePiece5
 		if( $request_uri ){
 			if( preg_match( '|^http://|', $request_uri ) ){
 				$this->mark("![ .red [Domain name is not required. 
-						Please Document root path. ($request_uri)]]");
+						Please specify document root path. ($request_uri)]]");
 			}
 		}else{
 			$request_uri = $_SERVER['REQUEST_URI'];
@@ -151,7 +151,7 @@ abstract class NewWorld5 extends OnePiece5
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
 		$full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
 		
-		// Does path exist?
+		// Does path exist? (in route table)
 		if( $route = $this->_routeTable[md5($path)] ){
 			return $route;
 		}
@@ -160,6 +160,18 @@ abstract class NewWorld5 extends OnePiece5
 		if( preg_match('/\/([-_a-z0-9]+)\.(html|css|js)$/i',$path,$match) ){
 			if( $route = $this->HtmlPassThrough( $match, $full_path ) ){
 				return $route;
+			}
+		}
+		
+		//	Admin Notification
+		if( $this->admin() ){
+			if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
+				if(!file_exists($full_path)){
+					$mail['to'] = $this->GetEnv('admin-mail');
+					$mail['subject'] = '[Form5] Admin notification';
+					$mail['message'] = 'Does not exists this file: '.$full_path;
+					$this->Mail($mail);
+				}
 			}
 		}
 		
