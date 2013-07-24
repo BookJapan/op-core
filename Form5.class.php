@@ -32,6 +32,9 @@ class Form5 extends OnePiece5
 		
 		//	Test implements.
 		if( $this->admin() ){
+			$history = $this->GetSession('history');
+			$history[] = $_SERVER['REQUEST_URI'];
+			$this->SetSession('history', $history);
 			$io = session_regenerate_id(true);
 		}
 	}
@@ -820,6 +823,8 @@ class Form5 extends OnePiece5
 		$input_name = $input->name;
 		$save_value = $this->GetInputValueRaw($input->name,$form_name);
 		$post_value = $this->GetRequest($input->name, $form_name);
+		
+		$this->mark( $save_value );
 		
 		if( $save_value ){
 			
@@ -1849,7 +1854,8 @@ class Form5 extends OnePiece5
 		$temp['Error']	 = Toolbox::toArray($this->status->$form_name->error);
 		$temp['Errors']	 = $this->status->$form_name->stack;
 		$temp['session'] = $this->GetSession('form');
-
+		$temp['history'] = $this->GetSession('history');
+		
 		//  Print debug information
 		$call = $this->GetCallerLine();
 		$this->p("Form debugging[ ![.small[ $call ]] ]");
