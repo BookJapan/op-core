@@ -709,7 +709,8 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function doJson()
 	{
-		header('Content-type: application/json');
+	//	header('Content-type: application/json');
+		header('Content-type: text/html');
 		print json_encode($this->_json);
 	}
 	
