@@ -824,8 +824,6 @@ class Form5 extends OnePiece5
 		$save_value = $this->GetInputValueRaw($input->name,$form_name);
 		$post_value = $this->GetRequest($input->name, $form_name);
 		
-		$this->mark( $save_value );
-		
 		if( $save_value ){
 			
 			//  Submit is remover
