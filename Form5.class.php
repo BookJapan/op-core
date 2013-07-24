@@ -32,6 +32,9 @@ class Form5 extends OnePiece5
 		
 		//	Test implements.
 		if( $this->admin() ){
+			$history = $this->GetSession('history');
+			$history[] = $_SERVER['REQUEST_URI'];
+			$this->SetSession('history', $history);
 			$io = session_regenerate_id(true);
 		}
 	}
@@ -821,6 +824,8 @@ class Form5 extends OnePiece5
 		$save_value = $this->GetInputValueRaw($input->name,$form_name);
 		$post_value = $this->GetRequest($input->name, $form_name);
 		
+		$this->mark( $save_value );
+		
 		if( $save_value ){
 			
 			//  Submit is remover
@@ -1424,7 +1429,7 @@ class Form5 extends OnePiece5
 		}
 		
 		//	Reset token key.
-		$this->SetTokenKey($form_name, md5(time()));
+		$this->SetTokenKey($form_name, md5(microtime(true)));
 		
         //  Erase the saved value.
 		$form = $this->GetSession('form');
@@ -1443,22 +1448,22 @@ class Form5 extends OnePiece5
 	
 	public function Delete( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	public function Remove( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	public function Clear( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	public function Flash( $form_name, $force=false )
 	{
-		$this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
@@ -1849,7 +1854,8 @@ class Form5 extends OnePiece5
 		$temp['Error']	 = Toolbox::toArray($this->status->$form_name->error);
 		$temp['Errors']	 = $this->status->$form_name->stack;
 		$temp['session'] = $this->GetSession('form');
-
+		$temp['history'] = $this->GetSession('history');
+		
 		//  Print debug information
 		$call = $this->GetCallerLine();
 		$this->p("Form debugging[ ![.small[ $call ]] ]");

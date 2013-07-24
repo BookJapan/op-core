@@ -24,6 +24,7 @@ abstract class Model_Model extends OnePiece5
 				$this->Selftest();
 			}
 		}
+		
 	}
 	
 	function Test()
@@ -113,7 +114,21 @@ abstract class Model_Model extends OnePiece5
 
 class ConfigModel extends ConfigMgr
 {
+	//	table prefix
 	private $_table_prefix = 'op';
+
+	//	secret key
+	private $_secret_key = null;
+	
+	function SetSecretKey( $var )
+	{
+		$this->_secret_key = md5($var);
+	}
+	
+	function GetSecretKey()
+	{
+		return $this->_secret_key;
+	}
 	
 	static function Database()
 	{
@@ -143,6 +158,7 @@ class ConfigModel extends ConfigMgr
 	{
 		$this->_table_prefix = $prefix;
 	}
+	
 }
 
 class OpModelException extends Exception
