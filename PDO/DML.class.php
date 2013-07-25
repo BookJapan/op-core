@@ -719,7 +719,7 @@ class DML extends OnePiece5
 		foreach($where as $key => $var){
 			$column = $this->EscapeColumn($key);
 			
-			//  
+			//  value is case of some value.
 			if( is_array($var) ){
 				
 				//  WHERE id IN ( 1, 2, 3 )
@@ -768,20 +768,29 @@ class DML extends OnePiece5
 				continue;
 				
 			}else if( is_null($var) or strtolower($var) === 'null' ){
-				//  TODO: more speed up!
 				$join[] = "$column IS NULL";
 				continue;
 			}else if( strtolower($var) === '!null' or strtolower($var) === '! null' or strtolower($var) === 'not null' ){
-				//  TODO: more speed up!
 				$join[] = "$column IS NOT NULL";
 				continue;
-		//	}else if(preg_match('/^([><]?=) ([-0-9: ]+)$/i',$var,$match)){
-			}else if(preg_match('/^([><]?=?) ([-0-9: ]+)$/i',$var,$match)){
-				//  TODO: more speed up!
+		//	}else if(preg_match('/^([><]?=?) ([-0-9: ]+)$/i',$var,$match)){ // ([-0-9: ]+)$ This is only number? 
+			}else if(preg_match('/^([><!]?=?) (.+)$/i',$var,$match)){
+				/**
+				 * ex: 
+				 * $config->where->column_name = '<= $number';
+				 * $config->where->column_name = '>= $number';
+				 * $config->where->column_name = '!= $string';
+				 * $config->where->column_name = '!  $string';
+				 */
 				$ope = $match[1];
 				$var = trim($match[2]);
 			}else{
 				$ope = '=';
+			}
+			
+			//	Adjustment
+			if( $ope === '!'){
+				$ope = '!=';
 			}
 			
 			//  escape column name
@@ -846,7 +855,16 @@ class DML extends OnePiece5
 				$desc = '';
 			}
 			$order = preg_replace(array('/^asc /i'),'',$order);
-			$join[] = $this->ql.trim($order).$this->qr.$desc;
+			
+			if( strpos( $order, '.') ){
+				list( $table, $column ) = explode( '.', $order );
+				$join[] = $this->ql.trim($table).$this->qr
+						. '.'
+						. $this->ql.trim($column).$this->qr
+						. $desc;
+			}else{
+				$join[] = $this->ql.trim($order).$this->qr . $desc;
+			}
 		}
 		
 		return 'ORDER BY '.join(', ',$join);
