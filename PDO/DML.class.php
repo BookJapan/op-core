@@ -577,14 +577,20 @@ class DML extends OnePiece5
 			
 			$temp = array();
 			foreach( $cols as $key => $var ){
-				if( is_bool($var) and $var ){
+				if( $key == '*' ){
+					//	ex: $config->column->{'*'} = true;
+					array_unshift($temp, $key);
+				}else if( is_bool($var) and $var ){
+					//	ex: $config->column->column_name = true;
 					$temp[] = ConfigSQL::Quote( $key, $this->driver );
 				}else if( is_numeric($key) ){
+					//	ex: $config->column[] = 'column_name';
 					$temp[] = ConfigSQL::Quote( $var, $this->driver );
 				}else{
-					$temp[] = ConfigSQL::Quote( $key, $this->driver )
+					//	ex: $config->column->alias_name = "t_table.column_name";
+					$temp[] = ConfigSQL::Quote( $var, $this->driver )
 							 ." AS "
-							 .ConfigSQL::Quote( $var, $this->driver );
+							 .ConfigSQL::Quote( $key, $this->driver );
 				}
 			}
 			$cols = join(', ',$temp);
