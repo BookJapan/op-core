@@ -771,7 +771,7 @@ class DML extends OnePiece5
 				continue;
 		//	}else if(preg_match('/^([><]?=) ([-0-9: ]+)$/i',$var,$match)){
 			}else if(preg_match('/^([><]?=?) ([-0-9: ]+)$/i',$var,$match)){
-				//  TODO: more speed up!				
+				//  TODO: more speed up!
 				$ope = $match[1];
 				$var = trim($match[2]);
 			}else{

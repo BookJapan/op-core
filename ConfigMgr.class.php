@@ -209,9 +209,9 @@ abstract class ConfigMgr extends OnePiece5
 			if( $pos = strpos( $table_name, '=' ) ){
 				//  Join table
 				foreach( explode('=',$table_name) as $temp ){
+					//  perse　table, column name
 					list( $name, $column ) = explode('.',$temp);
-					//  perse　table name
-					$tables[] = trim($name);
+					$tables[] = trim($name,'<> ');
 				}
 				foreach( $tables as $name ){
 					$deleteds[] = "$name.deleted";
