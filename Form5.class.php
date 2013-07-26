@@ -2401,16 +2401,16 @@ class Form5 extends OnePiece5
 					$io = true;
 					break;
 				}
-				/*
+				
 				if(!preg_match('/^[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}$/',$date)){
 					$io = false;
 					$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
 					break;
-				}
-				*/
-				$time = strtotime($date);
-				if(!$io = checkdate( date('m',$time), date('d',$time), date('Y',$time))){
-					$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
+				}else{
+					$time = strtotime($date);
+					if(!$io = checkdate( date('m',$time), date('d',$time), date('Y',$time))){
+						$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
+					}
 				}
 				break;
 
