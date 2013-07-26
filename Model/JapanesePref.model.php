@@ -73,12 +73,14 @@ class Model_JapanesePref extends Model_Model
 	
 	function UsedToForms( $type='object' )
 	{
+		if(!$type){ $type = 'object'; }
+		
 		//  base pref
-		$pref = self::Get();
+		$pref = $this->Get();
 		
 		//  init options
 		$options = new Config();
-		$options->{0}->value = '';
+		$options->{'00'}->value = '';
 		
 		foreach( $pref as $value => $label ){
 			if($type == 'object'){
