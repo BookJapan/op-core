@@ -832,6 +832,8 @@ class Form5 extends OnePiece5
 				//  challenge to delete the upload file.
 				if(!unlink($save_value)){
 					
+					$this->mark($save_value);
+					
 					//  delete is failed.
 					$this->StackError("Can not delete the file. ($save_value)");
 					
@@ -1626,6 +1628,11 @@ class Form5 extends OnePiece5
 				}else{
 					$options = array();
 				}
+				
+				//	If group case, use by parent was rewritten value.
+				if(!empty($input->group)){
+					$value = $input->value;
+				}
 				$tag = sprintf('<select name="%s" %s>%s</select>'.$tail, $name, $attr, $this->CreateOption( $options, $value));
 				break;
 				
@@ -1660,9 +1667,12 @@ class Form5 extends OnePiece5
 				if( isset($input->options) ){
 					//  multi
 					
+					//	get joint character
+					$joint = isset($input->joint) ? $input->joint: null;
+					
 					//	value of childs
-					if( $value and isset($input->joint) ){
-						$value_child = explode( $input->joint, $value );
+					if( $value and $joint ){
+						$value_child = explode( $joint, $value );
 					}
 					
 					//  child
