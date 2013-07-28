@@ -488,7 +488,6 @@ class Form5 extends OnePiece5
 		//  Get raw value
 		$value = $this->GetInputValueRaw( $input_name, $form_name, $joint );
 		
-		
 		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
@@ -566,7 +565,7 @@ class Form5 extends OnePiece5
 			//  not check value is removed. 
 			$value = array_diff($value,array(''));
 		}
-		
+				
 		//  If null, default value is used.
 		if( is_null($value) ){
 			if( !empty($input->cookie) ){
@@ -575,7 +574,7 @@ class Form5 extends OnePiece5
 				$value = $input->value;
 			}
 		}
-		
+				
 		return $value;
 	}
 	
@@ -1569,7 +1568,7 @@ class Form5 extends OnePiece5
 		}else{			
 			$value = $this->GetInputValueRaw($input_name, $form_name);
 		}
-				
+		
 		// get cookie 
 		if( !isset($value) or is_null($value) ){
 			$value = $this->GetCookie($form_name.'/'.$input_name);
@@ -1641,7 +1640,10 @@ class Form5 extends OnePiece5
 				$value = $this->GetInputValue($input_name);
 				
 				if( is_string($value) and $value ){
-					if( method_exists( $this, 'GetInputConfigRemover')){
+					if( isset($input->remover) and empty($input->remover)){
+						//	Does not create remover
+						$remover = null;
+					}else if( method_exists( $this, 'GetInputConfigRemover')){
 						//  If you can method over ride.
 						$remover = $this->GetInputConfigRemover( $input, $form_name );
 					}else{
@@ -1654,8 +1656,11 @@ class Form5 extends OnePiece5
 						$remover->label   = $value_default ? $value_default: $value;
 						$remover->checked = true;
 					}
+					
 					//  Create remover
-					$tag = $this->CreateInputTag($remover, $form_name);
+					if( $remover ){
+						$tag = $this->CreateInputTag($remover, $form_name);
+					}
 				}else{
 					//  Create file tag
 					$tag = sprintf('<input type="%s" name="%s" value="%s" %s />'.$tail, $type, $input_name, $value, $attr);
