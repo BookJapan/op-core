@@ -1908,22 +1908,18 @@ __EOL__;
 				}
 			}
 			
-			//  include from master dir
-			$path = self::ConvertPath("op:/Model/{$name}.model.php");
+			//  include from user dir
+			$model_dir = $this->GetEnv('model-dir');
+			$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
 			if( $io = file_exists($path) ){
 				$io = include_once($path);
-			}else{
-			//	$this->mark($path);
 			}
 			
-			//  include from user dir
-			if(!$io ){
-				$model_dir = $this->GetEnv('model-dir');
-				$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
+			//  include from master dir
+			if(!$io){
+				$path = self::ConvertPath("op:/Model/{$name}.model.php");
 				if( $io = file_exists($path) ){
 					$io = include_once($path);
-				}else{
-					$this->mark($path);
 				}
 			}
 			
