@@ -824,15 +824,20 @@ class Form5 extends OnePiece5
 		$post_value = $this->GetRequest($input->name, $form_name);
 		
 		if( $save_value ){
-			
-			//  Submit is remover
-			if( is_array($post_value) and count($post_value) == 1 and empty($post_value[0]) ){
+			//  Is remover?
+			if( empty($post_value) or (is_array($post_value) and count($post_value) == 1 and empty($post_value[0])) ){
+				
+				//	Convert real path
+				$path = $this->ConvertPath($save_value);
+				
+				//	Check file exists 
+				if(!file_exists($path)){
+					$this->StackError("Does not exists file. ($path)");
+					return false;
+				}
 				
 				//  challenge to delete the upload file.
-				if(!unlink($save_value)){
-					
-					$this->mark($save_value);
-					
+				if(!unlink($path)){
 					//  delete is failed.
 					$this->StackError("Can not delete the file. ($save_value)");
 					
@@ -840,7 +845,7 @@ class Form5 extends OnePiece5
 					$value = $this->ConvertURL($save_value);
 					$id = $form_name.'-'.$input_name.'-'.md5($value);
 					
-					//  ???
+					//  TODO: ???
 					$_POST[$input_name][$id] = $value;
 					
 					return false;
@@ -873,7 +878,12 @@ class Form5 extends OnePiece5
 			$ext  = array_pop($temp);
 		}else{
 			$value = $this->GetRequest($input_name, $form_name);
-			if( is_array($value) ){
+			
+			if( is_string($value) ){
+				//	Use OpenSNS's extend. (delete button mode)
+				$this->mark($value);
+				return $value;
+			}else if( is_array($value) ){
 				if(!strlen(implode('',$value))){
 					$error = -1;
 				}else{
