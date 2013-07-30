@@ -2455,6 +2455,9 @@ class Form5 extends OnePiece5
 		}
 		
 		if( $io ){
+			if(is_array($value)){
+				$value = join(', ',$value);
+			}
 			$this->SetStatus($form_name, "OK: Permit $key. ($input->name, $value)");
 		}
 		return $io;
