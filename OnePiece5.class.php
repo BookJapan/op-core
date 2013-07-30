@@ -1799,7 +1799,7 @@ __EOL__;
 	 * @param string $path
 	 * @return string
 	 */
-	function ConvertURL( $args, $domain=true )
+	function ConvertURL( $args, $domain=false )
 	{
 		//	Check if abstract path.
 		if( preg_match('|^([a-z][a-z0-9]+):/(.*)|i',$args,$match) ){
