@@ -128,6 +128,7 @@ class PDO5 extends OnePiece5
 						break;
 						
 					case 'update':
+					case 'delete':
 						$result = $st->rowCount();
 						break;
 						
@@ -834,14 +835,12 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  get query
-		if( $this->qu = $this->dml()->GetDelete($conf)){
-			$this->qus[] = $this->qu;
-		}else{
+		if(!$qu = $this->dml()->GetDelete($conf)){
 			return false;
 		}
 		
 		//  execute
-		$num = $this->query($qu,'update');
+		$num = $this->query($qu,'delete');
 		
 		return $num;
 	}
