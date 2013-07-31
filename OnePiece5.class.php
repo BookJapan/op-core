@@ -911,7 +911,7 @@ __EOL__;
 				if(empty($this)){
 					print OnePiece5::GetCallerLine();
 				}
-				$this->mark('Use GetURL method. (ex. $this->GetURL($config))');
+				$this->mark('Use GetURL method. (ex. Toolbox::GetURL($config))');
 				$result = null;
 				break;
 				
@@ -922,31 +922,6 @@ __EOL__;
 		return self::Escape($result);
 	}
 	
-	function GetURL( $scheme=true, $path=true, $query=false )
-	{
-		$domain = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['HTTP_HOST'];
-		
-		if( $scheme ){
-			$scheme = $_SERVER['SERVER_PORT'] !== '443' ? 'http://': 'https://';
-		}else{
-			$scheme = null;
-		}
-		
-		if( $path ){
-			$path = $_SERVER['REQUEST_URI'];
-		}else{
-			$path = null;
-		}
-		
-		if( $query ){
-			$query = $_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING']: null;
-		}else{
-			$query = null;
-		}
-		
-		return $scheme.$domain.$path.$query;
-	}
-
 	function InitSession()
 	{
 		//  start to session.

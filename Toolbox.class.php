@@ -413,6 +413,48 @@ class Toolbox
 		return $list;
 	}
 	
+	static function GetURL( $conf=array() )
+	{
+		//	init
+		$scheme	 = isset($conf['scheme']) ? $conf['scheme']: true;
+		$domain	 = isset($conf['domain']) ? $conf['domain']: true;
+		$path	 = isset($conf['path'])   ? $conf['path']:   true;
+		$query	 = isset($conf['query'])  ? $conf['query']:  false;
+	
+		if( $domain ){
+			$domain = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['HTTP_HOST'];
+		}else{
+			$domain = null;
+		}
+	
+		if( $scheme ){
+			$scheme = $_SERVER['SERVER_PORT'] !== '443' ? 'http://': 'https://';
+		}else{
+			$scheme = null;
+		}
+	
+		if( $path ){
+			$path = $_SERVER['REQUEST_URI'];
+		}else{
+			$path = null;
+		}
+	
+		if( $query ){
+			$query = $_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING']: null;
+		}else{
+			$query = null;
+		}
+	
+		return $scheme.$domain.$path.$query;
+	}
+	
+	static function GetDomain()
+	{
+		$conf['scheme'] = false;
+		$conf['path']   = false;
+		return self::GetURL($conf);
+	}
+	
 	static function PrintGetFlagList()
 	{
 		static $isPrint = null;
