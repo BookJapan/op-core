@@ -1794,6 +1794,9 @@ class Form5 extends OnePiece5
 			$attr = array();
 			foreach( $option as $key => $var ){
 				switch( $key ){
+					case 'name':
+						$name = $var;
+						continue;
 					case 'selected':
 						continue;
 					default:
