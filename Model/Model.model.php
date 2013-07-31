@@ -3,20 +3,20 @@
 abstract class Model_Model extends OnePiece5
 {
 	//  Config object
-	private $config = null;
+//	private $config = null;
 	
 	//  Config Manager
 	private $cmgr   = null;
 	
 	//  Status
-	private $statusStack = null;
+	private $_status = null;
 	
 	function Init()
 	{
 		parent::Init();
 		
 		//  init config
-		$this->config = new Config();
+//		$this->config = new Config();
 		
 		//	selftest
 		if( $this->Admin() ){			
@@ -86,7 +86,7 @@ abstract class Model_Model extends OnePiece5
 			
 			//	Check
 			if(!$name){
-				throw new OpModelException("Failed to instance of the $name.");
+				throw new OpModelException("Config name is empty.");
 			}
 			
 			if(!class_exists( $name, true ) ){
@@ -103,15 +103,180 @@ abstract class Model_Model extends OnePiece5
 	
 	function SetStatus( $status )
 	{
-		$this->statusStack[] = $status;
+		$this->_status[] = $status;
 	}
 	
 	function GetStatus()
 	{
-		return $this->statusStack[count($this->statusStack)-1];
+		return $this->_status[count($this->_status)-1];
 	}
 }
 
+/**
+ * Separated from the ConfigMgr.
+ */
+class Config_Model extends OnePiece5
+{
+	private $_prefix = 'op';
+	private $_table  = null;
+	private $_dbuser = 'op_mdl';
+	
+	function pdo($name=null)
+	{
+		if(!$this->_init_pdo){
+			$config = $this->database();
+			parent::pdo()->Connect($config);
+			$this->_init_pdo = true;
+		}
+		return parent::pdo($name);
+	}
+	
+	function prefix($prefix=null)
+	{
+		if( $prefix ){
+			$this->_prefix = $prefix;
+		}
+		return $this->_prefix;
+	}
+	
+	function Database()
+	{
+		$dbuser = $this->_dbuser;
+		
+		//	init password
+		$password  = OnePiece5::GetEnv('admin-mail');
+		$password .= isset($this) ? get_class($this): null;
+	
+		//	Init config
+		$config = new Config();
+		
+		//	Init database
+		$config = new Config();
+		$config->driver   = 'mysql';
+		$config->host     = 'localhost';
+		$config->database = 'onepiece';
+		$config->user     = $dbuser;
+		$config->password = md5($password);
+		$config->charset  = 'utf8';
+		
+		return $config;
+	}
+	
+	function dbuser($dbuser)
+	{
+		if( $dbuser ){
+			$this->_dbuser = $dbuser;
+		}
+		return $this->_dbuser;
+	}
+	
+	function table($table=null)
+	{
+		if( $table ){
+			$this->_table = $table;
+		}
+		return $this->_table;
+	}
+	
+	function table_name()
+	{
+		$prefix = $this->prefix();
+		$table  = $this->table();
+		return "{$prefix}_{$table}";
+	}
+	
+	function insert( $table_name=null )
+	{
+		if(!$table_name){
+			$table_name = $this->table_name();
+		}
+		
+		$config = new Config();
+		$config->table = $table_name;
+		$config->set->created    = gmdate('Y-m-d H:i:s');
+		$config->update->updated = gmdate('Y-m-d H:i:s');
+		return $config;
+	}
+	
+	function select( $table_name=null )
+	{
+		if(!$table_name){
+			$table_name = $this->table_name();
+		}
+		
+		//	Avoid of ambiguous.
+		if( $table_name ){
+			if( $pos = strpos( $table_name, '=' ) ){
+				//  Join table
+				foreach( explode('=',$table_name) as $temp ){
+					//  perse　table, column name
+					list( $name, $column ) = explode('.',$temp);
+					$tables[] = trim($name,'<> ');
+				}
+	
+				//	Disambiguation (Avoid ambiguous)
+				foreach( $tables as $name ){
+					$deleteds[]   = "$name.deleted";
+					$timestamps[] = "$name.timestamp";
+				}
+			}else{
+				//  Single table
+				$deleteds[]   = isset($table_name) ? "$table_name.deleted":   'deleted';
+				$timestamps[] = isset($table_name) ? "$table_name.timestamp": 'timestamp';
+			}
+		}else{
+			$deleteds = array();
+		}
+	
+		//	Create select config.
+		$config = new Config();
+		$config->table = $table_name;
+	
+		//	deleted
+		foreach( $deleteds as $deleted ){
+			$config->where->$deleted = null;
+		}
+	
+		//	timestamp
+		foreach( $timestamps as $timestamp ){
+			$config->where->$timestamp = '! null';
+		}
+	
+		//	default cache seconds
+		$config->cache = 1;
+	
+		return $config;
+	}
+	
+	function update( $table_name=null )
+	{
+		if(!$table_name){
+			$table_name = $this->table_name();
+		}
+		
+		$config = new Config();
+		$config->table = $table_name;
+		$config->set->updated = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
+		return $config;
+	}
+	
+	function delete( $table_name=null )
+	{
+		if(!$table_name){
+			$table_name = $this->table_name();
+		}
+		
+		$config = new Config();
+		$config->table = $table_name;
+		$config->set->deleted = gmdate('Y-m-d H:i:s');
+		return $config;
+	}
+}
+
+/**
+ * Old style.
+ */
 class ConfigModel extends ConfigMgr
 {
 	//	table prefix

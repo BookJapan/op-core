@@ -14,13 +14,15 @@ abstract class ConfigMgr extends OnePiece5
 	{
 		return isset($this->config->$key) ? $this->config->$key: null;
 	}
+	
 	/* 
 	function config()
 	{
 		$this->mark('Your misstake','misstake'); // TODO: Whta is this?
 		return $this;
 	}
-	 */
+	*/
+	
 	function init($config=null)
 	{
 		parent::Init();
@@ -213,12 +215,16 @@ abstract class ConfigMgr extends OnePiece5
 					list( $name, $column ) = explode('.',$temp);
 					$tables[] = trim($name,'<> ');
 				}
+				
+				//	Disambiguation (Avoid ambiguous)
 				foreach( $tables as $name ){
-					$deleteds[] = "$name.deleted";
+					$deleteds[]   = "$name.deleted";
+					$timestamps[] = "$name.timestamp";
 				}
 			}else{
 				//  Single table
-				$deleteds[] = isset($table_name) ? "$table_name.deleted": 'deleted';
+				$deleteds[]   = isset($table_name) ? "$table_name.deleted":   'deleted';
+				$timestamps[] = isset($table_name) ? "$table_name.timestamp": 'timestamp';
 			}
 		}else{
 			$deleteds = array();
@@ -227,10 +233,18 @@ abstract class ConfigMgr extends OnePiece5
 		//	Create select config.
 		$config = new Config();
 		$config->table = $table_name;
-		//	Avoid of ambiguous.
+		
+		//	deleted
 		foreach( $deleteds as $deleted ){
 			$config->where->$deleted = null;
 		}
+		
+		//	timestamp
+		foreach( $timestamps as $timestamp ){
+			$config->where->$timestamp = '! null';
+		}
+		
+		//	default cache seconds
 		$config->cache = 1;
 		
 		return $config;
