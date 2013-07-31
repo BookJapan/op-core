@@ -435,8 +435,19 @@ class DML extends OnePiece5
 				$join = $ope;
 		}
 		
-		list( $left_table, $left_column) = explode('.',$left);
-		list( $right_table, $right_column) = explode('.',$right);
+		if( strpos($left,'.') ){
+			list( $left_table, $left_column) = explode('.',$left);
+		}else{
+			$left_table  = $left;
+			$left_column = '';
+		}
+		
+		if( strpos($right,'.') ){
+			list( $right_table, $right_column) = explode('.',$right);
+		}else{
+			$right_table  = $right;
+			$right_column = '';
+		}
 		
 		//  fat mode
 		if( !empty($conf['fat']) ){
