@@ -971,7 +971,19 @@ __EOL__;
 			return null;
 		}
 	}
-	
+
+	/**
+	 * SetCookie is auto set to $_COOKIE, and value is valid all value! (string, number, array and object!!)
+	 *
+	 * @param string $key
+	 * @param mixed  $value
+	 * @param number $expire
+	 * @param string $path
+	 * @param string $domain
+	 * @param number $secure
+	 * @param string $httponly
+	 * @return boolean
+	 */
 	function SetCookie( $key, $value, $expire=0, $path='/', $domain='', $secure=0, $httponly=true )
 	{
 		$key   = $this->Escape($key);
