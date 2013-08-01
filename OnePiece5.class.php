@@ -971,13 +971,27 @@ __EOL__;
 			return null;
 		}
 	}
-	
-	function SetCookie( $key, $value, $expire=0, $path='/', $domain='', $secure=0, $httponly=true )
+
+	/**
+	 * SetCookie is auto set to $_COOKIE, and value is valid all value! (string, number, array and object!!)
+	 *
+	 * @param string $key
+	 * @param mixed  $value
+	 * @param number $expire
+	 * @param string $path
+	 * @param string $domain
+	 * @param number $secure
+	 * @param string $httponly
+	 * @return boolean
+	 */
+	function SetCookie( $key, $value, $expire=null, $path='/', $domain='', $secure=0, $httponly=true )
 	{
 		$key   = $this->Escape($key);
 		$value = $this->Escape($value);
 		
-		$this->StackLog("[SetCookie] $key=$value");
+		if( is_null($expire) ){
+			$this->StackError("expire does not set. (ex. 0 is 365days, -1 is out of valid expire.)");
+		}
 		
 		if( headers_sent() ){
 			$this->StackError("already header sent.");
