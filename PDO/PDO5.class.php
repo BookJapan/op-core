@@ -686,17 +686,17 @@ class PDO5 extends OnePiece5
 	function Count( $config )
 	{
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($config)){
+			$config = Toolbox::toArray($config);
 		}
 		
 		//  added count aggregate
-		if( empty($conf['agg']['count']) ){
-			$conf['agg']['count'] = '*';
+		if( empty($config['agg']['count']) ){
+			$config['agg']['count'] = '*';
 		}
 		
 		//  get select query
-		if(!$qu = $this->dml()->GetSelect($conf)){
+		if(!$qu = $this->dml()->GetSelect($config)){
 			return false;
 		}
 		
@@ -726,10 +726,14 @@ class PDO5 extends OnePiece5
 		
 		//  Check cache setting.
 		if(!empty($config['cache'])){
-			$key = serialize($config);
+			$key = md5(serialize($config));
 			if( $records = $this->Cache()->Get($key) ){
 				$this->Qu(var_export($config,true));
-			//	$records['cached'] = date('Y-m-d H:i:s');
+			//	$records[]['onepiece-cached'] = date('Y-m-d H:i:s');
+				
+				$this->mark("hit cache!! expire is {$config['cache']}sec.");
+			//	$this->d($config);
+				
 				return $records;
 			}
 		}
@@ -738,7 +742,7 @@ class PDO5 extends OnePiece5
 		if(!$qu = $this->dml()->GetSelect($config)){
 			return false;
 		}
-
+		
 		//  execute
 		$records = $this->query($qu);
 		
@@ -754,9 +758,12 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Check cache setting.
-		if(!empty($config['cache'])){
-			$key = serialize($config);
-			$this->Cache()->Set( $key, $records, (int)$config['cache'] );
+		if( isset($config['cache']) ){
+			$key = md5(serialize($config));
+			$io = $this->Cache()->Set( $key, $records, (int)$config['cache'] );
+			if(!$io){
+				$this->mark("check here");
+			}
 		}
 		
 		//  return to records.
