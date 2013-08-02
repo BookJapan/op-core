@@ -110,7 +110,7 @@ class Cache extends OnePiece5
 		}
 		
 		//  TODO: compress option
-		$this->cache->Set( $key, $value, $compress, $expire );
+		return $this->cache->Set( $key, $value, $compress, $expire );
 	}
 	
 	function Get( $key )

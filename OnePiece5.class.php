@@ -2152,12 +2152,7 @@ __EOL__;
 	}
 	
 	/**
-	 * @var $cache Cache
-	 */
-	private $cache = null;
-	
-	/**
-	 * Cache is presents the [memcache/memcached/other] interface. 
+	 * Cache is presents the [memcache/memcached/other] interface.
 	 * 
 	 * @param  string $name
 	 * @throws Exception
@@ -2165,17 +2160,17 @@ __EOL__;
 	 */
 	function Cache($name='Cache')
 	{
-		if(!$this->cache){
+		if(empty($_SERVER[__CLASS__]['singleton'][$name])){
 			if(!class_exists($name)){				
 				if(!include("$name.class.php") ){
 					throw new OpException("Include is failed. ($name)");
 				}
 			}
-			if(!$this->cache = new $name() ){
+			if(!$_SERVER[__CLASS__]['singleton'][$name] = new $name() ){
 				throw new OpException("Instance object is failed. ($name)");
 			}
 		}
-		return $this->cache;
+		return $_SERVER[__CLASS__]['singleton'][$name];
 	}
 	
 	/**
