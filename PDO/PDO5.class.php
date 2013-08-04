@@ -749,11 +749,12 @@ class PDO5 extends OnePiece5
 		if( $records === false ){
 			return false;
 		}
-		
+
 		//  if limit is 1
 		if( isset($config['limit']) and $config['limit'] == 1){
 			if( isset($records[0]) ){
-				return $records[0];
+			//	return $records[0];
+				$records = $records[0];
 			}
 		}
 		

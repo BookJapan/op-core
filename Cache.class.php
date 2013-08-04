@@ -104,6 +104,8 @@ class Cache extends OnePiece5
 	
 	function Set( $key, $value, $expire=0 )
 	{
+	//	$this->mark("$key, $value, $expire");
+		
 		//  Does not installed memcache module.
 		static $skip;
 		
@@ -157,28 +159,28 @@ class Cache extends OnePiece5
 	function Increment( $key, $value=1 )
 	{
 		//	Not incremented, if does not exists value.
-		$this->_cache->increment( $key, $value );
+		return $this->_cache->increment( $key, $value );
 	}
 	
 	function Decrement( $key, $value=1 )
 	{
 		//	Not decremented, if does not exists value.
-		$this->_cache->decrement( $key, $value );	
+		return $this->_cache->decrement( $key, $value );	
 	}
 	
 	function Delete( $key )
 	{
-		$this->_cache->delete( $key );
+		return $this->_cache->delete( $key );
 	}
 	
 	function Flash()
 	{
-		$this->_cache->flush();
+		return $this->_cache->flush();
 	}
 	
 	function resetServerList()
 	{
-		$this->_cache->resetServerList();
+		return $this->_cache->resetServerList();
 	}
 }
 

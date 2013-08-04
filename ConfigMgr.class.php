@@ -211,8 +211,12 @@ abstract class ConfigMgr extends OnePiece5
 			if( $pos = strpos( $table_name, '=' ) ){
 				//  Join table
 				foreach( explode('=',$table_name) as $temp ){
-					//  perse　table, column name
-					list( $name, $column ) = explode('.',$temp);
+					if( strpos($temp, '.') ){
+						//  perse　table, column name
+						list( $name, $column ) = explode('.',$temp);
+					}else{
+						$name = $temp;
+					}
 					$tables[] = trim($name,'<> ');
 				}
 				
@@ -245,7 +249,7 @@ abstract class ConfigMgr extends OnePiece5
 		}
 		
 		//	default cache seconds
-		$config->cache = 1;
+		$config->cache = 10;
 		
 		return $config;
 	}
@@ -259,7 +263,8 @@ abstract class ConfigMgr extends OnePiece5
 		return $config;
 	}
 	
-	function delete( $table_name=null ){
+	function delete( $table_name=null )
+	{
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
