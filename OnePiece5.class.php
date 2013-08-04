@@ -1708,13 +1708,19 @@ __EOL__;
 	{
 		// ob_start is stackable
 		if( ob_start() ){
-			$this->template( $file, $args );
+			
+			try{
+				$this->template( $file, $args );
+			}catch(Exception $e){				
+				$this->StackError($e);
+			}
+			
 			$temp = ob_get_contents();
 			$io   = ob_end_clean();
 		}else{
 			$this->StackError("ob_start failed.");
 		}
-	
+				
 		return $temp;
 	}
 	
