@@ -237,6 +237,7 @@ abstract class ConfigMgr extends OnePiece5
 		//	Create select config.
 		$config = new Config();
 		$config->table = $table_name;
+		$config->column->{'*'} = true;
 		
 		//	deleted
 		foreach( $deleteds as $deleted ){
@@ -286,6 +287,9 @@ abstract class ConfigMgr extends OnePiece5
 			
 			//  init input
 			$input = new Config();
+			
+			//	default value
+			$input->value = null;
 			
 			//  if auto increment column
 			if( $column['extra'] == 'auto_increment' ){
@@ -358,7 +362,7 @@ abstract class ConfigMgr extends OnePiece5
 			$input->validate->required = $column['null'] == 'NO' ? true: false;
 			
 			//  default value
-			$input->value = isset($record[$name]) ? $record[$name]: null;
+			$input->value = isset($record[$name]) ? $record[$name]: $input->value;
 			
 			//  add input
 			$config->input->$name = $input;
@@ -369,7 +373,7 @@ abstract class ConfigMgr extends OnePiece5
 		$input->name  = 'submit_button';
 		$input->type  = 'submit';
 		$input->value = ' Submit ';
-		$input->lable = '';
+		$input->label = '';
 		$config->input->submit_button = $input;
 		
 		//$this->d( Toolbox::toArray($config) );

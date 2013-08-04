@@ -11,6 +11,9 @@ abstract class Model_Model extends OnePiece5
 	//  Status
 	private $_status = null;
 	
+	//	Config class name
+	public $_config_name = 'Config_Model';
+	
 	function Init()
 	{
 		parent::Init();
@@ -24,7 +27,6 @@ abstract class Model_Model extends OnePiece5
 				$this->Selftest();
 			}
 		}
-		
 	}
 	
 	function Test()
@@ -66,7 +68,11 @@ abstract class Model_Model extends OnePiece5
 						$wz->Selftest($selftest);
 					}
 				}else{
-					$config->d();
+					if( $config instanceof Config ){
+						$config->d();
+					}else{
+						var_dump($config);
+					}
 				}
 			}
 		}
@@ -86,7 +92,14 @@ abstract class Model_Model extends OnePiece5
 			
 			//	Check
 			if(!$name){
-				throw new OpModelException("Config name is empty.");
+				
+			//	$this->mark( $this->GetCallerLine() );
+				
+				if( $this->_config_name ){
+					$name = $this->_config_name;
+				}else{
+					throw new OpModelException("Config name is empty.");
+				}
 			}
 			
 			if(!class_exists( $name, true ) ){
@@ -117,9 +130,12 @@ abstract class Model_Model extends OnePiece5
  */
 class Config_Model extends OnePiece5
 {
+	private $_host_name     = 'localhost';
+	private $_port_number   = '3306';
+	private $_database_name = 'onepiece';
+	private $_database_user = 'op_mdl';
 	private $_prefix = 'op';
 	private $_table  = null;
-	private $_dbuser = 'op_mdl';
 	
 	function pdo($name=null)
 	{
@@ -131,18 +147,40 @@ class Config_Model extends OnePiece5
 		return parent::pdo($name);
 	}
 	
-	function prefix($prefix=null)
+	function host_name($value=null)
 	{
-		if( $prefix ){
-			$this->_prefix = $prefix;
+		if( $value ){
+			$this->_host_name = $value;
 		}
-		return $this->_prefix;
+		return $this->_host_name;
+	}
+
+	function port_number($value=null)
+	{
+		if( $value ){
+			$this->_port_number = $value;
+		}
+		return $this->_port_number;
+	}
+
+	function database_name($value=null)
+	{
+		if( $value ){
+			$this->_database_name = $value;
+		}
+		return $this->_database_name;
+	}
+
+	function database_user_name($value=null)
+	{
+		if( $value ){
+			$this->_database_user = $value;
+		}
+		return $this->_database_user;
 	}
 	
-	function Database()
+	function database()
 	{
-		$dbuser = $this->_dbuser;
-		
 		//	init password
 		$password  = OnePiece5::GetEnv('admin-mail');
 		$password .= isset($this) ? get_class($this): null;
@@ -153,35 +191,36 @@ class Config_Model extends OnePiece5
 		//	Init database
 		$config = new Config();
 		$config->driver   = 'mysql';
-		$config->host     = 'localhost';
-		$config->database = 'onepiece';
-		$config->user     = $dbuser;
+		$config->host     = $this->host_name();
+		$config->port     = $this->port_number();
+		$config->database = $this->database_name();
+		$config->user     = $this->database_user_name();
 		$config->password = md5($password);
 		$config->charset  = 'utf8';
 		
 		return $config;
 	}
-	
-	function dbuser($dbuser)
+
+	function table_prefix($prefix=null)
 	{
-		if( $dbuser ){
-			$this->_dbuser = $dbuser;
+		if( $prefix ){
+			$this->_prefix = $prefix;
 		}
-		return $this->_dbuser;
+		return $this->_prefix;
 	}
 	
-	function table($table=null)
+	function table( $name=null, $key='all')
 	{
-		if( $table ){
-			$this->_table = $table;
+		if( $name ){
+			$this->_table[$key] = $name;
 		}
-		return $this->_table;
+		return $this->_table[$key];
 	}
 	
-	function table_name()
+	function table_name($key=null)
 	{
-		$prefix = $this->prefix();
-		$table  = $this->table();
+		$prefix = $this->table_prefix();
+		$table  = $this->table($key);
 		return "{$prefix}_{$table}";
 	}
 	
