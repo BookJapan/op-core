@@ -491,9 +491,13 @@ class Form5 extends OnePiece5
 		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
+				
 				//  Convert Full-path to Document-root-path.
 			//	$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
+				
+				//	
 				$value = $this->ConvertURL($value);
+				
 				return $value;
 			default:
 		}
@@ -823,6 +827,7 @@ class Form5 extends OnePiece5
 		$save_value = $this->GetInputValueRaw($input->name,$form_name);
 		$post_value = $this->GetRequest($input->name, $form_name);
 		
+		//	$save_value is document_root path. (always?)
 		if( $save_value ){
 			//  Is remover?
 			if( empty($post_value) or (is_array($post_value) and count($post_value) == 1 and empty($post_value[0])) ){
@@ -854,7 +859,7 @@ class Form5 extends OnePiece5
 				//  Reset form config. 
 				$this->SetInputValue( null, $input_name, $form_name );
 			
-				//	TODO: SetInputValue　Fails permit=image case. (This English is not through...)
+				//	TODO: SetInputValue fail to permit=image (Why?)
 				$_SESSION['OnePiece5']['Form5']['form'][$form_name][$input_name]['value'] = '';
 				
 				//  Status
@@ -899,18 +904,19 @@ class Form5 extends OnePiece5
 				$op_uniq_id = $this->GetCookie( self::KEY_COOKIE_UNIQ_ID );
 				
 				if( empty($input->save) ){
-					$path = sys_get_temp_dir() .'/'. md5($name . $op_uniq_id).".$ext";
+					$origin_path = sys_get_temp_dir() .'/'. md5($name . $op_uniq_id).".$ext";
 				}else{
 					if( isset($input->save->path) ){
 						//  hard path
-						$path = $this->ConvertPath( $input->save->path );
+					//	$path = $this->ConvertPath( $input->save->path );
+						$origin_path = $input->save->path;
 					}else{
 						//  directory
 						if( isset($input->save->dir) ){
 							$dir = $input->save->dir;
-							$dir = $this->ConvertPath($dir);
-							$dir = rtrim($dir,'/');
-							$dir = rtrim($dir,'\\');
+						//	$dir = $this->ConvertPath($dir);
+							$dir = rtrim($dir,'/\\');
+						//	$dir = rtrim($dir,'\\');
 						}else{
 							$dir = sys_get_temp_dir();
 						}
@@ -918,12 +924,15 @@ class Form5 extends OnePiece5
 						//  file name
 						if( isset($input->save->name) ){
 							$name = $input->save->name;
-							$path = $dir.'/'.$name.'.'.$ext;
+							$origin_path = $dir.'/'.$name.'.'.$ext;
 						}else{
-							$path = $dir .'/'. md5($name . $op_uniq_id).".$ext";
+							$origin_path = $dir .'/'. md5($name . $op_uniq_id).".$ext";
 						}
 					}
 				}
+				
+				//	$path is real path.
+				$path = $this->ConvertPath($origin_path);
 				
                 //  Check directory exists
                 if(!file_exists( $dirname = dirname($path) )){
@@ -935,22 +944,16 @@ class Form5 extends OnePiece5
                 }
 				
 				//  file is copy
-                if(!$io = copy($tmp, $path)){
+                if(!copy($tmp, $path)){
                 	$this->StackError("Does not copy at upload file. ($tmp, $path)");
                 	return false;
                 }
                 
-			//	$this->mark("tmp: $tmp, path: $path, io: $io");
-				if( $io ){
-					//	Saved value
-					$this->SetStatus( $form_name, "OK: file copy to $path");
-					$this->SetInputValue( $path, $input_name, $form_name );
-					return $path;
-				}else{
-					$this->SetStatus( $form_name, "NG: file copy to $path");
-					$this->StackError("Does not save upload file. ($path)");
-				}
-				break;
+				//	Saved value
+				$this->SetStatus( $form_name, "OK: file copy to $path");
+				$this->SetInputValue( $origin_path, $input_name, $form_name );
+				
+				return $origin_path;
 			
 			//  
 			case 4:
@@ -2536,14 +2539,19 @@ class Form5 extends OnePiece5
 	
 	function ValidateImage( $input, $form_name, $value )
 	{
-		if(!isset($_FILES[$input->name])){
+		if( isset($_FILES[$input->name]) ){
+			//	
+			if($_FILES[$input->name]['error'] == 4){
+				$this->SetStatus($form_name,"XX: File has not been submit. ({$input->name})");
+				return true;
+			}
+		}else if( $value ){
+			//	already been checked
+			$this->SetStatus($form_name,"XX: File has already been checked. ({$input->name})");
+			return true;
+		}else{
 			$this->SetStatus($form_name,"NG: Does not find in \$_FILES. ({$input->name})");
 			return false;
-		}
-		
-		if($_FILES[$input->name]['error'] == 4){
-			$this->SetStatus($form_name,"XX: File has not been submit. ({$input->name})");
-			return true;
 		}
 		
 		//  image info
