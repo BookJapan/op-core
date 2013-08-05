@@ -33,7 +33,7 @@ class Form5 extends OnePiece5
 		//	Test implements.
 		if( $this->admin() ){
 			$history = $this->GetSession('history');
-			$history[] = $_SERVER['REQUEST_URI'];
+			$history[] = $_SERVER['REQUEST_URI'].', '.date('H:i:s');
 			$this->SetSession('history', $history);
 			$io = session_regenerate_id(true);
 		}
