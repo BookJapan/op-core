@@ -1595,9 +1595,10 @@ class Form5 extends OnePiece5
 		
 		// radio
 		if('radio' === $type){
-			if( $value and isset($input->value) ){
+			if( isset($value) and isset($input->value) ){
 				$checked = $input->value == $value ? true: false;
 			}else{
+				//	here parent set
 				$checked = isset($checked) ? $checked: '';
 			}
 		}
@@ -1750,7 +1751,7 @@ class Form5 extends OnePiece5
 					}
 					
 					//  checked
-					if( isset($checked) and $checked ){
+					if(!empty($checked)){
 						$attr .= ' checked="checked"';
 					}
 					
