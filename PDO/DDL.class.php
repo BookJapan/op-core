@@ -47,6 +47,11 @@ class DDL extends OnePiece5
 			return false;
 		}
 	
+		if( strlen($user) > 16 ){
+			$this->StackError("User name is maximum 16 character.");
+			return false;
+		}
+		
 		//	CREATE USER 'user-name'@'host-name' IDENTIFIED BY '***';
 		$query = "CREATE USER '{$user}'@'{$host}' IDENTIFIED BY '{$password}'";
 	
@@ -268,8 +273,9 @@ class DDL extends OnePiece5
 				if( isset($temp['field']) ){
 					$temp['name'] = $temp['field'];
 				}else{
-					$this->core->StackError("Empty column name. ($name)");
-					continue;
+					$temp['name'] = $name;
+				//	$this->StackError("Empty column name. ($name)");
+				//	continue;
 				}
 			}
 			
@@ -455,7 +461,7 @@ class DDL extends OnePiece5
 		}
 		
 		// primary key(s)
-		if($pkeys){
+		if(isset($pkeys)){
 			//  TODO use standard array function
 			$join = array();
 			foreach($pkeys as $name){
@@ -471,10 +477,10 @@ class DDL extends OnePiece5
 		}
 		
 		// uniques
-		if( $uniques ){
+		if( isset($uniques) ){
 			$column[] = sprintf("UNIQUE( ".join(", ",$uniques)." )");
 		}
 		
-		return join(', ', $column);
+		return isset($column) ? join(', ', $column): false;
 	}
 }

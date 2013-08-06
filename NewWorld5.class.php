@@ -15,12 +15,33 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var array
 	 */
+	
+	/*
+	private $isDispatch	 = null;
+	private $routeTable	 = null;
+	private $content	 = null;
+	private $json		 = null;
+	*/
+	
+	/*
 	private $isDispatch = null;
 	private $routeTable = null;
 	private $content    = null;
+	private $_data      = null;
+	*/
+	
+	private $_isDispatch = null;
+	private $_routeTable = null;
+	private $_content    = null;
+	private $_data		 = array();
+	private $_log		 = null;
+	private $_json		 = null;
 	
 	function __construct($args=array())
 	{
+		//	Log
+		if( $this->_log){ $this->_log[] = __METHOD__; }
+		
 		//  output is buffering.
 		$io = ob_start();
 		$io = parent::__construct($args);
@@ -34,19 +55,45 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function __destruct()
 	{
+		//	Log
+		if( $this->_log ){ $this->_log[] = __METHOD__; }
+		
 		//  Called dispatch?
-		if(!$this->isDispatch){
+		if(!$this->_isDispatch){
 			$this->StackError('App has not dispatched. Please call $app->Dispatch();');
 		}
 		
-		//  flush buffer
-		ob_end_flush();
-		
-		//  Check content
-		if( $this->content ){
-			$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
-			$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
-			$this->content();
+		//	mime
+		$mime = strtolower($this->GetEnv('mime'));
+		switch( $mime ){
+			case 'csv':
+			case 'text':
+				//	CLI mode
+				break;
+					
+			case 'json':
+				if( $this->admin() ){
+					if( $this->_content ){
+						$this->SetJson('Error',$this->_content);
+					}
+				}
+				$this->doJson();
+				break;
+					
+			case 'html':
+			default:
+				
+				//  flush buffer
+				ob_end_flush();
+				
+				//  Check content
+				if( $this->_content ){
+					//	HTML mode
+					$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
+					$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
+					$this->content();
+				}
+				break;
 		}
 		
 		//  Vivre
@@ -54,6 +101,9 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  
 		$io = parent::__destruct();
+		
+		//	Log
+		if( $this->_log ){ $this->d( $this->_log ); }
 		
 		return $io;
 	}
@@ -76,7 +126,7 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		@list( $path, $query_string ) = explode('?',$request_uri);
 		$route = $this->Escape($route);
-		$this->routeTable[md5($path)] = $route;
+		$this->_routeTable[md5($path)] = $route;
 	}
 	
 	/**
@@ -88,7 +138,12 @@ abstract class NewWorld5 extends OnePiece5
 	function GetRoute($request_uri=null)
 	{
 		// get request uri
-		if(!$request_uri){
+		if( $request_uri ){
+			if( preg_match( '|^http://|', $request_uri ) ){
+				$this->mark("![ .red [Domain name is not required. 
+						Please specify document root path. ($request_uri)]]");
+			}
+		}else{
 			$request_uri = $_SERVER['REQUEST_URI'];
 		}
 		
@@ -96,8 +151,8 @@ abstract class NewWorld5 extends OnePiece5
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
 		$full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
 		
-		// Does path exist?
-		if( $route = @$this->routeTable[md5($path)] ){
+		// Does path exist? (in route table)
+		if( $route = $this->_routeTable[md5($path)] ){
 			return $route;
 		}
 		
@@ -105,6 +160,18 @@ abstract class NewWorld5 extends OnePiece5
 		if( preg_match('/\/([-_a-z0-9]+)\.(html|css|js)$/i',$path,$match) ){
 			if( $route = $this->HtmlPassThrough( $match, $full_path ) ){
 				return $route;
+			}
+		}
+		
+		//	Admin Notification
+		if( $this->admin() ){
+			if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
+				if(!file_exists($full_path)){
+					$mail['to'] = $this->GetEnv('admin-mail');
+					$mail['subject'] = '[Form5] Admin notification';
+					$mail['message'] = 'Does not exists this file: '.$full_path;
+					$this->Mail($mail);
+				}
 			}
 		}
 		
@@ -139,14 +206,7 @@ abstract class NewWorld5 extends OnePiece5
 		// controller file name
 		if(!$controller = $this->GetEnv('controller-name')){
 			$m = 'Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");';
-		//	$this->StackError($m);
 			throw new OpNwException($m);
-			
-			/*
-			$dirs = array();
-			$args = array();
-			return false;
-			*/
 		}
 		
 		//  Init
@@ -167,7 +227,7 @@ abstract class NewWorld5 extends OnePiece5
 			$args[] = array_pop($dirs);
 		}
 		
-		// anti nortice error
+		// Suppression of notice error.
 		if(!count($args)){
 			$args[0] = null;
 		}
@@ -239,45 +299,74 @@ abstract class NewWorld5 extends OnePiece5
 	function Dispatch($route=null)
 	{
 		// Deny two time dispatch
-		if( $this->isDispatch ){
+		if( $this->_isDispatch ){
 			$this->StackError("Dispatched two times. (Dispatched only one time.)");
-			return;
+			return false;
 		}else{
-			$this->isDispatch = true;
+			$this->_isDispatch = true;
 		}
 		
-		// if route is emtpy, get route.
+		//	if route is emtpy, get route.
 		if(!$route){
 			if(!$route = $this->GetRoute()){
 				return false;
 			}
 		}
 		
-		// route info
+		//	route info
 		$this->SetEnv('route',$route);
 		
-		// setting
-		$this->doSetting($route);
-		
-		// controller root
-		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
-		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
-		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
-		$this->SetEnv('Ctrl-Root',$ctrl_root);
+		try{
+			//	Flash buffer
+			$this->_content  = ob_get_contents(); ob_clean();
+			
+			//	Check selftest
+			$config = isset($_SESSION['OnePiece5']['_selftest']) ? $_SESSION['OnePiece5']['selftest']: null;
+			
+			if( $config ){
+			
+				$wz = new Wizard();
+				$io = $wz->Selftest( $config );
 				
-		// change dir
-		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
+				if( $io ){
+					$_SESSION['OnePiece5']['selftest'] = null;
+				}
+			}
 		
-		if( isset($route['pass']) and $route['pass'] ){
-		//	$this->mark( $chdir );
-			chdir( dirname($route['fullpath']) );
-		//	$this->mark( getcwd() );
-		}else{
-			chdir( $chdir );
+			//	setting
+			if(!$this->doSetting($route)){
+				return true;
+			}
+			
+			//	Forward
+			if( $this->doForward() ){
+				return true;
+			}
+			
+			//	Reload route info
+			$route = $this->GetEnv('route');
+			
+			//  content
+			$this->doContent();
+			
+		}catch( OpWzException $e ){
+			
+			//	Begin the Wizard.
+			$config = $e->GetConfig();
+			$wz = new Wizard();
+			$io = $wz->DoWizard($config);
+			if( $io ){
+				$this->p("Wizard is successful. Please reload this page.");
+			}else{
+				$wz->PrintForm( $config->form );
+			}
+			
+			//	Join the content.
+			$this->_content  = ob_get_contents(); ob_clean();
+			
+		}catch( Exception $e ){
+			$this->StackError($e);
 		}
-		
-		//  content
-		$this->doContent();
 		
 		//  layout
 		$this->doLayout();
@@ -285,24 +374,41 @@ abstract class NewWorld5 extends OnePiece5
 		return true;
 	}
 	
+	/**
+	 * Execute controller.
+	 * 
+	 * @return boolean
+	 */
 	function doContent()
 	{	
-		//  route
+		//  Route
 		if(!$route = $this->GetEnv('route')){
 			$this->StackError('Empty route.');
 			return false;
 		}
+
+		// controller root
+		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
+		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
+		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
+		$this->SetEnv('Ctrl-Root',$ctrl_root);
 		
-		//  contrller file path
-		$path = getcwd().'/'.$route['file'];
+		// change dir
+		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
 		
-		//  content
-		try{
-			$this->content  = ob_get_contents(); ob_clean();
-			$this->content .= $this->GetTemplate($path);
-		}catch( Exception $e ){
-			$this->StackError($e);
+		if( isset($route['pass']) and $route['pass'] ){
+			//	$this->mark( $chdir );
+			chdir( dirname($route['fullpath']) );
+			//	$this->mark( getcwd() );
+		}else{
+			chdir( $chdir );
 		}
+		
+		//  Controller file path.
+		$path = getcwd().'/'.$route['file'];
+
+		//	Execute controller.
+		$this->_content .= $this->GetTemplate($path);
 		
 		return true;
 	}
@@ -313,7 +419,10 @@ abstract class NewWorld5 extends OnePiece5
 		 * Search begins from AppRoot.
 		 * settings-file is looked for forward Dispatch-dir, from AppRoot
 		 */
-		 
+
+		//	Log
+		if( isset($this->_log) ){ $this->_log[] = __METHOD__.", {$route['path']}"; }
+		
 		//  Get settings file name.
 		if(!$setting = $this->GetEnv('setting-name') ){
 			return true;
@@ -326,31 +435,41 @@ abstract class NewWorld5 extends OnePiece5
 		//  Search settings file, and execute settings.
 		$save_dir = getcwd();
 		
+		$io = true;
 		foreach(explode('/', rtrim($route['path'],'/') ) as $dir){
 			$dirs[] = $dir;
 			$path = $app_root.join('/',$dirs)."/$setting";
 			
 			if( file_exists($path) ){
 				chdir( dirname($path) );
-				$io = include($path);
+				if(!$io = include($path) ){
+					break;
+				}
 			}
 		}
 		
 		//  Recovery current directory.
 		chdir($save_dir);
 		
-		return true;
+		return $io ? true: false;
 	}
 	
 	function doLayout()
 	{
+		$mime = $this->GetEnv('mime');
+		if( !is_null($mime) and $mime != 'html' ){
+			return true;
+		}
+		
 		//  check the layout is set. 
 		if(!$layout = $this->GetEnv('layout') ){
-			//  Does not set layout.
-			if( $this->admin() ){
-				$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
+			if(is_null($layout)){
+				//  Does not set layout.
+				if( $this->admin() ){
+					$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
+				}
 			}
-			return;
+			return false;
 		}
 		
 		//  get controller name
@@ -389,7 +508,7 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}else{
 			//  NG
-			print $this->content;
+			print $this->_content;
 			$m = "does not exists layout controller.($path)";
 			$this->StackError( $m,'layout');
 			throw new OpNwException($m);
@@ -444,8 +563,8 @@ abstract class NewWorld5 extends OnePiece5
 		exit(0);
 	}
 	
-	function Header( $str, $replace=null, $code=null ){
-	
+	function Header( $str, $replace=null, $code=null )
+	{
 		if( null === $replace ){
 			switch($str){
 				case 'hoge':
@@ -468,15 +587,33 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
+	/**
+	 * Forward local location.(not external URL)
+	 * 
+	 * @param string  $url  transfer url.
+	 * @param boolean $exit default is true.
+	 * @return void|boolean
+	 */
 	function Location( $url, $exit=true )
 	{
-		$url = $this->ConvertUrl($url);
+		//	Document root path
+		$url = $this->ConvertUrl($url,false);
 		
+		//	Check infinity loop.
+		$temp = explode('?',$_SERVER['REQUEST_URI']);
+		if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
+			$this->mark( __METHOD__ . ", Infinite loop");
+			if( $this->_log ){ $this->_log[] = __METHOD__.", Infinite loop."; }
+			return false;
+		}
+		
+		/*
 		$location = $this->GetSession('Location');
 		if( $url === $location['referer'] ){
 			$this->StackError("Redirect is roop. ($url)");
 			return false;
 		}
+		*/
 	
 		$io = $this->Header("Location: " . $url);
 		if( $io ){
@@ -494,20 +631,74 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
-	function Forward()
+	/**
+	 * Save the forward URL
+	 * 
+	 * @param string $url
+	 */
+	function SetForward( $url )
 	{
+		//	Log
+		if( isset($this->_log) ){ $this->_log[] = __METHOD__.", $url"; }
 		
+		//	Reset forward URL
+		if( empty($url) ){
+			$this->SetEnv('forward', null);
+			return;
+		}
+		
+		//	Convert URL
+		$url = $this->ConvertPath($url);
+		$app_root = rtrim($this->GetEnv('app-root'),'/');
+		$url = preg_replace( "|^$app_root|", '', $url );
+		
+		//	Save forward URL
+		$this->SetEnv('forward', $url);
+	}
+	
+	/**
+	 * Execute forward from saved forward url.
+	 * 
+	 * @return boolean.
+	 */
+	function doForward()
+	{
+		//	Log
+		if( isset($this->_log) ){ $this->_log[] = __METHOD__; }
+		
+		//	Forward URL
+		if(!$url = $this->GetEnv('forward')){
+			return false;
+		}
+		
+		//	Before route
+		$route_old = $this->GetEnv('route');
+		
+		//	Get change route info.
+		$route = $this->GetRoute($url);
+		
+		//	Compare
+		if( $route == $route_old ){
+			//	This is already been forwarding.
+			return false;
+		}
+		
+		//	Dispatched.
+		$this->_isDispatch = false;
+		$this->Dispatch($route);
+		
+		return true;
 	}
 	
 	function GetContent()
 	{
-		return $this->content;
+		return $this->_content;
 	}
 	
 	function Content()
 	{
-		print $this->content;
-		$this->content = '';
+		print $this->_content;
+		$this->_content = '';
 	}
 	
 	function GetArgs()
@@ -529,7 +720,61 @@ abstract class NewWorld5 extends OnePiece5
 			$this->StackError('Does not set env "NotFound" page path. Please call $this->SetEnv("NotFound").');
 		}
 	}
+	
+	function doJson()
+	{
+	//	header('Content-type: application/json');
+		header('Content-type: text/html');
+		print json_encode($this->_json);
+	}
+	
+	function SetJson( $key, $var )
+	{
+		static $init = null;
+		if( !$init ){
+			$this->SetEnv('mime','json');
+		}
+		$this->_json[$key] = $var;
+	}
+	
+	function GetJson( $key )
+	{
+		return $this->_json[$key];
+	}
+	
+	/* Save temporary data pass to template inside.
+	 * 
+	 * @param string  $key
+	 * @param mixed   $data
+	 * @param boolean $session Save to session. (Load is once)
+	 */
+	function SetData( $key, $data, $session=false )
+	{
+		$this->_data[$key] = $data;
+		if( $session ){
+			$this->SetSession($key, $data);
+		}
+	}
+	
+	/**
+	 * Get temporary data.
+	 * 
+	 * @param  string $key
+	 * @return mixed
+	 */
+	function GetData( $key )
+	{
+		if( isset($this->_data[$key]) ){
+			$data = $this->_data[$key];
+		}else{
+			$data = $this->GetSession($key);
+			//	Load is once.
+			$this->SetSession($key,null);
+		}
+		return $data;
+	}
 }
+
 class OpNwException extends OpException
 {
 	

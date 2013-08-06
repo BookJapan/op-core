@@ -82,13 +82,17 @@ class App extends NewWorld5
 	
 	function SetLayoutDir( $var )
 	{
-		$this->SetEnv('layout-root',$this->ConvertPath($var));
 		$this->SetEnv('layout-dir', $var);
 		return true;
 	}
 	
 	function SetLayoutName( $var )
 	{
+		//	Set layout root. (full path)
+		$layout_root = $this->GetEnv('layout-dir');
+		$layout_root = $this->ConvertPath($layout_root);
+		$this->SetEnv('layout-root',$layout_root.$var);
+		
 		return $this->SetEnv('layout', $var);
 	}
 	
@@ -117,9 +121,14 @@ class App extends NewWorld5
 		return $this->SetEnv('title', $var);
 	}
 	
-	function Title()
+	function GetTitle()
 	{
 		print $this->GetEnv('title');
+	}
+	
+	function Title()
+	{
+		print '<title>'.$this->GetEnv('title').'</title>';
 	}
 	
 	function SetDoctype( $var )
@@ -161,7 +170,7 @@ class App extends NewWorld5
 		$this->SetEnv('lang',$var);
 	}
 	
-	function Lang()
+	function GetLang()
 	{
 		print $this->GetEnv('lang');
 	}
@@ -171,7 +180,7 @@ class App extends NewWorld5
 		$this->SetEnv('charset',$var);
 	}
 	
-	function Charset( $args=null )
+	function GetCharset( $args=null )
 	{
 		print $this->GetEnv('charset');
 	}
@@ -198,9 +207,14 @@ class App extends NewWorld5
 		$this->SetEnv('keywords',$var);
 	}
 	
-	function Keywords()
+	function GetKeywords()
 	{
 		print $this->GetEnv('keywords');
+	}
+	
+	function Keywords()
+	{
+		print '<meta name="keywords" content="'.$this->GetKeywords().'">';
 	}
 
 	function SetDescription( $var )
@@ -208,10 +222,20 @@ class App extends NewWorld5
 		$this->SetEnv('description',$var);
 	}
 	
-	function Description()
+	function GetDescription()
 	{
 		print $this->GetEnv('description');
 	}
+	
+	function Description()
+	{
+		print '<meta name="description" content="'.$this->GetDescription().'">';
+	}
+}
+
+class OpAppException extends OpException
+{
+	
 }
 
 /**

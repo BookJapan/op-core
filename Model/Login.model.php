@@ -19,34 +19,118 @@
  */
 class Model_Login extends Model_Model
 {
-	const SESSION_KEY = 'loggedin-id';
+	const SESSION_LOGIN_ID         = 'loggedin-id';
+	const SESSION_FIRST_LOGIN_TIME = 'first-login-time';
+	const COOKIE_LAST_ACCESS_TIME  = 'last-access-time';
 	
+	const MESSAGE_EXPIRE_SESSION = 'Session has expire. (Session has destroyed)';
+	const MESSAGE_EXPIRE_LAST    = 'Login has expire. (From the last access)';
+	const MESSAGE_EXPIRE_FIRST   = 'Login has expire. (From the first login)';
+	
+	private $_message = null;
+	private $_expire  = 1200;  // 60 sec * 20 min
+	private $_effect  = 10800; // 60 sec * 60 min * 3 hour
+	
+	function Init()
+	{
+		parent::Init();
+		
+		//	check expire
+	//	$this->mark( $this->GetCookie(self::COOKIE_KEY) );
+	//	$this->mark( time()-$this->_expire );
+		if( $this->GetCookie(self::COOKIE_LAST_ACCESS_TIME) > (time() - $this->_expire) ){
+		//	$this->mark('OK');
+		}else{
+		//	$this->mark('NG');
+			$this->_message = self::MESSAGE_EXPIRE_LAST;
+			$this->Logout();
+		}
+		$this->SetCookie(self::COOKIE_LAST_ACCESS_TIME, time(), 0);
+	}
+	
+	/**
+	 * Set login-ID
+	 * 
+	 * @param  string|number $id
+	 * @return boolean
+	 */
 	function SetLoginId($id)
 	{
+		//	Check
 		if(!$id){
 			$this->StackError('ID is empty. logout use $this->Logout()');
 			return false;
 		}
-		$io = $this->SetSession( self::SESSION_KEY, $id );
+		
+		//	Set first login time
+		if( $_id = $this->GetSession(self::SESSION_LOGIN_ID) ){
+			//	
+		}else{
+			if( $_id != $id ){
+				$this->SetSession( self::SESSION_FIRST_LOGIN_TIME, time() );
+			}
+		}
+		
+		//	Set login-ID to session
+		$io = $this->SetSession( self::SESSION_LOGIN_ID, $id );
 		
 		return $io ? true: false;
 	}
 	
+	/**
+	 * Get login-ID
+	 * 
+	 * @return string|number
+	 */
 	function GetLoginId()
 	{
-		$id = $this->GetSession( self::SESSION_KEY );
+		//	Get login-ID from session
+		$id = $this->GetSession( self::SESSION_LOGIN_ID );
+		
+		//	If empty
+		if( $id ){
+			//	Check login effective
+		//	$this->mark( $this->GetSession(self::SESSION_FIRST_LOGIN_TIME) );
+		//	$this->mark( time() - $this->_effect );
+			if( $this->GetSession(self::SESSION_FIRST_LOGIN_TIME) < (time() - $this->_effect) ){
+				$id = null;
+				$this->_message = self::MESSAGE_EXPIRE_FIRST;
+			}
+		}else{
+			//	Will session has destroy?
+			if( $this->GetCookie(self::COOKIE_LAST_ACCESS_TIME) ){
+				$this->_message = self::MESSAGE_EXPIRE_SESSION;
+			}
+		}
+		
 		return $id;
 	}
 	
+	/**
+	 * To logout
+	 */
 	function Logout()
 	{
-		$io = $this->SetSession( self::SESSION_KEY, null );
-		return $io ? true: false;
+		$this->SetSession( self::SESSION_LOGIN_ID, null );
 	}
 	
+	/**
+	 * Return to boolean
+	 * 
+	 * @return boolean
+	 */
 	function isLoggedin()
 	{
-		$id = $this->GetSession( self::SESSION_KEY );
-		return $id ? true: false;
+		return $this->GetLoginId() ? true: false;
+	}
+	
+	/**
+	 * Get status message
+	 * 
+	 * @return string
+	 */
+	function GetMessage()
+	{
+		return $this->_message;
 	}
 }
