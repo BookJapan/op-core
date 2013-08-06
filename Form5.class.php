@@ -1430,7 +1430,7 @@ class Form5 extends OnePiece5
 		return null;
 	}
 	
-	public function Erase( $form_name, $force=false )
+	public function Erase( $form_name, $force=false, $location=true )
 	{
 		if(!$this->CheckConfig($form_name)){
 			if( $force ){
@@ -1455,27 +1455,34 @@ class Form5 extends OnePiece5
 		//	Save empty value to session.
 		$this->SetSession('form',$form);
 		
+		//	Location
+		if( $location ){
+			if( header("Location: {$_SERVER['REQUEST_URI']}") ){
+				$this->mark('Location is failed.');
+			}
+		}
+		
 		return true;
 	}
 	
-	public function Delete( $form_name, $force=false )
+	public function Delete( $form_name, $force=false, $location=true )
 	{
-		return $this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false, $location=true);
 	}
 	
-	public function Remove( $form_name, $force=false )
+	public function Remove( $form_name, $force=false, $location=true )
 	{
-		return $this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false, $location=true);
 	}
 	
-	public function Clear( $form_name, $force=false )
+	public function Clear( $form_name, $force=false, $location=true )
 	{
-		return $this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false, $location=true);
 	}
 	
-	public function Flash( $form_name, $force=false )
+	public function Flash( $form_name, $force=false, $location=true )
 	{
-		return $this->Erase($form_name, $force=false);
+		return $this->Erase($form_name, $force=false, $location=true);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
