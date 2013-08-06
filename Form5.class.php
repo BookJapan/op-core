@@ -1457,8 +1457,8 @@ class Form5 extends OnePiece5
 		
 		//	Location
 		if( $location ){
-			if( header("Location: {$_SERVER['REQUEST_URI']}") ){
-				$this->mark('Location is failed.');
+			if(!header("Location: {$_SERVER['REQUEST_URI']}")){
+				$this->StackError('Location is failed.');
 			}
 		}
 		
@@ -1585,7 +1585,7 @@ class Form5 extends OnePiece5
 			$value = $_request[$input_name];
 		}else if('checkbox' === $type or 'radio' === $type){
 			$value = $this->GetSaveValue($input_name, $form_name);
-		}else{			
+		}else{
 			$value = $this->GetInputValueRaw($input_name, $form_name);
 		}
 		
@@ -1612,7 +1612,7 @@ class Form5 extends OnePiece5
 		
 		//  checkbox
 		if('checkbox' === $type ){
-			// checked			
+			// checked
 			$save = isset($save) ? $save: true;
 			if( (isset($save) ? $save: true) and is_array($value) ){
 				$checked = isset($value[$id]) ? true: false;
