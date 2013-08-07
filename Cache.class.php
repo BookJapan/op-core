@@ -16,6 +16,8 @@ class Cache extends OnePiece5
 	 */
 	private $_compress = false;
 	
+	private $_isConnect = null;
+	
 	function Init()
 	{
 		parent::Init();
@@ -24,6 +26,10 @@ class Cache extends OnePiece5
 		$redis     = $this->GetEnv('redis');
 		$memcache  = $this->GetEnv('memcache');
 		$memcached = $this->GetEnv('memcached');
+		
+		//	get host & port
+		$host = $this->GetEnv('cache-host');
+		$port = $this->GetEnv('cache-port');
 		
 		if( is_null($memcache)){
 			$memcache = class_exists('Memcache',false);
@@ -38,17 +44,18 @@ class Cache extends OnePiece5
 		}
 		
 		if( $redis ){
-			$this->_cache = new Redis();
-			$this->InitRedis();
+			if( $this->_cache = new Redis() ){
+				$this->InitRedis();
+			}
 		}else
 		
 		if( $memcached ){
-			$this->_cache = new Memcached();
-			$this->InitMemcached();
+			if( $this->_cache = new Memcached( $host, $port ) ){
+				$this->InitMemcached();
+			}
 		}else
 		
 		if( $memcache ){
-			$this->_cache = new Memcache();
 			$this->InitMemcache();
 		}else{
 			$this->mark("not found");
@@ -58,7 +65,14 @@ class Cache extends OnePiece5
 	}
 	
 	function InitMemcache( $host='localhost', $port='11211', $weight=10 )
-	{
+	{	
+		//	instance
+		if( $this->_cache = $this->GetSession('cache') ){
+			return true;
+		}else{
+			$this->_cache = new Memcache( $host, $port );
+		}
+		
 		//  Change modan method.
 		if(!$hash_strategy = $this->GetEnv('memcache.hash_strategy') ){
 			$hash_strategy = 'consistent';
@@ -67,8 +81,16 @@ class Cache extends OnePiece5
 		ini_set('memcache.hash_strategy', $hash_strategy);
 		
 		//	Add server
+		/*
 		if(!$io = $this->AddServer( $host, $port, $weight )){
 			throw new Exception("Failed addServer method.");
+		}
+		*/
+		
+		//	Connect
+		if( $this->GetSession('isConnect') === null ){
+			$io = $this->_cache->connect($host,$port);
+			$this->SetSession('isConnect',$io);
 		}
 	}
 	
@@ -115,7 +137,7 @@ class Cache extends OnePiece5
 		}
 		
 		//	Check
-		if( empty($this->_cache) ){
+		if( empty($this->_cache) or empty($this->_isConnect) ){
 			$skip = true;
 			return null;
 		}
@@ -145,7 +167,7 @@ class Cache extends OnePiece5
 		}
 		
 		//	Check (forever skipping?)
-		if( empty($this->_cache) ){
+		if( empty($this->_cache) or empty($this->_isConnect) ){
 			$skip = true;
 			return null;
 		}
