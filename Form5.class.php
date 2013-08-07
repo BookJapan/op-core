@@ -1462,24 +1462,24 @@ class Form5 extends OnePiece5
 		return true;
 	}
 	
-	public function Delete( $form_name, $force=false, $location=true )
+	public function Delete( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Remove( $form_name, $force=false, $location=true )
+	public function Remove( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Clear( $form_name, $force=false, $location=true )
+	public function Clear( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Flash( $form_name, $force=false, $location=true )
+	public function Flash( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
