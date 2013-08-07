@@ -762,9 +762,6 @@ class PDO5 extends OnePiece5
 		if( isset($config['cache']) ){
 			$key = md5(serialize($config));
 			$io = $this->Cache()->Set( $key, $records, (int)$config['cache'] );
-			if(!$io){
-				$this->mark("check here");
-			}
 		}
 		
 		//  return to records.
