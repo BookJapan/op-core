@@ -491,13 +491,12 @@ class Form5 extends OnePiece5
 		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
-				
-				//  Convert Full-path to Document-root-path.
-			//	$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
-				
-				//	
-				$value = $this->ConvertURL($value);
-				
+				//	If set dir
+				if(!$dir = $input->save->dir ){
+					$dir = null;
+				}
+				//	If case of app:/xxx
+				$value = $this->ConvertURL($dir.$value);
 				return $value;
 			default:
 		}
