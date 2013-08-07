@@ -730,14 +730,12 @@ class Form5 extends OnePiece5
 			}
 			
 			//  get input
-//			$input = $this->GetConfig( $form_name, $input_name );
 			$input = $form->input->$input_name;
-		//	$this->d($input);
 			
 			//	readonly is skip
 			if( !empty($input->readonly) or !empty($input->disabled) ){
 				continue;
-			}				
+			}
 			
 			if(!isset($form->input->$input_name)){
 				$this->StackError("Does not set input config.($form_name, $input_name)");
@@ -1566,6 +1564,11 @@ class Form5 extends OnePiece5
 		}
 		$join[] = sprintf('id="%s"',$id);
 		
+		//	Class
+		if(empty($class)){
+			
+		}
+		
 		//  Other attributes
 		$attr = join(' ',$join);
 
@@ -1573,6 +1576,9 @@ class Form5 extends OnePiece5
 		$_request = $this->GetRequest( null, $form_name );
 		
 		// Value
+		if( $type === 'password' ){
+			$value = null;
+		}else 
 		if( !empty($input->group) ){
 			//	Bulk input value
 		}else if( $type === 'submit' or $type === 'button' or $type === 'file' ){
