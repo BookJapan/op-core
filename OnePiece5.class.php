@@ -260,7 +260,7 @@ class OnePiece5
 		
 		//  unique id
 		if(!$this->GetCookie( self::KEY_COOKIE_UNIQ_ID )){
-			$this->SetCookie( self::KEY_COOKIE_UNIQ_ID, md5(microtime() + $_SERVER['REMOTE_ADDR']));
+			$this->SetCookie( self::KEY_COOKIE_UNIQ_ID, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
 		}
 		
 		//  init
@@ -360,7 +360,7 @@ class OnePiece5
 	function __get( $name )
 	{
 		$this->StackError( __FUNCTION__ );
-		$this->mark("![.red .bold[ $name is not accessible property.]]");
+		$this->mark("![.red .bold[ `$name` is not accessible property.]]");
 	}
 	
 	function __isset( $name )
