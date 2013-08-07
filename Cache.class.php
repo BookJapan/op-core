@@ -16,6 +16,8 @@ class Cache extends OnePiece5
 	 */
 	private $_compress = false;
 	
+	private $_isConnect = null;
+	
 	function Init()
 	{
 		parent::Init();
@@ -24,6 +26,13 @@ class Cache extends OnePiece5
 		$redis     = $this->GetEnv('redis');
 		$memcache  = $this->GetEnv('memcache');
 		$memcached = $this->GetEnv('memcached');
+		
+		//	get host & port
+		$host = $this->GetEnv('cache-host');
+		$port = $this->GetEnv('cache-port');
+		
+		$host = $host ? $host : 'localhost';
+		$port = $port ? $port : '11211';
 		
 		if( is_null($memcache)){
 			$memcache = class_exists('Memcache',false);
@@ -38,18 +47,19 @@ class Cache extends OnePiece5
 		}
 		
 		if( $redis ){
-			$this->_cache = new Redis();
-			$this->InitRedis();
+			if( $this->_cache = new Redis() ){
+				$this->InitRedis();
+			}
 		}else
 		
 		if( $memcached ){
-			$this->_cache = new Memcached();
-			$this->InitMemcached();
+			if( $this->_cache = new Memcached( $host, $port ) ){
+				$this->InitMemcached();
+			}
 		}else
 		
 		if( $memcache ){
-			$this->_cache = new Memcache();
-			$this->InitMemcache();
+			$this->InitMemcache( $host, $port );
 		}else{
 			$this->mark("not found");
 		}
@@ -67,8 +77,15 @@ class Cache extends OnePiece5
 		ini_set('memcache.hash_strategy', $hash_strategy);
 		
 		//	Add server
+		/*
 		if(!$io = $this->AddServer( $host, $port, $weight )){
 			throw new Exception("Failed addServer method.");
+		}
+		*/
+		
+		//	Connect
+		if( $this->_cache = memcache_pconnect('localhost','11211') ){
+			$this->_isConnect = true;
 		}
 	}
 	
@@ -104,18 +121,10 @@ class Cache extends OnePiece5
 	
 	function Set( $key, $value, $expire=0 )
 	{
-	//	$this->mark("$key, $value, $expire");
-		
-		//  Does not installed memcache module.
 		static $skip;
-		
-		//	
 		if( $skip ){
 			return null;
-		}
-		
-		//	Check
-		if( empty($this->_cache) ){
+		}else if(!$this->_isConnect){
 			$skip = true;
 			return null;
 		}
@@ -142,13 +151,11 @@ class Cache extends OnePiece5
 		static $skip;
 		if( $skip ){
 			return null;
-		}
-		
-		//	Check (forever skipping?)
-		if( empty($this->_cache) ){
+		}else if(!$this->_isConnect){
 			$skip = true;
 			return null;
 		}
+		
 		
 		//	TODO: compress option
 		$value = $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
@@ -158,29 +165,68 @@ class Cache extends OnePiece5
 	
 	function Increment( $key, $value=1 )
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		//	Not incremented, if does not exists value.
 		return $this->_cache->increment( $key, $value );
 	}
 	
 	function Decrement( $key, $value=1 )
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		//	Not decremented, if does not exists value.
 		return $this->_cache->decrement( $key, $value );	
 	}
 	
 	function Delete( $key )
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		return $this->_cache->delete( $key );
 	}
 	
 	function Flash()
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		return $this->_cache->flush();
 	}
 	
 	function resetServerList()
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		return $this->_cache->resetServerList();
 	}
 }
-

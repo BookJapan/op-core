@@ -1,13 +1,17 @@
 <?php
-
-include_once('OnePiece5.class.php');
-
+/**
+ * Form5
+ *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ */
 class Form5 extends OnePiece5
 {
 	private	$status;
 	private $config;
 	private	$session;
-	private $_log = null;//array('active');
+	private $_log = null;
 	
 	function __destruct()
 	{
@@ -490,13 +494,14 @@ class Form5 extends OnePiece5
 		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
-				
-				//  Convert Full-path to Document-root-path.
-			//	$value = str_replace( rtrim($_SERVER['DOCUMENT_ROOT'],'/'), '', $value);
-				
-				//	
-				$value = $this->ConvertURL($value);
-				
+				if( $value ){
+					//	If set dir
+					if(!$dir = $input->save->dir ){
+						$dir = null;
+					}					
+					//	If case of app:/xxx
+					$value = $this->ConvertURL($dir.$value);
+				}
 				return $value;
 			default:
 		}
@@ -730,14 +735,12 @@ class Form5 extends OnePiece5
 			}
 			
 			//  get input
-//			$input = $this->GetConfig( $form_name, $input_name );
 			$input = $form->input->$input_name;
-		//	$this->d($input);
 			
 			//	readonly is skip
 			if( !empty($input->readonly) or !empty($input->disabled) ){
 				continue;
-			}				
+			}
 			
 			if(!isset($form->input->$input_name)){
 				$this->StackError("Does not set input config.($form_name, $input_name)");
@@ -831,8 +834,11 @@ class Form5 extends OnePiece5
 			//  Is remover?
 			if( empty($post_value) or (is_array($post_value) and count($post_value) == 1 and empty($post_value[0])) ){
 				
+				//	get save directory
+				$dir = empty($input->save->dir) ? null: $input->save->dir;
+				
 				//	Convert real path
-				$path = $this->ConvertPath($save_value);
+				$path = $this->ConvertPath($dir.$save_value);
 				
 				//	Check file exists 
 				if(!file_exists($path)){
@@ -885,7 +891,7 @@ class Form5 extends OnePiece5
 			
 			if( is_string($value) ){
 				//	Use OpenSNS's extend. (delete button mode)
-				$this->mark($value);
+			//	$this->mark($value);
 				return $value;
 			}else if( is_array($value) ){
 				if(!strlen(implode('',$value))){
@@ -948,11 +954,26 @@ class Form5 extends OnePiece5
                 	return false;
                 }
                 
+                //	remove dir path
+                if( $dir ){
+                	$dir = rtrim($dir,'/').'/';
+                	$save_value = str_replace( $dir, '', $origin_path);
+                }else{
+                	$save_value = $origin_path;
+                }
+
+                $temp = array();
+                $temp['origin_path'] = $origin_path;
+                $temp['save_value'] = $save_value;
+                $temp['dir']    = $dir;
+                $temp['search'] = $this->ConvertPath($dir);
+             //   $this->d($temp);
+                
 				//	Saved value
 				$this->SetStatus( $form_name, "OK: file copy to $path");
-				$this->SetInputValue( $origin_path, $input_name, $form_name );
+				$this->SetInputValue( $save_value, $input_name, $form_name );
 				
-				return $origin_path;
+				return $save_value;
 			
 			//  
 			case 4:
@@ -1464,24 +1485,24 @@ class Form5 extends OnePiece5
 		return true;
 	}
 	
-	public function Delete( $form_name, $force=false, $location=true )
+	public function Delete( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Remove( $form_name, $force=false, $location=true )
+	public function Remove( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Clear( $form_name, $force=false, $location=true )
+	public function Clear( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Flash( $form_name, $force=false, $location=true )
+	public function Flash( $form_name, $force=false, $location=false )
 	{
-		return $this->Erase($form_name, $force=false, $location=true);
+		return $this->Erase($form_name, $force, $location);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
@@ -1548,8 +1569,10 @@ class Form5 extends OnePiece5
         $input_name = $input->name;
 
         //  type
-        if(empty($type)){
+        if( empty($type) ){
             $type = 'text';
+        }else{
+        	$type = strtolower($type);
         }
 		
 		//  id
@@ -1566,6 +1589,26 @@ class Form5 extends OnePiece5
 		}
 		$join[] = sprintf('id="%s"',$id);
 		
+		//	Class
+		if( empty($class) ){
+			switch($type){
+				case 'submit':
+					$join[] = 'class="op-input op-input-button op-input-submit"';
+					break;
+					
+				case 'textarea':
+					$join[] = 'class="op-input op-input-text op-input-textarea"';
+					break;
+
+				case 'password':
+					$join[] = 'class="op-input op-input-text op-input-password"';
+					break;
+						
+				default:
+					$join[] = sprintf('class="op-input op-input-%s"',$type);
+			}	
+		}
+		
 		//  Other attributes
 		$attr = join(' ',$join);
 
@@ -1573,6 +1616,9 @@ class Form5 extends OnePiece5
 		$_request = $this->GetRequest( null, $form_name );
 		
 		// Value
+		if( $type === 'password' ){
+			$value = null;
+		}else 
 		if( !empty($input->group) ){
 			//	Bulk input value
 		}else if( $type === 'submit' or $type === 'button' or $type === 'file' ){

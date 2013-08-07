@@ -5,8 +5,9 @@
  * NewWorld's job is only to dispatch the index.php.
  * After dispatch to index.php, your freedom.
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2010 (C) Tomoaki Nagahara All right reserved.
  */
 abstract class NewWorld5 extends OnePiece5
 {
@@ -168,8 +169,10 @@ abstract class NewWorld5 extends OnePiece5
 			if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
 				if(!file_exists($full_path)){
 					$mail['to'] = $this->GetEnv('admin-mail');
-					$mail['subject'] = '[Form5] Admin notification';
-					$mail['message'] = 'Does not exists this file: '.$full_path;
+					$mail['subject'] = '[NewWorld] Admin notification';
+					$mail['message'] = 'Does not exists this file: '.$full_path."\n";
+					$mail['message'].= 'HTTP Referer: '.$_SERVER['HTTP_REFERER']."\n";
+					$mail['message'].= 'Timestamp: '.date('Y-m-d H:i:s')."\n";
 					$this->Mail($mail);
 				}
 			}
@@ -320,6 +323,7 @@ abstract class NewWorld5 extends OnePiece5
 			//	Flash buffer
 			$this->_content  = ob_get_contents(); ob_clean();
 			
+			/*
 			//	Check selftest
 			$config = isset($_SESSION['OnePiece5']['_selftest']) ? $_SESSION['OnePiece5']['selftest']: null;
 			
@@ -332,6 +336,7 @@ abstract class NewWorld5 extends OnePiece5
 					$_SESSION['OnePiece5']['selftest'] = null;
 				}
 			}
+			*/
 		
 			//	setting
 			if(!$this->doSetting($route)){
@@ -349,6 +354,7 @@ abstract class NewWorld5 extends OnePiece5
 			//  content
 			$this->doContent();
 			
+			/*
 		}catch( OpWzException $e ){
 			
 			//	Begin the Wizard.
@@ -363,14 +369,15 @@ abstract class NewWorld5 extends OnePiece5
 			
 			//	Join the content.
 			$this->_content  = ob_get_contents(); ob_clean();
+			*/
 			
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
-		
+			
 		//  layout
 		$this->doLayout();
-		
+				
 		return true;
 	}
 	
@@ -405,11 +412,11 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  Controller file path.
-		$path = getcwd().'/'.$route['file'];
-
+		$path = getcwd().'/'.$route['file'];		
+		
 		//	Execute controller.
 		$this->_content .= $this->GetTemplate($path);
-		
+				
 		return true;
 	}
 	

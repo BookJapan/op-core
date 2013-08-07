@@ -59,9 +59,7 @@ class Model_Account extends Model_Model
 	function Auto()
 	{
 		if(!$this->form()->Secure( $this->Config()->form_name() ) ){
-		//	$this->Debug("Does not secure.");
-			$this->Debug("Form5: " . $this->form()->getstatus( $this->Config()->form_name() ) );
-		//	$this->form()->debug( $this->Config()->form_name() );
+		//	$this->Debug("Form5: " . $this->form()->getstatus( $this->Config()->form_name() ) );
 			return false;
 		}
 		
@@ -280,20 +278,20 @@ class AccountConfig extends ConfigModel
 		//	ID
 		$name = 'account';
 		$config->input->$name->type  = 'text';
-		$config->input->$name->class = 'input-text mdl-account-account';
+		$config->input->$name->class = 'op-input op-input-text mdl-account-account';
 		$config->input->$name->validate->required = true;
 		
 		//	Password
 		$name = 'password';
 		$config->input->$name->type = 'password';
-		$config->input->$name->class = 'input-text input-password mdl-account-password';
+		$config->input->$name->class = 'op-input op-input-text op-input-password mdl-account-password';
 		$config->input->$name->validate->required = true;
 		
 		//	Submit
 		$name = 'submit';
 		$config->input->$name->type  = 'submit';
 		$config->input->$name->value = ' Login ';
-		$config->input->$name->class = 'input-button input-submit mdl-account-submit';
+		$config->input->$name->class = 'op-input op-input-button op-input-submit mdl-account-submit';
 		
 		return $config;
 	}

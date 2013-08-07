@@ -249,7 +249,11 @@ class Config_Model extends OnePiece5
 				//  Join table
 				foreach( explode('=',$table_name) as $temp ){
 					//  perse　table, column name
-					list( $name, $column ) = explode('.',$temp);
+					if( strpos( $temp,'.') ){
+						list( $name, $column ) = explode('.',$temp);
+					}else{
+						$name = trim($temp);
+					}
 					$tables[] = trim($name,'<> ');
 				}
 	
