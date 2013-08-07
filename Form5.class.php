@@ -495,12 +495,14 @@ class Form5 extends OnePiece5
 		//	Check input's type
 		switch( $type = strtolower($input->type) ){
 			case 'file':
-				//	If set dir
-				if(!$dir = $input->save->dir ){
-					$dir = null;
+				if( $value ){
+					//	If set dir
+					if(!$dir = $input->save->dir ){
+						$dir = null;
+					}					
+					//	If case of app:/xxx
+					$value = $this->ConvertURL($dir.$value);
 				}
-				//	If case of app:/xxx
-				$value = $this->ConvertURL($dir.$value);
 				return $value;
 			default:
 		}
@@ -833,8 +835,11 @@ class Form5 extends OnePiece5
 			//  Is remover?
 			if( empty($post_value) or (is_array($post_value) and count($post_value) == 1 and empty($post_value[0])) ){
 				
+				//	get save directory
+				$dir = empty($input->save->dir) ? null: $input->save->dir;
+				
 				//	Convert real path
-				$path = $this->ConvertPath($save_value);
+				$path = $this->ConvertPath($dir.$save_value);
 				
 				//	Check file exists 
 				if(!file_exists($path)){
@@ -887,7 +892,7 @@ class Form5 extends OnePiece5
 			
 			if( is_string($value) ){
 				//	Use OpenSNS's extend. (delete button mode)
-				$this->mark($value);
+			//	$this->mark($value);
 				return $value;
 			}else if( is_array($value) ){
 				if(!strlen(implode('',$value))){
@@ -950,11 +955,26 @@ class Form5 extends OnePiece5
                 	return false;
                 }
                 
+                //	remove dir path
+                if( $dir ){
+                	$dir = rtrim($dir,'/').'/';
+                	$save_value = str_replace( $dir, '', $origin_path);
+                }else{
+                	$save_value = $origin_path;
+                }
+
+                $temp = array();
+                $temp['origin_path'] = $origin_path;
+                $temp['save_value'] = $save_value;
+                $temp['dir']    = $dir;
+                $temp['search'] = $this->ConvertPath($dir);
+             //   $this->d($temp);
+                
 				//	Saved value
 				$this->SetStatus( $form_name, "OK: file copy to $path");
-				$this->SetInputValue( $origin_path, $input_name, $form_name );
+				$this->SetInputValue( $save_value, $input_name, $form_name );
 				
-				return $origin_path;
+				return $save_value;
 			
 			//  
 			case 4:
@@ -1550,8 +1570,10 @@ class Form5 extends OnePiece5
         $input_name = $input->name;
 
         //  type
-        if(empty($type)){
+        if( empty($type) ){
             $type = 'text';
+        }else{
+        	$type = strtolower($type);
         }
 		
 		//  id
@@ -1569,8 +1591,23 @@ class Form5 extends OnePiece5
 		$join[] = sprintf('id="%s"',$id);
 		
 		//	Class
-		if(empty($class)){
-			
+		if( empty($class) ){
+			switch($type){
+				case 'submit':
+					$join[] = 'class="op-input op-input-button op-input-submit"';
+					break;
+					
+				case 'textarea':
+					$join[] = 'class="op-input op-input-text op-input-textarea"';
+					break;
+
+				case 'password':
+					$join[] = 'class="op-input op-input-text op-input-password"';
+					break;
+						
+				default:
+					$join[] = sprintf('class="op-input op-input-%s"',$type);
+			}	
 		}
 		
 		//  Other attributes
