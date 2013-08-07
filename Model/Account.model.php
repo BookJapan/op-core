@@ -59,9 +59,7 @@ class Model_Account extends Model_Model
 	function Auto()
 	{
 		if(!$this->form()->Secure( $this->Config()->form_name() ) ){
-		//	$this->Debug("Does not secure.");
-			$this->Debug("Form5: " . $this->form()->getstatus( $this->Config()->form_name() ) );
-		//	$this->form()->debug( $this->Config()->form_name() );
+		//	$this->Debug("Form5: " . $this->form()->getstatus( $this->Config()->form_name() ) );
 			return false;
 		}
 		
