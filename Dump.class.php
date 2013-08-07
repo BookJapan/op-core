@@ -8,12 +8,8 @@
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2006 (C) Tomoaki Nagahara All right reserved.   
  */
-class Dump {
-	
-	function test($str='Success'){
-		print "<p>$str</p>";
-	}
-	
+class Dump
+{
 	static function D( $args, $lifetime=null ){
 		if( is_array($args) and count($args) === 0 ){
 			print self::GetDump( ' ', null, null, false );
@@ -27,7 +23,7 @@ class Dump {
 	}
 	
 	/**
-	 * This method nest call.
+	 * This method nested call.
 	 * 
 	 * @param $args
 	 * @param $lifetime   nest limit.

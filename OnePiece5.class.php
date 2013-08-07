@@ -1875,6 +1875,14 @@ __EOL__;
 		return $path;
 	}
 	
+	/**
+	 * 
+	 * @param  string $name
+	 * @throws OpModelException
+	 * @throws OpException
+	 * @throws OpWzException
+	 * @return Model_Model
+	 */
 	function Model($name)
 	{
 		try{

@@ -1,13 +1,17 @@
 <?php
-
-include_once('OnePiece5.class.php');
-
+/**
+ * Form5
+ *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ */
 class Form5 extends OnePiece5
 {
 	private	$status;
 	private $config;
 	private	$session;
-	private $_log = null;//array('active');
+	private $_log = null;
 	
 	function __destruct()
 	{
