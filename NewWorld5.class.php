@@ -168,8 +168,10 @@ abstract class NewWorld5 extends OnePiece5
 			if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
 				if(!file_exists($full_path)){
 					$mail['to'] = $this->GetEnv('admin-mail');
-					$mail['subject'] = '[Form5] Admin notification';
-					$mail['message'] = 'Does not exists this file: '.$full_path;
+					$mail['subject'] = '[NewWorld] Admin notification';
+					$mail['message'] = 'Does not exists this file: '.$full_path."\n";
+					$mail['message'].= 'HTTP Referer: '.$_SERVER['HTTP_REFERER']."\n";
+					$mail['message'].= 'Timestamp: '.date('Y-m-d H:i:s')."\n";
 					$this->Mail($mail);
 				}
 			}
