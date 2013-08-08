@@ -251,8 +251,18 @@ class OnePiece5
 	{
 		//  For all
 		$this->InitSession();
-
-		//  extends class have init method.
+		
+		//	Check CLI
+		if( isset($_SERVER['SHELL']) ){
+			$this->SetEnv('cli',true);
+			
+			/*
+			$_SERVER['SSH_CLIENT']
+			$_SERVER['SSH_CONNECTION']
+			*/
+		}
+		
+		//	Do Initialized in the init-method.(for extends class)
 		if( method_exists($this, 'Init') ){
 			//  op-root has set the first.
 			$this->SetEnv('op-root',dirname(__FILE__));
@@ -270,9 +280,11 @@ class OnePiece5
 		error_reporting( E_ALL );
 		ini_set('display_errors',1);
 		
-		//  unique id
-		if(!$this->GetCookie( self::KEY_COOKIE_UNIQ_ID )){
-			$this->SetCookie( self::KEY_COOKIE_UNIQ_ID, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
+		if(!$this->GetEnv('cli') ){
+			//  unique id
+			if(!$this->GetCookie( self::KEY_COOKIE_UNIQ_ID )){
+				$this->SetCookie( self::KEY_COOKIE_UNIQ_ID, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
+			}
 		}
 		
 		//  init
@@ -862,7 +874,7 @@ __EOL__;
 			$_SERVER['ADMIN_IP'] = $_SERVER['ADMIN_ADDR']; 
 		}
 		$admin_ip = isset($_SERVER['ADMIN_IP']) ? $_SERVER['ADMIN_IP']: '127.0.0.1';
-		$local    = $_SERVER['SERVER_ADDR'] === '127.0.0.1' ? true: false;
+//		$local    = $_SERVER['SERVER_ADDR'] === '127.0.0.1' ? true: false;
 		
 		// server admin(mail address)
 		if( preg_match('|[-_a-z0-9\.\+]+@[-_a-z0-9\.]+|i',@$_SERVER['SERVER_ADMIN']) ){
@@ -886,7 +898,7 @@ __EOL__;
 		}
 		
 		$this->SetEnv('class',      __CLASS__    );
-		$this->SetEnv('local',      $local       );
+//		$this->SetEnv('local',      $local       );
 	//	$this->SetEnv('op_root',    $op_root     );
 		$this->SetEnv('doc_root',   $doc_root    );
 		$this->SetEnv('app_root',   $app_root    );
