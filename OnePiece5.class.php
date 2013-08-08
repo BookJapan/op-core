@@ -1,6 +1,15 @@
 <?php
 # vim: tabstop=4
 /**
+ *  OnePiece5.class.php
+ *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
+ */
+
+/**
  * Added "op-root" to include_path.
  */
 if( ! isset($_SERVER['OnePiece5']) ){
@@ -216,11 +225,14 @@ if(!function_exists('OnePieceExceptionHandler')){
 }
 
 /**
- * OnePiece is OnePiece-Framework's core.
+ * OnePiece5
+ * 
+ * This is OnePiece-Framework's core.
  * 
  * @version   1.0
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
  */
 class OnePiece5
 {
@@ -237,7 +249,7 @@ class OnePiece5
 	 */
 	function __construct($args=array())
 	{
-		//  all
+		//  For all
 		$this->InitSession();
 
 		//  extends class have init method.
