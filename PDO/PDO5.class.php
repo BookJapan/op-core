@@ -731,7 +731,7 @@ class PDO5 extends OnePiece5
 				$this->Qu(var_export($config,true));
 			//	$records[]['onepiece-cached'] = date('Y-m-d H:i:s');
 				
-				$this->mark("hit cache!! expire is {$config['cache']}sec.");
+				$this->mark("hit cache!! expire is {$config['cache']}sec.",'cache');
 			//	$this->d($config);
 				
 				return $records;
