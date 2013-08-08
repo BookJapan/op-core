@@ -5,146 +5,228 @@ class Cache extends OnePiece5
 	/**
 	 * Instance of Memcache or Memcached.
 	 * 
-	 * @var Memcache|Memcached
+	 * @var Memcache|Memcached|Redis
 	 */
-	private $cache     = null;
+	private $_cache = null;
 	
 	/**
 	 * Do you want to compress the value?
 	 * 
 	 * @var boolean
 	 */
-	private $compress  = false;
+	private $_compress = false;
+	
+	private $_isConnect = null;
 	
 	function Init()
 	{
 		parent::Init();
 		
-		//  Get value
+		//  Get use flag
 		$redis     = $this->GetEnv('redis');
 		$memcache  = $this->GetEnv('memcache');
 		$memcached = $this->GetEnv('memcached');
 		
-		//  If undefined
+		//	get host & port
+		$host = $this->GetEnv('cache-host');
+		$port = $this->GetEnv('cache-port');
+		
+		$host = $host ? $host : 'localhost';
+		$port = $port ? $port : '11211';
+		
 		if( is_null($memcache)){
-			$memcache = class_exists('Memcache');
+			$memcache = class_exists('Memcache',false);
 		}
-
-		//  If undefined
+		
 		if( is_null($memcached)){
-			$memcached = class_exists('Memcached');
+			$memcached = class_exists('Memcached',false);
 		}
 		
-		//  Instance
-		if( $memcache ){
-			$this->cache = new Memcache();
-			$this->InitMemcache();
+		if( is_null($redis)){
+			$redis = class_exists('Redis',false);
 		}
 		
-		//  Instance
+		if( $redis ){
+			if( $this->_cache = new Redis() ){
+				$this->InitRedis();
+			}
+		}else
+		
 		if( $memcached ){
-			$this->cache = new Memcached();
-			$this->InitMemcached();
+			if( $this->_cache = new Memcached( $host, $port ) ){
+				$this->InitMemcached();
+			}
+		}else
+		
+		if( $memcache ){
+			$this->InitMemcache( $host, $port );
+		}else{
+			$this->mark("not found");
 		}
 		
 		return true;
 	}
 	
-	function InitMemcache()
+	function InitMemcache( $host='localhost', $port='11211', $weight=10 )
 	{
 		//  Change modan method.
 		if(!$hash_strategy = $this->GetEnv('memcache.hash_strategy') ){
 			$hash_strategy = 'consistent';
 		}
+		//	Change to consistent from standard. (default standard)
 		ini_set('memcache.hash_strategy', $hash_strategy);
 		
-		$this->AddMemcacheServer();
+		//	Add server
+		/*
+		if(!$io = $this->AddServer( $host, $port, $weight )){
+			throw new Exception("Failed addServer method.");
+		}
+		*/
+		
+		//	Connect
+		if( $this->_cache = memcache_pconnect('localhost','11211') ){
+			$this->_isConnect = true;
+		}
 	}
-
+	
 	function InitMemcached( $host='localhost', $port='11211', $weight=10 )
 	{
-		if(!$io = $this->cache->addServer( $host, $port, $weight )){
+		if(!$io = $this->AddServer( $host, $port, $weight )){
 			throw new Exception("Failed addServer method.");
 		}
 	}
 	
-	function AddMemcacheServer( $host='localhost', $port='11211', $weight=10 )
+	function AddServer( $host='localhost', $port='11211', $weight=10 )
 	{
 		//  Init
 		$persistent = true;
 		
-		return $this->cache->addServer( $host, $port, $persistent, $weight );
+		//	
+		//$this->mark( get_class($this->_cache) );
+		switch(get_class($this->_cache)){
+			case 'Memcached':
+				$io = $this->_cache->addServer( $host, $port, $weight );
+				break;
+				
+			case 'Memcache':
+				$io = $this->_cache->addServer( $host, $port, $persistent, $weight );
+				break;
+	
+			default:
+				$io = false;
+		}
+		
+		return $io;
 	}
 	
 	function Set( $key, $value, $expire=0 )
 	{
-		//  Does not installed memcache module.
 		static $skip;
-		
-		//	
 		if( $skip ){
 			return null;
-		}
-		
-		//	Check
-		if( empty($this->cache) ){
+		}else if(!$this->_isConnect){
 			$skip = true;
 			return null;
 		}
 		
-		switch( $name = get_class($this->cache) ){
-			case 'Memcache':
-				$compress = $this->compress ? MEMCACHE_COMPRESSED: null;
-				break;
+		switch( $name = get_class($this->_cache) ){
 			case 'Memcached':
 				break;
+				
+			case 'Memcache':
+				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
+				break;
+				
+			default:
+				$this->mark($name);
+				return false;
 		}
 		
 		//  TODO: compress option
-		$this->cache->Set( $key, $value, $compress, $expire );
+		return $this->_cache->Set( $key, $value, $compress, $expire );
 	}
 	
 	function Get( $key )
 	{
-		//  Does not installed memcache module.
 		static $skip;
-		
-		//	
 		if( $skip ){
 			return null;
-		}
-		
-		//	Check
-		if( empty($this->cache) ){
+		}else if(!$this->_isConnect){
 			$skip = true;
 			return null;
 		}
 		
+		
 		//	TODO: compress option
-		$value = $this->cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
+		$value = $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
 		
 		return $value;
 	}
 	
 	function Increment( $key, $value=1 )
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		//	Not incremented, if does not exists value.
-		$this->cache->increment( $key, $value );
+		return $this->_cache->increment( $key, $value );
 	}
 	
 	function Decrement( $key, $value=1 )
 	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
 		//	Not decremented, if does not exists value.
-		$this->cache->decrement( $key, $value );	
+		return $this->_cache->decrement( $key, $value );	
 	}
 	
 	function Delete( $key )
 	{
-		$this->cache->delete( $key );
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
+		return $this->_cache->delete( $key );
 	}
 	
 	function Flash()
 	{
-		$this->cache->flush();
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
+		return $this->_cache->flush();
+	}
+	
+	function resetServerList()
+	{
+		static $skip;
+		if( $skip ){
+			return null;
+		}else if(!$this->_isConnect){
+			$skip = true;
+			return null;
+		}
+		
+		return $this->_cache->resetServerList();
 	}
 }

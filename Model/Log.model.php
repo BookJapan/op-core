@@ -7,7 +7,7 @@
  */
 class Model_Log extends Model_Model
 {
-	private $log;
+	private $log = null;
 	
 	function Set( $log, $io=null )
 	{
@@ -55,5 +55,6 @@ class Model_Log extends Model_Model
 	function Out()
 	{
 		print $this->Get();
+		$this->log[] = null;
 	}
 }

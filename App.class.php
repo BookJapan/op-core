@@ -15,39 +15,30 @@ if(!include_once('NewWorld5.class.php')){
 
 class App extends NewWorld5
 {
-	function Init()
-	{
-		parent::Init();
-	}
-	
 	/**
 	 * @var ConfigMgr
 	 */
-	private $cmgr = null;
+	private $_mgr = null;
 	
 	/**
 	 * 
-	 * @param  string $cmgr
+	 * @param  ConfigMgr $var
 	 * @return ConfigMgr
 	 */
-	function Config( $cmgr=null )
+	function Config( $mgr=null )
 	{
-		if( /*isset( $this->cmgr )*/ $this->cmgr instanceof ConfigMgr ){
-			/*
-			$a = get_class($this->cmgr);
-			$b = get_class($cmgr);
-			$this->StackError("Already instance( $a, $b )");
-			*/
-			return $this->cmgr;
+		if( $mgr ){
+			if( $mgr instanceof ConfigMgr ){
+				$this->_mgr = $mgr;
+			}else{
+				throw new OpException("This variable is not ConfigMgr.");
+			}
+		}else if( empty($_mgr) ){
+			if(empty($this->_mgr)){
+				throw new OpException("Not been instance yet.");
+			}
 		}
-		
-		if( $cmgr instanceof ConfigMgr ){
-			$this->cmgr = $cmgr;
-		}else if( is_string($cmgr) ){
-			$this->cmgr = $cmgr();
-		}
-		
-		return $this->cmgr;
+		return $this->_mgr;
 	}
 	
 	function GetAction()
@@ -82,13 +73,17 @@ class App extends NewWorld5
 	
 	function SetLayoutDir( $var )
 	{
-		$this->SetEnv('layout-root',$this->ConvertPath($var));
 		$this->SetEnv('layout-dir', $var);
 		return true;
 	}
 	
 	function SetLayoutName( $var )
 	{
+		//	Set layout root. (full path)
+		$layout_root = $this->GetEnv('layout-dir');
+		$layout_root = $this->ConvertPath($layout_root);
+		$this->SetEnv('layout-root',$layout_root.$var);
+		
 		return $this->SetEnv('layout', $var);
 	}
 	
@@ -114,12 +109,17 @@ class App extends NewWorld5
 	
 	function SetTitle( $var )
 	{
-		return $this->SetEnv('title', $var);
+		$this->SetEnv('title', $var);
+	}
+	
+	function GetTitle()
+	{
+		return $this->GetEnv('title');
 	}
 	
 	function Title()
 	{
-		print $this->GetEnv('title');
+		print '<title>'.$this->GetTitle('title').'</title>';
 	}
 	
 	function SetDoctype( $var )
@@ -161,7 +161,7 @@ class App extends NewWorld5
 		$this->SetEnv('lang',$var);
 	}
 	
-	function Lang()
+	function GetLang()
 	{
 		print $this->GetEnv('lang');
 	}
@@ -171,7 +171,7 @@ class App extends NewWorld5
 		$this->SetEnv('charset',$var);
 	}
 	
-	function Charset( $args=null )
+	function GetCharset( $args=null )
 	{
 		print $this->GetEnv('charset');
 	}
@@ -198,9 +198,14 @@ class App extends NewWorld5
 		$this->SetEnv('keywords',$var);
 	}
 	
-	function Keywords()
+	function GetKeywords()
 	{
 		print $this->GetEnv('keywords');
+	}
+	
+	function Keywords()
+	{
+		print '<meta name="keywords" content="'.$this->GetKeywords().'">';
 	}
 
 	function SetDescription( $var )
@@ -208,174 +213,13 @@ class App extends NewWorld5
 		$this->SetEnv('description',$var);
 	}
 	
-	function Description()
+	function GetDescription()
 	{
 		print $this->GetEnv('description');
 	}
-}
-
-/**
- * Create NewWorld uses action class.
- * 
- * This class is proposal.
- * You should design the action freely. (OnePiece is free!!)
- * 
- * @author Tomoaki Nagahara
- *
- */
-/*
-abstract class NewWorld5Action extends OnePiece5
-{
-	function Init()
-	{
-		
-	}
 	
-	function GetArgs()
+	function Description()
 	{
-		$route = $this->GetEnv('route');
-		
-		return @$route['args'];
-	}
-	
-	function GetAction()
-	{
-		$args = $this->getArgs();
-		
-		return @$args[0];
-	}
-	
-	function Start()
-	{
-		$this->p('Please create a "Start" method, to inherited class.');
-	}
-	
-	function doIndex()
-	{
-		$this->p('Please create a "doIndex" method, to inherited action class.');
-	}
-	
-	function doError( $str )
-	{
-		if(!$str){
-			$this->StackError('Error message is empty.');
-			exit;
-		}
-		
-		$this->p($str);
-		$this->StackError($str);
-		exit;
-	}
-	
-	function HtmlPassThrough()
-	{
-		$this->mark();
-		
-		if(!$this->GetEnv('HtmlPassThrough')){
-			if( preg_match('|\.html$|',$_SERVER['REDIRECT_URL']) ){
-				$this->mark('$this->GetEnv("HtmlPassThrough") is false.');
-			}
-		}
-		
-		$route = $this->GetEnv('route');
-		$path = join( '/', $route['args']);
-		if(!preg_match('|\.html$|',$path)){
-			return false;
-		}
-		
-		if(!file_exists($path)){
-			return false;
-		}
-		
-		$io = $this->template('./'.$path);
-		
-		return $io;
-	}
-	
-	function Pager($separater=null)
-	{
-		return Pagination($separater);
-	}
-	
-	function Paging($separater=null)
-	{
-		return Pagination( $separater );
-	}
-	
-	function Pagination( $separater = ' | ' )
-	{
-		$page_current = @$this->page->current ? $this->page->current: 1;
-		$page_num = ceil($this->page->max / $this->page->per);
-		
-		for( $i = 1; $i<=$page_num ; $i++ ){
-			if( $i == $page_current ){
-				$join[] = sprintf('<span class="pagination paginationCurrent">%s</span>', $i, $i );
-			}else{
-				$join[] = sprintf('<a href="./%s" class="pagination">%s</a>', $i, $i );
-			}
-		}
-		
-		print join( $separater, $join );
-	}
-	
-	function SetPageCurrent($page)
-	{
-		if( $page >= 1 ){
-			$this->page->current = $page;
-		}
-	}
-	
-	function SetPageRecordsPer($rpp = 20 )
-	{
-		$this->page->per = $rpp;
-	}
-	
-	function SetPageRecordsMax($count)
-	{
-		$this->page->max = $count;
+		print '<meta name="description" content="'.$this->GetDescription().'">';
 	}
 }
-*/
-
-/**
- * Abstract class is inherit.
- * 
- * This is a proposal, A design is your freedom. 
- * Thus, please create a class by yourself. 
- * 
- * @author Tomoaki Nagahara
- *
- */
-/*
-class myAction extends NewWorld5Action
-{
-	function Init()
-	{
-		parent::Init();
-	}
-	
-	function Start( $_args=null )
-	{
-		$action = $this->GetAction();
-		$args   = $this->GetArgs();
-		$action = $action ? $action : 'index';
-		$method = 'do'.ucfirst(strtolower($action));
-		if(!method_exists($this, $method)){
-			$method = 'doIndex';
-		}
-		
-		// debug information
-		$this->mark('class='.$this->born[1]['class'], 'action');
-		$this->mark('action='.$action, 'action');
-		$this->mark('method='.$method, 'action');
-		$this->mark('args='.serialize($args), 'action');
-		
-		// HTML file is direct output
-		if( $io = $this->HtmlPassThrough() ){
-			return $io;
-		}
-		
-		return $this->{$method}($_args);
-	}
-}
-*/

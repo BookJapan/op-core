@@ -20,6 +20,12 @@ class PDO5 extends OnePiece5
 	private $database	 = null;
 	private $charset	 = null;
 	
+	/**
+	 * 
+	 * @param unknown_type $name
+	 * @throws Exception
+	 * @return DML
+	 */
 	function DML( $name=null )
 	{
 		if( empty($this->dml) ){
@@ -120,8 +126,9 @@ class PDO5 extends OnePiece5
 							$result = false;
 						}
 						break;
-					
+						
 					case 'update':
+					case 'delete':
 						$result = $st->rowCount();
 						break;
 						
@@ -192,6 +199,10 @@ class PDO5 extends OnePiece5
 		
 		try {
 			//	Supports PHP 5.1 ( USE db_name is not supports. )
+			/*
+			$io = version_compare( PHP_VERSION, 5.1 );
+			$this->mark($io);
+			*/
 			$db  = $this->database ? 'dbname='.$this->database.';': null;
 			if( $this->charset ){
 				if( $this->driver == 'mysql' ){
@@ -213,11 +224,9 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Database select
-		/*
 		if( $this->database ){
 			$this->Database( $this->database, $this->charset );
 		}
-		*/
 		
 		//  connected flag
 		$this->isConnect = true;
@@ -600,10 +609,8 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  get select query
-		if(!$qu = $this->ddl()->GetPassword($conf)){
-			return false;
-		}
-		
+		$qu = $this->ddl()->GetPassword($conf);
+			
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
@@ -676,32 +683,30 @@ class PDO5 extends OnePiece5
 	/**
 	 * 
 	 */
-	function Count( $conf )
+	function Count( $config )
 	{
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($config)){
+			$config = Toolbox::toArray($config);
 		}
 		
 		//  added count aggregate
-		if( empty($conf['agg']['count']) ){
-			$conf['agg']['count'] = '*';
+		if( empty($config['agg']['count']) ){
+			$config['agg']['count'] = '*';
 		}
 		
 		//  get select query
-		if(!$qu = $this->dml()->GetSelect($conf)){
+		if(!$qu = $this->dml()->GetSelect($config)){
 			return false;
 		}
 		
 		//  execute
-		if(!$count = $this->query($qu,'count')){
-			return false;
-		}
+		$count = $this->query($qu,'count');
 		
 		return $count;
 	}
 	
-	function Select( $conf )
+	function Select( $config )
 	{
 		if(!$this->isConnect){
 			$this->StackError("Does not isConnect.");
@@ -715,50 +720,55 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($config)){
+			$config = Toolbox::toArray($config);
 		}
 		
 		//  Check cache setting.
-		if(!empty($conf['cache'])){
-			$key = serialize($conf);
+		if(!empty($config['cache'])){
+			$key = md5(serialize($config));
 			if( $records = $this->Cache()->Get($key) ){
-				$this->Qu(var_export($conf,true));
-			//	$records['cached'] = date('Y-m-d H:i:s');
+				$this->Qu(var_export($config,true));
+			//	$records[]['onepiece-cached'] = date('Y-m-d H:i:s');
+				
+				$this->mark("hit cache!! expire is {$config['cache']}sec.",'cache');
+			//	$this->d($config);
+				
 				return $records;
 			}
 		}
 		
 		//  get select query
-		if(!$qu = $this->dml()->GetSelect($conf)){
+		if(!$qu = $this->dml()->GetSelect($config)){
 			return false;
 		}
-
+		
 		//  execute
 		$records = $this->query($qu);
 		
 		if( $records === false ){
 			return false;
 		}
-		
+
 		//  if limit is 1
-		if( isset($conf['limit']) and $conf['limit'] == 1){
+		if( isset($config['limit']) and $config['limit'] == 1){
 			if( isset($records[0]) ){
-				return $records[0];
+			//	return $records[0];
+				$records = $records[0];
 			}
 		}
 		
 		//  Check cache setting.
-		if(!empty($conf['cache'])){
-			$key = serialize($conf);
-			$this->Cache()->Set( $key, $records, (int)$conf['cache'] );
+		if( isset($config['cache']) ){
+			$key = md5(serialize($config));
+			$io = $this->Cache()->Set( $key, $records, (int)$config['cache'] );
 		}
 		
 		//  return to records.
 		return $records;
 	}
 	
-	function Insert( $conf )
+	function Insert( $config )
 	{
 		//  Check
 		if(!$this->pdo){
@@ -767,12 +777,12 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($config)){
+			$config = Toolbox::toArray($config);
 		}
 		
 		//  get query
-		if(!$qu = $this->dml()->GetInsert($conf)){
+		if(!$qu = $this->dml()->GetInsert($config)){
 			return false;
 		}
 		
@@ -792,7 +802,7 @@ class PDO5 extends OnePiece5
 		return $id;
 	}
 	
-	function Update($conf)
+	function Update($config)
 	{
 		//  Check
 		if(!$this->pdo){
@@ -801,12 +811,12 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($config)){
+			$config = Toolbox::toArray($config);
 		}
 		
 		//  get query
-		if(!$qu = $this->dml()->GetUpdate($conf)){
+		if(!$qu = $this->dml()->GetUpdate($config)){
 			return false;
 		}
 		
@@ -816,7 +826,7 @@ class PDO5 extends OnePiece5
 		return $num;
 	}
 	
-	function Delete( $conf )
+	function Delete( $config )
 	{
 		//  Check
 		if(!$this->pdo){
@@ -825,19 +835,17 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($config)){
+			$config = Toolbox::toArray($config);
 		}
 		
 		//  get query
-		if( $this->qu = $this->dml()->GetDelete($conf)){
-			$this->qus[] = $this->qu;
-		}else{
+		if(!$qu = $this->dml()->GetDelete($config)){
 			return false;
 		}
 		
 		//  execute
-		$num = $this->query($qu,'update');
+		$num = $this->query($qu,'delete');
 		
 		return $num;
 	}
@@ -896,9 +904,9 @@ class ConfigSQL extends OnePiece5
 			var_dump($var);
 			var_dump($driver);
 			OnePiece5::StackError("Empty args.");
+			$safe = null;
 		}
 		
 		return $safe;
-	}
-		
+	}	
 }

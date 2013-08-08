@@ -15,16 +15,29 @@ abstract class ConfigMgr extends OnePiece5
 		return isset($this->config->$key) ? $this->config->$key: null;
 	}
 	
+	/* 
 	function config()
 	{
 		$this->mark('Your misstake','misstake'); // TODO: Whta is this?
 		return $this;
 	}
+	*/
 	
 	function init($config=null)
 	{
 		parent::Init();
+		
+		//	Init config
 		$this->config = new Config();
+		
+		//	Init database
+		$this->config->database->driver   = 'mysql';
+		$this->config->database->host     = 'localhost';
+		$this->config->database->database = 'onepiece';
+		$this->config->database->user     = 'onepiece';
+		$this->config->database->password = md5( OnePiece5::GetEnv('admin-mail') . get_class($this) );
+		$this->config->database->charset  = 'utf8';
+		$this->config->database->prefix   = 'op';
 	}
 	
 	function pdo($name=null)
@@ -36,7 +49,7 @@ abstract class ConfigMgr extends OnePiece5
 		}
 		return parent::pdo($name);
 	}
-
+	
 	function form_prefix( $value=null )
 	{
 		//  set
@@ -83,7 +96,17 @@ abstract class ConfigMgr extends OnePiece5
 		
 		return $prefix.$this->config->form->$key;
 	}
-
+	
+	function SetTablePrefix( $value )
+	{
+		$this->config->database->prefix = $value;
+	}
+	
+	function GetTablePrefix()
+	{
+		return isset($this->config->database->prefix) ? $this->config->database->prefix: null;
+	}
+	
 	function table_prefix( $value=null )
 	{
 		if( $value ){
@@ -92,6 +115,17 @@ abstract class ConfigMgr extends OnePiece5
 		return isset($this->config->database->prefix) ? $this->config->database->prefix: null;
 	}
 	
+	function GetTableName( $label )
+	{
+		return $this->config->database->prefix .'_'. $label; 
+	}
+	
+	/**
+	 * 
+	 * @param  string $key   This is table label.
+	 * @param  string $value What is this?
+	 * @return boolean|string
+	 */
 	function table_name( $key, $value=null )
 	{
 		if(!$key){
@@ -112,6 +146,11 @@ abstract class ConfigMgr extends OnePiece5
 		}
 		
 		return $prefix.$table;;
+	}
+	
+	function GetDatabaseConfig()
+	{
+		return $this->config->database;
 	}
 	
 	static function Database()
@@ -156,7 +195,8 @@ abstract class ConfigMgr extends OnePiece5
 		return $config;
 	}
 	
-	function insert( $table_name=null ){
+	function insert( $table_name=null )
+	{
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->created    = gmdate('Y-m-d H:i:s');
@@ -171,16 +211,24 @@ abstract class ConfigMgr extends OnePiece5
 			if( $pos = strpos( $table_name, '=' ) ){
 				//  Join table
 				foreach( explode('=',$table_name) as $temp ){
-					list( $name, $column ) = explode('.',$temp);
-					//  perse　table name
-					$tables[] = trim($name);
+					if( strpos($temp, '.') ){
+						//  perse　table, column name
+						list( $name, $column ) = explode('.',$temp);
+					}else{
+						$name = $temp;
+					}
+					$tables[] = trim($name,'<> ');
 				}
+				
+				//	Disambiguation (Avoid ambiguous)
 				foreach( $tables as $name ){
-					$deleteds[] = "$name.deleted";
+					$deleteds[]   = "$name.deleted";
+					$timestamps[] = "$name.timestamp";
 				}
 			}else{
 				//  Single table
-				$deleteds[] = isset($table_name) ? "$table_name.deleted": 'deleted';
+				$deleteds[]   = isset($table_name) ? "$table_name.deleted":   'deleted';
+				$timestamps[] = isset($table_name) ? "$table_name.timestamp": 'timestamp';
 			}
 		}else{
 			$deleteds = array();
@@ -189,11 +237,20 @@ abstract class ConfigMgr extends OnePiece5
 		//	Create select config.
 		$config = new Config();
 		$config->table = $table_name;
-		//	Avoid of ambiguous.
+		$config->column->{'*'} = true;
+		
+		//	deleted
 		foreach( $deleteds as $deleted ){
 			$config->where->$deleted = null;
 		}
-		$config->cache = 1;
+		
+		//	timestamp
+		foreach( $timestamps as $timestamp ){
+			$config->where->$timestamp = '! null';
+		}
+		
+		//	default cache seconds
+		$config->cache = 10;
 		
 		return $config;
 	}
@@ -203,10 +260,12 @@ abstract class ConfigMgr extends OnePiece5
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->updated = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
 		return $config;
 	}
 	
-	function delete( $table_name=null ){
+	function delete( $table_name=null )
+	{
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
@@ -228,6 +287,9 @@ abstract class ConfigMgr extends OnePiece5
 			
 			//  init input
 			$input = new Config();
+			
+			//	default value
+			$input->value = null;
 			
 			//  if auto increment column
 			if( $column['extra'] == 'auto_increment' ){
@@ -300,7 +362,7 @@ abstract class ConfigMgr extends OnePiece5
 			$input->validate->required = $column['null'] == 'NO' ? true: false;
 			
 			//  default value
-			$input->value = isset($record[$name]) ? $record[$name]: null;
+			$input->value = isset($record[$name]) ? $record[$name]: $input->value;
 			
 			//  add input
 			$config->input->$name = $input;
@@ -311,7 +373,7 @@ abstract class ConfigMgr extends OnePiece5
 		$input->name  = 'submit_button';
 		$input->type  = 'submit';
 		$input->value = ' Submit ';
-		$input->lable = '';
+		$input->label = '';
 		$config->input->submit_button = $input;
 		
 		//$this->d( Toolbox::toArray($config) );
@@ -339,6 +401,35 @@ abstract class ConfigMgr extends OnePiece5
 		$config->tag   = false;
 		$config->class = true;
 		$config->style = false;
+		return $config;
+	}
+	
+	function Selftest( $table_name=null )
+	{
+		$config = new Config();
+		
+		//	Form
+		$config->form->title   = 'Wizard Magic';
+		$config->form->message = 'Please enter root(or alter) password.';
+		
+		//	Database
+		$config->database = $this->Database();
+
+		//	Column
+		if( $table_name ){
+			$name = 'created';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'updated';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'deleted';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'timestamp';
+			$config->table->$table_name->column->$name->type = 'timestamp';
+		}
+		
 		return $config;
 	}
 }
