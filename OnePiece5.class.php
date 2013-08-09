@@ -1916,6 +1916,9 @@ __EOL__;
 				throw new OpModelException($msg);
 			}
 			
+			//	small -> Small		//	caMel -> Camel
+			$name = ucfirst($name);	//	$name = ucfirst(strtolower($name));
+			
 			//  Notice
 			if( strpos( $name, '_') ){
 				$this->mark('Underscore(_) is reserved. For the feature functions. (maybe, namespace)');
