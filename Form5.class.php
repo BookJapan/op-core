@@ -223,22 +223,28 @@ class Form5 extends OnePiece5
 	
 	private function CheckTokenKey( $form_name )
 	{
-		if(!$this->CheckConfig( $form_name )){
+	//	if(!$this->CheckConfig( $form_name )){
+		if(!$config = $this->GetConfig($form_name)){
 			return false;
 		}
 		
 		//	TODO: Please leave comment.
 		$token_key_name = $this->GetTokenKeyName($form_name);
-		$save_token = $this->GetTokenKey($form_name);
-		$post_token = Toolbox::GetRequest( $token_key_name );
 		
-		if( $this->_log ){
-			/*
-			$this->_log[] = __METHOD__." | form_name: $form_name";
-			$this->_log[] = __METHOD__." | saved key: $save_token";
-			$this->_log[] = __METHOD__." | posts key: $post_token";
-			$this->d($_SESSION['OnePiece5']['Form5']);
-			*/
+		//	get saved last time token by form_name, save to session
+		$save_token = $this->GetTokenKey($form_name);
+		
+		//	get posted token, method is POST by hidden, is GET by Cookie  
+		switch( strtolower($config->method) ){
+			case 'post':
+				$post_token = Toolbox::GetRequest( $token_key_name );
+				break;
+				
+			case 'get':
+				$post_token = $this->GetCookie($key);
+				break;
+			default:
+				$this->mark();
 		}
 		
 		if( !$save_token and !$post_token ){
@@ -1409,7 +1415,13 @@ class Form5 extends OnePiece5
 		
 		//  print form tag.
 		printf('<form name="%s" action="%s" method="%s" %s Accept-Charset="%s" %s %s>'.$nl, $form_name, $action, $method, $enctype, $charset, $class, $style);
-		printf('<input type="hidden" name="%s" value="%s" />'.$nl, $token_key_name, $token_key);
+		
+		if( $method == 'GET' ){
+			$this->mark();
+			$this->SetCookie( $token_key_name, $token_key, 0 );
+		}else{
+			printf('<input type="hidden" name="%s" value="%s" />'.$nl, $token_key_name, $token_key);
+		}
 
 		//	Log
 		if( $this->_log ){ $this->_log[] = __METHOD__." | $form_name, $token_key"; }
