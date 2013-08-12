@@ -650,9 +650,8 @@ class Form5 extends OnePiece5
 		return $value;
 	}
 	
-	function GetInputOptionLabel( $option_name, $input_name, $form_name )
+	public function GetInputOptionLabel( $option_name, $input_name, $form_name )
 	{
-
 		return $label;
 	}
 	
@@ -662,20 +661,15 @@ class Form5 extends OnePiece5
 		if( $io = $this->CheckInputValue( $input, $form_name, $value ) ){
 			$this->SetStatus( $form_name, "OK: SetInputValue ($value, $input_name, $form_name)" );
 			
-			//  TODO: Every call is slow. more fast!
 			//  save to session 
 			$session = $this->GetSession('form');
 			$session[$form_name][$input_name]['value'] = $value;
 			$this->SetSession( 'form', $session );
-			
 		}else{
 			$this->SetStatus( $form_name, "NG: SetInputValue ($value, $input_name, $form_name)" );
 		}
 		
 		return $io;
-		
-		//  old logic
-		//return $this->SetConfig( $value, $form_name, $input_name, 'value' );
 	}
 	
 	public function GetSaveValue( $input_name, $form_name )
@@ -1525,6 +1519,7 @@ class Form5 extends OnePiece5
 		$tag  = '';
 		$join = array();
 		$tail = '';
+		$value_of_input = null;
 
 		//  attribute
 		foreach($input as $key => $var){
@@ -1540,9 +1535,12 @@ class Form5 extends OnePiece5
 					break;
 					
 				case 'value':
+					/*
 					if( is_null($value_default) ){
 						$value_default = $var;
 					}
+					*/
+					$value_of_input = $var;
 					break;
 				
 				case 'readonly':
@@ -1631,14 +1629,19 @@ class Form5 extends OnePiece5
 		// Value
 		if( $type === 'password' ){
 			$value = null;
-		}else 
-		if( !empty($input->group) ){
+		}else if( !empty($input->group) ){
 			//	Bulk input value
 		}else if( $type === 'submit' or $type === 'button' or $type === 'file' ){
-			//	Over write input label.
+			
 			if( $value_default ){
+				//	Over write
 				$value = $value_default;
+			}else if( $value = $this->GetSaveValue($input_name, $form_name) ){
+				//	overwrite value that have been saved to session. 
+			}else{
+				$value = $value_of_input;
 			}
+			
 		}else if( isset($_request[$input_name]) and empty($readonly) ){
 			$value = $_request[$input_name];
 		}else if('checkbox' === $type or 'radio' === $type){
@@ -1647,11 +1650,17 @@ class Form5 extends OnePiece5
 			$value = $this->GetInputValueRaw($input_name, $form_name);
 		}
 		
-		// get cookie 
+		/*
+		$this->mark($value_default);
+		$this->mark($value_of_input);
+		$this->mark($value);
+		*/
+		
+		// case of save to cookie 
 		if( !isset($value) or is_null($value) ){
 			$value = $this->GetCookie($form_name.'/'.$input_name);
 			if( is_null($value) and ('checkbox'!==$type and 'radio'!==$type) ){
-				$value = $value_default;
+				$value = $value_of_input;
 			}
 		}
 		
