@@ -2,9 +2,6 @@
 
 abstract class Model_Model extends OnePiece5
 {
-	//  Config object
-//	private $config = null;
-	
 	//  Config Manager
 	private $cmgr   = null;
 	
@@ -17,9 +14,6 @@ abstract class Model_Model extends OnePiece5
 	function Init()
 	{
 		parent::Init();
-		
-		//  init config
-//		$this->config = new Config();
 		
 		//	selftest
 		if( $this->Admin() ){			
@@ -179,7 +173,7 @@ class Config_Model extends OnePiece5
 		return $this->_database_user;
 	}
 	
-	function database()
+	function database( $args=null )
 	{
 		//	init password
 		$password  = OnePiece5::GetEnv('admin-mail');
@@ -198,10 +192,16 @@ class Config_Model extends OnePiece5
 		$config->password = md5($password);
 		$config->charset  = 'utf8';
 		
+		if(!$this->DbUseSingleUser()){
+			if( isset($args['user']) ){
+				$config->user = $args['user'];
+			}
+		}
+		
 		return $config;
 	}
 
-	function table_prefix($prefix=null)
+	function prefix($prefix=null)
 	{
 		if( $prefix ){
 			$this->_prefix = $prefix;
@@ -209,6 +209,7 @@ class Config_Model extends OnePiece5
 		return $this->_prefix;
 	}
 	
+	/*
 	function table( $name=null, $key='all')
 	{
 		if( $name ){
@@ -223,6 +224,7 @@ class Config_Model extends OnePiece5
 		$table  = $this->table($key);
 		return "{$prefix}_{$table}";
 	}
+	*/
 	
 	function insert( $table_name=null )
 	{
@@ -366,10 +368,4 @@ class ConfigModel extends ConfigMgr
 	{
 		$this->_table_prefix = $prefix;
 	}
-	
-}
-
-class OpModelException extends Exception
-{
-	
 }
