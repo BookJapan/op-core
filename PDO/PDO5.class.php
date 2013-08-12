@@ -16,6 +16,7 @@ class PDO5 extends OnePiece5
 	private $isConnect	 = null;
 	private $driver		 = null;
 	private $host		 = null;
+	private $port		 = null;
 	private $user		 = null;
 	private $database	 = null;
 	private $charset	 = null;
@@ -190,6 +191,7 @@ class PDO5 extends OnePiece5
 		//  init
 		$this->driver   = isset($config->driver)   ? $config->driver  : null;
 		$this->host     = isset($config->host)     ? $config->host    : null;
+		$this->port     = isset($config->port)     ? $config->port    : null;
 		$this->user     = isset($config->user)     ? $config->user    : null;
 		$password       = isset($config->password) ? $config->password: null;
 		$this->database = isset($config->database) ? $config->database: null;
