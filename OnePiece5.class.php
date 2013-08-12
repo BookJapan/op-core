@@ -1008,7 +1008,7 @@ __EOL__;
 	 * @param string $httponly
 	 * @return boolean
 	 */
-	function SetCookie( $key, $value, $expire=null, $path='/', $domain='', $secure=0, $httponly=true )
+	function SetCookie( $key, $value, $expire, $path='/', $domain='', $secure=0, $httponly=true )
 	{
 		$key   = $this->Escape($key);
 		$value = $this->Escape($value);
