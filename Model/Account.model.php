@@ -277,21 +277,22 @@ class AccountConfig extends ConfigModel
 		
 		//	ID
 		$name = 'account';
-		$config->input->$name->type  = 'text';
-		$config->input->$name->class = 'op-input op-input-text mdl-account-account';
+		$config->input->$name->type   = 'text';
+		$config->input->$name->class  = 'op-input op-input-text mdl-account-account';
+		$config->input->$name->cookie = true;
 		$config->input->$name->validate->required = true;
 		
 		//	Password
 		$name = 'password';
-		$config->input->$name->type = 'password';
-		$config->input->$name->class = 'op-input op-input-text op-input-password mdl-account-password';
+		$config->input->$name->type   = 'password';
+		$config->input->$name->class  = 'op-input op-input-text op-input-password mdl-account-password';
 		$config->input->$name->validate->required = true;
 		
 		//	Submit
 		$name = 'submit';
-		$config->input->$name->type  = 'submit';
-		$config->input->$name->value = ' Login ';
-		$config->input->$name->class = 'op-input op-input-button op-input-submit mdl-account-submit';
+		$config->input->$name->type   = 'submit';
+		$config->input->$name->value  = ' Login ';
+		$config->input->$name->class  = 'op-input op-input-button op-input-submit mdl-account-submit';
 		
 		return $config;
 	}
