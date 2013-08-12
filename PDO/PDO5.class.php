@@ -687,6 +687,11 @@ class PDO5 extends OnePiece5
 	 */
 	function Count( $config )
 	{
+		if(!$this->isConnect){
+			$this->StackError("Does not isConnect.");
+			return false;
+		}
+		
 		//  object to array
 		if(!is_array($config)){
 			$config = Toolbox::toArray($config);
