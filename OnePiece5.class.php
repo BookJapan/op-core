@@ -244,7 +244,7 @@ class OnePiece5
 	private $isInit  = null;
 	private $_env;
 	
-	function __construct($args=array())
+	function __construct( /*$args=array()*/ )
 	{
 		//  For all
 		$this->InitSession();
@@ -270,18 +270,30 @@ class OnePiece5
 		}
 		
 		//	For all extends class
+		/*
 		foreach( $args as $key => $value ){
 			//	Overwrite init env value
 			$this->SetEnv( $key, $value );
 		}
+		*/
 		
 		//------------------------------------------------------//
 		
-		//  Check already init. 
+		//  Check already init.
 		if( $this->GetEnv('init') ){
 			return;
 		}
 		$this->SetEnv('init',true);
+
+		//------------------------------------------------------//
+		
+		//	Overwrite header
+		/**
+		 * @see http://www.ipa.go.jp/security/awareness/vendor/programmingv2/contents/405.html
+		 * @see http://msdn.microsoft.com/en-us/library/ms533020%28VS.85%29.aspx#Use_Cache-Control_Extensions
+		 */
+		header('X-Powered-By: OnePiece/1.0',true);
+		header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
 		
 		// Error control
 		$save_level = error_reporting();
@@ -296,7 +308,7 @@ class OnePiece5
 		}
 		
 		//  init
-		$this->_InitEnv($args);
+		$this->_InitEnv( /*$args*/ );
 		$this->_InitLocale($this->GetEnv('locale'));
 		
 		//  mark_label
@@ -870,11 +882,13 @@ __EOL__;
 	/**
 	 * 
 	 */
-	private function _InitEnv($args=array('InitEnv'=>true))
+	private function _InitEnv( /* $args=array('InitEnv'=>true) */ )
 	{
+		/*
 		if(!is_array($args)){
 			$args = Toolbox::toArray($args);
 		}
+		*/
 		
 		/*
 			Under line sample added .htaccess or httpd.conf
@@ -917,9 +931,11 @@ __EOL__;
 		$this->SetEnv('admin-mail', $admin_mail  );
 		$this->SetEnv('newline',    PHP_EOL      );
 		
+		/*
 		foreach( $args as $key => $var ){
 			$this->SetEnv($key,$var);
 		}
+		*/
 	}
 	
 	/**
@@ -930,7 +946,14 @@ __EOL__;
 	 */
 	static function SetEnv( $key, $var )
 	{
-		self::_Env( $key, $var, 'set' );
+		$var = self::_Env( $key, $var, 'set' );
+		if( $key === 'charset'){
+			if( headers_sent($file,$line) ){
+				$this->StackError("Header has already been sent.($file, $lien)");
+			}else{
+				$io = header("Content-type: text/html; charset=$var",true);
+			}
+		}
 	}
 
 	/**
@@ -1535,7 +1558,7 @@ __EOL__;
 	
 	function SetHeader( $str, $replace=null, $code=null )
 	{
-		$cgi = $this->GetEnv('cgi'); // FastCGI
+	//	$cgi = $this->GetEnv('cgi'); // FastCGI
 		
 		switch($code){
 			case '500':
