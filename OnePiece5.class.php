@@ -244,9 +244,6 @@ class OnePiece5
 	private $isInit  = null;
 	private $_env;
 	
-	/**
-	 * 
-	 */
 	function __construct($args=array())
 	{
 		//  For all
@@ -254,7 +251,8 @@ class OnePiece5
 		
 		//	Check CLI
 		if( isset($_SERVER['SHELL']) ){
-			$this->SetEnv('cli',true);
+		//	$this->SetEnv('cli',true);
+			$args['cli'] = true; // BEST!
 			
 			/*
 			$_SERVER['SSH_CLIENT']
@@ -265,9 +263,19 @@ class OnePiece5
 		//	Do Initialized in the init-method.(for extends class)
 		if( method_exists($this, 'Init') ){
 			//  op-root has set the first.
-			$this->SetEnv('op-root',dirname(__FILE__));
+			if(!$this->GetEnv('op-root')){
+				$this->SetEnv('op-root',dirname(__FILE__));
+			}
 			$this->Init();
 		}
+		
+		//	For all extends class
+		foreach( $args as $key => $value ){
+			//	Overwrite init env value
+			$this->SetEnv( $key, $value );
+		}
+		
+		//------------------------------------------------------//
 		
 		//  Check already init. 
 		if( $this->GetEnv('init') ){
@@ -782,6 +790,7 @@ __EOL__;
 				$key = 'newline';
 				break;
 				
+				/*
 			case (preg_match('/(remote)[-_]?(ip|addr)/',$key,$match) ? true: false):
 				$key = 'REMOTE_ADDR';
 				break;
@@ -789,11 +798,12 @@ __EOL__;
 			case (preg_match('/(user)[-_]?(agent)/',$key,$match) ? true: false):
 				$key = 'HTTP_USER_AGENT';
 				break;
-			
+				*/
+				
 			case 'href':
 				$key = 'HTTP_REFERER';
 				break;
-			
+				
 			case 'lang':
 				$key = 'language';
 				break;
