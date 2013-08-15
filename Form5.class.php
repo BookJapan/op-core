@@ -788,12 +788,13 @@ class Form5 extends OnePiece5
 				}
 				
 				// save cookie
-				if( isset($input->cookie) and $input->cookie and !is_null($value) ){
+				if( isset($input->cookie) and /*$input->cookie and*/ !is_null($value) ){
 					//  Remove check index.
 					if( empty($value[0]) ){
 						unset($value[0]);
 					}
-					$this->SetCookie($form_name.'/'.$input_name, $value );
+					$expire = $input->cookie === true ? 0: $input->cookie;
+					$this->SetCookie("$form_name/$input_name", $value, $expire );
 				}
 			}else{
 				$fail = true;
