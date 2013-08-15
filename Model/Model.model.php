@@ -200,7 +200,20 @@ class Config_Model extends OnePiece5
 		
 		return $config;
 	}
-
+	
+	function DbUseSingleUser($value=null)
+	{
+		if( $value ){
+			$this->SetEnv(__METHOD__,$value);
+		}
+		return $this->GetEnv(__METHOD__);
+	}
+	
+	function table_prefix($prefix=null)
+	{
+		return self::prefix($prefix);
+	}
+	
 	function prefix($prefix=null)
 	{
 		if( $prefix ){
@@ -217,14 +230,18 @@ class Config_Model extends OnePiece5
 		}
 		return $this->_table[$key];
 	}
+	*/
 	
-	function table_name($key=null)
+	function table_name()
 	{
+		//	get table name by extends class
+		$class = get_class($this);
+		$table = $class::TABLE_NAME;
+		
+		//	get table prefix by self class
 		$prefix = $this->table_prefix();
-		$table  = $this->table($key);
 		return "{$prefix}_{$table}";
 	}
-	*/
 	
 	function insert( $table_name=null )
 	{
