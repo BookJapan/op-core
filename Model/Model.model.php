@@ -54,12 +54,13 @@ abstract class Model_Model extends OnePiece5
 				$config->Caller = $this->GetCallerLine();
 				
 				//  Selftest
-				if( method_exists( $this, 'Selftest') ){
+				if( method_exists( $this->config(), 'selftest') ){
 					$selftest = $this->Selftest();
 					if( $selftest instanceof Config ){
-						$_SESSION['OnePiece5']['selftest'] = $selftest;
-						$wz = new Wizard();
-						$wz->Selftest($selftest);
+						$this->model('Selftest')->Save( get_class($this), $selftest );
+						$e = new OpException();
+						$e->isSelftest(true);
+						throw $e;
 					}
 				}else{
 					if( $config instanceof Config ){
@@ -320,6 +321,35 @@ class Config_Model extends OnePiece5
 		$config = new Config();
 		$config->table = $table_name;
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
+		return $config;
+	}
+	
+	function Selftest( $table_name=null )
+	{
+		$config = new Config();
+	
+		//	Form
+		$config->form->title   = 'Wizard Magic';
+		$config->form->message = 'Please enter root(or alter) password.';
+		
+		//	Database
+		$config->database = $this->Database();
+	
+		//	Column
+		if( $table_name ){
+			$name = 'created';
+			$config->table->$table_name->column->$name->type = 'datetime';
+				
+			$name = 'updated';
+			$config->table->$table_name->column->$name->type = 'datetime';
+				
+			$name = 'deleted';
+			$config->table->$table_name->column->$name->type = 'datetime';
+				
+			$name = 'timestamp';
+			$config->table->$table_name->column->$name->type = 'timestamp';
+		}
+	
 		return $config;
 	}
 }

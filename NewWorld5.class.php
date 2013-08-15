@@ -323,21 +323,6 @@ abstract class NewWorld5 extends OnePiece5
 			//	Flash buffer
 			$this->_content  = ob_get_contents(); ob_clean();
 			
-			/*
-			//	Check selftest
-			$config = isset($_SESSION['OnePiece5']['_selftest']) ? $_SESSION['OnePiece5']['selftest']: null;
-			
-			if( $config ){
-			
-				$wz = new Wizard();
-				$io = $wz->Selftest( $config );
-				
-				if( $io ){
-					$_SESSION['OnePiece5']['selftest'] = null;
-				}
-			}
-			*/
-		
 			//	setting
 			if(!$this->doSetting($route)){
 				return true;
@@ -350,34 +335,30 @@ abstract class NewWorld5 extends OnePiece5
 			
 			//	Reload route info
 			$route = $this->GetEnv('route');
-			
+							
 			//  content
 			$this->doContent();
-			
-			/*
-		}catch( OpWzException $e ){
-			
-			//	Begin the Wizard.
-			$config = $e->GetConfig();
-			$wz = new Wizard();
-			$io = $wz->DoWizard($config);
-			if( $io ){
-				$this->p("Wizard is successful. Please reload this page.");
-			}else{
-				$wz->PrintForm( $config->form );
-			}
-			
-			//	Join the content.
-			$this->_content  = ob_get_contents(); ob_clean();
-			*/
 			
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
-			
+		
+		//	Selftest
+		if( $this->Admin() and 0 ){
+			if( ob_start() ){
+				//	Selftest
+				$this->model("Selftest")->Load();
+				//	Get content
+				$this->_content .= ob_get_contents();
+				if(!ob_end_clean() ){
+					$this->mark();
+				}
+			}
+		}
+		
 		//  layout
 		$this->doLayout();
-				
+		
 		return true;
 	}
 	
@@ -404,9 +385,7 @@ abstract class NewWorld5 extends OnePiece5
 		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
 		
 		if( isset($route['pass']) and $route['pass'] ){
-			//	$this->mark( $chdir );
 			chdir( dirname($route['fullpath']) );
-			//	$this->mark( getcwd() );
 		}else{
 			chdir( $chdir );
 		}
