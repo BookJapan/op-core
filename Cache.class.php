@@ -69,6 +69,12 @@ class Cache extends OnePiece5
 	
 	function InitMemcache( $host='localhost', $port='11211', $weight=10 )
 	{
+		if( $this->GetSession(__METHOD__) ){
+			return;
+		}else{
+			$this->SetSession(__METHOD__,true);
+		}
+		
 		//  Change modan method.
 		if(!$hash_strategy = $this->GetEnv('memcache.hash_strategy') ){
 			$hash_strategy = 'consistent';
