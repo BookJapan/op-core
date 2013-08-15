@@ -336,6 +336,7 @@ class AccountConfig extends ConfigModel
 		$name = self::COLUMN_FAILED;
 		$config->table->$table_name->column->$name->type    = 'int';
 		
+		/*
 		$name = 'created';
 		$config->table->$table_name->column->$name->type = 'datetime';
 
@@ -347,6 +348,7 @@ class AccountConfig extends ConfigModel
 
 		$name = 'timestamp';
 		$config->table->$table_name->column->$name->type = 'timestamp';
+		*/
 		
 		return $config;
 	}

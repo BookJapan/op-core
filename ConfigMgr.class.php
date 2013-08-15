@@ -417,7 +417,7 @@ abstract class ConfigMgr extends OnePiece5
 		
 		//	Database
 		$config->database = $this->Database();
-
+		
 		//	Column
 		if( $table_name ){
 			$name = 'created';
