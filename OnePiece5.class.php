@@ -528,7 +528,8 @@ class OnePiece5
 			$code     = $e->getCode();
 			
 			$file     = self::CompressPath($file);
-			$incident = "$file [$line]";
+			$catch    = self::GetCallerLine();
+			$incident = "$file [$line] Catch: $catch";
 			
 			$file = $traceArr[0]['file'];
 			$line = $traceArr[0]['line'];
@@ -1768,8 +1769,16 @@ __EOL__;
 			
 			try{
 				$this->template( $file, $args );
-			}catch(Exception $e){				
-				$this->StackError($e);
+			}catch(Exception $e){
+				//	
+			}
+			
+			if( isset($e) ){
+				if( $e->isSelftest() ){
+					$this->StackError($e);
+				}else{
+					$this->StackError($e);
+				}
 			}
 			
 			$temp = ob_get_contents();
@@ -2001,34 +2010,6 @@ __EOL__;
 			
 			//  Instance is success.
 			return $_SERVER[__CLASS__]['model'][$name];
-			
-		}catch( OpWzException $e ){
-			
-			//	Pass to NewWorld			
-			$_SESSION['OnePiece5']['selftest'] = $e->GetConfig();
-			
-			/*
-			var_dump( get_class( $this ) );
-			
-			//	Debug
-			$file = $e->getFile();
-			$line = $e->getLine();
-			$this->mark( __METHOD__ . "($file, $line)" );
-			*/
-			
-			/*
-			//	Begin the Wizard.
-			$config = $e->GetConfig();
-			$wz = new Wizard();
-			$io = $wz->DoWizard($config);
-			if( $io ){
-				$this->p("Wizard is successful. Please reload this page.");
-			}else{
-				$wz->PrintForm( $config->form );
-			}
-			*/
-
-			throw $e;
 			
 		}catch( Exception $e ){
 			$file = $e->getFile();
@@ -2299,6 +2280,15 @@ __EOL__;
 class OpException extends Exception
 {
 	private $_wizard = null;
+	private $_isSelftest = null;
+	
+	function isSelftest($var=null)
+	{
+		if( $var ){
+			$this->_isSelftest = $var;
+		}
+		return $this->_isSelftest;
+	}
 	
 	function SetWizard()
 	{
