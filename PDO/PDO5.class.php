@@ -716,7 +716,7 @@ class PDO5 extends OnePiece5
 	function Select( $config )
 	{
 		if(!$this->isConnect){
-			$this->StackError("Does not isConnect.");
+			$this->StackError("Not connected. (isConnect is false)");
 			return false;
 		}
 		

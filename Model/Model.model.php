@@ -128,8 +128,8 @@ class Config_Model extends OnePiece5
 	private $_port_number   = '3306';
 	private $_database_name = 'onepiece';
 	private $_database_user = 'op_mdl';
-	private $_prefix = 'op';
-	private $_table  = null;
+	private $_table_prefix  = 'op';
+	public  $_table_name    = null;
 	
 	function pdo($name=null)
 	{
@@ -217,9 +217,9 @@ class Config_Model extends OnePiece5
 	function prefix($prefix=null)
 	{
 		if( $prefix ){
-			$this->_prefix = $prefix;
+			$this->_table_prefix = $prefix;
 		}
-		return $this->_prefix;
+		return $this->_table_prefix;
 	}
 	
 	/*
@@ -239,7 +239,8 @@ class Config_Model extends OnePiece5
 		$table = $class::TABLE_NAME;
 		
 		//	get table prefix by self class
-		$prefix = $this->table_prefix();
+		$prefix = $this->_table_prefix;
+		
 		return "{$prefix}_{$table}";
 	}
 	
@@ -258,6 +259,9 @@ class Config_Model extends OnePiece5
 	
 	function select( $table_name=null )
 	{
+		$deleteds = array();
+		$timestamps = array();
+		
 		if(!$table_name){
 			$table_name = $this->table_name();
 		}

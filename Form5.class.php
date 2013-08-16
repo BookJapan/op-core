@@ -788,12 +788,13 @@ class Form5 extends OnePiece5
 				}
 				
 				// save cookie
-				if( isset($input->cookie) and $input->cookie and !is_null($value) ){
+				if( isset($input->cookie) and /*$input->cookie and*/ !is_null($value) ){
 					//  Remove check index.
 					if( empty($value[0]) ){
 						unset($value[0]);
 					}
-					$this->SetCookie($form_name.'/'.$input_name, $value );
+					$expire = $input->cookie === true ? 0: $input->cookie;
+					$this->SetCookie("$form_name/$input_name", $value, $expire );
 				}
 			}else{
 				$fail = true;
@@ -1459,6 +1460,10 @@ class Form5 extends OnePiece5
 	
 	public function Erase( $form_name, $force=false, $location=true )
 	{
+		if(!is_string($form_name)){
+			$this->mark('$form_name is not string.');
+			return false;
+		}
 		if(!$this->CheckConfig($form_name)){
 			if( $force ){
 				$this->mark("form_name = $form_name is not initialized. buy force cleard.");

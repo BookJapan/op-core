@@ -206,6 +206,9 @@ abstract class ConfigMgr extends OnePiece5
 	
 	function select( $table_name=null )
 	{
+		$deleteds   = array();
+		$timestamps = array();
+		
 		//	Avoid of ambiguous.
 		if( $table_name ){
 			if( $pos = strpos( $table_name, '=' ) ){
@@ -414,7 +417,7 @@ abstract class ConfigMgr extends OnePiece5
 		
 		//	Database
 		$config->database = $this->Database();
-
+		
 		//	Column
 		if( $table_name ){
 			$name = 'created';
