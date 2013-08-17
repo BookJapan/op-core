@@ -188,7 +188,7 @@ class DDL extends OnePiece5
 		
 		//  Escape  
 		$database = ConfigSQL::Quote( $args['database'], $args['driver']);
-		$table    = ConfigSQL::Quote( $args['table'],    $args['driver'] );
+		$table    = ConfigSQL::Quote( $args['table'],    $args['driver']);
 		
 		//	Added
 		if( isset($args['add']) ){
@@ -210,7 +210,7 @@ class DDL extends OnePiece5
 				return false;
 			}
 		}else{ $drop = null; }
-	
+		
 		//	Create SQL
 		$query = "ALTER TABLE {$database}{$table} {$add} {$change} {$drop}";
 	
@@ -342,7 +342,7 @@ class DDL extends OnePiece5
 				
 			//	PRIMARY KEY
 			if( $pkey ){
-				$pkey = 'PRIMARY KEY';
+				$pkey = "PRIMARY KEY";
 				$pkeys[] = $name;
 			}
 			
@@ -467,7 +467,7 @@ class DDL extends OnePiece5
 			foreach($pkeys as $name){
 				$join[] = $name;
 			}
-			$column[] = 'PRIMARY KEY('.join(',',$join).')';
+			$column[] = $ACD.' PRIMARY KEY('.join(',',$join).')';
 		}
 		
 		// indexes
