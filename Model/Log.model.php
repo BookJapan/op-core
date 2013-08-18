@@ -7,7 +7,7 @@
  */
 class Model_Log extends Model_Model
 {
-	private $log = null;
+	private $log = array();
 	
 	function Set( $log, $io=null )
 	{
