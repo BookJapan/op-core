@@ -212,7 +212,7 @@ class DDL extends OnePiece5
 		}else{ $drop = null; }
 		
 		//	Create SQL
-		$query = "ALTER TABLE {$database}{$table} {$add} {$change} {$drop}";
+		$query = "ALTER TABLE {$database}.{$table} {$add} {$change} {$drop}";
 	
 		return $query;
 	}
@@ -423,25 +423,25 @@ class DDL extends OnePiece5
 //					$definition = "$name $type $charset $collate $attributes $index $null $default $comment";
 					$definition = "$name $type $charset $collate $attributes $pkey  $null $default $comment";
 					break;
-		
-					case 'CHANGE':
-						if(!$rename){
-							$rename = $name;
-						}
-		
-					case 'ADD':
-					//	$column[] = "ADD {$index} ({$name})";
-						$definition = "$ACD $index $name $rename $type $attributes $null $default $comment $first $after";
-						break;
-		
-					case 'DROP':
-						/*
-						ALTER TABLE `t_table`
-						DROP `is_delete`,
-						DROP `coupon_timestamp`;
-						*/
-						$definition = "{$ACD} {$name}";
-						break;
+					
+				case 'CHANGE':
+					if(!$rename){
+						$rename = $name;
+					}
+					
+				case 'ADD':
+				//	$column[] = "ADD {$index} ({$name})";
+					$definition = "$ACD $index $name $rename $type $attributes $null $default $comment $first $after";
+					break;
+	
+				case 'DROP':
+					/*
+					ALTER TABLE `t_table`
+					DROP `is_delete`,
+					DROP `coupon_timestamp`;
+					*/
+					$definition = "{$ACD} {$name}";
+					break;
 			}
 				
 			//	Anti oracle only?
@@ -468,18 +468,23 @@ class DDL extends OnePiece5
 			foreach($pkeys as $name){
 				$join[] = $name;
 			}
-			$column[] = $ACD.' PRIMARY KEY('.join(',',$join).')';
+			//	modifire
+			$modifire = $ACD ? 'ADD': null;
+			$column[] = $modifire.' PRIMARY KEY('.join(',',$join).')';
 		}
 		
 		// indexes
 		if( $indexes ){
-		//	$column[] = join(',',$indexes);
-			$column[] = sprintf("INDEX( ".join(", ",$indexes)." )");
+			$modifire = $ACD ? 'ADD ': null;
+		//	$column[] = $modifire.' INDEX('.join(",",$indexes).')';
+			$column[] = sprintf('%sINDEX(%s)', $modifire, join(",",$uniques));
 		}
 		
 		// uniques
 		if( isset($uniques) ){
-			$column[] = sprintf("UNIQUE( ".join(", ",$uniques)." )");
+			$modifire = $ACD ? 'ADD ': null;
+		//	$column[] = $modifire.' UNIQUE('.join(",",$uniques).')';
+			$column[] = sprintf('%sUNIQUE(%s)', $modifire, join(",",$uniques));
 		}
 		
 		return isset($column) ? join(', ', $column): false;

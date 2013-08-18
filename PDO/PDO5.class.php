@@ -62,6 +62,13 @@ class PDO5 extends OnePiece5
 		return $this->ddl;
 	}
 	
+	/**
+	 * Wrapper DCL
+	 * 
+	 * @param  string $name
+	 * @throws Exception
+	 * @return DCL
+	 */
 	function DCL( $name=null )
 	{
 		if( empty($this->dcl) ){
@@ -113,6 +120,7 @@ class PDO5 extends OnePiece5
 			//  success
 			if( $st instanceof PDOStatement ){
 				switch($key){
+					case 'alter':
 					case 'create':
 						$result = true;
 						break;
@@ -633,6 +641,12 @@ class PDO5 extends OnePiece5
 		return $this->query( $qu, 'create' );
 	}
 	
+	/**
+	 * Change table or column
+	 * 
+	 * @param  unknown $conf
+	 * @return boolean
+	 */
 	function AlterTable( $conf )
 	{
 		//  object to array
@@ -644,10 +658,18 @@ class PDO5 extends OnePiece5
 			return false;
 		}
 		
+		//	ALTER TABLE `t_table` CHANGE `column_name` `column_name` VARCHAR( 11 ) NOT NULL DEFAULT '0'
+		
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
 	
+	/**
+	 * Add new column
+	 * 
+	 * @param  array|Config $conf
+	 * @return boolean|string
+	 */
 	function AddColumn( $conf )
 	{
 		//  object to array
@@ -674,12 +696,47 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->query( $qu, 'alter' );
+	}
+
+	/**
+	 * Change column
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean|string
+	 */
+	function ChangeColumn( $conf )
+	{
+		//  object to array
+		if(!is_array($conf)){
+			$conf = Toolbox::toArray($conf);
+		}
+	
+		//  Check
+		if( isset($conf['change']['column']) ){
+			//  OK
+		}else{
+			if( isset($conf['column']) ){
+				$conf['change']['column'] = $conf['column'];
+				unset($conf['column']);
+			}else{
+				$this->StackError('Does not set column.');
+				return false;
+			}
+		}
+		
+		//  get select query
+		if(!$qu = $this->ddl()->GetAlterTable($conf)){
+			return false;
+		}
+	
+		//  execute
+		return $this->query( $qu, 'alter' );
 	}
 	
 	function AddIndex( $conf )
 	{
-	//	ALTER TABLE `t_company` ADD INDEX `comp_name` ( `comp_name` ) 
+	//	ALTER TABLE `t_table` ADD INDEX `column_name` ( `column_name` ); 
 	}
 	
 	/**
@@ -897,6 +954,7 @@ class ConfigSQL extends OnePiece5
 		list( $ql, $qr ) = self::GetQuote($driver);
 		
 		if( is_array($var) ){
+			$safe = null;
 			foreach( $var as $tmp ){
 				$safe[] = self::Quote($tmp);
 			}
@@ -907,12 +965,14 @@ class ConfigSQL extends OnePiece5
 			$safe = $ql.trim($var).$qr;
 		}
 		
+		/*
 		if( empty($safe) ){
-			var_dump($var);
-			var_dump($driver);
+			$this->mark($var);
+			$this->mark($driver);
 			OnePiece5::StackError("Empty args.");
 			$safe = null;
 		}
+		*/
 		
 		return $safe;
 	}	
