@@ -212,7 +212,7 @@ class DDL extends OnePiece5
 		}else{ $drop = null; }
 		
 		//	Create SQL
-		$query = "ALTER TABLE {$database}{$table} {$add} {$change} {$drop}";
+		$query = "ALTER TABLE {$database}.{$table} {$add} {$change} {$drop}";
 	
 		return $query;
 	}
