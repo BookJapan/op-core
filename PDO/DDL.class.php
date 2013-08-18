@@ -261,6 +261,7 @@ class DDL extends OnePiece5
 	{
 		//	INIT
 		$indexes = array();
+		$pkeys	 = null;
 		
 		//	Quote mark
 		list( $ql, $qr ) = ConfigSQL::GetQuote($this->driver);
@@ -304,7 +305,6 @@ class DDL extends OnePiece5
 			$pkey		 = isset($temp['pkey'])   ? $temp['pkey'] : null;
 			$index		 = isset($temp['index'])  ? $temp['index']: null;
 			$unique		 = isset($temp['unique']) ? $temp['unique']: null;
-			$pkeys       = null;
 			
 			//	type
 			switch($type){
@@ -342,7 +342,8 @@ class DDL extends OnePiece5
 				
 			//	PRIMARY KEY
 			if( $pkey ){
-				$pkey = "PRIMARY KEY";
+			//	$pkey = "PRIMARY KEY";
+				$pkey = null;  
 				$pkeys[] = $name;
 			}
 			
@@ -422,25 +423,25 @@ class DDL extends OnePiece5
 //					$definition = "$name $type $charset $collate $attributes $index $null $default $comment";
 					$definition = "$name $type $charset $collate $attributes $pkey  $null $default $comment";
 					break;
-		
-					case 'CHANGE':
-						if(!$rename){
-							$rename = $name;
-						}
-		
-					case 'ADD':
-					//	$column[] = "ADD {$index} ({$name})";
-						$definition = "$ACD $index $name $rename $type $attributes $null $default $comment $first $after";
-						break;
-		
-					case 'DROP':
-						/*
-						ALTER TABLE `t_table`
-						DROP `is_delete`,
-						DROP `coupon_timestamp`;
-						*/
-						$definition = "{$ACD} {$name}";
-						break;
+					
+				case 'CHANGE':
+					if(!$rename){
+						$rename = $name;
+					}
+					
+				case 'ADD':
+				//	$column[] = "ADD {$index} ({$name})";
+					$definition = "$ACD $index $name $rename $type $attributes $null $default $comment $first $after";
+					break;
+	
+				case 'DROP':
+					/*
+					ALTER TABLE `t_table`
+					DROP `is_delete`,
+					DROP `coupon_timestamp`;
+					*/
+					$definition = "{$ACD} {$name}";
+					break;
 			}
 				
 			//	Anti oracle only?
@@ -467,7 +468,9 @@ class DDL extends OnePiece5
 			foreach($pkeys as $name){
 				$join[] = $name;
 			}
-			$column[] = $ACD.' PRIMARY KEY('.join(',',$join).')';
+			//	modifire
+			$modifire = $ACD ? 'ADD': null;
+			$column[] = $modifire.' PRIMARY KEY('.join(',',$join).')';
 		}
 		
 		// indexes
