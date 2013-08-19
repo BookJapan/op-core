@@ -477,7 +477,7 @@ class DDL extends OnePiece5
 		if( $indexes ){
 			$modifire = $ACD ? 'ADD ': null;
 		//	$column[] = $modifire.' INDEX('.join(",",$indexes).')';
-			$column[] = sprintf('%sINDEX(%s)', $modifire, join(",",$uniques));
+			$column[] = sprintf('%sINDEX(%s)', $modifire, join(",",$indexes));
 		}
 		
 		// uniques
