@@ -407,7 +407,7 @@ abstract class ConfigMgr extends OnePiece5
 		return $config;
 	}
 	
-	function Selftest( $table_name=null )
+	function _Selftest( $table_name=null )
 	{
 		$config = new Config();
 		

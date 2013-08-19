@@ -1,6 +1,9 @@
 <?php
 /**
  * 
+ * 
+ * 
+ * 
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * 
  */
@@ -19,15 +22,86 @@ class Wizard extends OnePiece5
 		return $this->config;
 	}
 	
-	function Selftest( Config $config )
+	/**
+	 * Save selftest inner wizard
+	 * 
+	 * @param Config $config
+	 */
+	function SetSelftest( $class_name, Config $config )
 	{
-		if(!$this->admin()){
-			return;
+		/*
+		$this->mark(__FUNCTION__."($class_name)");
+		$this->mark($this->GetCallerLine());
+		$config->D();
+		*/
+		if( ! $config instanceof Config ){
+			$this->StackError("argument is not config-object");
+			return false;
 		}
 		
-		//  Start
-		$this->model('Log')->Set("START: Selftest.");
+		$selftest = $this->GetSession('selftest');
+	//	unset($selftest);
+		$selftest[$class_name] = $config;
+		$this->SetSession('selftest',$selftest);
+	}
+	
+	function Selftest()
+	{
+		if(!$this->admin()){
+			return null;
+		}
 		
+		//	init
+		$this->_result = new Config();
+		
+		if( $selftest = $this->GetSession('selftest') ){
+			foreach( $selftest as $class_name => $config ){
+				try{
+					if( $io = $this->_Selftest($config) ){
+						$this->mark("![.blue[$class_name is selftest passed]]",'selftest');
+					}else{
+						$this->mark("![.red [$class_name is selftest failed]]",'selftest');
+					}
+				}catch( Exception $e ){
+					$this->mark($e->getMessage());
+					$io = false;
+				}
+				
+				if( $io ){
+					//	passed through a self-test
+				}else{
+					//	Wizard
+					$io = $this->_Wizard($config);
+					if( $io ){
+						$this->form()->Clear($this->config()->GetFormName());
+						unset($selftest[$class_name]);
+					}else{
+						$this->_PrintForm($config);
+						break;
+					}
+				}
+			}
+		}
+		
+		$this->_result->D();
+		
+		//	re save
+		$this->SetSession('selftest', $selftest);
+		
+		return $io;
+	}
+	
+	private $_result = null;
+	
+	/**
+	 * Selftest
+	 * 
+	 * @param Config $config
+	 * @throws OpWzException
+	 * @return void|boolean
+	 */
+	private function _Selftest( Config $config )
+	{
 		//	Database connection test
 		if(!$io = $this->pdo()->Connect($config->database) ){
 			
@@ -35,20 +109,24 @@ class Wizard extends OnePiece5
 			$dns = $config->database->user.'@'.$config->database->host;
 			$this->model('Log')->Set("FAILED: Database connect is failed.($dns)",false);
 			
-			//	Do wizard in NewWorld.
-			$e = new OpWzException();
-			$e->SetConfig($config);
-			throw $e;
+			//	result
+			$this->_result->connect = false;
+			
+			return false;
 		}
 		
 		//	Check database and table.
-		$this->_CheckDatabase($config);
-		$this->_CheckTable($config);
+		if(!$this->_CheckDatabase($config)){
+			return false;
+		}
+		if(!$this->_CheckTable($config)){
+			return false;
+		}
 		
 		return true;
 	}
 	
-	private function _Execute( Config $config )
+	private function _Execute_( Config $config )
 	{
 		//	Form
 		$form_name = $this->config()->GetFormName();
@@ -83,7 +161,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	private function _CallWizard( Config $config )
+	private function _CallWizard_( Config $config )
 	{
 		if(!$this->admin()){
 			return;
@@ -121,11 +199,8 @@ class Wizard extends OnePiece5
 		throw new OpModelException('Call Wizard.('.__LINE__.')');
 	}
 	
-	function DoWizard( Config $config )
+	private function _Wizard( Config $config )
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
 		//  Get form name.
 		$form_name = $this->config()->GetFormName();
 		
@@ -159,24 +234,29 @@ class Wizard extends OnePiece5
 			if( $io ){ 
 				$this->_CreateDatabase($config);
 				$this->_CreateTable($config);
-				$this->_CreateColumn($config);
+				$this->_ChangeColumn($config);
 				$this->_CreateUser($config);
 				$this->_CreateGrant($config);
 			}
 		}else{
-			$this->model('Log')->Set("Wizard-Form is not secure.");
+		//	$this->model('Log')->Set("Wizard-Form is not secure.");
 		//	$this->form()->Debug($form_name);
 		}
 		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
+		//	Logger
 		$this->model('Log')->Out();
 		
 		return empty($io) ? false: true;
 	}
 	
-	function PrintForm( $config )
-	{	
+	private function _PrintForm( $config )
+	{
+		/*
+		$this->mark( $this->GetCallerLine(0) );
+		$this->mark( $this->GetCallerLine(1) );
+		$this->mark( $this->GetCallerLine(2) );
+		*/
+		
 		if( isset($config->title) ){
 			$this->p( $config->title, 'h1' );
 		}
@@ -204,9 +284,6 @@ class Wizard extends OnePiece5
 	
 	private function _CheckDatabase( Config $config )
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
 		//  Get database list.
 		$db_name = $config->database->database;
 		$db_list = $this->pdo()->GetDatabaseList($config->database);
@@ -214,88 +291,109 @@ class Wizard extends OnePiece5
 		//  Check database exists.
 		$io = array_search( $db_name, $db_list);
 		if( $io === false){
-			$e = new OpWzException("Database can not be found. ($db_name)");
-			$e->SetConfig($config);
-			throw $e;
+			//	result
+			$this->_result->database = false;
+			//	logger
+			$this->model('Log')->Set('FAILED: '.__FUNCTION__,false);
+			return false;
 		}
-
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
+		
 		return true;
 	}
 	
 	private function _CheckTable( Config $config )
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
 		//  Get table-name list.
 		if(!$table_list = $this->pdo()->GetTableList($config->database) ){
+			
 			//	Logger
 			$this->model('Log')->Set('FAILED: '.$this->pdo()->qu(),false);
-			//	Exception
-			$e = new OpWzException("Failed GetTableList-method.");
-			$e->SetConfig($config);
-			throw $e;
+			
+			//	result
+			$this->_result->connect = false;
+			return false;
 		}
 		
 		//  Loop
 		foreach( $config->table as $table_name => $table ){
+			
 			//  Check table exists.
 			if( array_search( $table_name, $table_list) === false ){
 				//	Logger
-				$this->model('Log')->Set("CHECK: $table_name is does not exists.",false);
-				//	Exception
-				$e = OpWzException("Does not find table. ($table_name)");
-				$e->SetConfig($config);
-				throw $e;
+				$this->model('Log')->Set("FAILED: $table_name is does not exists.",false);
+				
+				//	result
+				$this->_result->table->$table_name = false;
+				return false;
 			}
+			$this->_result->table->$table_name = true;
+			
 			//  Check column.
-			$this->_CheckColumn( $config, $table_name );
+			if(!$this->_CheckColumn( $config, $table_name )){
+				return false;
+			}
 		}
 		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
 		return true;
 	}
 	
 	private function _CheckColumn( Config $config, $table_name )
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
 		$columns = Toolbox::toArray($config->table->$table_name->column);
 		$structs = $this->pdo()->GetTableStruct( $table_name );
-		$diff = array_diff_key( $columns, $structs );
-		
-		if( count($diff) ){
-			$join = join(', ', array_keys($diff) );
-			$wz = new OpWzException("Does not match column. ($join)");
-			$wz->SetConfig($config);
-			throw $wz;
-		}
+		//$this->d($structs);
 		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
-			//$this->d($column);
-			if( !isset($config->table->$table_name->column->$column_name->type) ){
-				continue;
+			$io = null;
+
+			if(!isset($structs[$column_name]) ){
+				$this->_result->column->$table_name->$column_name = false;
 			}
 			
 			//  Get type from config.
-			$type =$config->table->$table_name->column->$column_name->type;
+			$type = $config->table->$table_name->column->$column_name->type;
 			
-			//  Check type
-			if( $column['type'] !=  $type){
-				$wz = new OpWzException("Does not match column type. ($column_name is $type, not {$column['type']}.)");
-				$wz->SetConfig($config);
-				throw $wz;
+			//	Get null from config.
+			$null = isset($config->table->$table_name->column->$column_name->null) ? $config->table->$table_name->column->$column_name->null:'YES';
+			$null = $null ? 'YES': 'NO';
+			if( $structs[$column_name]['extra'] === 'auto_increment' OR
+				$structs[$column_name]['type'] === 'timestamp' OR
+				$structs[$column_name]['key'] === 'PRI' ){
+				$null = 'NO';
+			}
+			
+			//	Convert
+			if( $type == 'boolean' ){
+				$type = 'tinyint';
+			}
+			
+			//	Check type
+			if( $type != $structs[$column_name]['type'] ){
+				$io = false;
+				$hint = "type=$type not {$structs[$column_name]['type']}";
+			
+			//	Check NULL
+			}else if( $null != $structs[$column_name]['null'] ){	
+				$io = false;
+				$hint = "null=$null not {$structs[$column_name]['null']}";
+				
+				$this->d($structs[$column_name]);
+				
+			}else{
+				$io = true;
+			}
+			
+			$this->_result->column->$table_name->$column_name = $io;
+			
+			if(!$io){
+				$return = false;
+				$this->mark("![.red[table=$table_name, column=$column_name, $hint)]]",'selftest');
 			}
 		}
 		
 		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
-		return true;
+		return isset($return) ? $return: true;
 	}
 	
 	private function _CreateDatabase( Config $config)
@@ -352,7 +450,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	private function _CreateColumn( Config $config )
+	private function _ChangeColumn( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -361,7 +459,7 @@ class Wizard extends OnePiece5
 		$this->pdo()->Database($config->database->database);
 		
 		foreach( $config->table as $table_name => $table ){
-
+			
 			//	Check
 			if(!$table instanceof Config ){
 				$this->model('Log')->Set("CHECK: This is not Config. ($table_name)",false);
@@ -375,16 +473,31 @@ class Wizard extends OnePiece5
 				return false;
 			}
 			
-			$diff = array_diff_key( Toolbox::toArray($table->column), $structs );
-			
-			if( count($diff) ){
-				$this->d($diff);
-				$config = new Config();
-				$config->database = $config->database->database;
-				$config->table    = $table_name;
-				$config->column   = $diff;
-				$this->pdo()->AddColumn($config);
+			//	
+			if( empty($this->_result->column->$table_name) ){
+				$this->mark('continue');
+				continue;
 			}
+			
+			$this->_result->column->$table_name->d();
+			
+			//	new alter
+			$alter = new Config();
+			
+			foreach( $this->_result->column->$table_name as $column_name => $value ){
+				if( $value ){
+					continue;
+				}
+				
+				$alter->database = $config->database->database;
+				$alter->table    = $table_name;
+				$alter->column->$column_name = $config->table->$table_name->column->$column_name;
+			}
+			
+			//	execute to each table.
+			$alter->d();
+			$io = $this->pdo()->ChangeColumn($alter);
+			$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
 		}
 		
 		//  Finish
@@ -413,18 +526,18 @@ class Wizard extends OnePiece5
 		if( $io ){
 			
 			//	Logger
-			$this->model('Log')->Set("CHECK: {$config->user->user} is already exists.",true);
+			$this->model('Log')->Set("CHECK: {$config->user->user} is already exists.");
 			
 			//  Change password
 			$io = $this->pdo()->Password($config->user);
 			
 			//  Log
-			$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
 			
 			if( $io ){
-				$this->model('Log')->Set("Change password is successful.",'blue');
+			//	$this->model('Log')->Set("Change password is successful.",'blue');
 			}else{
-				$this->model('Log')->Set("Change password is failed.",'red');
+			//	$this->model('Log')->Set("Change password is failed.",'red');
 			}
 			
 		}else{

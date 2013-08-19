@@ -16,9 +16,15 @@ abstract class Model_Model extends OnePiece5
 		parent::Init();
 		
 		//	selftest
-		if( $this->Admin() ){			
-			if( method_exists( $this, 'Selftest') ){				
+		if( $this->Admin() ){
+			//	Model
+			if( method_exists( $this, 'Selftest') ){
 				$this->Selftest();
+			}
+			//	Config
+			if( method_exists( $this->Config(), 'Selftest') ){
+				$config = $this->Config()->Selftest();
+				$this->Wizard()->SetSelftest( get_class($this), $config );
 			}
 		}
 	}
@@ -55,18 +61,23 @@ abstract class Model_Model extends OnePiece5
 				
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
+					/*
 					$selftest = $this->Selftest();
+					$selftest->d();
+					*/
+					/*
 					if( $selftest instanceof Config ){
 						$this->model('Selftest')->Save( get_class($this), $selftest );
 						$e = new OpException();
 						$e->isSelftest(true);
 						throw $e;
 					}
+					*/
 				}else{
 					if( $config instanceof Config ){
 						$config->d();
 					}else{
-						var_dump($config);
+						$this->d($config);
 					}
 				}
 			}
@@ -340,7 +351,7 @@ class Config_Model extends OnePiece5
 		return $config;
 	}
 	
-	function Selftest( $table_name=null )
+	function _selftest( $table_name=null )
 	{
 		$config = new Config();
 	

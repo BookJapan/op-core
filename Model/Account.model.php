@@ -121,12 +121,18 @@ class Model_Account extends Model_Model
 		return $id;
 	}
 	
+	/*
 	function Selftest()
 	{
-		$wz = new Wizard();
-		$io = $wz->Selftest( $this->Config()->Selftest() );
+		if( method_exists($this->Config(), 'Selftest') ){
+			$wz = new Wizard();
+			$io = $wz->Selftest( $this->Config()->Selftest() );
+		}else{
+			$io = null;
+		}
 		return $io;
 	}
+	*/
 	
 	function Debug( $log=null )
 	{
@@ -305,11 +311,17 @@ class AccountConfig extends ConfigModel
 	
 	function Selftest( $table_name=null )
 	{
-		//	Table name
-		$table_name = $this->table_name();
+		$config = new Config();
 		
-		//	Base config
-		$config = parent::Selftest( $table_name );
+		//	Form
+		$config->form->title   = 'Wizard Magic';
+		$config->form->message = 'Please enter root(or alter) password.';
+		
+		//	Database
+		$config->database = $this->Database();
+		
+		//	table
+		$table_name = $this->table_name();
 		
 		//	Column
 		$name = self::COLUMN_ID;
@@ -336,7 +348,6 @@ class AccountConfig extends ConfigModel
 		$name = self::COLUMN_FAILED;
 		$config->table->$table_name->column->$name->type    = 'int';
 		
-		/*
 		$name = 'created';
 		$config->table->$table_name->column->$name->type = 'datetime';
 
@@ -348,7 +359,6 @@ class AccountConfig extends ConfigModel
 
 		$name = 'timestamp';
 		$config->table->$table_name->column->$name->type = 'timestamp';
-		*/
 		
 		return $config;
 	}

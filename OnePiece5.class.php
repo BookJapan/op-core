@@ -1964,6 +1964,7 @@ __EOL__;
 			
 			//  already instanced?
 			if( isset( $_SERVER[__CLASS__]['model'][$name] ) ){
+			//	$this->mark("Singleton!! ($name)");
 				return $_SERVER[__CLASS__]['model'][$name];
 			}
 			
@@ -2270,6 +2271,17 @@ __EOL__;
 			//  release
 			unset($_SESSION[__CLASS__]['vivre']);
 		}
+	}
+	
+	/**
+	 * @return Wizard
+	 */
+	function Wizard()
+	{
+		if( !isset($_SERVER[__CLASS__]['singleton']['Wizard']) ){
+			$_SERVER[__CLASS__]['singleton']['Wizard'] = new Wizard();
+		}
+		return $_SERVER[__CLASS__]['singleton']['Wizard'];
 	}
 }
 
