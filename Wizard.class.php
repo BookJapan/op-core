@@ -357,31 +357,55 @@ class Wizard extends OnePiece5
 			//	Get null from config.
 			$null = isset($config->table->$table_name->column->$column_name->null) ? $config->table->$table_name->column->$column_name->null:'YES';
 			$null = $null ? 'YES': 'NO';
-			if( $structs[$column_name]['extra'] === 'auto_increment' OR
-				$structs[$column_name]['type'] === 'timestamp' OR
-				$structs[$column_name]['key'] === 'PRI' ){
-				$null = 'NO';
-			}
-			
-			//	Convert
-			if( $type == 'boolean' ){
-				$type = 'tinyint';
-			}
-			
-			//	Check type
-			if( $type != $structs[$column_name]['type'] ){
-				$io = false;
-				$hint = "type=$type not {$structs[$column_name]['type']}";
-			
-			//	Check NULL
-			}else if( $null != $structs[$column_name]['null'] ){	
-				$io = false;
-				$hint = "null=$null not {$structs[$column_name]['null']}";
+
+			//	already existing in table
+			if( isset($structs[$column_name]) ){
+				if( $structs[$column_name]['extra'] === 'auto_increment' OR
+					$structs[$column_name]['type'] === 'timestamp' OR
+					$structs[$column_name]['key'] === 'PRI' ){
+					$null = 'NO';
+				}
 				
-				$this->d($structs[$column_name]);
+				//	Convert config value
+				if( $type == 'boolean' ){
+					$type = 'tinyint';
+				}
 				
+				//	Convert existing table value
+				if( $type == 'enum'){
+					if(preg_match( '/^enum\((.+)\)$/', $structs[$column_name]['type'], $match )){
+						$join = array();
+						foreach( explode(',',$match[1]) as $temp ){
+							$join[] = trim($temp,"'");
+						}
+						$structs[$column_name]['length'] = join(',',$join);
+					//	$this->d($length);
+					//	$this->d($config->table->$table_name->column->$column_name->length);
+					}
+					$structs[$column_name]['type'] = 'enum';
+				}
+				
+				//	Check type
+				if( $type != $structs[$column_name]['type'] ){
+					$io = false;
+					$hint = "type=$type not {$structs[$column_name]['type']}";
+				
+				//	Check NULL
+				}else if( $null != $structs[$column_name]['null'] ){	
+					$io = false;
+					$hint = "null=$null not {$structs[$column_name]['null']}";
+					
+				}else{
+					$io = true;
+				}
+				
+				//	debug
+				if(!$io){
+					$this->d($structs[$column_name]);
+				}
 			}else{
-				$io = true;
+				$io = false;
+				$hint = "$column_name is not in existing table";
 			}
 			
 			$this->_result->column->$table_name->$column_name = $io;
