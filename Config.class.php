@@ -91,7 +91,7 @@ class Config extends stdClass
 		$line = OnePiece5::GetCallerLine();
 		
 		//
-		OnePiece5::p($line,'div');
+		OnePiece5::p($line,'div',array('class'=>'small'));
 		
 		//
 		if( $cli ){
