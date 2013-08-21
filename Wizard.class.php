@@ -83,12 +83,13 @@ class Wizard extends OnePiece5
 			}
 		}
 		
+		//	check
 		$this->_result->D('selftest');
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
 		
-		return $io;
+		return isset($io) ? $io: true;
 	}
 	
 	private $_result = null;
