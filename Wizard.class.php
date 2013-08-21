@@ -10,6 +10,8 @@
 class Wizard extends OnePiece5
 {
 	private $config = null;
+	private $_result = null;
+	private $_wizard = null;
 	
 	/**
 	 * @return WizardConfig
@@ -29,18 +31,12 @@ class Wizard extends OnePiece5
 	 */
 	function SetSelftest( $class_name, Config $config )
 	{
-		/*
-		$this->mark(__FUNCTION__."($class_name)");
-		$this->mark($this->GetCallerLine());
-		$config->D();
-		*/
 		if( ! $config instanceof Config ){
 			$this->StackError("argument is not config-object");
 			return false;
 		}
 		
 		$selftest = $this->GetSession('selftest');
-	//	unset($selftest);
 		$selftest[$class_name] = $config;
 		$this->SetSession('selftest',$selftest);
 	}
@@ -53,8 +49,17 @@ class Wizard extends OnePiece5
 		
 		//	init
 		$this->_result = new Config();
+		$this->_wizard = new Config();
 		
 		if( $selftest = $this->GetSession('selftest') ){
+
+			//  Get form name.
+			$form_name = $this->config()->GetFormName();
+			
+			//  Init form config.
+			$this->form()->AddForm( $this->config()->MagicForm() );
+			
+			//	Check each class
 			foreach( $selftest as $class_name => $config ){
 				try{
 					if( $io = $this->_Selftest($config) ){
@@ -71,28 +76,31 @@ class Wizard extends OnePiece5
 					//	passed through a self-test
 				}else{
 					//	Wizard
-					$io = $this->_Wizard($config);
-					if( $io ){
-						$this->form()->Clear($this->config()->GetFormName());
+					if( $this->_Wizard($config) ){
+						//	case of success, do delete config from session.
 						unset($selftest[$class_name]);
 					}else{
-						$this->_PrintForm($config);
-						break;
+						$fail = true;
 					}
 				}
+			}
+			
+			if( empty($fail) ){
+				$this->form()->Clear($this->config()->GetFormName());
+			}else{
+				$this->_PrintForm($config);
 			}
 		}
 		
 		//	check
 		$this->_result->D('selftest');
+		$this->_wizard->D('selftest');
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
 		
 		return isset($io) ? $io: true;
 	}
-	
-	private $_result = null;
 	
 	/**
 	 * Selftest
@@ -103,19 +111,22 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
+		$user = $config->database->user;
+		$host = $config->database->host;
+		$dns  = $user.'@'.$host;
+		
 		//	Database connection test
 		if(!$io = $this->pdo()->Connect($config->database) ){
-			
-			//	Logger
-			$dns = $config->database->user.'@'.$config->database->host;
+	
+			//	Logger		
 			$this->model('Log')->Set("FAILED: Database connect is failed.($dns)",false);
-			
-			//	result
-			$this->_result->connect = false;
 			
 			return false;
 		}
 		
+		//	result
+		$this->_result->connect->$dns = $io;
+			
 		//	Check database and table.
 		if(!$this->_CheckDatabase($config)){
 			return false;
@@ -127,90 +138,13 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	/*
-	private function _Execute_( Config $config )
-	{
-		//	Form
-		$form_name = $this->config()->GetFormName();
-		
-		//  Database
-		$database = Toolbox::Copy( $config->database );
-		$database->user     = $this->form()->GetInputValue('user',$form_name);
-		$database->password = $this->form()->GetInputValue('password',$form_name);
-		
-		//	Check user account.
-		if( empty($database->user) ){
-			return false;
-		}
-		
-		//  Remove database name. (only connection, If not exists database.)
-		unset($database->database);
-		
-		//  Connect to administrator account.
-		if(!$io = $this->pdo()->Connect( $database ) ){
-			//	$database->d();
-		}else{
-			$this->model('Log')->Set("Connect {$database->user} account.",true);
-		}
-		
-		//  Create
-		$this->_CreateDatabase($config);
-		$this->_CreateTable($config);
-		$this->_CreateColumn($config);
-		$this->_CreateUser($config);
-		$this->_CreateGrant($config);
-		
-		return true;
-	}
-	*/
-	
-	/*
-	private function _CallWizard_( Config $config )
-	{
-		if(!$this->admin()){
-			return;
-		}
-		$this->p( 'Call: ' . $this->GetCallerLine() );
-		
-		//  Start
-		$this->model('Log')->Set("START: Wizard.");
-
-		//  Get form name.
-		$form_name = $this->config()->GetFormName();
-		
-		//  Init form config.
-		$this->form()->AddForm( $this->config()->MagicForm() );
-		
-		//  Check secure
-		if( $this->form()->Secure($form_name) ){
-			$io = $this->Execute($config);
-		}else{
-			$io = false;
-			$this->model('Log')->Set("Wizard-Form is not secure.");
-		//	$this->form()->Debug($form_name);
-		}
-		
-		//  Print form.
-		if(!$io){
-			$this->PrintForm( $config );
-		}
-		
-		//  Finish
-		$this->model('Log')->Set("FINISH: Wizard.", $io);
-		$this->model('Log')->Out();
-		
-		//	Exception
-		throw new OpModelException('Call Wizard.('.__LINE__.')');
-	}
-	*/
-	
 	private function _Wizard( Config $config )
 	{
 		//  Get form name.
 		$form_name = $this->config()->GetFormName();
 		
 		//  Init form config.
-		$this->form()->AddForm( $this->config()->MagicForm() );
+	//	$this->form()->AddForm( $this->config()->MagicForm() );
 		
 		//  Check secure
 		if( $this->form()->Secure($form_name) ){
@@ -239,13 +173,10 @@ class Wizard extends OnePiece5
 			if( $io ){ 
 				$this->_CreateDatabase($config);
 				$this->_CreateTable($config);
-				$this->_ChangeColumn($config);
+				$this->_CreateColumn($config);
 				$this->_CreateUser($config);
 				$this->_CreateGrant($config);
 			}
-		}else{
-		//	$this->model('Log')->Set("Wizard-Form is not secure.");
-		//	$this->form()->Debug($form_name);
 		}
 		
 		//	Logger
@@ -315,7 +246,10 @@ class Wizard extends OnePiece5
 			$this->model('Log')->Set('FAILED: '.$this->pdo()->qu(),false);
 			
 			//	result
-			$this->_result->connect = false;
+			$user = $config->database->user;
+			$host = $config->database->host;
+			$dns  = $user.'@'.$host;
+			$this->_result->connect->$dns = false;
 			return false;
 		}
 		
@@ -324,47 +258,52 @@ class Wizard extends OnePiece5
 			
 			//  Check table exists.
 			if( array_search( $table_name, $table_list) === false ){
+				
 				//	Logger
 				$this->model('Log')->Set("FAILED: $table_name is does not exists.",false);
 				
 				//	result
 				$this->_result->table->$table_name = false;
-				return false;
+				
+				//	fail...next!
+				$fail = true;
+				continue;
 			}
+			
+			//	Good!	
 			$this->_result->table->$table_name = true;
 			
 			//  Check column.
 			if(!$this->_CheckColumn( $config, $table_name )){
-				return false;
+				$fail = true;
 			}
 		}
 		
-		return true;
+		return empty($fail) ? true: false;
 	}
 	
 	private function _CheckColumn( Config $config, $table_name )
 	{
 		$columns = Toolbox::toArray($config->table->$table_name->column);
 		$structs = $this->pdo()->GetTableStruct( $table_name );
-		//$this->d($structs);
 		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
 			$io = null;
-
+			
+			//	This column, Does not exists in the existing table.
 			if(!isset($structs[$column_name]) ){
-				$this->_result->column->$table_name->$column_name = false;
-			}
-			
-			//  Get type from config.
-			$type = $config->table->$table_name->column->$column_name->type;
-			
-			//	Get null from config.
-			$null = isset($config->table->$table_name->column->$column_name->null) ? $config->table->$table_name->column->$column_name->null:'YES';
-			$null = $null ? 'YES': 'NO';
+				$this->_result->column->$table_name->$column_name = 'create';
+				$hint = "Does not exists";
+			}else{
+				
+				//  Get type from config.
+				$type = $config->table->$table_name->column->$column_name->type;
+				
+				//	Get null from config.
+				$null = isset($config->table->$table_name->column->$column_name->null) ? $config->table->$table_name->column->$column_name->null:'YES';
+				$null = $null ? 'YES': 'NO';
 
-			//	already existing in table
-			if( isset($structs[$column_name]) ){
 				if( $structs[$column_name]['extra'] === 'auto_increment' OR
 					$structs[$column_name]['type'] === 'timestamp' OR
 					$structs[$column_name]['key'] === 'PRI' ){
@@ -406,14 +345,12 @@ class Wizard extends OnePiece5
 				
 				//	debug
 				if(!$io){
-					$this->d($structs[$column_name]);
+				//	$this->d($structs[$column_name]);
 				}
-			}else{
-				$io = false;
-				$hint = "$column_name is not in existing table";
+				
+				//	If false will change this column.
+				$this->_result->column->$table_name->$column_name = $io ? true: 'change';
 			}
-			
-			$this->_result->column->$table_name->$column_name = $io;
 			
 			if(!$io){
 				$return = false;
@@ -427,32 +364,43 @@ class Wizard extends OnePiece5
 	
 	private function _CreateDatabase( Config $config)
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
+		//	Init
+		$user = $config->database->user;
+		$host = $config->database->host;
+		$dns  = $user.'@'.$host;
+		$database = $config->database->database;
 		
-		//  Create database
-		$io = $this->pdo()->CreateDatabase( $config->database );
+		//	If does not exists database.
+		if( empty($this->_result->database->$database) ){
+			
+			//  Create database
+			$io = $this->pdo()->CreateDatabase( $config->database );
+
+			//	check
+			$this->_foobar->$dns->$database = $io;
+		}
 		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
 		return $io;
 	}
 	
 	private function _CreateTable( Config $config )
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
-		if(empty($config->table)){
+		if( empty($config->table) ){
 			return true;
 		}
+		
+		//	Init
+		$user = $config->database->user;
+		$host = $config->database->host;
+		$dns  = $user.'@'.$host;
+		$database = $config->database->database;
 		
 		foreach( $config->table as $table_name => $table ){
 			
 			//	Check
 			if(!$table instanceof Config ){
 				$this->model('Log')->Set("CHECK: $table_name is not Config.",false);
-				return false;
+				continue;
 			}
 			
 			//	Check
@@ -466,20 +414,18 @@ class Wizard extends OnePiece5
 			}
 			
 			//	Execute
-			$io = $this->pdo()->CreateTable($table);
-			$this->model('Log')->Set( $this->pdo()->qu(), 'green');
-			if(!$io){
-				$this->model('Log')->Set("CreateTable is failed. ($table_name)", false);
-				return false;
+			if(!$io = $this->pdo()->CreateTable($table) ){
+				$fail = true;
 			}
+			
+			$this->_foobar->$dns->$database->{$table->table} = $io;
+			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
 		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
-		return true;
+		return empty($fail) ? true: false;
 	}
 	
-	private function _ChangeColumn( Config $config )
+	private function _CreateColumn( Config $config )
 	{
 		//  Start
 		$this->model('Log')->Set('START: '.__FUNCTION__);
@@ -508,25 +454,54 @@ class Wizard extends OnePiece5
 				continue;
 			}
 			
-			$this->_result->column->$table_name->d();
+			//	debug
+			$this->_result->column->$table_name->d('selftest');
 			
-			//	new alter
-			$alter = new Config();
+			//	create alter
+			$create = new Config();
 			
+			//	change alter
+			$change = new Config();
+			
+			//	result of selftest
 			foreach( $this->_result->column->$table_name as $column_name => $value ){
-				if( $value ){
+				if( $value === true ){
 					continue;
 				}
 				
-				$alter->database = $config->database->database;
-				$alter->table    = $table_name;
-				$alter->column->$column_name = $config->table->$table_name->column->$column_name;
+				//	create or change
+				switch( $value ){
+					case 'create':
+						$create->column->$column_name = $config->table->$table_name->column->$column_name;
+						break;
+						
+					case 'change':
+						$change->column->$column_name = $config->table->$table_name->column->$column_name;
+						break;
+				}
 			}
 			
-			//	execute to each table.
-			$alter->d();
-			$io = $this->pdo()->ChangeColumn($alter);
-			$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+			//	create
+			if( isset($create->column) ){
+				$create->database = $config->database->database;
+				$create->table    = $table_name;
+				
+				//	execute to each table.
+				$create->d();
+				$io = $this->pdo()->AddColumn($create);
+				$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+			}
+			
+			//	change
+			if( isset($change->column) ){
+				$change->database = $config->database->database;
+				$change->table    = $table_name;
+				
+				//	execute to each table.
+				$change->d();
+				$io = $this->pdo()->ChangeColumn($change);
+				$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+			}
 		}
 		
 		//  Finish
@@ -562,12 +537,6 @@ class Wizard extends OnePiece5
 			
 			//  Log
 			$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
-			
-			if( $io ){
-			//	$this->model('Log')->Set("Change password is successful.",'blue');
-			}else{
-			//	$this->model('Log')->Set("Change password is failed.",'red');
-			}
 			
 		}else{
 			//  Create user
@@ -694,20 +663,4 @@ class WizardHelper extends OnePiece5
 		return $config;
 	}
 }
-
-/*
-class OpWzException extends OpException
-{
-	private $_config = null;
-	function SetConfig( Config $config )
-	{
-		$this->_config = $config;
-	}
-	
-	function GetConfig()
-	{
-		return $this->_config;
-	}
-}
-*/
 
