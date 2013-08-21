@@ -83,7 +83,7 @@ class Wizard extends OnePiece5
 			}
 		}
 		
-		$this->_result->D();
+		$this->_result->D('selftest');
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
@@ -126,6 +126,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
+	/*
 	private function _Execute_( Config $config )
 	{
 		//	Form
@@ -160,7 +161,9 @@ class Wizard extends OnePiece5
 		
 		return true;
 	}
+	*/
 	
+	/*
 	private function _CallWizard_( Config $config )
 	{
 		if(!$this->admin()){
@@ -198,6 +201,7 @@ class Wizard extends OnePiece5
 		//	Exception
 		throw new OpModelException('Call Wizard.('.__LINE__.')');
 	}
+	*/
 	
 	private function _Wizard( Config $config )
 	{
@@ -690,6 +694,7 @@ class WizardHelper extends OnePiece5
 	}
 }
 
+/*
 class OpWzException extends OpException
 {
 	private $_config = null;
@@ -703,3 +708,5 @@ class OpWzException extends OpException
 		return $this->_config;
 	}
 }
+*/
+

@@ -81,19 +81,25 @@ class Config extends stdClass
 		}
 	}
 	
-	function D()
+	function D( $mark_label='' )
 	{
-		if( $io = OnePiece5::GetEnv('admin')){
-			return;
+		//	only admin
+		if(OnePiece5::GetEnv('admin')){ return; }
+				
+		// displayed is Admin-ip and flag.
+		if( $mark_label ){
+			if(!Toolbox::GetSaveMarkLabelValue($mark_label)){
+				return;
+			}
 		}
-		
+
 		$cli  = OnePiece5::GetEnv('cli');
 		$line = OnePiece5::GetCallerLine();
 		
-		//
+		//	Caller line
 		OnePiece5::p($line,'div',array('class'=>'small'));
 		
-		//
+		//	Execute
 		if( $cli ){
 			var_dump( Toolbox::toArray($this) );
 		}else{
