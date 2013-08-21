@@ -424,7 +424,9 @@ class Wizard extends OnePiece5
 				$fail = true;
 			}
 			
-			$this->_wizard->$dns->$database->{$table->table} = $io;
+			$table_name = $table->table;
+			$this->mark($table_name);
+			$this->_wizard->$dns->$database->$table_name = $io;
 			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
 		

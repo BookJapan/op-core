@@ -1655,11 +1655,11 @@ class Form5 extends OnePiece5
 			$value = $this->GetInputValueRaw($input_name, $form_name);
 		}
 		
-		/*
-		$this->mark($value_default);
-		$this->mark($value_of_input);
-		$this->mark($value);
-		*/
+		if( 0 ){
+			$this->mark($value_default);
+			$this->mark($value_of_input);
+			$this->mark($value);
+		}
 		
 		// case of save to cookie 
 		if( !isset($value) or is_null($value) ){
@@ -1944,7 +1944,7 @@ class Form5 extends OnePiece5
 	
 	/*******************************************************************************/
 	
-	function Debug( $form_name=null )
+	function Debug( $form_name )
 	{
 		if(!$this->admin() ){
 			$this->mark('Does not view debug info. because you are not admin.');

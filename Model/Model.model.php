@@ -142,6 +142,19 @@ class Config_Model extends OnePiece5
 	private $_database_user = 'op_mdl';
 	private $_table_prefix  = 'op';
 	public  $_table_name    = null;
+
+	//	secret key
+	private $_secret_key = null;
+	
+	function SetSecretKey( $var )
+	{
+		$this->_secret_key = md5($var);
+	}
+	
+	function GetSecretKey()
+	{
+		return $this->_secret_key ? $this->_secret_key: md5($this->GetEnv('admin-mail'));
+	}
 	
 	function pdo($name=null)
 	{
@@ -350,7 +363,7 @@ class Config_Model extends OnePiece5
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
 		return $config;
 	}
-	
+	/*
 	function _selftest( $table_name=null )
 	{
 		$config = new Config();
@@ -379,6 +392,7 @@ class Config_Model extends OnePiece5
 	
 		return $config;
 	}
+	*/
 }
 
 /**
