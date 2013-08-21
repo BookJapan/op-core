@@ -390,8 +390,8 @@ abstract class ConfigMgr extends OnePiece5
 		$config .= '<div class="tr">'.$nl;
 		$config .= '    <div class="td top right">%s　</div>'.$nl;
 		$config .= '    <div class="td">'.$nl;
+		$config .= '        %s<br/>'.$nl;
 		$config .= '        %s'.$nl;
-		$config .= '        <p>%s</p>'.$nl;
 		$config .= '    </div>'.$nl;
 		$config .= '</div>'.$nl;
 		return $config;

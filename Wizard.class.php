@@ -88,7 +88,7 @@ class Wizard extends OnePiece5
 			if( empty($fail) ){
 				$this->form()->Clear($this->config()->GetFormName());
 			}else{
-				$this->_PrintForm($config);
+				$this->_PrintForm($config->form);
 			}
 		}
 		
@@ -186,25 +186,29 @@ class Wizard extends OnePiece5
 	}
 	
 	private function _PrintForm( $config )
-	{
-		/*
-		$this->mark( $this->GetCallerLine(0) );
-		$this->mark( $this->GetCallerLine(1) );
-		$this->mark( $this->GetCallerLine(2) );
-		*/
+	{		
+		print '<div style="margin:1em; padding:0px; border: 1px solid black;">';
 		
 		if( isset($config->title) ){
-			$this->p( $config->title, 'h1' );
+			$style['margin']  = '0px';
+			$style['padding'] = '0px';
+			$style['padding-left'] = '1em';
+			$style['border'] = '1px solid black';
+			$style['color'] = 'white';
+			$style['background-color'] = 'black';
+			$this->p( $config->title, 'h1', array('style'=>$style) );
 		}
+		
+		print '<div style="margin:0em 1em;">';
 		
 		if( isset($config->message) ){
 			$this->p( $config->message );
 		}
 		
-		//  Get input decorate.
+		//  Get input decorate
 		$decorate = $this->config()->InputDecorate();
 		
-		//  Print form.
+		//  Print form
 		$form_name = $this->config()->GetFormName();
 		$this->form()->Start($form_name);
 		foreach ( array('user','password','submit') as $input_name ){
@@ -216,6 +220,8 @@ class Wizard extends OnePiece5
 			);
 		}
 		$this->form()->Finish($form_name);
+		print '</div>';
+		print '</div>';
 	}
 	
 	private function _CheckDatabase( Config $config )
@@ -377,7 +383,7 @@ class Wizard extends OnePiece5
 			$io = $this->pdo()->CreateDatabase( $config->database );
 
 			//	check
-			$this->_foobar->$dns->$database = $io;
+			$this->_wizard->$dns->$database = $io;
 		}
 		
 		return $io;
@@ -418,7 +424,7 @@ class Wizard extends OnePiece5
 				$fail = true;
 			}
 			
-			$this->_foobar->$dns->$database->{$table->table} = $io;
+			$this->_wizard->$dns->$database->{$table->table} = $io;
 			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
 		
@@ -427,9 +433,6 @@ class Wizard extends OnePiece5
 	
 	private function _CreateColumn( Config $config )
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
 		//  Select database
 		$this->pdo()->Database($config->database->database);
 		
@@ -504,8 +507,6 @@ class Wizard extends OnePiece5
 			}
 		}
 		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
 		return true;
 	}
 	
@@ -608,7 +609,9 @@ class WizardConfig extends ConfigMgr
 		$config = new Config();
 		
 		//  form name
-		$config->name = self::FORM_NAME;
+		$config->name  = self::FORM_NAME;
+		$config->id    = 'form-wizard';
+		$config->class = 'form-wizard';
 		
 		//  user
 		$input_name = 'user';
@@ -628,7 +631,10 @@ class WizardConfig extends ConfigMgr
 		$config->input->$input_name->label = '';
 		$config->input->$input_name->name  = $input_name;
 		$config->input->$input_name->type  = 'submit';
-		$config->input->$input_name->value = 'Submit';
+		$config->input->$input_name->value = ' Wizard execute  ';
+		$config->input->$input_name->style = 'background-color:#338bc6; color:white;';
+		$config->input->$input_name->onmouseover = 'this.style.backgroundColor="#0596f6"';
+		$config->input->$input_name->onmouseout  = 'this.style.backgroundColor="#338bc6"';
 		
 		return $config;
 	}
