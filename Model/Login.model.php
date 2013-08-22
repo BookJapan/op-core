@@ -77,6 +77,11 @@ class Model_Login extends Model_Model
 		return $io ? true: false;
 	}
 	
+	function ID()
+	{
+		return $this->GetLoginID();
+	}
+	
 	/**
 	 * Get login-ID
 	 * 
