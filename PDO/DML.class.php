@@ -83,8 +83,10 @@ class DML extends OnePiece5
 		}
 		
 		//  where (or)
-		if(isset($conf['where-or'])){
+		if( isset($conf['where-or']) ){
 			$conf['wheres']['or'] = $conf['where-or'];
+		}else if( isset($conf['where_or']) ){
+			$conf['wheres']['or'] = $conf['where_or'];
 		}
 		
 		//  wheres
