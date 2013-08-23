@@ -153,7 +153,7 @@ class PDO5 extends OnePiece5
 			$temp = $this->pdo->errorInfo();
 			$this->StackError("{$temp[2]} : {$this->qu}");
 		}
-
+		
 		return $result;
 	}
 	
@@ -851,7 +851,8 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  execute
-		if(!$this->query($qu) === false){
+		$io = $this->query($qu,'insert');
+		if( $io === false){
 			return false;
 		}
 		

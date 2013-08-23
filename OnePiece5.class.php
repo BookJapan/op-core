@@ -2197,9 +2197,9 @@ __EOL__;
 		}
 		
 		if( class_exists('Wiki2Engine',true) ){
-			return nl2br(Wiki2Engine::Wiki2( $string, $options ));
+			return nl2br(trim(Wiki2Engine::Wiki2( $string, $options ))) . PHP_EOL;
 		}else{
-			return nl2br($string);
+			return nl2br(trim($string)) . PHP_EOL;
 		}
 	}
 	
