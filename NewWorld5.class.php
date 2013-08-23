@@ -16,26 +16,55 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var array
 	 */
-	
-	/*
-	private $isDispatch	 = null;
-	private $routeTable	 = null;
-	private $content	 = null;
-	private $json		 = null;
-	*/
-	
-	/*
-	private $isDispatch = null;
-	private $routeTable = null;
-	private $content    = null;
-	private $_data      = null;
-	*/
-	
-	private $_isDispatch = null;
 	private $_routeTable = null;
+	
+	/**
+	 * Use to check do already dispatched.
+	 * 
+	 * @var boolean
+	 */
+	private $_isDispatch = null;
+	
+	/**
+	 * Content to be output is stored.
+	 * 
+	 * @var string
+	 */
 	private $_content    = null;
+	
+	/**
+	 * use to template. (data pass to template file)
+	 * 
+	 * ex.
+	 * 
+	 * // Controller
+	 * $this->SetData('key',$value);
+	 * 
+	 * // Template
+	 * $value = $this->GetData('key');
+	 * 
+	 * @var string|array|Config
+	 */
 	private $_data		 = array();
+	
+	/**
+	 * use to inner trace.
+	 * 
+	 * @var array
+	 */
 	private $_log		 = null;
+	
+	/**
+	 * use to json.
+	 * 
+	 * save to assoc format.
+	 * Converted to JSON-format when be output.
+	 * 
+	 * ex.
+	 * $this->_json['key'] = $value;
+	 * 
+	 * @var array
+	 */
 	private $_json		 = null;
 	
 	function __construct($args=array())
@@ -172,7 +201,11 @@ abstract class NewWorld5 extends OnePiece5
 					$mail['subject'] = '[NewWorld] Admin notification';
 					$mail['message'] = 'Does not exists this file: '.$full_path."\n";
 					$mail['message'].= 'HTTP Referer: '.$_SERVER['HTTP_REFERER']."\n";
-					$mail['message'].= 'Timestamp: '.date('Y-m-d H:i:s')."\n";
+					$mail['message'].= 'Request URI: '.$_SERVER['REQUEST_URI']."\n";
+					$mail['message'].= 'Remote user: '.$_SERVER['REMOTE_ADDR']."\n";
+					$mail['message'].= 'Timestamp(1): '.date('Y-m-d H:i:s')."\n";
+					$mail['message'].= 'Timestamp(2): '.date('r')."\n";
+					$mail['message'].= 'Timestamp(3): '.gmdate('Y-m-d H:i:s P (I)')."\n";
 					$this->Mail($mail);
 				}
 			}
