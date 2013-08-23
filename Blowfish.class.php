@@ -90,7 +90,9 @@ class Blowfish
 	
 	function SetKey($key=null)
 	{
-		if( ctype_xdigit($key) ){
+		if( is_null($key) ){
+			$this->SetKeyFromString();
+		}else if( ctype_xdigit($key) ){
 			$this->SetKeyFromHex($key);
 		}else if( file_exists($key) ){
 			$this->SetKeyFromPath($key);
@@ -151,6 +153,10 @@ class Blowfish
 	 */
 	function Decrypt( $str, $keyword=null )
 	{
+		if( $keyword ){
+			$this->SetKey($keyword);
+		}
+		
 		list( $cipher, $mode, $key, $pad ) = $this->init();
 		
 		//	required "IV"
@@ -162,6 +168,7 @@ class Blowfish
 		
 		//	check
 		if( !$hex or !$ivt or !$key ){
+			$this->StackError("empty each.(hex=$hex, ivt=$ivt, key=$key)");
 			return '';
 		}
 		

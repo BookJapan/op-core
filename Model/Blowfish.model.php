@@ -18,8 +18,8 @@ class Model_Blowfish extends Model_Model
 		return $this->_blowfish->Encrypt( $data, $password );
 	}
 	
-	function Decrypt( $string )
+	function Decrypt( $string, $password=null )
 	{
-		return $this->_blowfish->Decrypt( $string );
+		return $this->_blowfish->Decrypt( $string, $password );
 	}
 }
