@@ -2288,7 +2288,7 @@ class Form5 extends OnePiece5
 		$len = mb_strlen( $value );
 		
 		if( $len < $min ){
-			$this->SetInputError( $input->name, $form_name, 'short', $len - $min );
+			$this->SetInputError( $input->name, $form_name, 'short', $min - $len );
 			return false;
 		}
 		
@@ -2537,6 +2537,10 @@ class Form5 extends OnePiece5
 				
 			default:
                 $io = false;
+                if(!is_string($key)){
+                	$this->d($key);
+                	$key = 'undefined';
+                }
 				$this->StackError("undefined permit key. ($input->name, $key)");
 		}
 		
