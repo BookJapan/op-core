@@ -31,6 +31,17 @@ class Model_Account extends Model_Model
 		return $this->Config()->form_name();
 	}
 	
+	function GetAccountRecord( $id )
+	{
+		$config = $this->Config()->select();
+		$config->where->account_id = $id;
+		$config->limit = 1;
+		$record = $this->pdo()->select($config);
+		$record['email'] = $this->model('Blowfish')->Decrypt($record['account_enc']);
+		return $record;
+	}
+	
+	/*
 	function Insert($config)
 	{
 		return $this->pdo()->insert($config);
@@ -50,6 +61,7 @@ class Model_Account extends Model_Model
 	{
 		return $this->pdo()->delete($config);
 	}
+	*/
 	
 	/**
 	 * Auto authorizetion.
