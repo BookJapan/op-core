@@ -783,6 +783,12 @@ class PDO5 extends OnePiece5
 			return false;
 		}
 		
+		//	empty config
+		if( empty($config) ){
+			$this->StackError("Does not set config. (empty)");
+			return false;
+		}
+		
 		//  object to array
 		if(!is_array($config)){
 			$config = Toolbox::toArray($config);
