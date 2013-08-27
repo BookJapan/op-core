@@ -1895,7 +1895,7 @@ class Form5 extends OnePiece5
 		return $result;
 	}
 	
-	function GetInput( $input_name, $value=null, $form_name=null )
+	function GetInput( $input_name, $form_name=null, $value=null )
 	{
 		if(!$input = $this->GetConfig( $form_name, $input_name )){
 			return '';
