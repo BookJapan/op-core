@@ -2000,7 +2000,7 @@ class Form5 extends OnePiece5
 	 * @param string $form_name
 	 * @return Ambigous <boolean, string>
 	 */
-	function GetError( $input_name, $html='span 0xff0000', $form_name=null )
+	function GetError( $input_name, $form_name=null, $html='span 0xff0000' )
     {
         return $this->GetInputError( $input_name, $form_name, $html );
     }
