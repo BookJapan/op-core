@@ -498,6 +498,13 @@ class Wizard extends OnePiece5
 		
 		foreach( $config->table as $table_name => $table ){
 			
+			//	Check selftest reslut
+			if( $this->_result->table->$table_name ){
+				//	no trouble
+				$this->model('Log')->Set("CHECK: Create table is skip ($table_name is exists)");
+				continue;
+			}
+			
 			//	Check
 			if(!$table instanceof Config ){
 				$this->model('Log')->Set("CHECK: $table_name is not Config.",false);
@@ -558,6 +565,9 @@ class Wizard extends OnePiece5
 			//	debug
 			$this->_result->column->$table_name->d('selftest');
 			
+			//	drop primary key from table flag
+			$drop_pkey = null;
+			
 			//	create alter
 			$create = new Config();
 			
@@ -573,6 +583,12 @@ class Wizard extends OnePiece5
 				//	create or change
 				switch( $value ){
 					case 'create':
+						//	If ai or pkey, than drop pkey
+						$ai = isset($config->table->$table_name->column->$column_name->ai) ? $config->table->$table_name->column->$column_name->ai: null;
+						$pk = isset($config->table->$table_name->column->$column_name->pkey) ? $config->table->$table_name->column->$column_name->pkey: null;
+						if( $ai or $pk ){
+							$drop_pkey = true;	
+						}
 						$create->column->$column_name = $config->table->$table_name->column->$column_name;
 						break;
 						
@@ -580,6 +596,12 @@ class Wizard extends OnePiece5
 						$change->column->$column_name = $config->table->$table_name->column->$column_name;
 						break;
 				}
+			}
+			
+			//	drop primary key
+			if( $drop_pkey ){
+				$io = $this->pdo()->DropPrimaryKey($table_name);
+				$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
 			}
 			
 			//	create

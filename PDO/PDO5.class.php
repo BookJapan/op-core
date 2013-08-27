@@ -739,6 +739,14 @@ class PDO5 extends OnePiece5
 	//	ALTER TABLE `t_table` ADD INDEX `column_name` ( `column_name` ); 
 	}
 	
+	function DropPrimarykey( $table_name )
+	{
+	//	ALTER TABLE op_account DROP PRIMARY KEY
+		$table_name = ConfigSQL::Quote( $table_name, $this->driver );
+		$qu = "ALTER TABLE $table_name DROP PRIMARY KEY";
+		return $this->query( $qu, 'alter' );
+	}
+	
 	/**
 	 * 
 	 */
