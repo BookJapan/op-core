@@ -186,7 +186,9 @@ class Wizard extends OnePiece5
 	}
 	
 	private function _PrintForm( $config )
-	{		
+	{
+	//	$this->mark( $this->getcallerline(1) );
+		/*
 		print '<div style="margin:1em; padding:0px; border: 1px solid black;">';
 		
 		if( isset($config->title) ){
@@ -199,7 +201,7 @@ class Wizard extends OnePiece5
 			$this->p( $config->title, 'h1', array('style'=>$style) );
 		}
 		
-		print '<div style="margin:0em 1em;">';
+		print '<div style="margin:0em 1em; ">';
 		
 		if( isset($config->message) ){
 			$this->p( $config->message );
@@ -209,19 +211,113 @@ class Wizard extends OnePiece5
 		$decorate = $this->config()->InputDecorate();
 		
 		//  Print form
+		$form = '';
 		$form_name = $this->config()->GetFormName();
 		$this->form()->Start($form_name);
 		foreach ( array('user','password','submit') as $input_name ){
-			printf(
+			$form .= sprintf(
 				$decorate,
-				$this->form()->GetLabel($input_name),
-				$this->form()->GetInput($input_name),
-				$this->form()->GetError($input_name)
+				$this->form()->GetLabel($input_name,$form_name),
+				$this->form()->GetInput($input_name,$form_name),
+				$this->form()->GetError($input_name,$form_name)
 			);
 		}
+		print $form;
 		$this->form()->Finish($form_name);
 		print '</div>';
 		print '</div>';
+		*/
+		
+		$css = '
+		<style>
+		#form-wizard{
+			margin: 1em;
+			border: 0px solid #d8d7da;
+			background-Color: #e8e2f3;
+		}
+		
+		#form-wizard div.headline{
+			padding: 0.1em 1em;
+			background-Color: #583e8d;
+			color: white;
+			font-size: 200%;
+			font-weight: bold;
+		}
+		
+		#form-wizard div.content-area{
+			margin:  0;
+			padding: 0em;
+			padding-left: 1em;
+			padding-bottom: 1em;
+			color: #2b1e44;
+			border: 1px solid #d8d7da;
+		}
+		
+		#form-wizard p.message{
+			margin: 1em;
+			color: #21045a;
+			border: 0px solid #d8d7da;
+		}
+		
+		#form-wizard div.content{
+			margin: 1em;
+		}
+		
+		#form-wizard input.op-input{
+			border: 1px solid #4c455b;
+			width: 16em;
+		}
+		
+		#form-wizard input.op-input-button{
+			margin: 0;
+			color: white;
+			font-weight: bold;
+			background-color: #653cb8;
+			font-family: sans-serif;
+		}
+		
+		#form-wizard input.op-input-button:hover{
+			background-color: #7538ef;
+		}
+		</style>
+		';
+		
+		$html = '
+		<div id="form-wizard" class="">
+			<div class="headline">
+				<span>%s</span>
+			</div>
+			<div class="content-area">
+				<p class="message">%s</p>
+				<div class="form-area">
+					%s
+				</div>
+			</div>
+		</div>
+		';
+		
+		//	Get form name
+		$form_name = $this->config()->GetFormName();
+		$this->mark($form_name);
+		
+		//  Get input decorate
+		$decorate = $this->config()->InputDecorate();
+		
+		//	Get input
+		$form = '';
+		foreach ( array('user','password','submit') as $input_name ){
+			$form .= sprintf(
+				$decorate,
+				$this->form()->GetLabel($input_name,$form_name),
+				$this->form()->GetInput($input_name,$form_name),
+				$this->form()->GetError($input_name,$form_name)
+			);
+		}
+		
+		print $css;
+		$this->form()->Start($form_name);
+		printf( $html, $config->title, $config->message, $form );
+		$this->form()->Finish($form_name);
 	}
 	
 	private function _CheckDatabase( Config $config )
@@ -455,7 +551,8 @@ class Wizard extends OnePiece5
 			
 			//	
 			if( empty($this->_result->column->$table_name) ){
-				$this->mark('continue');
+				$this->mark("empty $table_name");
+				$this->_result->column->d();
 				continue;
 			}
 			
@@ -633,10 +730,7 @@ class WizardConfig extends ConfigMgr
 		$config->input->$input_name->label = '';
 		$config->input->$input_name->name  = $input_name;
 		$config->input->$input_name->type  = 'submit';
-		$config->input->$input_name->value = ' Wizard execute  ';
-		$config->input->$input_name->style = 'background-color:#338bc6; color:white;';
-		$config->input->$input_name->onmouseover = 'this.style.backgroundColor="#0596f6"';
-		$config->input->$input_name->onmouseout  = 'this.style.backgroundColor="#338bc6"';
+		$config->input->$input_name->value = ' Execute to Wizard ';
 		
 		return $config;
 	}
