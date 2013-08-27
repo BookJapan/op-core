@@ -298,7 +298,6 @@ class Wizard extends OnePiece5
 		
 		//	Get form name
 		$form_name = $this->config()->GetFormName();
-		$this->mark($form_name);
 		
 		//  Get input decorate
 		$decorate = $this->config()->InputDecorate();
