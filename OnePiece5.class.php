@@ -1740,7 +1740,9 @@ __EOL__;
 		$add_params = '-f '.$from;
 	
 		// @todo: I should support multi-byte-language
-		$io = mail($to, $subject, $message, $add_header, $add_params );
+		if(!$io = mail($to, $subject, $message, $add_header, $add_params ) ){
+			$this->mark("![.red[send mail is failed.]]");
+		}
 		
 		// recovery
 		if( $save_lang and $save_char ){
