@@ -1905,7 +1905,7 @@ class Form5 extends OnePiece5
 	
 	function Input( $input_name, $value=null, $form_name=null )
 	{
-		print $this->GetInput( $input_name, $value, $form_name );
+		print $this->GetInput( $input_name, $form_name, $value );
 		return 'This method(function) is print.';
 	}
 	
