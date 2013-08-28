@@ -322,7 +322,8 @@ class Config_Model extends OnePiece5
 		//	Create select config.
 		$config = new Config();
 		$config->table = $table_name;
-	
+		$config->column->{'*'} = true;
+		
 		//	deleted
 		foreach( $deleteds as $deleted ){
 			$config->where->$deleted = null;
