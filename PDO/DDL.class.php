@@ -421,7 +421,8 @@ class DDL extends OnePiece5
 					}
 					
 				case 'ADD':
-					$definition = "$ACD $index $name $rename $type $attributes $null $default $comment $first $after";
+				//	ALTER TABLE `op_message` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
+					$definition = "$ACD $index $rename $name $type $attributes $null $default $comment $first $after";
 					break;
 	
 				case 'DROP':
