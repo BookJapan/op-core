@@ -397,8 +397,21 @@ class Wizard extends OnePiece5
 			
 			//	This column, Does not exists in the existing table.
 			if(!isset($structs[$column_name]) ){
-				$this->_result->column->$table_name->$column_name = 'create,'.$after;
-				$hint = "Does not exists";
+				if( empty($config->table->$table_name->column->$column_name->rename) ){
+					//	create new column
+					$this->_result->column->$table_name->$column_name = 'create,'.$after;
+					$hint = "Does not exists";
+				}else{
+					//	change column name by exists column
+					$rename = $config->table->$table_name->column->$column_name->rename;
+					if( isset($structs[$rename]) ){
+						$this->_result->column->$table_name->$column_name = 'change,'.$after;
+						$hint = "Rename column name, to $column_name from $rename";
+					}else{
+						$this->_result->column->$table_name->$column_name = false;
+						$hint = "Does not have original column name. ($rename)";
+					}
+				}
 			}else{
 				
 				//  Get type from config.
@@ -407,7 +420,7 @@ class Wizard extends OnePiece5
 				//	Get null from config.
 				$null = isset($config->table->$table_name->column->$column_name->null) ? $config->table->$table_name->column->$column_name->null:'YES';
 				$null = $null ? 'YES': 'NO';
-
+				
 				if( $structs[$column_name]['extra'] === 'auto_increment' OR
 					$structs[$column_name]['type'] === 'timestamp' OR
 					$structs[$column_name]['key'] === 'PRI' ){
@@ -458,7 +471,7 @@ class Wizard extends OnePiece5
 			
 			if(!$io){
 				$return = false;
-				$this->mark("![.red[table=$table_name, column=$column_name, $hint)]]",'selftest');
+				$this->mark("![.red[table=$table_name, column=$column_name, $hint]]",'selftest');
 			}
 			
 			//	use create column
@@ -583,6 +596,9 @@ class Wizard extends OnePiece5
 			//	result of selftest
 			foreach( $this->_result->column->$table_name as $column_name => $value ){
 				if( $value === true ){
+					continue;
+				}else if( $value === false ){
+					$this->StackError("Does not execute wizard. ($column_name)");
 					continue;
 				}
 				

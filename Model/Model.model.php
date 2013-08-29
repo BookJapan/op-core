@@ -15,7 +15,7 @@ abstract class Model_Model extends OnePiece5
 	{
 		parent::Init();
 		
-		//	selftest
+		//	Do selftest is only admin
 		if( $this->Admin() ){
 			//	Model
 			if( method_exists( $this, 'Selftest') ){
