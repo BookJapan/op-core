@@ -388,13 +388,16 @@ class Wizard extends OnePiece5
 		$columns = Toolbox::toArray($config->table->$table_name->column);
 		$structs = $this->pdo()->GetTableStruct( $table_name );
 		
+		//	use create column, new create column is after where column
+		$after = null;
+		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
 			$io = null;
 			
 			//	This column, Does not exists in the existing table.
 			if(!isset($structs[$column_name]) ){
-				$this->_result->column->$table_name->$column_name = 'create';
+				$this->_result->column->$table_name->$column_name = 'create,'.$after;
 				$hint = "Does not exists";
 			}else{
 				
@@ -450,13 +453,16 @@ class Wizard extends OnePiece5
 				}
 				
 				//	If false will change this column.
-				$this->_result->column->$table_name->$column_name = $io ? true: 'change';
+				$this->_result->column->$table_name->$column_name = $io ? true: 'change,';
 			}
 			
 			if(!$io){
 				$return = false;
 				$this->mark("![.red[table=$table_name, column=$column_name, $hint)]]",'selftest');
 			}
+			
+			//	use create column
+			$after = $column_name;
 		}
 		
 		//  Finish
@@ -580,22 +586,38 @@ class Wizard extends OnePiece5
 					continue;
 				}
 				
+				list( $acd, $after ) = explode(',',$value);
+				
 				//	create or change
-				switch( $value ){
+				switch( trim($acd) ){
 					case 'create':
+						
 						//	If ai or pkey, than drop pkey
 						$ai = isset($config->table->$table_name->column->$column_name->ai) ? $config->table->$table_name->column->$column_name->ai: null;
 						$pk = isset($config->table->$table_name->column->$column_name->pkey) ? $config->table->$table_name->column->$column_name->pkey: null;
 						if( $ai or $pk ){
 							$drop_pkey = true;	
 						}
+						
+						//	after this column
+						if( $after ){
+							$config->table->$table_name->column->$column_name->after = $after;
+						}else{
+							$config->table->$table_name->column->$column_name->first = true;
+						}
+						
+						//	join
 						$create->column->$column_name = $config->table->$table_name->column->$column_name;
 						break;
 						
 					case 'change':
+						//	join
 						$change->column->$column_name = $config->table->$table_name->column->$column_name;
 						break;
 				}
+				
+				//	
+				$after = $column_name;
 			}
 			
 			//	drop primary key

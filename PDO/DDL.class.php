@@ -293,11 +293,11 @@ class DDL extends OnePiece5
 			$charset	 = isset($temp['character'])  ? $temp['character']        : $charset;
 			$collate	 = isset($temp['collate'])    ? $temp['collate']          : null; // 英語圏対応
 			$collation	 = isset($temp['collation'])  ? $temp['collation']        : $collate;
+			$null		 = isset($temp['null'])	      ? $temp['null']             : null;
 			$default	 = isset($temp['default'])	  ? "DEFAULT '{$temp['default']}'": null;
 			$comment	 = isset($temp['comment'])    ? "COMMENT '{$temp['comment']}'": null;
-			$first		 = isset($temp['first'])      ? $temp['first']            : null; // 先頭に追加
-			$after		 = isset($temp['after'])      ? "AFTER {$ql}{$temp['after']}{$qr}": null; // 指定カラムの後ろに追加
-			$null		 = isset($temp['null'])	      ? $temp['null']: null;
+			$first		 = (isset($temp['first']) and $temp['first']) ? $temp['first']  : null; // 先頭に追加
+			$after		 = (isset($temp['after']) and $temp['after']) ? "AFTER {$ql}{$temp['after']}{$qr}": null; // 指定カラムの後ろに追加
 			
 			$ai			 = isset($temp['auto_increment']) ? $temp['auto_increment']: null;
 			$ai			 = isset($temp['a_i'])    ? $temp['a_i']  : null;
@@ -372,11 +372,7 @@ class DDL extends OnePiece5
 			}
 			
 			//  Added first column
-			if( $first === true or $first == 1){
-				$first = 'FIRST';
-			}else{
-				$first = '';
-			}
+			$first = $first ? 'FIRST': null;
 				
 			//	character set
 			if( $charset ){
@@ -416,11 +412,6 @@ class DDL extends OnePiece5
 			//  Create define
 			switch($ACD){
 				case '':
-//					`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-//					`text` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
-//					`timestamp` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-//					$this->mark("$name, $type, $charset, $collate, $attributes, $index, $null, $default, $comment");
-//					$definition = "$name $type $charset $collate $attributes $index $null $default $comment";
 					$definition = "$name $type $charset $collate $attributes $pkey  $null $default $comment";
 					break;
 					
@@ -430,16 +421,10 @@ class DDL extends OnePiece5
 					}
 					
 				case 'ADD':
-				//	$column[] = "ADD {$index} ({$name})";
 					$definition = "$ACD $index $name $rename $type $attributes $null $default $comment $first $after";
 					break;
 	
 				case 'DROP':
-					/*
-					ALTER TABLE `t_table`
-					DROP `is_delete`,
-					DROP `coupon_timestamp`;
-					*/
 					$definition = "{$ACD} {$name}";
 					break;
 			}
