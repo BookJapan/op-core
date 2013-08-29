@@ -136,7 +136,14 @@ class Cache extends OnePiece5
 				return false;
 		}
 		
+		//	key
+		if(!is_string($key)){
+			$key = serialize($key);
+		}
+		
 		//  TODO: compress option
+	//	$this->mark( get_class($this->_cache) );
+	//	$this->mark("$key, $value, $compress, $expire");
 		return $this->_cache->Set( $key, $value, $compress, $expire );
 	}
 	
