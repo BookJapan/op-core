@@ -804,14 +804,17 @@ class PDO5 extends OnePiece5
 		
 		//  Check cache setting.
 		if(!empty($config['cache'])){
+			
+			//	Create cache key
 			$key = md5(serialize($config));
+			
+			//	If find cache
 			if( $records = $this->Cache()->Get($key) ){
-				$this->Qu(var_export($config,true));
-			//	$records[]['onepiece-cached'] = date('Y-m-d H:i:s');
-				
+				//	Stack log
+				$this->Qu('Cache: '.var_export($config,true));
+				//	Print mark
 				$this->mark("hit cache!! expire is {$config['cache']}sec.",'cache');
-			//	$this->d($config);
-				
+				//	Return cache value
 				return $records;
 			}
 		}

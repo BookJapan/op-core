@@ -69,25 +69,13 @@ class Cache extends OnePiece5
 	
 	function InitMemcache( $host='localhost', $port='11211', $weight=10 )
 	{
-		if( $this->GetSession(__METHOD__) ){
-			return;
-		}else{
-			$this->SetSession(__METHOD__,true);
-		}
-		
 		//  Change modan method.
 		if(!$hash_strategy = $this->GetEnv('memcache.hash_strategy') ){
 			$hash_strategy = 'consistent';
 		}
+		
 		//	Change to consistent from standard. (default standard)
 		ini_set('memcache.hash_strategy', $hash_strategy);
-		
-		//	Add server
-		/*
-		if(!$io = $this->AddServer( $host, $port, $weight )){
-			throw new Exception("Failed addServer method.");
-		}
-		*/
 		
 		//	Connect
 		if( $this->_cache = memcache_pconnect('localhost','11211') ){
@@ -161,7 +149,6 @@ class Cache extends OnePiece5
 			$skip = true;
 			return null;
 		}
-		
 		
 		//	TODO: compress option
 		$value = $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
