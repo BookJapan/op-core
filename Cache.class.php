@@ -23,9 +23,9 @@ class Cache extends OnePiece5
 		parent::Init();
 		
 		//  Get use flag
-		$redis     = $this->GetEnv('redis');
-		$memcache  = $this->GetEnv('memcache');
-		$memcached = $this->GetEnv('memcached');
+		$redis     = $this->GetEnv('USE_REDIS');
+		$memcache  = $this->GetEnv('USE_MEMCACHE');
+		$memcached = $this->GetEnv('USE_MEMCACHED');
 		
 		//	get host & port
 		$host = $this->GetEnv('cache-host');
