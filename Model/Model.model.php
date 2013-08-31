@@ -335,7 +335,7 @@ class Config_Model extends OnePiece5
 		}
 	
 		//	default cache seconds
-		$config->cache = 1;
+		$config->cache = 10;
 	
 		return $config;
 	}
