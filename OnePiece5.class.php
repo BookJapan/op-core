@@ -141,8 +141,17 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		switch( strtolower(OnePiece5::GetEnv('mime')) ){
-			case 'text':
+		$mime = OnePiece5::GetEnv('mime');
+		if( strpos( $mime, '/') ){
+			list( $main_type, $sub_type ) = explode('/',$mime);
+		}else{
+			$sub_type = $mime;
+		}
+		
+		switch( strtolower($sub_type) ){
+			case 'plain':
+			case 'css':
+			case 'javascript':
 				print PHP_EOL . '/* OnePiece is shutdown. */' . PHP_EOL;
 				break;
 				
@@ -156,7 +165,7 @@ if(!function_exists('OnePieceShutdown')){
 			default:
 				Toolbox::PrintStyleSheet();
 				Toolbox::PrintGetFlagList();
-				print PHP_EOL.'<OnePiece/>'.PHP_EOL;
+				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
 				break;
 		}
 	}
