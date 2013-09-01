@@ -421,7 +421,6 @@ class Form5 extends OnePiece5
 	/*******************************************************************************/
 	
 	/**
-	 * Print the value of specified Input.
 	 * 
 	 * @param  unknown $input_name
 	 * @param  string  $joint
