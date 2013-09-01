@@ -37,7 +37,10 @@ class Model_Account extends Model_Model
 		$config->where->account_id = $id;
 		$config->limit = 1;
 		$record = $this->pdo()->select($config);
-		$record['email'] = $this->model('Blowfish')->Decrypt($record['account_enc']);
+		
+		//	encrypt email
+		$record['email'] = isset($record['account_enc']) ? $this->model('Blowfish')->Decrypt($record['account_enc']): null;
+		
 		return $record;
 	}
 	
