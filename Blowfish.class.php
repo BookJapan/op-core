@@ -127,7 +127,7 @@ class Blowfish
 		}
 		
 		if( !$key ){
-			$this->StackError("Does not initialized secret key.");
+			print __FILE__ . __LINE__;
 			return false;
 		}
 		
@@ -168,7 +168,8 @@ class Blowfish
 		
 		//	check
 		if( !$hex or !$ivt or !$key ){
-			$this->StackError("empty each.(hex=$hex, ivt=$ivt, key=$key)");
+			print __FILE__ . __LINE__;
+			print "empty each.(hex=$hex, ivt=$ivt, key=$key)";
 			return '';
 		}
 		
