@@ -641,6 +641,22 @@ class PDO5 extends OnePiece5
 		return $this->query( $qu, 'create' );
 	}
 	
+	function Revoke( $conf )
+	{
+		//  object to array
+		if(!is_array($conf)){
+			$conf = Toolbox::toArray($conf);
+		}
+	
+		//  get select query
+		if(!$qu = $this->dcl()->GetRevoke($conf)){
+			return false;
+		}
+	
+		//  execute
+		return $this->query( $qu, 'create' );
+	}
+	
 	/**
 	 * Change table or column
 	 * 

@@ -1,6 +1,21 @@
 <?php
+# vim: tabstop=4
 /**
- * DCL:Data Control Language
+ *  DCL.class.php
+ *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2011 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
+ */
+
+/**
+ *  DCL
+ *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2011 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
  */
 class DCL extends OnePiece5
 {
@@ -20,8 +35,6 @@ class DCL extends OnePiece5
 		$table		 = isset($args['table'])       ? $args['table']       : null;
 		$user		 = isset($args['user'])        ? $args['user']        : null;
 		$password	 = isset($args['password'])    ? $args['password']    : null;
-		$privilege	 = isset($args['privilege'])   ? $args['privilege']   : 'ALL PRIVILEGES';
-		$column      = isset($args['column'])      ? $args['column']      : null;
 		$identified  = isset($args['password'])    ? "IDENTIFIED BY '{$password}'": null;
 		
 		if(!$host){
@@ -49,26 +62,111 @@ class DCL extends OnePiece5
 		
 		//  All tables, not quote. 
 		if( $table !== '*' ){
-			$table = ConfigSQL::Quote( $table,    $this->driver );
+			$table = ConfigSQL::Quote( $table, $this->driver );
 		}
 		
-		//  Quote columns
-		if( $column ){
-			$join = array();
-			foreach( explode(',',$column) as $temp ){
-				$join[] = ConfigSQL::Quote( $temp, $this->driver );
-			}
-			$column = implode(', ', $join);
-		}
+		//	privilege
+		$privilege = $this->GetPrivilege($args);
 		
 		//  Create Query
-		$query = "GRANT {$privilege} {$column} ON {$database}.{$table} TO '{$user}'@'{$host}' $identified";
+		$query = "GRANT {$privilege} ON {$database}.{$table} TO '{$user}'@'{$host}' $identified";
 		
 		return $query;
 	}
 	
-	function GetRevoke()
-	{
+	function GetRevoke( $args )
+	{	
+		$host		 = isset($args['host'])        ? $args['host']        : null;
+		$database	 = isset($args['database'])    ? $args['database']    : null;
+		$table		 = isset($args['table'])       ? $args['table']       : null;
+		$user		 = isset($args['user'])        ? $args['user']        : null;
 		
+		if(!$host){
+			$this->StackError("Empty host name.");
+			return false;
+		}
+		
+		if(!$database){
+			$this->StackError("Empty database name.");
+			return false;
+		}
+		
+		if(!$table){
+			$this->StackError("Empty table name.");
+			return false;
+		}
+		
+		if(!$user){
+			$this->StackError("Empty user name.");
+			return false;
+		}
+		
+		//  Do quote
+		$database = ConfigSQL::Quote( $database, $this->driver );
+		
+		//  All tables, not quote.
+		if( $table !== '*' ){
+			$table = ConfigSQL::Quote( $table, $this->driver );
+		}
+		
+		//	privilege
+		$privilege = $this->GetPrivilege($args);
+		
+		//  Create Query
+		return "REVOKE {$privilege} ON {$database}.{$table} FROM '{$user}'@'{$host}'";
+	}
+	
+	function GetPrivilege( $args )
+	{
+		//	valid privilege
+		$valid_privilege = array('SELECT','INSERT','UPDATE','DELETE','REFERENCES','USAGE');
+		
+		if( !isset($args['privilege']) ){
+			
+			$privilege = 'ALL PRIVILEGES';
+			
+		}else if( is_bool($args['privilege']) ){
+
+			$privilege = $args['privilege'] ? 'ALL PRIVILEGES': 'USAGE';
+			
+		}else if( is_string($args['privilege']) ){
+			
+			//	String
+			$join = array();
+			foreach( explode(',',$args['privilege']) as $priv ){
+				
+				if(!in_array( strtoupper(trim($priv)), $valid_privilege) ){
+					$this->StackError("Does not permit value. ($priv)");
+					continue;
+				}
+				
+				$join[] = strtoupper(trim($priv));
+			}
+			
+			//	valid privilege (does not specified column)
+			$privilege = join(', ', $join);
+				
+		}else if( is_array($args['privilege']) ){
+				
+			//	Array
+			foreach( $args['privilege'] as $priv => $spec_column ){
+		
+				if(!in_array( strtoupper($priv), $valid_privilege) ){
+					$this->StackError("Does not permit value. ($priv)");
+					continue;
+				}
+		
+				$join = array();
+				foreach( explode(',',$spec_column) as $column_name ){
+					$join[] = ConfigSQL::Quote( trim($column_name), $this->driver );
+				}
+				$column = join(', ',$join);
+				$privs[] = strtoupper($priv)." ($column)";
+			}
+				
+			$privilege = join(', ',$privs);
+		}
+		
+		return $privilege;
 	}
 }

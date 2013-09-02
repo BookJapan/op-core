@@ -143,9 +143,6 @@ class Wizard extends OnePiece5
 		//  Get form name.
 		$form_name = $this->config()->GetFormName();
 		
-		//  Init form config.
-	//	$this->form()->AddForm( $this->config()->MagicForm() );
-		
 		//  Check secure
 		if( $this->form()->Secure($form_name) ){
 			
@@ -546,7 +543,6 @@ class Wizard extends OnePiece5
 			}
 			
 			$table_name = $table->table;
-		//	$this->mark(" $dns -> $host -> $user -> $database -> $table_name ");
 			$this->_wizard->$host->$user->$database->$table_name = $io;
 			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
@@ -670,9 +666,6 @@ class Wizard extends OnePiece5
 	
 	private function _CreateUser($config)
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
-		
 		//  Inist
 		$config->user->host     = $config->database->host;
 		$config->user->user     = $config->database->user;
@@ -680,9 +673,6 @@ class Wizard extends OnePiece5
 		
 		//  Check user exists.
 		$list = $this->pdo()->GetUserList();
-		
-		//  Log
-		$this->model('Log')->Set( $this->pdo()->qu(), 'green');
 		
 		//  Check user exists.
 		$io = array_search( $config->user->user, $list ) !== false ? true: false;
@@ -705,51 +695,79 @@ class Wizard extends OnePiece5
 			$this->model('Log')->Set( $this->pdo()->qu(), $io);
 		}
 		
-		if(!$io){
-			$wz = new OpWzException("Create user is failed. ({$config->user->user})");
-			$wz->SetConfig($config);
-			throw $wz;
-		}
-		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
-		return true;
+		return $io;
 	}
 
 	private function _CreateGrant($config)
 	{
-		//  Start
-		$this->model('Log')->Set('START: '.__FUNCTION__);
+	//	$config->d();
 		
-		//  Init
-		$config->grant->host     = $config->database->host;
-		$config->grant->database = $config->database->database;
-		$config->grant->user     = $config->database->user;
+		//  Create grant
+		$grant = new Config();
+		$grant->host     = $config->database->host;
+		$grant->database = $config->database->database;
+		$grant->user     = $config->database->user;
+		
+		//	Create revoke
+		$revoke = Toolbox::Copy($grant);
 		
 		//	Check
-		if( isset($config->table) ){
-			$tables = Toolbox::toArray($config->table);
-		}else{
-			$tables = null;
+		if( empty($config->table) ){
+			$this->model('Log')->Set('CHECK: Empty table name.',false);
+			return true;
 		}
 		
-		if(!count($tables) ){
-			$this->model('Log')->Set('CHECK: Empty table name.',false);
-		}else{
-			//  Create grant
-			foreach( $tables as $table_name => $table ){
-				$config->grant->table = $table_name;
-				if(!$this->pdo()->Grant($config->grant) ){
-					$wz = new OpWzException("Grant is failed. ($table_name)");
-					$wz->SetConfig($config);
-					throw $wz;
+		//  Create grant
+		foreach( $config->table as $table_name => $table ){
+			
+			$dns = "{$grant->user}@{$grant->host}";
+			if( isset($this->_result->connect->$dns) and $this->_result->connect->$dns ){
+				//	Revoke all plivilage
+				$revoke->table = $table_name;
+				$revoke->privilage = 'ALL PRIVILEGES';
+				$io = $this->pdo()->Revoke($revoke);
+			}
+			
+			//  Log (revoke)
+			$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			
+			//	Set table name
+			$grant->table = $table_name;
+			
+			//	If GRANT is present if
+			if( isset($table->grant) ){
+				//	Do merge
+				$grant->merge($table->grant);
+			}else{
+				//	Create column list
+				foreach( $table->column as $column_name => $temp ){
+					$column[] = $column_name;
+				}
+				
+				//	Create detail privilege
+				if( empty($table->privilege) ){
+					foreach( array('insert','select','update','references') as $priv ){
+						$grant->privilege->$priv = join(',',$column);
+					}
 				}
 			}
+			
+			//	
+			$io = $this->pdo()->Grant($grant);
+			
+			//  Log
+			$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			
+			//	Revoke timestamp
+			/*
+			unset($revoke->privilage);
+			$revoke->privilage->update = 'timestamp';
+			$io = $this->pdo()->Revoke($revoke);
+			$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			*/
 		}
-		
-		//  Finish
-		$this->model('Log')->Set('FINISH: '.__FUNCTION__);
-		return true;
+			
+		return $io;
 	}
 }
 
