@@ -38,6 +38,10 @@ if(!function_exists('__autoload')){
 			case 'Memcache':
 			case 'Memcached':
 				return;
+
+			case 'Model_App':
+				$file_name = 'App.model.php';
+				break;
 				
 			case 'DML':
 			case 'DML5':
@@ -56,21 +60,31 @@ if(!function_exists('__autoload')){
 		$dirs[] = '.';
 		$dirs[] = OnePiece5::GetEnv('App-Root');
 		$dirs[] = OnePiece5::GetEnv('OP-Root');
+		//	Model (op-core)
+		$dirs[] = trim(OnePiece5::GetEnv('OP-Root'),DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'Model';
+		//	Model (app)
+		if( $dir = OnePiece5::GetEnv('model-dir') ){
+			$dirs[] = OnePiece5::ConvertPath($dir);
+		}
+		//	PDO
 		if( $sub_dir ){
 			$dirs[] = OnePiece5::GetEnv('OP-Root').DIRECTORY_SEPARATOR.$sub_dir;
 		}
 		
 		// check
-		foreach( $dirs as $dir ){
+		foreach( array_unique($dirs) as $dir ){
 			$file_path = rtrim($dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file_name;
 		
 		//	print $file_path . '<br/>' . PHP_EOL;
+		//	$_SERVER['hoge'][] = $file_path;
 		
 			if( file_exists($file_path) ){
 				include_once($file_path);
 				break;
 			}
 		}
+		
+	//	$_SERVER['hoge'][0] = array_unique($dirs);
 		
 		// check
 		if (!class_exists($class_name, false)) {
@@ -85,6 +99,8 @@ if(!function_exists('__autoload')){
 if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
+	//	dump::d($_SERVER['hoge']);
+		
 		if(!OnePiece5::Admin()){
 			return;
 		}
@@ -1877,12 +1893,12 @@ __EOL__;
 					return $args;
 					
 				case 'dot':
-					$route = $this->GetEnv('route');
+					$route = self::GetEnv('route');
 					$tmp_root = rtrim( $route['path'], '/' ) . '/'; 
 					break;
 					
 				default:
-					$tmp_root = $this->GetEnv( $match[1] . '_root' );
+					$tmp_root = self::GetEnv( $match[1] . '_root' );
 			}
 			
 			//  Windows
@@ -1895,14 +1911,14 @@ __EOL__;
 		}else{
 			
 			//	replace document root.
-			$args = preg_replace( '|^'.rtrim($this->GetEnv('doc-root'),'/').'|', '', $args );
+			$args = preg_replace( '|^'.rtrim(self::GetEnv('doc-root'),'/').'|', '', $args );
 			$args = str_replace('\\','/',$args);
 			
 			return $args;
 		}
 		
 		//  create relative path from document root.
-		$doc_root = $this->GetEnv('doc-root');
+		$doc_root = self::GetEnv('doc-root');
 		
 		//	replace
 		$patt = array(); 
@@ -1912,7 +1928,7 @@ __EOL__;
 		//	Added domain
 		if( $domain ){
 			if( is_bool($domain) ){
-				$domain = $this->GetURL( true, false, false);
+				$domain = self::GetURL( true, false, false);
 			}
 		}
 		
@@ -1933,14 +1949,14 @@ __EOL__;
 		if( preg_match('/^(op|site):\//',$path,$match) ){
 			//  Does not relate document-root.
 			$temp = $match[1].'-root';
-			if( $root = $this->GetEnv($temp) ){
+			if( $root = self::GetEnv($temp) ){
 				$path = str_replace($match[0], $root, $path);
 			}else{
 				$this->StackError("$temp is not set.");
 			}
 		}else{
 			$url  = self::ConvertURL($path,false);
-			if(!$this->GetEnv('Pacifista')){
+			if(!self::GetEnv('Pacifista')){
 				$path = $_SERVER['DOCUMENT_ROOT'] .'/'. ltrim($url,'/');
 			}
 		}
