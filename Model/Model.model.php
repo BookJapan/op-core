@@ -136,15 +136,54 @@ abstract class Model_Model extends OnePiece5
  */
 class Config_Model extends OnePiece5
 {
-	private $_host_name     = 'localhost';
-	private $_port_number   = '3306';
-	private $_database_name = 'onepiece';
-	private $_database_user = 'op_mdl';
-	private $_table_prefix  = 'op';
-	public  $_table_name    = null;
-
+	private $_host_name		 = 'localhost';
+	private $_port_number	 = '3306';
+	private $_database_name	 = 'onepiece';
+	private $_password		 =  null;
+	private $_database_user	 = 'op_mdl';
+	private $_table_prefix	 = 'op';
+	public  $_table_name	 =  null;
+	private $_user_single	 =  null;
+	
 	//	secret key
 	private $_secret_key = null;
+	
+	function Init()
+	{
+		parent::Init();
+		
+		$config = $this->GetEnv('config-database');
+		foreach( $config as $key => $var ){
+			if( empty($var) ){
+				continue;
+			}
+			switch( $key ){
+				case 'host':
+					$this->_host_name = $var;
+					break;
+				case 'port':
+					$this->_port_number = $var;
+					break;
+				case 'user':
+					$this->_database_name = $var;
+					break;
+				case 'password':
+					$this->_password = $var;
+					break;
+				case 'database':
+					$this->_database_name = $var;
+					break;
+				case 'user_single':
+					$this->_user_single = $var;
+					break;
+				case 'prefix':
+					$this->_table_prefix = $var;
+					break;
+				default:
+					$this->StackError("undefined key. ($key)");
+			}
+		}
+	}
 	
 	function SetSecretKey( $var )
 	{
@@ -166,58 +205,26 @@ class Config_Model extends OnePiece5
 		return parent::pdo($name);
 	}
 	
-	function host_name($value=null)
-	{
-		if( $value ){
-			$this->_host_name = $value;
-		}
-		return $this->_host_name;
-	}
-
-	function port_number($value=null)
-	{
-		if( $value ){
-			$this->_port_number = $value;
-		}
-		return $this->_port_number;
-	}
-
-	function database_name($value=null)
-	{
-		if( $value ){
-			$this->_database_name = $value;
-		}
-		return $this->_database_name;
-	}
-
-	function database_user_name($value=null)
-	{
-		if( $value ){
-			$this->_database_user = $value;
-		}
-		return $this->_database_user;
-	}
-	
 	function database( $args=null )
 	{
 		//	init password
 		$password  = OnePiece5::GetEnv('admin-mail');
 		$password .= isset($this) ? get_class($this): null;
-	
+		
 		//	Init config
 		$config = new Config();
 		
 		//	Init database
 		$config = new Config();
 		$config->driver   = 'mysql';
-		$config->host     = $this->host_name();
-		$config->port     = $this->port_number();
-		$config->database = $this->database_name();
-		$config->user     = $this->database_user_name();
+		$config->host     = $this->_database_host_name();
+		$config->port     = $this->_database_port_number();
+		$config->database = $this->_database_name();
+		$config->user     = $this->_database_user_name();
 		$config->password = md5($password);
 		$config->charset  = 'utf8';
 		
-		if(!$this->DbUseSingleUser()){
+		if(!$io = $this->_database_user_single()){
 			if( isset($args['user']) ){
 				$config->user = $args['user'];
 			}
@@ -226,36 +233,58 @@ class Config_Model extends OnePiece5
 		return $config;
 	}
 	
-	function DbUseSingleUser($value=null)
+	private function _database_host_name($value=null)
 	{
 		if( $value ){
-			$this->SetEnv(__METHOD__,$value);
+			$this->_host_name = $value;
 		}
-		return $this->GetEnv(__METHOD__);
+		return $this->_host_name;
+	}
+
+	private function _database_port_number($value=null)
+	{
+		if( $value ){
+			$this->_port_number = $value;
+		}
+		return $this->_port_number;
+	}
+
+	private function _database_name($value=null)
+	{
+		if( $value ){
+			$this->_database_name = $value;
+		}
+		return $this->_database_name;
+	}
+
+	private function _database_user_name($value=null)
+	{
+		if( $value ){
+			$this->_database_user = $value;
+		}
+		return $this->_database_user;
 	}
 	
-	function table_prefix($prefix=null)
+	private function _database_user_single($value=null)
+	{
+		if( $value ){
+			$this->_user_single = $value ? true: false;
+		}
+		return $this->_user_single;
+	}
+	
+	private function table_prefix($prefix=null)
 	{
 		return self::prefix($prefix);
 	}
 	
-	function prefix($prefix=null)
+	private function prefix($prefix=null)
 	{
 		if( $prefix ){
 			$this->_table_prefix = $prefix;
 		}
 		return $this->_table_prefix;
 	}
-	
-	/*
-	function table( $name=null, $key='all')
-	{
-		if( $name ){
-			$this->_table[$key] = $name;
-		}
-		return $this->_table[$key];
-	}
-	*/
 	
 	function table_name()
 	{
