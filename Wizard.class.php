@@ -12,7 +12,7 @@ class Wizard extends OnePiece5
 	private $config = null;
 	private $_result = null;
 	private $_wizard = null;
-	
+		
 	/**
 	 * @return WizardConfig
 	 */
@@ -34,6 +34,10 @@ class Wizard extends OnePiece5
 		if( ! $config instanceof Config ){
 			$this->StackError("argument is not config-object");
 			return false;
+		}
+		
+		if( empty($config->database->port) ){
+			$config->database->port = 3306;
 		}
 		
 		$selftest = $this->GetSession('selftest');
@@ -111,26 +115,28 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
-		$user = $config->database->user;
-		$host = $config->database->host;
-		$dns  = $user.'@'.$host;
+		$dbms  = $config->database->driver;
+		$host  = $config->database->host;
+		$port  = $config->database->port;
+		$user  = $config->database->user;
+		$db    = $config->database->database;
+		$host .= $port == 3306 ? '': ' : '.$port;
 		
 		//	Database connection test
-		if(!$io = $this->pdo()->Connect($config->database) ){
-	
-			//	Logger		
-			$this->model('Log')->Set("FAILED: Database connect is failed.($dns)",false);
-			
+		$io = $this->pdo()->Connect($config->database);
+		
+		//	Save result of connection
+		$this->_result->connect->$host->$db->$user = $io;
+		
+		if(!$io){		
+			$this->model('Log')->Set("FAILED: Database connect is failed.(host=$host, user=$user)",false);
 			return false;
 		}
 		
-		//	result
-		$this->_result->connect->$dns = $io;
-			
-		//	Check database and table.
 		if(!$this->_CheckDatabase($config)){
 			return false;
 		}
+		
 		if(!$this->_CheckTable($config)){
 			return false;
 		}
@@ -319,20 +325,27 @@ class Wizard extends OnePiece5
 	private function _CheckDatabase( Config $config )
 	{
 		//  Get database list.
+		$dbms    = $config->database->driver;
+		$host    = $config->database->host;
+		$host   .= ':'.$config->database->port;
+		$user    = $config->database->user;
 		$db_name = $config->database->database;
 		$db_list = $this->pdo()->GetDatabaseList($config->database);
 		
 		//  Check database exists.
-		$io = array_search( $db_name, $db_list);
-		if( $io === false){
-			//	result
-			$this->_result->database = false;
+		$io = array_search( $db_name, $db_list) === false ? false: true;
+
+		//	result
+		$this->_result->database->$db_name = $io;
+		
+	//	if( $io === false){
+		if(!$io){
 			//	logger
 			$this->model('Log')->Set('FAILED: '.__FUNCTION__,false);
-			return false;
+		//	return false;
 		}
 		
-		return true;
+		return $io;
 	}
 	
 	private function _CheckTable( Config $config )
