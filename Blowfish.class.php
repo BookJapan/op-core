@@ -137,9 +137,19 @@ class Blowfish
 	    	$data = $this->pkcs5_pad($data, $size);
 		}
 		
-		srand(); mt_srand() ;
+		//	Init rand
+		srand();
+		mt_srand();
+		
+		// Windows is only use MCRYPT_RAND.
+		if( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ){
+			$RAND = MCRYPT_RAND;
+		}else{
+			$RAND = MCRYPT_DEV_URANDOM;
+		}
+		
 		$ivs = mcrypt_get_iv_size($cipher,$mode);
-		$iv  = mcrypt_create_iv( $ivs, MCRYPT_RAND ); // Windows is only MCRYPT_RAND.
+		$iv  = mcrypt_create_iv( $ivs, $RAND );
 		$bin = mcrypt_encrypt( $cipher, $key, $data, $mode, $iv );
 		$hex = bin2hex($bin);
 		
