@@ -302,7 +302,8 @@ class OnePiece5
 		 * @see http://msdn.microsoft.com/en-us/library/ms533020%28VS.85%29.aspx#Use_Cache-Control_Extensions
 		 */
 		header('X-Powered-By: OnePiece/1.0',true);
-		header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
+	//	Case of not set timezone
+	//	header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
 		
 		// Error control
 		$save_level = error_reporting();
