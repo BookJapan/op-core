@@ -294,7 +294,7 @@ class DDL extends OnePiece5
 			$collate	 = isset($temp['collate'])    ? $temp['collate']          : null; // 英語圏対応
 			$collation	 = isset($temp['collation'])  ? $temp['collation']        : $collate;
 			$null		 = isset($temp['null'])	      ? $temp['null']             : null;
-			$default	 = isset($temp['default'])	  ? "DEFAULT '{$temp['default']}'": null;
+			$default	 = isset($temp['default'])	  ? $temp['default']				 : null;
 			$comment	 = isset($temp['comment'])    ? "COMMENT '{$temp['comment']}'": null;
 			$first		 = (isset($temp['first']) and $temp['first']) ? $temp['first']  : null; // 先頭に追加
 			$after		 = (isset($temp['after']) and $temp['after']) ? "AFTER {$ql}{$temp['after']}{$qr}": null; // 指定カラムの後ろに追加
@@ -366,8 +366,11 @@ class DDL extends OnePiece5
 				
 			//  default
 			if( isset($temp['default']) ){
-				if( $temp['default'] == 'null' or $temp['default'] === null ){
+				$default = $temp['default'];
+				if( is_null($default) ){
 					$default = "DEFAULT NULL";
+				}else{
+					$default = "DEFAULT $default";
 				}
 			}
 			
