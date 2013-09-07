@@ -591,16 +591,13 @@ abstract class NewWorld5 extends OnePiece5
 		header("Content-Type: text/css");
 		header("X-Content-Type-Options: nosniff");
 		
-		//  Full path of file.
-		$path = $_SERVER['DOCUMENT_ROOT'].$route['path'].'/'.$route['file'];
-		
 		//  Change cli mode.
 		$this->SetEnv('cli',true);
 		$this->SetEnv('css',true);
 		$this->SetEnv('mime','text/css');
 		
 		//  Execute.
-		$this->template( $path );
+		$this->template( $route['fullpath'] );
 		exit(0);
 	}
 	
