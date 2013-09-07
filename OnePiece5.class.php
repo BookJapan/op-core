@@ -564,8 +564,19 @@ class OnePiece5
 	function PrintError()
 	{
 		// init
-		$nl = $this->GetEnv('nl');
-		$class = 'OnePiece5';
+		$nl		 = self::GetEnv('nl');
+		$cli	 = self::GetEnv('cli');
+		$mime	 = self::GetEnv('mime');
+		$class	 = 'OnePiece5';
+		
+		//	Check CLI mode
+		switch( strtolower($mime) ){
+			case 'text/css':
+				$cli = true;
+				break;
+		//	default:
+		//		$cli = false;
+		}
 		
 		if(isset($_SERVER[$class]['errors'])){
 			$errors = $_SERVER[$class]['errors'];
@@ -623,7 +634,7 @@ __EOL__;
 		}
 		
 		// Finish
-		if( self::GetEnv('Pacifista') ){
+		if( $cli /*self::GetEnv('Pacifista')*/ ){
 			print strip_tags( html_entity_decode( $print, ENT_QUOTES, $this->GetEnv('charset') ) );
 		}else if( !self::Admin() ){
 			$ua   = $this->GetEnv('UserAgent');
