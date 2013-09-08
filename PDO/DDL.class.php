@@ -259,6 +259,11 @@ class DDL extends OnePiece5
 	
 	function ConvertColumn( $args, $ACD='' )
 	{
+		if( empty($args['column']) ){
+			$this->StackError("Empty column");
+			return false;
+		}
+		
 		//	INIT
 		$indexes = array();
 	//	$pkeys	 = null;
