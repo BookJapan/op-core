@@ -195,6 +195,26 @@ class Config_Model extends OnePiece5
 		return $this->_secret_key ? $this->_secret_key: md5($this->GetEnv('admin-mail'));
 	}
 	
+	/**
+	 * return GMT timestamp (Y-m-d H:i:s)
+	 *
+	 * @return string
+	 */
+	function gmt($sec=null)
+	{
+		return date('Y-m-d H:i:s',$this->gmtime($sec));
+	}
+	
+	/**
+	 * return GMT time (seconds)
+	 *
+	 * @return number
+	 */
+	function gmtime($sec=null)
+	{
+		return time() - date('Z') + $sec;
+	}
+	
 	function pdo($name=null)
 	{
 		if(!$this->_init_pdo){
