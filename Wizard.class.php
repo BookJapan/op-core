@@ -126,10 +126,10 @@ class Wizard extends OnePiece5
 		$io = $this->pdo()->Connect($config->database);
 		
 		//	Save result of connection
-		$this->_result->connect->$host->$db->$user = $io;
+		$this->_result->connect->$host->$user->$db = $io;
 		
 		if(!$io){		
-			$this->model('Log')->Set("FAILED: Database connect is failed.(host=$host, user=$user)",false);
+			$this->model('Log')->Set("FAILED: Database connect is failed.(host=$host, user=$user, db=$db)",false);
 			return false;
 		}
 		
@@ -357,10 +357,10 @@ class Wizard extends OnePiece5
 			$this->model('Log')->Set('FAILED: '.$this->pdo()->qu(),false);
 			
 			//	result
-			$user = $config->database->user;
 			$host = $config->database->host;
-			$dns  = $user.'@'.$host;
-			$this->_result->connect->$dns = false;
+			$user = $config->database->user;
+			$db   = $config->database->database;
+			$this->_result->connect->$host->$user->$db = false;
 			return false;
 		}
 		
@@ -371,7 +371,7 @@ class Wizard extends OnePiece5
 			if( array_search( $table_name, $table_list) === false ){
 				
 				//	Logger
-				$this->model('Log')->Set("FAILED: $table_name is does not exists.",false);
+				$this->model('Log')->Set("FAILED: $table_name is does not exists. (or denny access)",false);
 				
 				//	result
 				$this->_result->table->$table_name = false;
@@ -403,6 +403,12 @@ class Wizard extends OnePiece5
 		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
+			//	check
+			if(empty($column)){
+				continue;
+			}
+			
+			//	init
 			$io = null;
 			
 			//	This column, Does not exists in the existing table.
@@ -426,9 +432,14 @@ class Wizard extends OnePiece5
 				
 				//  Get type from config.
 				$type = $config->table->$table_name->column->$column_name->type;
+
+				//  Get default from config.
+				$default = isset($config->table->$table_name->column->$column_name->default)
+							 ? $config->table->$table_name->column->$column_name->default: null;
 				
 				//	Get null from config.
-				$null = isset($config->table->$table_name->column->$column_name->null) ? $config->table->$table_name->column->$column_name->null:'YES';
+				$null = isset($config->table->$table_name->column->$column_name->null)
+						 ? $config->table->$table_name->column->$column_name->null:'YES';
 				$null = $null ? 'YES': 'NO';
 				
 				if( $structs[$column_name]['extra'] === 'auto_increment' OR
@@ -465,7 +476,13 @@ class Wizard extends OnePiece5
 				}else if( $null != $structs[$column_name]['null'] ){	
 					$io = false;
 					$hint = "null=$null not {$structs[$column_name]['null']}";
-					
+
+				//	Check default
+				}else if( !is_null($default) and $default != $structs[$column_name]['default'] ){
+					$io = false;
+					$temp = is_null($structs[$column_name]['default']) ? 'null': $structs[$column_name]['default'];
+					$hint = "default=$default not $temp";
+						
 				}else{
 					$io = true;
 				}
@@ -495,19 +512,19 @@ class Wizard extends OnePiece5
 	private function _CreateDatabase( Config $config)
 	{
 		//	Init
-		$user = $config->database->user;
+		$io   = true;
 		$host = $config->database->host;
-		$dns  = $user.'@'.$host;
-		$database = $config->database->database;
+		$user = $config->database->user;
+		$db   = $config->database->database;
 		
 		//	If does not exists database.
-		if( empty($this->_result->database->$database) ){
+		if( empty($this->_result->database->$db) ){
 			
 			//  Create database
 			$io = $this->pdo()->CreateDatabase( $config->database );
-
+			
 			//	check
-			$this->_wizard->$dns->$database = $io;
+			$this->_wizard->$host->$user->$db->created = $io;
 		}
 		
 		return $io;
@@ -520,17 +537,16 @@ class Wizard extends OnePiece5
 		}
 		
 		//	Init
-		$user = $config->database->user;
 		$host = $config->database->host;
-		$dns  = $user.'@'.$host;
-		$database = $config->database->database;
+		$user = $config->database->user;
+		$db   = $config->database->database;
 		
 		foreach( $config->table as $table_name => $table ){
 			
 			//	Check selftest reslut
-			if( $this->_result->table->$table_name ){
+			if( $this->_result->table->$table_name === true ){
 				//	no trouble
-				$this->model('Log')->Set("CHECK: Create table is skip ($table_name is exists)");
+				$this->model('Log')->Set("CHECK: Create table is skip ($table_name is no trouble)");
 				continue;
 			}
 			
@@ -556,7 +572,8 @@ class Wizard extends OnePiece5
 			}
 			
 			$table_name = $table->table;
-			$this->_wizard->$host->$user->$database->$table_name = $io;
+			$this->mark("host=$host, user=$user, database=$db, table=$table_name, io=$io");
+			$this->_wizard->$host->$user->$db->table->$table_name = $io;
 			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
 		
@@ -591,7 +608,7 @@ class Wizard extends OnePiece5
 			}
 			
 			//	debug
-			$this->_result->column->$table_name->d('selftest');
+		//	$this->_result->column->$table_name->d('selftest');
 			
 			//	drop primary key from table flag
 			$drop_pkey = null;
@@ -668,7 +685,6 @@ class Wizard extends OnePiece5
 				$change->table    = $table_name;
 				
 				//	execute to each table.
-				$change->d();
 				$io = $this->pdo()->ChangeColumn($change);
 				$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
 			}
@@ -692,7 +708,7 @@ class Wizard extends OnePiece5
 		if( $io ){
 			
 			//	Logger
-			$this->model('Log')->Set("CHECK: {$config->user->user} is already exists.");
+			$this->model('Log')->Set("CHECK: {$config->user->user} user is already exists.");
 			
 			//  Change password
 			$io = $this->pdo()->Password($config->user);
@@ -713,17 +729,6 @@ class Wizard extends OnePiece5
 
 	private function _CreateGrant($config)
 	{
-	//	$config->d();
-		
-		//  Create grant
-		$grant = new Config();
-		$grant->host     = $config->database->host;
-		$grant->database = $config->database->database;
-		$grant->user     = $config->database->user;
-		
-		//	Create revoke
-		$revoke = Toolbox::Copy($grant);
-		
 		//	Check
 		if( empty($config->table) ){
 			$this->model('Log')->Set('CHECK: Empty table name.',false);
@@ -733,16 +738,35 @@ class Wizard extends OnePiece5
 		//  Create grant
 		foreach( $config->table as $table_name => $table ){
 			
-			$dns = "{$grant->user}@{$grant->host}";
-			if( isset($this->_result->connect->$dns) and $this->_result->connect->$dns ){
+			if( isset($grant) ){
+				unset($grant);
+			}
+
+			if( isset($revoke) ){
+				unset($revoke);
+			}
+			
+			//  Create grant
+			$grant = new Config();
+			$grant->host     = $host = $config->database->host;
+			$grant->database = $db   = $config->database->database;
+			$grant->user     = $user = $config->database->user;
+			
+			//	Create revoke
+			$revoke = Toolbox::Copy($grant);
+			
+			//	If connect is successful case
+			if( $this->_result->connect->$host->$user->$db === true ){
+				//	Does not revoke alter.
+			}else{
 				//	Revoke all plivilage
 				$revoke->table = $table_name;
 				$revoke->privilage = 'ALL PRIVILEGES';
 				$io = $this->pdo()->Revoke($revoke);
+				
+				//  Log (revoke)
+				$this->model('Log')->Set( $this->pdo()->qu(), $io);
 			}
-			
-			//  Log (revoke)
-			$this->model('Log')->Set( $this->pdo()->qu(), $io);
 			
 			//	Set table name
 			$grant->table = $table_name;
@@ -752,21 +776,28 @@ class Wizard extends OnePiece5
 				//	Do merge
 				$grant->merge($table->grant);
 			}else{
-				//	Create column list
-				foreach( $table->column as $column_name => $temp ){
-					$column[] = $column_name;
-				}
-				
 				//	Create detail privilege
-				if( empty($table->privilege) ){
-					foreach( array('insert','select','update','references') as $priv ){
+				if( isset($table->privilege) ){
+					$grant->privilege = $table->privilege;
+				}else{
+
+					//	Build column list
+					$column = array();
+					foreach( $table->column as $column_name => $temp ){
+						$column[] = $column_name;
+					}
+					
+					//	Build privilege by column list
+					foreach( array('insert','select','update'/*,'references'*/) as $priv ){
 						$grant->privilege->$priv = join(',',$column);
 					}
 				}
 			}
 			
 			//	
-			$io = $this->pdo()->Grant($grant);
+			if( $io = $this->pdo()->Grant($grant) ){
+				$fail = true;
+			}
 			
 			//  Log
 			$this->model('Log')->Set( $this->pdo()->qu(), $io);
@@ -779,8 +810,8 @@ class Wizard extends OnePiece5
 			$this->model('Log')->Set( $this->pdo()->qu(), $io);
 			*/
 		}
-			
-		return $io;
+		
+		return empty($fail) ? true: false;
 	}
 }
 

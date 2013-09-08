@@ -106,5 +106,4 @@ class Config extends stdClass
 			Dump::D(Toolbox::toArray($this));
 		}
 	}
-	
 }
