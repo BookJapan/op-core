@@ -8,7 +8,7 @@ class Model_AccountRegister extends Model_Model
 	
 	private $_status = null;
 	
-	function Config( $var='AccountRegisterConfig' )
+	function Config( $var='Config_AccountRegister' )
 	{
 		return parent::Config($var);
 	}
@@ -51,12 +51,11 @@ class Model_AccountRegister extends Model_Model
 	}
 }
 
-class AccountRegisterConfig extends ConfigModel
+class Config_AccountRegister extends Config_Model
 {
-	static function Database()
+	function Database()
 	{
-		$config = parent::Database();
-		$config->user = 'op_model_account';
+		$config = $this->model('Account')->config()->database();
 		return $config;
 	}
 }

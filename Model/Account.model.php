@@ -11,17 +11,11 @@ class Model_Account extends Model_Model
 	private $_status = null;
 	
 	/**
-	 * @return AccountConfig
+	 * @return Config_Account
 	 */
-	function Config($name='AccountConfig')
+	function Config($name='Config_Account')
 	{
 		return parent::Config($name);
-	}
-	
-	function Init()
-	{
-		parent::Init();
-		$this->Config('AccountConfig');
 	}
 	
 	function InitForm()
@@ -44,32 +38,10 @@ class Model_Account extends Model_Model
 		return $record;
 	}
 	
-	/*
-	function Insert($config)
-	{
-		return $this->pdo()->insert($config);
-	}
-	
-	function Select($config)
-	{
-		return $this->pdo()->select($config);
-	}
-	
-	function Update($config)
-	{
-		return $this->pdo()->update($config);
-	}
-	
-	function Delete($config)
-	{
-		return $this->pdo()->delete($config);
-	}
-	*/
-	
 	/**
 	 * Auto authorizetion.
 	 * 
-	 * @return unknown
+	 * @return Boolean
 	 */
 	function Auto()
 	{
@@ -85,6 +57,13 @@ class Model_Account extends Model_Model
 		return $this->Auth( $account, $password );
 	}
 	
+	/**
+	 * Challenge authentication.
+	 * 
+	 * @param  string $account
+	 * @param  string $password
+	 * @return boolean|integer $account_id
+	 */
 	function Auth( $account=null, $password=null )
 	{
 		if( empty($account) or empty($password) ){
@@ -96,41 +75,50 @@ class Model_Account extends Model_Model
 		$account  = md5($account);
 		$password = md5($password);
 		
-		//	Reset.
-		/*
-		$config = $this->config()->update_failed_reset();
-		if( $this->pdo()->update($config) ){
-			$this->Debug('Reset failed count');
-		}
-		*/
-		
 		//	Check password from id.
 		$config = $this->config()->select_auth( $account, $password );
 		$record = $this->pdo()->select($config);
-		if( is_array($record) and count($record) ){
+		
+		//	login result
+		$login = empty($record) ? false: true;
+		
+		if( $login ){
 			$this->SetStatus('Match password from account.');
 		}else{
 			$this->SetStatus('Does not match password from account.');
+			
+			//	update failed count
+			$config = $this->Config()->update_failed($account, $login);
+			$num = $this->pdo()->Update($config);
+			$this->mark( $this->pdo()->qu() );
+			$this->SetStatus("update failed count. ($num)");
+			
+			return false;
+		}
+
+		//	Reset failed count.
+		$config = $this->config()->update_failed_reset($account);
+		if( $num = $this->pdo()->update($config) ){
+			$this->Debug('Reset failed count');
+			$this->SetStatus("Reset failed count.");
 			return false;
 		}
 		
 		//	Failed num
-		$failed = isset($record['failed']) ? $record['failed']: 0;
+		$fail = $record[Config_Account::COLUMN_FAIL];
 		
-		//	Permit failed limit.
-		$limit = $this->config()->limit_count();
-		
-		//	Check
-		$io = $failed < $limit ? true: false;
+		//	limited of failed count
+		$limit_count = $this->config()->limit_count();
 		
 		//	failed.
-		if(!$io){
-			$this->SetStatus("Over the failed.($failed < $limit)");
+		if( $fail > $limit_count ){
+			$this->mark("Over the failed.($fail < $limit_count)");
+			$this->SetStatus("Over the failed.");
 			return false;
 		}
 		
 		//	ID
-		$id = $record[AccountConfig::COLUMN_ID];
+		$id = $record[Config_Account::COLUMN_ID];
 		$this->SetStatus("ID is $id");
 		
 		return $id;
@@ -174,12 +162,15 @@ class Model_Account extends Model_Model
 	}
 }
 
-class AccountConfig extends ConfigModel
+class Config_Account extends Config_Model
 {
+	const TABLE_NAME   = 'account';
+	const DB_USER_NAME = 'op_mdl_account';
+	
 	private $_form_name		 = 'model_account_login';
-	private $_table_prefix	 = 'op';
-	private $_table_name	 = 'account';
-	private $_limit_time	 = 600; // ten minutes.
+//	private $_table_prefix	 = 'op';
+//	private $_table_name	 = 'account';
+	private $_limit_second	 = 600; // ten minutes.
 	private $_limit_count	 = 10; // failed.
 	
 	function SetTableName( $table_name )
@@ -192,16 +183,16 @@ class AccountConfig extends ConfigModel
 		return $this->table_name();
 	}
 	
+	/*
 	function table_name( $key=null, $value=null )
 	{
 		return $this->_table_prefix.'_'.$this->_table_name;
 	}
+	*/
 	
 	function limit_date()
 	{
-		$gmtime = time() + date('Z') + $this->_limit_time;
-		$gmdate = gmdate('Y-m-d H:i:s',$gmtime);
-		return $gmdate;
+		return $this->gmt(-$this->_limit_second);
 	}
 	
 	function limit_count()
@@ -209,19 +200,10 @@ class AccountConfig extends ConfigModel
 		return $this->_limit_count;
 	}
 	
-	/*
-	function GetDatabaseConfig()
+	function Database()
 	{
-		$config = parent::GetDatabaseConfig();
-		$config->user = 'op_model_account';
-		return $config;
-	}
-	*/
-	
-	static function Database()
-	{
-		$config = parent::Database();
-		$config->user     = 'op_model_account';
+		$args['user'] = self::DB_USER_NAME;
+		$config = parent::Database($args);
 		return $config;
 	}
 	
@@ -243,9 +225,11 @@ class AccountConfig extends ConfigModel
 		$config = $this->select();
 		$config->where->{self::COLUMN_MD5}		 = $account;
 		$config->where->{self::COLUMN_PASSWORD}	 = $password;
+		$config->cache = 1;
 		return $config;
 	}
 	
+	/*
 	function select_failed()
 	{
 		$config = $this->select();
@@ -254,6 +238,7 @@ class AccountConfig extends ConfigModel
 		
 		return $config;
 	}
+	*/
 	
 	/**
 	 * Reset login failed count.
@@ -261,15 +246,38 @@ class AccountConfig extends ConfigModel
 	 * @param  string $id
 	 * @return Config
 	 */
-	function update_failed_reset( $id )
+	function update_failed_reset( $account_md5 )
 	{
-		$config = parent::update( $this->table_name() );
-		$config->set->failed = null;
-		$config->where->{self::COLUMN_ID} = $id;
-	//	$config->where->updated = '< '.$this->limit_date();
+		$config = parent::update();
+		$config->set = null;
+		$config->set->{self::COLUMN_FAIL} = 0;
+		$config->where->{self::COLUMN_MD5} = $account_md5;
+		$config->where->{self::COLUMN_FAILED} = '< '.$this->limit_date();
 		return $config;
 	}
 	
+	/**
+	 * Increment or Reset failed count.
+	 * 
+	 * @param  string  $account_md5
+	 * @param  boolean $login login success or fail
+	 * @return Config
+	 */
+	function update_failed( $account_md5, $login )
+	{
+		$config = parent::update();
+		$config->set = null;
+		$config->where->{self::COLUMN_MD5} = $account_md5;
+		if( $login ){
+			$config->set->{self::COLUMN_FAIL}	 = 0;
+		}else{
+			$config->set->{self::COLUMN_FAIL}	 = 'INCREMENT(1)';
+			$config->set->{self::COLUMN_FAILED}	 = $this->gmt();
+		}
+		return $config;
+	}
+	
+	/*
 	function update_success( $id )
 	{
 		$config = parent::update( $this->table_name() );
@@ -283,6 +291,7 @@ class AccountConfig extends ConfigModel
 		$config->set->failed = '+1';
 		return $config;
 	}
+	*/
 	
 	function form_name( $key=null, $value=null )
 	{
@@ -322,6 +331,7 @@ class AccountConfig extends ConfigModel
 	const COLUMN_MD5		 = 'account_md5';
 	const COLUMN_ACCOUNT	 = 'account_enc';
 	const COLUMN_PASSWORD	 = 'password_md5';
+	const COLUMN_FAIL		 = 'fail';
 	const COLUMN_FAILED		 = 'failed';
 	
 	function Selftest( $table_name=null )
@@ -346,34 +356,41 @@ class AccountConfig extends ConfigModel
 		$name = self::COLUMN_MD5;
 		$config->table->$table_name->column->$name->type    = 'char';
 		$config->table->$table_name->column->$name->length  = 32;
-		$config->table->$table_name->column->$name->comment = 'MD5 hash';
 		$config->table->$table_name->column->$name->null    = null;
+		$config->table->$table_name->column->$name->comment = 'MD5 hash';
 		
 		$name = self::COLUMN_ACCOUNT;
 		$config->table->$table_name->column->$name->type    = 'text';
-		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
 		$config->table->$table_name->column->$name->null    = null;
+		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
 		
 		$name = self::COLUMN_PASSWORD;
 		$config->table->$table_name->column->$name->type    = 'char';
 		$config->table->$table_name->column->$name->length  = 32;
-		$config->table->$table_name->column->$name->comment = 'MD5 hash';
 		$config->table->$table_name->column->$name->null    = null;
+		$config->table->$table_name->column->$name->comment = 'MD5 hash';
+
+		$name = self::COLUMN_FAIL;
+		$config->table->$table_name->column->$name->type	 = 'int';
+		$config->table->$table_name->column->$name->null	 =  false;
+		$config->table->$table_name->column->$name->default	 =  0;
+		$config->table->$table_name->column->$name->comment	 = 'Count of failed';
 
 		$name = self::COLUMN_FAILED;
-		$config->table->$table_name->column->$name->type    = 'int';
+		$config->table->$table_name->column->$name->type	 = 'datetime';
+		$config->table->$table_name->column->$name->comment	 = 'Timestamp of failed';
 		
 		$name = 'created';
-		$config->table->$table_name->column->$name->type = 'datetime';
+		$config->table->$table_name->column->$name->type	 = 'datetime';
 
 		$name = 'updated';
-		$config->table->$table_name->column->$name->type = 'datetime';
+		$config->table->$table_name->column->$name->type	 = 'datetime';
 
 		$name = 'deleted';
-		$config->table->$table_name->column->$name->type = 'datetime';
+		$config->table->$table_name->column->$name->type	 = 'datetime';
 
 		$name = 'timestamp';
-		$config->table->$table_name->column->$name->type = 'timestamp';
+		$config->table->$table_name->column->$name->type	 = 'timestamp';
 		
 		return $config;
 	}
