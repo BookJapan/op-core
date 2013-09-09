@@ -535,17 +535,23 @@ class DML extends OnePiece5
 			
 			//	Case of string or integer
 			switch( is_string($var) ? strtoupper($var): $var ){
+				case '':
+					$var = $this->pdo->quote($var);
+					break;
+					
 				case 'NULL':
 				case 'NOW()':
 					break;
+					
 			//	case 'INCREMENT(1)':
 				case strncmp( $var, 'INCREMENT(', 10) === 0 ? true: false;
 				case strncmp( $var, 'DECREMENT(', 10) === 0 ? true: false;
 					if( preg_match('/^(IN|DE)CREMENT\((-?[0-9]+)\)$/i',$var,$match) ){
 						$num = $match[2];
 						$var = "$key + $num";
-					}
+					}						
 					break;
+					
 				default:
 					$var = $this->pdo->quote($var);
 			}
