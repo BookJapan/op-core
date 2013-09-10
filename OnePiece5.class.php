@@ -1307,7 +1307,7 @@ __EOL__;
 	 * The File name, Function or Method name, and the number of line which are performed are outputed.
 	 * 
 	 * @param string  $str
-	 * @param boolean $use_get_flag
+	 * @param boolean $mark_labels
 	 */
 	function Mark( $str='', $mark_labels=false )
 	{
