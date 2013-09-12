@@ -49,7 +49,7 @@ class Form5 extends OnePiece5
 		if(!$form = $this->GetConfig( $form_name )){
 			return false;
 		}
-
+		
 		//  Check input config.
 		if(!is_null($input_name) ){
 			if(!isset($form->input->$input_name) ){
@@ -600,20 +600,18 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-		//  Init config.
-//		$config = new Config();
-		$config = array();
+		//  Init
+		$return = array();
 		
 		//  Get saved value.
 		foreach( $form->input as $input_name => $input ){
 			if( $input_name == 'submit' ){
 				continue;
 			}
-//			$config->$input_name = $this->GetInputValue( $input_name, $form_name );
-			$config[$input_name] = $this->GetInputValue( $input_name, $form_name );
+			$return[$input_name] = $this->GetInputValue( $input_name, $form_name );
 		}
 		
-		return $config;
+		return $return;
 	}
 	
 	public function GetInputValueRawAll($form_name)
