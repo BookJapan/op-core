@@ -318,7 +318,8 @@ class OnePiece5
 		 * @see http://msdn.microsoft.com/en-us/library/ms533020%28VS.85%29.aspx#Use_Cache-Control_Extensions
 		 */
 		header('X-Powered-By: OnePiece/1.0',true);
-		header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
+	//	Case of not set timezone
+	//	header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
 		
 		// Error control
 		$save_level = error_reporting();
@@ -580,8 +581,19 @@ class OnePiece5
 	function PrintError()
 	{
 		// init
-		$nl = $this->GetEnv('nl');
-		$class = 'OnePiece5';
+		$nl		 = self::GetEnv('nl');
+		$cli	 = self::GetEnv('cli');
+		$mime	 = self::GetEnv('mime');
+		$class	 = 'OnePiece5';
+		
+		//	Check CLI mode
+		switch( strtolower($mime) ){
+			case 'text/css':
+				$cli = true;
+				break;
+		//	default:
+		//		$cli = false;
+		}
 		
 		if(isset($_SERVER[$class]['errors'])){
 			$errors = $_SERVER[$class]['errors'];
@@ -639,7 +651,7 @@ __EOL__;
 		}
 		
 		// Finish
-		if( self::GetEnv('Pacifista') ){
+		if( $cli /*self::GetEnv('Pacifista')*/ ){
 			print strip_tags( html_entity_decode( $print, ENT_QUOTES, $this->GetEnv('charset') ) );
 		}else if( !self::Admin() ){
 			$ua   = $this->GetEnv('UserAgent');
@@ -1822,6 +1834,9 @@ __EOL__;
 	 */
 	function Template( $file, $data=null )
 	{
+	//	print $this->GetCallerLine() . PHP_EOL;
+	//	print "$file" . PHP_EOL;
+		
 		if(!is_string($file)){
 			$this->StackError("Passed arguments is not string. (".gettype($file).")");
 			return false;
@@ -1842,7 +1857,7 @@ __EOL__;
 		if( file_exists($file) ){
 			//  absolute
 			$path = $file;
-		}else if( file_exists($path = $this->ConvertPath($file)) ){
+		}else if( file_exists($path = self::ConvertPath($file)) ){
 			//  abstract
 		}else if( $dir = $this->GetEnv('template-dir') ){
 			// the path is converted.
@@ -1851,8 +1866,6 @@ __EOL__;
 		}else{
 			$path = $file;
 		}
-		
-		//$this->mark($path);
 		
 		// 2nd check
 		if(!file_exists($path)){
@@ -1908,6 +1921,7 @@ __EOL__;
 			
 			//  create absolute path. 
 			$absolute = $tmp_root . $match[2];
+			
 		}else{
 			
 			//	replace document root.
@@ -1943,23 +1957,44 @@ __EOL__;
 	 */
 	function ConvertPath( $path )
 	{
-		if( preg_match('|^([a-zA-Z]:)?/|',$path) ){
-			//  OK
+		$orig = $path;
+		
+		if( preg_match('|^/|i',$path) ){
+			//	Root directory (Unix)
+		}else
+		if( preg_match('|^[a-z]:|i',$path) ){
+			//	Drive letter (Windows)
 		}else
 		if( preg_match('/^(op|site):\//',$path,$match) ){
 			//  Does not relate document-root.
-			$temp = $match[1].'-root';
-			if( $root = self::GetEnv($temp) ){
-				$path = str_replace($match[0], $root, $path);
+			$label = $match[1].'-root';
+			if( $root = $this->GetEnv($label) ){
+				$path = str_replace( $match[0], $root, $path );
 			}else{
-				$this->StackError("$temp is not set.");
+				$this->StackError("$label is not set.");
 			}
-		}else{
+		}else
+		if( preg_match('|^([-_a-zA-Z0-9]+):/|',$path,$match) ){
+			/*
 			$url  = self::ConvertURL($path,false);
 			if(!self::GetEnv('Pacifista')){
 				$path = $_SERVER['DOCUMENT_ROOT'] .'/'. ltrim($url,'/');
 			}
+			*/
+			
+			$label = $match[1].'-root';
+			if( $root = $this->GetEnv($label) ){
+				$path = str_replace( $match[0], $root, $path );
+			}else{
+				$this->StackError("$label is not set.");
+			}
+			
+		}else{
+			//  through
+			$this->mark($path);
 		}
+
+	//	print "<div>".__METHOD__." ($orig, $path)</div>".PHP_EOL;
 		
 		return $path;
 	}
