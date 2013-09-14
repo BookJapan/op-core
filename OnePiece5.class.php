@@ -1983,7 +1983,7 @@ __EOL__;
 			*/
 			
 			$label = $match[1].'-root';
-			if( $root = $this->GetEnv($label) ){
+			if( $root = self::GetEnv($label) ){
 				$path = str_replace( $match[0], $root, $path );
 			}else{
 				$this->StackError("$label is not set.");
@@ -1991,7 +1991,7 @@ __EOL__;
 			
 		}else{
 			//  through
-			$this->mark($path);
+		//	$this->mark($path);
 		}
 
 	//	print "<div>".__METHOD__." ($orig, $path)</div>".PHP_EOL;
