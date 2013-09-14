@@ -432,7 +432,10 @@ class Wizard extends OnePiece5
 				
 				//  Get type from config.
 				$type = $config->table->$table_name->column->$column_name->type;
-
+				if(!is_string($type)){
+					$type = 'int';
+				}
+				
 				//  Get default from config.
 				$default = isset($config->table->$table_name->column->$column_name->default)
 							 ? $config->table->$table_name->column->$column_name->default: null;
