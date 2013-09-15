@@ -152,35 +152,36 @@ class Config_Model extends OnePiece5
 	{
 		parent::Init();
 		
-		$config = $this->GetEnv('config-database');
-		foreach( $config as $key => $var ){
-			if( empty($var) ){
-				continue;
-			}
-			switch( $key ){
-				case 'host':
-					$this->_host_name = $var;
-					break;
-				case 'port':
-					$this->_port_number = $var;
-					break;
-				case 'user':
-					$this->_database_name = $var;
-					break;
-				case 'password':
-					$this->_password = $var;
-					break;
-				case 'database':
-					$this->_database_name = $var;
-					break;
-				case 'user_single':
-					$this->_user_single = $var;
-					break;
-				case 'prefix':
-					$this->_table_prefix = $var;
-					break;
-				default:
-					$this->StackError("undefined key. ($key)");
+		if( $config = $this->GetEnv('config-database') ){
+			foreach( $config as $key => $var ){
+				if( empty($var) ){
+					continue;
+				}
+				switch( $key ){
+					case 'host':
+						$this->_host_name = $var;
+						break;
+					case 'port':
+						$this->_port_number = $var;
+						break;
+					case 'user':
+						$this->_database_name = $var;
+						break;
+					case 'password':
+						$this->_password = $var;
+						break;
+					case 'database':
+						$this->_database_name = $var;
+						break;
+					case 'user_single':
+						$this->_user_single = $var;
+						break;
+					case 'prefix':
+						$this->_table_prefix = $var;
+						break;
+					default:
+						$this->StackError("undefined key. ($key)");
+				}
 			}
 		}
 	}
