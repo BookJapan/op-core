@@ -1075,7 +1075,7 @@ __EOL__;
 	 * @param string $httponly
 	 * @return boolean
 	 */
-	function SetCookie( $key, $value, $expire, $path='/', $domain='', $secure=0, $httponly=true )
+	function SetCookie( $key, $value, $expire=0, $path='/', $domain='', $secure=0, $httponly=true )
 	{
 		$key   = $this->Escape($key);
 		$value = $this->Escape($value);
@@ -1091,7 +1091,7 @@ __EOL__;
 		
 		if( is_null($value) ){
 			$expire = time() -10;
-		}else if(!$expire){
+		}else if( $expire === 0 ){
 			$expire = time() + 60*60*24*365;
 		}else if( $expire < time() ){
 			$expire += time();
