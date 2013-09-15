@@ -190,47 +190,6 @@ class Wizard extends OnePiece5
 	
 	private function _PrintForm( $config )
 	{
-	//	$this->mark( $this->getcallerline(1) );
-		/*
-		print '<div style="margin:1em; padding:0px; border: 1px solid black;">';
-		
-		if( isset($config->title) ){
-			$style['margin']  = '0px';
-			$style['padding'] = '0px';
-			$style['padding-left'] = '1em';
-			$style['border'] = '1px solid black';
-			$style['color'] = 'white';
-			$style['background-color'] = 'black';
-			$this->p( $config->title, 'h1', array('style'=>$style) );
-		}
-		
-		print '<div style="margin:0em 1em; ">';
-		
-		if( isset($config->message) ){
-			$this->p( $config->message );
-		}
-		
-		//  Get input decorate
-		$decorate = $this->config()->InputDecorate();
-		
-		//  Print form
-		$form = '';
-		$form_name = $this->config()->GetFormName();
-		$this->form()->Start($form_name);
-		foreach ( array('user','password','submit') as $input_name ){
-			$form .= sprintf(
-				$decorate,
-				$this->form()->GetLabel($input_name,$form_name),
-				$this->form()->GetInput($input_name,$form_name),
-				$this->form()->GetError($input_name,$form_name)
-			);
-		}
-		print $form;
-		$this->form()->Finish($form_name);
-		print '</div>';
-		print '</div>';
-		*/
-		
 		$css = '
 		<style>
 		#form-wizard{
@@ -316,9 +275,15 @@ class Wizard extends OnePiece5
 			);
 		}
 		
+		//	
+		$title	 = $config->title;
+		$message = $config->message;
+		if(!is_string($title)){ $title = 'miss!'; }
+		if(!is_string($message)){ $message = 'miss!'; }
+		
 		print $css;
 		$this->form()->Start($form_name);
-		printf( $html, $config->title, $config->message, $form );
+		printf( $html, $title, $message, $form );
 		$this->form()->Finish($form_name);
 	}
 	
@@ -338,11 +303,9 @@ class Wizard extends OnePiece5
 		//	result
 		$this->_result->database->$db_name = $io;
 		
-	//	if( $io === false){
 		if(!$io){
 			//	logger
 			$this->model('Log')->Set('FAILED: '.__FUNCTION__,false);
-		//	return false;
 		}
 		
 		return $io;
@@ -464,8 +427,6 @@ class Wizard extends OnePiece5
 							$join[] = trim($temp,"'");
 						}
 						$structs[$column_name]['length'] = join(',',$join);
-					//	$this->d($length);
-					//	$this->d($config->table->$table_name->column->$column_name->length);
 					}
 					$structs[$column_name]['type'] = 'enum';
 				}
@@ -488,11 +449,6 @@ class Wizard extends OnePiece5
 						
 				}else{
 					$io = true;
-				}
-				
-				//	debug
-				if(!$io){
-				//	$this->d($structs[$column_name]);
 				}
 				
 				//	If false will change this column.
@@ -609,9 +565,6 @@ class Wizard extends OnePiece5
 				$this->_result->column->d();
 				continue;
 			}
-			
-			//	debug
-		//	$this->_result->column->$table_name->d('selftest');
 			
 			//	drop primary key from table flag
 			$drop_pkey = null;
