@@ -151,7 +151,7 @@ class PDO5 extends OnePiece5
 			//  failed
 			$result = false;
 			$temp = $this->pdo->errorInfo();
-			$this->StackError("{$temp[2]} : {$this->qu}");
+			$this->StackError("{$temp[2]} : ![.gray[{$this->qu}]]");
 		}
 		
 		return $result;
