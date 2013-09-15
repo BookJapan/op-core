@@ -61,6 +61,15 @@ class Config extends stdClass
 	
 	function Merge( $config )
 	{
+		if( is_array($config) ){
+			//	OK
+		}else
+		if( $config instanceof Config ){
+			//	OK
+		}else{
+			return;
+		}
+		
 		foreach( $config as $key => $var ){
 			if( empty($this->$key) ){
 				$this->$key = $var;
