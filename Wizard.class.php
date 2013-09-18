@@ -338,6 +338,8 @@ class Wizard extends OnePiece5
 				
 				//	result
 				$this->_result->table->$table_name = false;
+
+				$this->_result->table->debug = false;
 				
 				//	fail...next!
 				$fail = true;
@@ -375,7 +377,7 @@ class Wizard extends OnePiece5
 			$io = null;
 			
 			//	This column, Does not exists in the existing table.
-			if(!isset($structs[$column_name]) ){
+			if(!isset($structs[$column_name])){
 				if( empty($config->table->$table_name->column->$column_name->rename) ){
 					//	create new column
 					$this->_result->column->$table_name->$column_name = 'create,'.$after;
@@ -530,9 +532,10 @@ class Wizard extends OnePiece5
 				$fail = true;
 			}
 			
+			$io = $io ? 'true': 'false';
 			$table_name = $table->table;
 			$this->mark("host=$host, user=$user, database=$db, table=$table_name, io=$io");
-			$this->_wizard->$host->$user->$db->table->$table_name = $io;
+			$this->_wizard->$host->$user->$db->table->$table_name = $io ? true: false;
 			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
 		
@@ -561,7 +564,7 @@ class Wizard extends OnePiece5
 			
 			//	
 			if( empty($this->_result->column->$table_name) ){
-				$this->mark("empty $table_name");
+				$this->mark("$table_name is empty?");
 				$this->_result->column->d();
 				continue;
 			}
