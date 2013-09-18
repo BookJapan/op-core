@@ -375,6 +375,9 @@ class PDO5 extends OnePiece5
 			$this->Database( $db_name, $charset );
 		}
 		
+		//	Escape
+		$table_name = ConfigSQL::Quote( $table_name, $this->driver );
+		
 		//  create query
 		$qu = "SHOW FULL COLUMNS FROM $table_name";
 		
