@@ -99,22 +99,31 @@ class Wiki2Engine extends OnePiece5
 				 $tag, $id, $class, $style, $added, $body, $tag);
 	}
 	
-	static function GetAttribute( $attribute, $options ){
-		
+	static function GetAttribute( $attribute, $options )
+	{
 		foreach(explode(' ',trim($attribute)) as $temp){
-			if(preg_match('/^([a-z][a-z0-9]*)$/i',$temp,$m)){
+			if(preg_match('/^([a-z]+)$/i',$temp,$m)){
 				$tag = $m[1];
-			}elseif(preg_match('/^\.([-_a-z0-9]+)/',$temp,$m)){
+			}else if(preg_match('/^\.([-_a-z0-9]+)/',$temp,$m)){
 				$class[] = $m[1];
-			}elseif(preg_match('/^\#([-_a-z0-9]+)/',$temp,$m)){
+			}else if(preg_match('/^\#([-_a-z0-9]+)/',$temp,$m)){
 				$id[] = $m[1];
-			}elseif(preg_match('/^0x([0-0a-f]{3,6})/i',$temp,$m)){
+			}else if(preg_match('/^0x([0-0a-f]{3,6})/i',$temp,$m)){
 				$color[] = 'color:#'.$m[1];
-			}elseif(preg_match('/^([-_a-z0-9:]+)/',$temp,$m)){
+			}else if(preg_match('/^([-_a-z0-9:]+)/',$temp,$m)){
 				$style[] = $m[1];
+			}else{
+			//	var_dump($temp);
 			}
 		}
-
+		
+		// TODO: $tagがunsetされる、、、なぜ？！
+		if(isset($tag)){
+			$save_tag = $tag;
+		//	print __LINE__;
+		//	var_dump($tag);
+		}
+		
 		//  delete deny attribute
 		//dump::d($options);
 		if($options){
@@ -135,9 +144,23 @@ class Wiki2Engine extends OnePiece5
 				$style = $color;
 			}
 		}
+
+		//	TODO: なんで、なんで、なんで？！
+		/*
+		if(isset($tag)){
+			print __LINE__;
+			var_dump($tag);
+		}else{
+			print "tag is empty<br/>";
+			if( isset($tags) ){
+				var_dump($tags);
+			}
+		}
+		*/
 		
 		$attr['id']     = isset($id)    ? $id: '';
-		$attr['tag']    = isset($tag)   ? $tag: 'span';
+	//	$attr['tag']    = isset($tag)   ? $tag: 'span'; // TODO: なんでなくなる？！
+		$attr['tag']    = isset($save_tag )   ? $save_tag : 'span';
 		$attr['class']  = isset($class) ? implode(' ',  $class): '';
 		$attr['style']  = isset($style) ? implode('; ', $style): '';
 		
