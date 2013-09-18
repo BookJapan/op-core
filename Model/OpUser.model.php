@@ -16,17 +16,19 @@ class Model_OpUser extends Model_Model
 	//	$this->InitOpUserAgent();
 	}
 	
-	function Config($name='ConfigOpUser')
+	function Config($name='Config_OpUser')
 	{
 		return parent::Config($name);
 	}
 	
+	/*
 	function Selftest()
 	{
 		$config = ConfigOpUser::Selftest();
 		$wz = new Wizard();
 		$wz->selftest($config);
 	}
+	*/
 	
 	function InitOpUser()
 	{
@@ -84,7 +86,7 @@ class Model_OpUser extends Model_Model
 	function InitOpUserAgent()
 	{
 		//  Save to user agent.
-		$insert = $this->config()->insert_user_agent( self::TABLE_OP_USER_AGENT );
+		$insert = $this->config()->insert_user_agent( Config_OpUser::TABLE_OP_USER_AGENT );
 		$op_ua_id = $this->pdo()->insert($insert);
 		
 		//  If error occourd.
@@ -139,16 +141,16 @@ class Model_OpUser extends Model_Model
 	}
 }
 
-class ConfigOpUser extends ConfigModel
+class Config_OpUser extends Config_Model
 {
-	const TABLE_OP_USER			 = 'op_user';
-	const TABLE_OP_USER_INFO	 = 'op_user_info';
-	const TABLE_OP_USER_AGENT	 = 'op_user_agent';
+	const TABLE_OP_USER			 = 'op-user';
+	const TABLE_OP_USER_INFO	 = 'op-user_info';
+	const TABLE_OP_USER_AGENT	 = 'op-user_agent';
 	
-	static function database()
+	function database()
 	{
-		$config = parent::database();
-		$config->user     = 'op_model_opuser';
+		$args['user'] = 'op_mdl_opuser';
+		$config = parent::database($args);
 		return $config;
 	}
 	
@@ -170,7 +172,7 @@ class ConfigOpUser extends ConfigModel
 	function insert_user_info()
 	{
 		$config = parent::insert( self::TABLE_OP_USER_INFO );
-		$insert->set->user_id = $this->GetSession( OnePiece5::KEY_SESSION_USER_ID );
+		$insert->set->user_id = $this->GetSession( OnePiece5::KEY_COOKIE_UNIQ_ID /*KEY_SESSION_USER_ID*/ );
 		return $config;
 	}
 	
@@ -181,7 +183,7 @@ class ConfigOpUser extends ConfigModel
 		$md5 = md5($ua);
 		
 		//  Config
-		$config = parent::insert( self::TABLE_OP_USER_AGENT );
+		$config = parent::insert( Config_OpUser::TABLE_OP_USER_AGENT );
 		$config->set->user_agent     = $ua;
 	//	$config->set->user_agent_md5 = $md5;
 		return $config;
@@ -196,16 +198,16 @@ class ConfigOpUser extends ConfigModel
 		return $config;
 	}
 	
-	static function Selftest()
+	function Selftest()
 	{
 		//  Get config
 		$config = new Config();
-		$config->database = self::database();
+		$config->database = $this->database();
 		
-		//  Tables (op_user)
-		$table_name = 'op_user';
+		//  Tables (op-user)
+		$table_name = self::TABLE_OP_USER;
 		$config->table->{$table_name}->table   = $table_name;
-		$config->table->{$table_name}->comment = 'This is wizard test.';
+		$config->table->{$table_name}->comment = '';
 			
 			//  Columns
 			$column_name = 'user_id';
@@ -215,14 +217,24 @@ class ConfigOpUser extends ConfigModel
 			$column_name = 'op_uniq_id';
 			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
 			$config->table->{$table_name}->column->{$column_name}->type = 'text';
+
+			$name = 'created';
+			$config->table->$table_name->column->$name->type = 'datetime';
 			
-			//  created, updated, deleted
-			$config->table->{$table_name}->column->merge(parent::Column());
+			$name = 'updated';
+			$config->table->$table_name->column->$name->type = 'datetime';
 			
-		//  Tables (op_user_info)
-		$table_name = 'op_user_info';
+			$name = 'deleted';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'timestamp';
+			$config->table->$table_name->column->$name->type = 'timestamp';
+			
+			
+		//  Tables (op-user_info)
+		$table_name = self::TABLE_OP_USER_INFO;
 		$config->table->{$table_name}->table   = $table_name;
-		$config->table->{$table_name}->comment = 'This is wizard test.';
+		$config->table->{$table_name}->comment = '';
 			
 			//  Primary ID
 			$column_name = 'user_id';
@@ -238,15 +250,23 @@ class ConfigOpUser extends ConfigModel
 			$column_name = 'message';
 			$config->table->{$table_name}->column->{$column_name}->name = $column_name;
 			$config->table->{$table_name}->column->{$column_name}->type = 'text';
-			
-			//  created, updated, deleted
-			$config->table->{$table_name}->column->merge(parent::Column());
-			
 
-		//  Tables (op_user_agent)
-		$table_name = 'op_user_agent';
+			$name = 'created';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'updated';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'deleted';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'timestamp';
+			$config->table->$table_name->column->$name->type = 'timestamp';
+			
+		//  Tables (op-user_agent)
+		$table_name = self::TABLE_OP_USER_AGENT;
 		$config->table->{$table_name}->table   = $table_name;
-		$config->table->{$table_name}->comment = 'This is wizard test.';
+		$config->table->{$table_name}->comment = '';
 			
 			//  Columns
 			$column_name = 'ua_id';
@@ -261,9 +281,18 @@ class ConfigOpUser extends ConfigModel
 			$column_name = 'user_agent';
 			$config->table->{$table_name}->column->{$column_name}->name   = $column_name;
 			$config->table->{$table_name}->column->{$column_name}->type   = 'text';
+
+			$name = 'created';
+			$config->table->$table_name->column->$name->type = 'datetime';
 			
-			//  created, updated, deleted
-			$config->table->{$table_name}->column->merge(parent::Column());
+			$name = 'updated';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'deleted';
+			$config->table->$table_name->column->$name->type = 'datetime';
+			
+			$name = 'timestamp';
+			$config->table->$table_name->column->$name->type = 'timestamp';
 			
 		return $config;
 	}
