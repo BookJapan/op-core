@@ -470,6 +470,50 @@ class Wizard extends OnePiece5
 		return isset($return) ? $return: true;
 	}
 	
+	private function _CheckPrivilege( Config $config )
+	{
+		if(empty($config->privilege)){
+			return true;
+		}
+		
+		//	Only mysql.(yet)
+		$host	 = $config->database->host;
+		$user	 = $config->database->user;
+		$db		 = 'mysql';
+		$table	 = 'user';
+		
+		$select = new Config();
+		$select->database	 = $db;
+		$select->table		 = $table; 
+		$select->where->Host = 'localhost'; // TODO
+		$select->where->User = $user;
+		$select->limit		 = 1;
+		$record = $this->pdo()->select($select);
+		$this->mark( $this->pdo()->qu() );
+		$this->d($record);
+		
+		if( is_string($config->privilege) ){
+			foreach( explode(',',$config->privilege) as $label ){
+				$privilege[$label] = 'Y';
+			}
+		}else{
+			foreach( $config->privilege as $label => $value ){
+				$privilege[$label] = $value ? 'Y': 'N';
+			}
+		}
+		
+		foreach( $privilege as $priv ){
+			$key = ucfirst($priv).'_priv';
+			$var = $record[$key];
+			if( $var == 'N' ){
+				$this->mark("privilege: $key");
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	private function _CreateDatabase( Config $config)
 	{
 		//	Init
@@ -529,6 +573,12 @@ class Wizard extends OnePiece5
 			
 			//	Execute
 			if(!$io = $this->pdo()->CreateTable($table) ){
+				$fail = true;
+			}
+			
+			//	Check privilege.(necessary root account)
+			$table->database = $config->database;
+			if(!$io = $this->_CheckPrivilege($table)){
 				$fail = true;
 			}
 			
