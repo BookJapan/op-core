@@ -43,7 +43,7 @@ Welcome to OnePiece-Framework!!
 	
 		* Present layout system.
 		
-		* Present SmartURI system. 
+		* Present SmartURI system. (Dispatched to end-point-controller By NewWorld)
 	
 	3. Form
 	
@@ -54,5 +54,14 @@ Welcome to OnePiece-Framework!!
 	4. PDO
 		
 		* Present database access.
+	
+	5. Wiki2 
+	
+		* Wiki2 is very best format.
+	
+	6. Wizard
+		
+		* Database scheme is selftest. (auto recovery)
+	
 	
 	
