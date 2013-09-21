@@ -402,72 +402,99 @@ class DML extends OnePiece5
 	
 	protected function ConvertTableJoin( $conf )
 	{
-		//  current table join is only two table yet.
-		
-		//  replase space
-		$table = str_replace(' ', '', $conf['table']);
-		
-		//  parse
-		if(!preg_match('/^([-_a-z0-9\.]+) ?([><=]{1,3}) ?([-_a-z0-9\.]+)$/i',trim($table),$match) ){
-			$this->StackError("Illigal define.({$conf['table']})");
-			return false;
-		}
-		
-		//  table join flag
-		$this->is_table_join = true;
-		
-		$left  = $match[1];
-		$ope   = $match[2];
-		$right = $match[3];
-		
-		switch( $ope ){
-			case '=':
-				$join = 'JOIN';
-				break;
-			case '<=':
-				$join = 'LEFT JOIN';
-				break;
-			case '=>':
-				$join = 'RIGHT JOIN';
-				break;
-			case '>=<':
-				$join = 'INNER JOIN';
-				break;
-			default:
-				$join = $ope;
-		}
-		
-		if( strpos($left,'.') ){
-			list( $left_table, $left_column) = explode('.',$left);
-		}else{
-			$left_table  = $left;
-			$left_column = '';
-		}
-		
-		if( strpos($right,'.') ){
-			list( $right_table, $right_column) = explode('.',$right);
-		}else{
-			$right_table  = $right;
-			$right_column = '';
-		}
-		
-		//  fat mode
-		if( !empty($conf['fat']) ){
-			
-		}
-		
 		//  quoter
 		$ql = $this->ql;
 		$qr = $this->qr;
 		
-		//  quote
-		$left_table   = $ql.$left_table.$qr;
-		$right_table  = $ql.$right_table.$qr;
-		$left_column  = $ql.$left_column.$qr;
-		$right_column = $ql.$right_column.$qr;
+		//  table join flag
+		$this->is_table_join = true;
 		
-		//  on
-		$on = " ON $left_table.$left_column = $right_table.$right_column";
+		//  replase space
+		$table = str_replace(' ', '', $conf['table']);
+		
+		//	explode each table
+		$tables = explode( '=', $table);
+		
+		//	init
+		$join		 = null;
+		$join_flag	 = null;
+		$table_join  = null;
+		$table_left  = null;
+		$table_right = null;
+		
+		//	loop (multi table)
+		foreach( $tables as $table ){
+			
+			//	trim (space)
+			$table = trim($table);
+			
+			//	join
+			if( $table{strlen($table)-1} == '<' ){
+				$join = 'LEFT JOIN';
+			}else
+			if( $table{0} == '>' ){
+				$join = 'RIGHT JOIN';
+			}else
+			{
+				if(!$join){
+					$join = 'JOIN';
+				}
+			}
+			
+			//	trim
+			$table = trim($table,'<>');
+			
+			//	check join column
+			if( strpos( $table, '.') ){
+				//	separate column
+				list($table,$column) = explode('.',$table);
+			}else{
+				$column = null;
+			}
+			
+			//	escape
+			$table = $ql.$table.$qr;
+			if( $column ){
+				$column = $ql.$column.$qr;
+			}
+			
+			//	save left side table
+			if( empty($table_left) ){
+				$table_left = $table;
+				if( $column ){
+					$column_left = $column;
+				}
+			}else{
+				$table_right = $table;
+				if( $column ){
+					$column_right = $column;
+				} 
+			}
+			
+			//	Does not support using yet
+			$using = null;
+			$condition = null;
+			
+			if( $table_left and $table_right ){
+				//	create condition
+				$condition = "ON $table_left.$column_left = $table_right.$column_right";
+				
+				//	create table join 
+				if( $join_flag === true ){
+					$table_left = null;
+				}
+				$table_join .= "$table_left $join $table_right $condition";
+				
+			//	$join			 = null;
+				$join_flag		 = true;
+				$table_left		 = $table_right;
+				$table_right	 = null;
+				$column_left	 = $column_right;
+				$column_right	 = null;
+			}
+		}
+		
+		return $table_join;
 		
 		//  using
 		if( isset($conf['using']) ){
@@ -476,11 +503,6 @@ class DML extends OnePiece5
 		}else{
 			$using = null;
 		}
-		
-		//  join
-		$joind_table = "$left_table $join $right_table $on $using";
-		
-		return $joind_table;
 	}
 	
 	protected function ConvertUsing( $conf )
