@@ -797,7 +797,7 @@ class PDO5 extends OnePiece5
 		return $count;
 	}
 	
-	function Select( $config )
+	function Select( $args )
 	{
 		if(!$this->isConnect){
 			$this->StackError("Not connected. (isConnect is false)");
@@ -811,21 +811,28 @@ class PDO5 extends OnePiece5
 		}
 		
 		//	empty config
-		if( empty($config) ){
+		if( empty($args) ){
 			$this->StackError("Does not set config. (empty)");
 			return false;
 		}
-		
+
 		//  object to array
-		if(!is_array($config)){
-			$config = Toolbox::toArray($config);
+		if(!is_array($args)){
+			$config = Toolbox::toArray($args);
+		}else{
+			$config = $args;
 		}
 		
 		//  Check cache setting.
 		if(!empty($config['cache'])){
-			
-			//	Create cache key
-			$key = md5(serialize($config));
+
+			//	Get cache key
+			if( isset($config['cache_key']) ){
+				$key = $config['cache_key'];
+			}else{
+			//	$key = md5(serialize($config));
+				$key = ConfigSQL::CacheKey($args);
+			}
 			
 			//	If find cache
 			if( $records = $this->Cache()->Get($key) ){
@@ -859,8 +866,8 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Check cache setting. If record is empty case does not cache.
-		if( isset($config['cache']) and !empty($records) ){
-			$key = md5(serialize($config));
+		if( /*isset($config['cache'])*/ isset($key) and !empty($records) ){
+		//	$key = md5(serialize($config));
 			$io = $this->Cache()->Set( $key, $records, (int)$config['cache'] );
 		}
 		
@@ -1012,5 +1019,10 @@ class ConfigSQL extends OnePiece5
 		*/
 		
 		return $safe;
+	}
+	
+	static function CacheKey( $args )
+	{
+		return md5(serialize(toolbox::toarray($args)));
 	}	
 }
