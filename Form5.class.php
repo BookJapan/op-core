@@ -1504,9 +1504,9 @@ class Form5 extends OnePiece5
 		return $this->Erase($form_name, $force, $location);
 	}
 	
-	public function Clear( $form_name, $force=false, $location=false )
+	public function Clear( $form_name, $force=false, $auto_relocate=false )
 	{
-		return $this->Erase($form_name, $force, $location);
+		return $this->Erase($form_name, $force, $auto_relocate);
 	}
 	
 	public function Flash( $form_name, $force=false, $location=false )
