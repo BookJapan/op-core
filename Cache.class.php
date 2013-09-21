@@ -138,7 +138,10 @@ class Cache extends OnePiece5
 		
 		//	key
 		if(!is_string($key)){
-			$key = serialize($key);
+		//	$key = serialize($key);
+			$type = gettype($key);
+			$this->StackError("key is not string. (type=)");
+			return false;
 		}
 		
 		//  TODO: compress option
@@ -157,6 +160,14 @@ class Cache extends OnePiece5
 			return null;
 		}
 		
+		//	key
+		if(!is_string($key)){
+			//	$key = serialize($key);
+			$type = gettype($key);
+			$this->StackError("key is not string. (type=)");
+			return false;
+		}
+		
 		//	TODO: compress option
 		$value = $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
 		
@@ -173,6 +184,14 @@ class Cache extends OnePiece5
 			return null;
 		}
 		
+		//	key
+		if(!is_string($key)){
+			//	$key = serialize($key);
+			$type = gettype($key);
+			$this->StackError("key is not string. (type=)");
+			return false;
+		}
+		
 		//	Not incremented, if does not exists value.
 		return $this->_cache->increment( $key, $value );
 	}
@@ -185,6 +204,14 @@ class Cache extends OnePiece5
 		}else if(!$this->_isConnect){
 			$skip = true;
 			return null;
+		}
+		
+		//	key
+		if(!is_string($key)){
+			//	$key = serialize($key);
+			$type = gettype($key);
+			$this->StackError("key is not string. (type=)");
+			return false;
 		}
 		
 		//	Not decremented, if does not exists value.
@@ -201,6 +228,14 @@ class Cache extends OnePiece5
 			return null;
 		}
 		
+		//	key
+		if(!is_string($key)){
+			//	$key = serialize($key);
+			$type = gettype($key);
+			$this->StackError("key is not string. (type=)");
+			return false;
+		}
+				
 		return $this->_cache->delete( $key );
 	}
 	
