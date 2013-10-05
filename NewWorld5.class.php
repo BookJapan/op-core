@@ -387,7 +387,7 @@ abstract class NewWorld5 extends OnePiece5
 			if( $_file_does_not_exists_ = $this->GetSession('file_does_not_exists') ){
 				if( $this->admin() ){
 					$this->p("![.red .bold[This file is not exists.]]",'div');
-					dump::d($_file_does_not_exists_);
+					Dump::d($_file_does_not_exists_);
 				}
 			}
 			$this->SetSession('file_does_not_exists',null);
