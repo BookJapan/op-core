@@ -644,11 +644,15 @@ abstract class NewWorld5 extends OnePiece5
 		$url = $this->ConvertUrl($url,false);
 		
 		//	Check infinity loop.
-		$temp = explode('?',$_SERVER['REQUEST_URI']);
-		if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
-			$this->mark( __METHOD__ . ", Infinite loop");
-			if( $this->_log ){ $this->_log[] = __METHOD__.", Infinite loop."; }
-			return false;
+		if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
+			//	Does not for infinity.
+		}else{
+			$temp = explode('?',$_SERVER['REQUEST_URI']);
+			if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
+				$this->mark("Location is Infinite loop. ($url)");
+				if( $this->_log ){ $this->_log[] = __METHOD__.", Infinite loop."; }
+				return false;
+			}
 		}
 		
 		/*
