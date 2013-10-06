@@ -1809,8 +1809,10 @@ __EOL__;
 			}
 			
 			if( isset($e) ){
-				if( $e->isSelftest() ){
-					$this->StackError($e);
+				if( method_exists($e,"isSelftest") ){
+					if( $e->isSelftest() ){
+						$this->StackError($e);
+					}
 				}else{
 					$this->StackError($e);
 				}
