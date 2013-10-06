@@ -1,13 +1,13 @@
 <?php
 /**
- * What is this?
+ * Helper model
  * 
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  *
  */
 class Model_Helper extends Model_Model
 {
-	//  TODO: What is this?
+	//	Use credit card form
 	function GetFormOptionsDateYear($config=null)
 	{
 		$num   = isset($config->num)   ? $config->num:   20;
@@ -19,13 +19,13 @@ class Model_Helper extends Model_Model
 		
 		for( $i=0; $i<$num; $i++ ){
 			$y = $start + $i;
-			$options->$i->value = $y ? $y : '';
+			$options->$y->value = $y ? $y : '';
 		}
 		
 		return $options;
 	}
-
-	//  TODO: What is this?
+	
+	//	Use credit card form
 	function GetFormOptionsDateMonth($config=null)
 	{
 		if( isset($config->padding) ){
@@ -37,10 +37,11 @@ class Model_Helper extends Model_Model
 		$options = new Config();
 		
 		for( $i=0; $i<=12; $i++ ){
-			if( $padding and $i ){
-				$i = sprintf('%02d',$i);
+			if( $padding ){
+				$m = sprintf('%02d',$i);
 			}
-			$options->$i->value = $i ? $i : '';
+			
+			$options->$m->value = $m > 0 ? $m : '';
 		}
 		
 		return $options;
