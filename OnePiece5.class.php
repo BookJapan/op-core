@@ -556,9 +556,9 @@ class OnePiece5
 			$file = $traceArr[0]['file'];
 			$line = $traceArr[0]['line'];
 			$func = $traceArr[0]['function'];
-			$class= $traceArr[0]['class'];
-			$type = $traceArr[0]['type'];
-			$args = var_export( $traceArr[0]['args'], true);
+			$class= isset($traceArr[0]['class']) ? $traceArr[0]['class'] : null;
+			$type = isset($traceArr[0]['type'])  ? $traceArr[0]['type']  : null;
+			$args = isset($traceArr[0]['type'])  ? var_export( $traceArr[0]['args'], true) : null;
 			
 			$file = self::CompressPath($file);
 			$trace = "$file [$line] {$class}{$type}{$func}($args)";
@@ -2057,14 +2057,14 @@ __EOL__;
 			//  include check 
 			if(!$io){
 				$msg = "Failed to include the $name. ($path)";
-				throw new OpModelException($msg);
+				throw new OpException($msg);
 			}
 			
 			//  instance of model
 			$model_name = 'Model_'.$name;//.'_model';
 			if(!$_SERVER[__CLASS__]['model'][$name] = new $model_name ){
 				$msg = "Failed to include the $model_name. ($path)";
-				throw new OpModelException($msg);
+				throw new OpException($msg);
 			}
 			
 			//  Instance is success.
