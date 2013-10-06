@@ -416,11 +416,13 @@ class DML extends OnePiece5
 		$tables = explode( '=', $table);
 		
 		//	init
-		$join		 = null;
-		$join_flag	 = null;
-		$table_join  = null;
-		$table_left  = null;
-		$table_right = null;
+		$join		  = null;
+		$join_flag	  = null;
+		$table_join   = null;
+		$table_left   = null;
+		$table_right  = null;
+		$column_left  = isset($conf['using']) ? $conf['using']: null;
+		$column_right = isset($conf['using']) ? $conf['using']: null;
 		
 		//	loop (multi table)
 		foreach( $tables as $table ){
@@ -476,6 +478,7 @@ class DML extends OnePiece5
 			$condition = null;
 			
 			if( $table_left and $table_right ){
+				
 				//	create condition
 				$condition = "ON $table_left.$column_left = $table_right.$column_right";
 				
