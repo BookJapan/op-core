@@ -629,9 +629,12 @@ class DML extends OnePiece5
 			
 			$temp = array();
 			foreach( $cols as $key => $var ){
+				
 				if( $key == '*' ){
 					//	ex: $config->column->{'*'} = true;
-					array_unshift($temp, $key);
+					if( $var ){
+						array_unshift($temp, $key);
+					}
 				}else if( is_bool($var) and $var ){
 					//	ex: $config->column->column_name = true;
 					$temp[] = ConfigSQL::Quote( $key, $this->driver );
