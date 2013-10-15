@@ -1301,7 +1301,7 @@ class Form5 extends OnePiece5
 			//	Check value. (Why necessary is this?)
 			if(!isset($input->options) and (!isset($input->value) or !strlen($input->value)) ){
 				$this->mark("![.red[Empty $type value. ($form_name, $input_name)]]");
-				$this->StackError("Empty $type value. ($form_name, $input_name)");
+				$this->StackError("Empty options of $type. ($form_name, $input_name)");
 			}
 			
 			//	Options
