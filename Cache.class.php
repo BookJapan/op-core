@@ -140,7 +140,7 @@ class Cache extends OnePiece5
 		if(!is_string($key)){
 		//	$key = serialize($key);
 			$type = gettype($key);
-			$this->StackError("key is not string. (type=)");
+			$this->StackError("key is not string. (type=$type)");
 			return false;
 		}
 		
