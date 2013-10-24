@@ -525,6 +525,11 @@ class OnePiece5
 			$io = false;
 		}
 		
+		//	developer
+		if(!$io){
+			$io = $this->_isDeveloper();
+		}
+		
 		return $io;
 	}
 	
@@ -1999,6 +2004,18 @@ __EOL__;
 	//	print "<div>".__METHOD__." ($orig, $path)</div>".PHP_EOL;
 		
 		return $path;
+	}
+	
+	private $_developer = null;
+	
+	function _setDeveloper( $name, $ip )
+	{
+		$this->_developer[$name] = $ip;
+	}
+	
+	function _isDeveloper()
+	{
+		return in_array( $_SERVER['REMOTE_ADDR'], $this->_developer);
 	}
 	
 	/**
