@@ -1975,7 +1975,7 @@ __EOL__;
 		if( preg_match('/^(op|site):\//',$path,$match) ){
 			//  Does not relate document-root.
 			$label = $match[1].'-root';
-			if( $root = $this->GetEnv($label) ){
+			if( $root = OnePiece5::GetEnv($label) ){
 				$path = str_replace( $match[0], $root, $path );
 			}else{
 				$this->StackError("$label is not set.");
