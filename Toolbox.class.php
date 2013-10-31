@@ -448,10 +448,10 @@ class Toolbox
 		return $scheme.$domain.$path.$query;
 	}
 	
-	static function GetDomain()
+	static function GetDomain( $conf=array() )
 	{
-		$conf['scheme'] = false;
-		$conf['path']   = false;
+		$conf['scheme'] = isset($conf['scheme']) ? $conf['scheme']: false;
+		$conf['path']   = isset($conf['path'])   ? $conf['path']  : false;
 		return self::GetURL($conf);
 	}
 	

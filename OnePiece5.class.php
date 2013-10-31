@@ -1949,7 +1949,7 @@ __EOL__;
 		//	Added domain
 		if( $domain ){
 			if( is_bool($domain) ){
-				$domain = self::GetURL( true, false, false);
+				$domain = Toolbox::GetDomain(array('scheme'=>true));
 			}
 		}
 		
