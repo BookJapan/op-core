@@ -2589,7 +2589,7 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-		// check exists host
+		//	Does not check by localhost
 		if( $_SERVER['REMOTE_ADDR'] == '127.0.0.1' or 
 			$_SERVER['REMOTE_ADDR'] == '::1' ){
 			$this->mark("![.gray[Skipped remote IP address check. ({$_SERVER['REMOTE_ADDR']})]]");
@@ -2597,6 +2597,7 @@ class Form5 extends OnePiece5
 			return true;
 		}
 		
+		// check exists host
 		list( $addr, $host ) = explode('@',$value);
 		if(!checkdnsrr($host,'MX')){
 			$this->SetInputError( $input->name, $form_name, 'permit-host', '@'.$host );
