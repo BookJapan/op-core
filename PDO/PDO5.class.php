@@ -483,9 +483,10 @@ class PDO5 extends OnePiece5
 		$value = trim($value,"'");
 	
 		//  create limit, offset, order
-		$limit  = isset($config->limit)  ? $config->limit:  1;
-		$offset = isset($config->offset) ? $config->offset: null;
-		$order  = isset($config->order)  ? $config->order:  null;
+		$limit	 = isset($config->limit)  ? $config->limit:  1;
+		$offset	 = isset($config->offset) ? $config->offset: null;
+		$order	 = isset($config->order)  ? $config->order:  null;
+		$cache	 = isset($config->cache)  ? $config->cache:  1;
 		
 		//  Create config
 		$config = new Config();
@@ -498,7 +499,7 @@ class PDO5 extends OnePiece5
 		$config->offset   = $offset;
 		$config->order    = $order;
 		$config->where->$target = $ope.$value;
-		$config->cache    = 1;
+		$config->cache    = $cache;
 	//	$config->d();
 	
 		//  Fetch record
