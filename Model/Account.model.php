@@ -76,32 +76,40 @@ class Model_Account extends Model_Model
 		$password = md5($password);
 		
 		//	Check password from id.
-		$config = $this->config()->select_auth( $account, $password );
-		$record = $this->pdo()->select($config);
+		$select = $this->config()->select_auth( $account, $password );
+		$record = $this->pdo()->select($select);
 		
 		//	login result
 		$login = empty($record) ? false: true;
 		
 		if( $login ){
-			$this->SetStatus('Match password from account.');
+			$this->SetStatus('account and password is matched.');
 		}else{
-			$this->SetStatus('Does not match password from account.');
+			$this->SetStatus('account and password is not matched.');
 			
 			//	update failed count
 			$config = $this->Config()->update_failed($account, $login);
 			$num = $this->pdo()->Update($config);
-			$this->mark( $this->pdo()->qu() );
-			$this->SetStatus("update failed count. ($num)");
-			
 			return false;
 		}
-
+		
 		//	Reset failed count.
 		$config = $this->config()->update_failed_reset($account);
 		if( $num = $this->pdo()->update($config) ){
-			$this->Debug('Reset failed count');
+			//	set status information
+		//	$this->mark('Reset failed count','debug');
 			$this->SetStatus("Reset failed count.");
-			return false;
+			
+			//	re select
+			$select = $this->config()->select_auth( $account, $password );
+			$record = $this->pdo()->select($select);
+			$this->mark( $this->pdo()->qu() );
+		}else{
+			/*
+			$this->mark("num: $num");
+			$this->mark( $this->pdo()->qu() );
+			$config->d();
+			*/
 		}
 		
 		//	Failed num
@@ -112,7 +120,8 @@ class Model_Account extends Model_Model
 		
 		//	failed.
 		if( $fail > $limit_count ){
-			$this->mark("Over the failed.($fail < $limit_count)");
+		//	$this->d($record);
+			$this->mark("Over the failed.($fail > $limit_count)",'debug');
 			$this->SetStatus("Over the failed.");
 			return false;
 		}
@@ -123,19 +132,6 @@ class Model_Account extends Model_Model
 		
 		return $id;
 	}
-	
-	/*
-	function Selftest()
-	{
-		if( method_exists($this->Config(), 'Selftest') ){
-			$wz = new Wizard();
-			$io = $wz->Selftest( $this->Config()->Selftest() );
-		}else{
-			$io = null;
-		}
-		return $io;
-	}
-	*/
 	
 	function Debug( $log=null )
 	{
@@ -171,7 +167,7 @@ class Config_Account extends Config_Model
 //	private $_table_prefix	 = 'op';
 //	private $_table_name	 = 'account';
 	private $_limit_second	 = 600; // ten minutes.
-	private $_limit_count	 = 10; // failed.
+	private $_limit_count	 = 5; // failed.
 	
 	function SetTableName( $table_name )
 	{
@@ -225,7 +221,7 @@ class Config_Account extends Config_Model
 		$config = $this->select();
 		$config->where->{self::COLUMN_MD5}		 = $account;
 		$config->where->{self::COLUMN_PASSWORD}	 = $password;
-		$config->cache = 1;
+		$config->cache = null;
 		return $config;
 	}
 	
@@ -249,7 +245,7 @@ class Config_Account extends Config_Model
 	function update_failed_reset( $account_md5 )
 	{
 		$config = parent::update();
-		$config->set = null;
+	//	$config->set = null;
 		$config->set->{self::COLUMN_FAIL} = 0;
 		$config->where->{self::COLUMN_MD5} = $account_md5;
 		$config->where->{self::COLUMN_FAILED} = '< '.$this->limit_date();
@@ -310,13 +306,15 @@ class Config_Account extends Config_Model
 		$config->input->$name->type   = 'text';
 		$config->input->$name->class  = 'op-input op-input-text mdl-account-account';
 		$config->input->$name->cookie = true;
-		$config->input->$name->validate->required = true;
+		$config->input->$name->validate->required	 = true;
+		$config->input->$name->error->required		 = 'account is empty.';
 		
 		//	Password
 		$name = 'password';
 		$config->input->$name->type   = 'password';
 		$config->input->$name->class  = 'op-input op-input-text op-input-password mdl-account-password';
-		$config->input->$name->validate->required = true;
+		$config->input->$name->validate->required	 = true;
+		$config->input->$name->error->required		 = 'password is empty.';
 		
 		//	Submit
 		$name = 'submit';
