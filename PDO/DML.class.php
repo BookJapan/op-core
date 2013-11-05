@@ -568,6 +568,14 @@ class DML extends OnePiece5
 				case 'NOW()':
 					break;
 					
+				case '++':
+					$var = "$key + 1";
+					break;
+
+				case '--':
+					$var = "$key - 1";
+					break;
+						
 			//	case 'INCREMENT(1)':
 				case strncmp( $var, 'INCREMENT(', 10) === 0 ? true: false;
 				case strncmp( $var, 'DECREMENT(', 10) === 0 ? true: false;
