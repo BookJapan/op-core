@@ -97,7 +97,7 @@ class Config extends stdClass
 				
 		// displayed is Admin-ip and flag.
 		if( $mark_label ){
-			if(!Toolbox::GetSaveMarkLabelValue($mark_label)){
+			if(!Developer::GetSaveMarkLabelValue($mark_label)){
 				return;
 			}
 		}

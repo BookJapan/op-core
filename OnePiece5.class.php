@@ -185,8 +185,8 @@ if(!function_exists('OnePieceShutdown')){
 				
 			case 'html':
 			default:
-				Toolbox::PrintStyleSheet();
-				Toolbox::PrintGetFlagList();
+				Developer::PrintStyleSheet();
+				Developer::PrintGetFlagList();
 				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
 				break;
 		}
@@ -570,7 +570,7 @@ class OnePiece5
 			
 			$file     = self::CompressPath($file);
 			$catch    = self::GetCallerLine();
-			$incident = "$file [$line] Catch: $catch";
+			$incident = "$file [$line]";
 			
 			$file = $traceArr[0]['file'];
 			$line = $traceArr[0]['line'];
@@ -578,6 +578,7 @@ class OnePiece5
 			$class= isset($traceArr[0]['class']) ? $traceArr[0]['class'] : null;
 			$type = isset($traceArr[0]['type'])  ? $traceArr[0]['type']  : null;
 			$args = isset($traceArr[0]['type'])  ? var_export( $traceArr[0]['args'], true) : null;
+			$args = str_replace(array("\r","\n",'array ()'), array('','',''), $args);
 			
 			$file = self::CompressPath($file);
 			$trace = "$file [$line] {$class}{$type}{$func}($args)";
@@ -1348,16 +1349,16 @@ __EOL__;
 		// displayed is Admin-ip and flag.
 		if( $mark_labels ){
 			foreach( explode(',',$mark_labels) as $mark_label ){
-				Toolbox::SetMarkLabel( $mark_label );
+				Developer::SetMarkLabel( $mark_label );
 			}
-			if(!Toolbox::GetSaveMarkLabelValue($mark_label) ){
+			if(!Developer::GetSaveMarkLabelValue($mark_label) ){
 				return;
 			}
 		}
 		
 		// php momory usage 
 		$memory_usage = memory_get_usage(true) /1000;
-		@list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
+		list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
 		$memory = sprintf('![ .gray [(%s.![.smaller[%s]] KB)]]', number_format($mem_int), $mem_dec );
 		
 		//  call line
@@ -1372,6 +1373,7 @@ __EOL__;
 		}else
 		if( $str and !is_string($str) ){
 			$str = var_export($str,true);
+			$str = str_replace( array("\r","\n"), array('',''), $str);
 		}
 		
 		$nl = self::GetEnv('nl');
@@ -1890,7 +1892,7 @@ __EOL__;
 		
 		// 2nd check
 		if(!file_exists($path)){
-			$this->StackError("The template file does not exist.($file, $path)");
+			$this->StackError("The template file does not exist.(file=$file, path=$path)");
 			return false;	
 		}
 		
@@ -1976,7 +1978,7 @@ __EOL__;
 	 * @param  string $path
 	 * @return string
 	 */
-	function ConvertPath( $path )
+	static function ConvertPath( $path )
 	{
 		$orig = $path;
 		
@@ -1996,27 +1998,14 @@ __EOL__;
 			}
 		}else
 		if( preg_match('|^([-_a-zA-Z0-9]+):/|',$path,$match) ){
-			/*
-			$url  = self::ConvertURL($path,false);
-			if(!self::GetEnv('Pacifista')){
-				$path = $_SERVER['DOCUMENT_ROOT'] .'/'. ltrim($url,'/');
-			}
-			*/
-			
 			$label = $match[1].'-root';
 			if( $root = self::GetEnv($label) ){
 				$path = str_replace( $match[0], $root, $path );
 			}else{
 				$this->StackError("$label is not set.");
 			}
-			
-		}else{
-			//  through
-		//	$this->mark($path);
 		}
-
-	//	print "<div>".__METHOD__." ($orig, $path)</div>".PHP_EOL;
-		
+				
 		return $path;
 	}
 	
