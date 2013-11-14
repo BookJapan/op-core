@@ -231,8 +231,10 @@ abstract class NewWorld5 extends OnePiece5
 		// create absolute path
 		$absolute_path = $_SERVER['DOCUMENT_ROOT'] . $path;
 		
-		//$app_root = getcwd();
-		$app_root = $this->GetEnv('AppRoot');
+		//	get app root (supports apache alias feature)
+		if(!$app_root = $this->GetEnv('Alias_Root')){
+			$app_root = $this->GetEnv('App_Root');
+		}
 		
 		//	absolute from current dir
 		$file_path = preg_replace("|$app_root|",'',$absolute_path);
@@ -249,6 +251,20 @@ abstract class NewWorld5 extends OnePiece5
 		$route = $this->Escape($route);
 		
 		return $route;
+	}
+	
+	/**
+	 * The path is relative to the document root.
+	 * 
+	 * Support to the apache alias feature.
+	 * There a way to automate this function?
+	 *
+	 * @param string $path
+	 */
+	function SetAliasRoot($path)
+	{
+		$alias_root = $_SERVER['DOCUMENT_ROOT'] . $path;
+		$this->SetEnv('alias_root',$alias_root);
 	}
 	
 	private function _getController( &$dirs, &$args, $file_path, &$controller )
@@ -269,11 +285,15 @@ abstract class NewWorld5 extends OnePiece5
 		while( count($dirs) ){
 			
 			$file_name = $app_root.trim(join('/',$dirs)).'/'.$controller;
-				
-			if( file_exists($file_name) ){
+			
+			if( $io = file_exists($file_name) ){
 				break;
 			}
-				
+			
+			$io = $io ? '1': '0';
+			$this->mark($io.', '.$file_name);
+			
+			
 			$args[] = array_pop($dirs);
 		}
 		
@@ -417,7 +437,11 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  layout
-		$this->doLayout();
+		try{
+			$this->doLayout();
+		}catch( Exception $e ){
+			$this->StackError($e);
+		}
 		
 		return true;
 	}
@@ -549,16 +573,16 @@ abstract class NewWorld5 extends OnePiece5
 			if(!include($path) ){
 				throw new OpNwException("include is failed. ($path)");
 			}
-			if(!isset($_layout)){
-				throw new OpNwException("Not set \$_layout variable.");
+			if(!isset($_layout) or !count($_layout)){
+				throw new OpNwException("Not set \$_layout variable. ($path)");
 			}
 		}else{
 			//  NG
 			print $this->_content;
-			$m = "does not exists layout controller.($path)";
-			$this->StackError( $m,'layout');
-			throw new OpNwException($m);
-			return;
+			$msg = "Does not exists layout controller.($path)";
+			throw new OpNwException($msg);
+		//	$this->StackError($msg);
+		//	return;
 		}
 		
 		//  layout directory
@@ -575,11 +599,21 @@ abstract class NewWorld5 extends OnePiece5
 				${$var_name}  = & ${$file_name};
 				ob_end_clean();
 			}else{
-				$this->StackError("does not exists layout file.($path)");
-			}
+				$msg = "Does not exists layout file.($path)";
+				throw new OpNwException($msg);
+			//	$this->StackError($msg);
+			//	return;
+			} 
 		}
 		
-		print ${$file_name};
+		if( isset(${$file_name}) ){
+			print ${$file_name};
+		}else{
+			$msg = "Does not set file name.($file_name)";
+			throw new OpNwException($msg);
+		//	$this->StackError($msg);
+		//	return;
+		}
 	}
 	
 	function doCss($route)
