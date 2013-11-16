@@ -167,7 +167,7 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function GetRoute($request_uri=null)
 	{
-		// get request uri
+		//	get request uri
 		if( $request_uri ){
 			if( preg_match( '|^http://|', $request_uri ) ){
 				$this->mark("![ .red [Domain name is not required. 
@@ -177,10 +177,18 @@ abstract class NewWorld5 extends OnePiece5
 			$request_uri = $_SERVER['REQUEST_URI'];
 		}
 		
-		// separate query
+		//	separate query
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
+				
+		//	full path
 		$full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
 		
+		//	If alias path is set.
+		if( $alias_root = self::GetEnv('alias-root') ){
+			$app_root = self::GetEnv('app-root');
+			$full_path = $app_root.str_replace( $alias_root, '/', $full_path);
+		}
+				
 		// Does path exist? (in route table)
 		if( $route = $this->_routeTable[md5($path)] ){
 			return $route;
@@ -289,10 +297,6 @@ abstract class NewWorld5 extends OnePiece5
 			if( $io = file_exists($file_name) ){
 				break;
 			}
-			
-			$io = $io ? '1': '0';
-			$this->mark($io.', '.$file_name);
-			
 			
 			$args[] = array_pop($dirs);
 		}
