@@ -56,15 +56,13 @@ class Wizard extends OnePiece5
 		$this->_wizard = new Config();
 		
 		if( $selftest = $this->GetSession('selftest') ){
-
-			//  Get form name.
-			$form_name = $this->config()->GetFormName();
 			
 			//  Init form config.
 			$this->form()->AddForm( $this->config()->MagicForm() );
 			
 			//	Check each class
 			foreach( $selftest as $class_name => $config ){
+				
 				try{
 					if( $io = $this->_Selftest($config) ){
 						$this->mark("![.blue[$class_name is selftest passed]]",'selftest');
@@ -128,16 +126,21 @@ class Wizard extends OnePiece5
 		//	Save result of connection
 		$this->_result->connect->$host->$user->$db = $io;
 		
-		if(!$io){		
+		if(!$io){
 			$this->model('Log')->Set("FAILED: Database connect is failed.(host=$host, user=$user, db=$db)",false);
+		//	$this->mark("Failed database connect. (host=$host, user=$user, db=$db)");
 			return false;
 		}
 		
 		if(!$this->_CheckDatabase($config)){
+			$this->model('Log')->Set("FAILED: Database check. (host=$host, user=$user, db=$db)",false);
+		//	$this->mark("Failed database check. (host=$host, user=$user, db=$db)");
 			return false;
 		}
 		
 		if(!$this->_CheckTable($config)){
+			$this->model('Log')->Set("FAILED: Table check.(host=$host, user=$user, db=$db)",false);
+		//	$this->mark("Failed table check. (host=$host, user=$user, db=$db)");
 			return false;
 		}
 		
@@ -401,13 +404,17 @@ class Wizard extends OnePiece5
 					$type = 'int';
 				}
 				
+				//	Get length
+				$length = isset($config->table->$table_name->column->$column_name->length)
+							  ? $config->table->$table_name->column->$column_name->length: null;
+				
 				//  Get default from config.
 				$default = isset($config->table->$table_name->column->$column_name->default)
-							 ? $config->table->$table_name->column->$column_name->default: null;
+							   ? $config->table->$table_name->column->$column_name->default: null;
 				
 				//	Get null from config.
 				$null = isset($config->table->$table_name->column->$column_name->null)
-						 ? $config->table->$table_name->column->$column_name->null:'YES';
+							? $config->table->$table_name->column->$column_name->null:'YES';
 				$null = $null ? 'YES': 'NO';
 				
 				if( $structs[$column_name]['extra'] === 'auto_increment' OR
@@ -418,7 +425,7 @@ class Wizard extends OnePiece5
 				
 				//	Convert config value
 				if( $type == 'boolean' ){
-					$type = 'tinyint';
+					$type =  'tinyint';
 				}
 				
 				//	Convert existing table value
@@ -438,6 +445,11 @@ class Wizard extends OnePiece5
 					$io = false;
 					$hint = "type=$type not {$structs[$column_name]['type']}";
 				
+				//	Check length
+				}else if( $length and $length != $structs[$column_name]['length'] ){
+					$io = false;
+					$hint = "length=$length not {$structs[$column_name]['length']}";
+					
 				//	Check NULL
 				}else if( $null != $structs[$column_name]['null'] ){	
 					$io = false;
@@ -485,7 +497,7 @@ class Wizard extends OnePiece5
 		$select = new Config();
 		$select->database	 = $db;
 		$select->table		 = $table; 
-		$select->where->Host = 'localhost'; // TODO
+		$select->where->Host = $host; // 'localhost'; // TODO
 		$select->where->User = $user;
 		$select->limit		 = 1;
 		$record = $this->pdo()->select($select);
@@ -584,7 +596,7 @@ class Wizard extends OnePiece5
 			
 			$io = $io ? 'true': 'false';
 			$table_name = $table->table;
-			$this->mark("host=$host, user=$user, database=$db, table=$table_name, io=$io");
+		//	$this->mark("host=$host, user=$user, database=$db, table=$table_name, io=$io");
 			$this->_wizard->$host->$user->$db->table->$table_name = $io ? true: false;
 			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
 		}
@@ -614,8 +626,8 @@ class Wizard extends OnePiece5
 			
 			//	
 			if( empty($this->_result->column->$table_name) ){
-				$this->mark("$table_name is empty?");
-				$this->_result->column->d();
+				$this->mark("$table_name is empty?",'debug wizard');
+			//	$this->_result->column->d();
 				continue;
 			}
 			
