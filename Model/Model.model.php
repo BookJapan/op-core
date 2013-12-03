@@ -140,6 +140,8 @@ abstract class Model_Model extends OnePiece5
  */
 class Config_Model extends OnePiece5
 {
+	const CONFIG_DATABASE	 = 'config-database';
+	
 	private $_host_name		 = 'localhost';
 	private $_port_number	 = '3306';
 	private $_database_name	 = 'onepiece';
@@ -156,7 +158,7 @@ class Config_Model extends OnePiece5
 	{
 		parent::Init();
 		
-		if( $config = $this->GetEnv('config-database') ){
+		if( $config = $this->GetEnv(self::CONFIG_DATABASE) ){
 			foreach( $config as $key => $var ){
 				if( empty($var) ){
 					continue;
