@@ -61,6 +61,10 @@ abstract class Model_Model extends OnePiece5
 				
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
+					
+					$e = new OpException();
+					throw $e;
+					
 					/*
 					$selftest = $this->Selftest();
 					$selftest->d();
