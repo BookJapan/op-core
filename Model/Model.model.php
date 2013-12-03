@@ -236,6 +236,7 @@ class Config_Model extends OnePiece5
 	{
 		//	init password
 		$password  = OnePiece5::GetEnv('admin-mail');
+		$password .= '/'; 
 		$password .= isset($this) ? get_class($this): null;
 		
 		//	Init config
@@ -283,7 +284,7 @@ class Config_Model extends OnePiece5
 		}
 		return $this->_database_name;
 	}
-
+	
 	private function _database_user_name($value=null)
 	{
 		if( $value ){
