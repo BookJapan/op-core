@@ -306,19 +306,28 @@ class Config_Model extends OnePiece5
 		return self::prefix($prefix);
 	}
 	
-	private function prefix($prefix=null)
+	public function prefix($prefix=null)
 	{
 		if( $prefix ){
 			$this->_table_prefix = $prefix;
 		}
+		
 		return $this->_table_prefix;
 	}
 	
-	function table_name()
+	/**
+	 * Attatch the table prefix
+	 * 
+	 * @param  string $table
+	 * @return string
+	 */
+	function table_name($table=null)
 	{
-		//	get table name by extends class
-		$class = get_class($this);
-		$table = $class::TABLE_NAME;
+		if(!$table){
+			//	get table name by extends class
+			$class = get_class($this);
+			$table = $class::TABLE_NAME;
+		}
 		
 		//	get table prefix by self class
 		$prefix = $this->_table_prefix;
