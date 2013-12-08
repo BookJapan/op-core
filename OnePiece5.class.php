@@ -61,36 +61,43 @@ if(!function_exists('__autoload')){
 				$file_name = $class_name . '.class.php';
 		}
 		
-		// include path
-		$dirs = explode( PATH_SEPARATOR, ini_get('include_path') );
-		$dirs[] = '.';
-		$dirs[] = OnePiece5::GetEnv('App-Root');
+		/**
+		 *  Setup of the file reading directory.
+		 */
+		$dirs = array();
+	//	$dirs = explode( PATH_SEPARATOR, ini_get('include_path') );
 		$dirs[] = OnePiece5::GetEnv('OP-Root');
+		$dirs[] = OnePiece5::GetEnv('App-Root');
+		$dirs[] = '.';
+		$dirs = array_merge($dirs,explode( PATH_SEPARATOR, ini_get('include_path') ));
+		
 		//	Model (op-core)
 		$dirs[] = trim(OnePiece5::GetEnv('OP-Root'),DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'Model';
+		
 		//	Model (app)
 		if( $dir = OnePiece5::GetEnv('model-dir') ){
 			$dirs[] = OnePiece5::ConvertPath($dir);
 		}
+		
 		//	PDO
 		if( $sub_dir ){
 			$dirs[] = OnePiece5::GetEnv('OP-Root').DIRECTORY_SEPARATOR.$sub_dir;
 		}
 		
+		//	Delete duplicate directory
+		$dirs = array_unique($dirs);
+		
 		// check
-		foreach( array_unique($dirs) as $dir ){
+		foreach( $dirs as $dir ){
 			$file_path = rtrim($dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file_name;
-		
+			
 		//	print $file_path . '<br/>' . PHP_EOL;
-		//	$_SERVER['hoge'][] = $file_path;
-		
+			
 			if( file_exists($file_path) ){
 				include_once($file_path);
 				break;
 			}
 		}
-		
-	//	$_SERVER['hoge'][0] = array_unique($dirs);
 		
 		// check
 		if (!class_exists($class_name, false)) {
@@ -849,22 +856,11 @@ __EOL__;
 	static private function _Env( $key, $var=null, $ope )
 	{
 		// convert key name
-		//switch( strcasecmp($key) ){
 		$key = strtolower($key);
 		switch( $key ){
 			case 'nl':
 				$key = 'newline';
 				break;
-				
-				/*
-			case (preg_match('/(remote)[-_]?(ip|addr)/',$key,$match) ? true: false):
-				$key = 'REMOTE_ADDR';
-				break;
-				
-			case (preg_match('/(user)[-_]?(agent)/',$key,$match) ? true: false):
-				$key = 'HTTP_USER_AGENT';
-				break;
-				*/
 				
 			case 'href':
 				$key = 'HTTP_REFERER';
@@ -901,15 +897,6 @@ __EOL__;
 			default:
 				if( $ope == 'set' ){
 					
-					/**
-					 * TODO: To notice? About overwrite the value.
-					 * 
-					if( isset( $_SERVER[__CLASS__]['env'][$key] ) ){
-						$var = $_SERVER[__CLASS__]['env'][$key];
-						//print ("Already set value. ($key=$var)");
-					}
-					*/
-					
 					$_SERVER[__CLASS__]['env'][$key] = $var;
 					
 				}else if( $ope == 'get' ){
@@ -922,7 +909,7 @@ __EOL__;
 				break;
 		}
 		
-		if(empty($var)){
+		if( empty($var) ){
 			switch($key){
 				case 'encrypt-key':
 					$var = OnePiece5::GetEnv('admin-mail');
@@ -933,26 +920,16 @@ __EOL__;
 		return $var;
 	}
 	
-	/**
-	 * 
-	 */
-	private function _InitEnv( /* $args=array('InitEnv'=>true) */ )
+	private function _InitEnv()
 	{
-		/*
-		if(!is_array($args)){
-			$args = Toolbox::toArray($args);
-		}
-		*/
-		
-		/*
-			Under line sample added .htaccess or httpd.conf
+		/**
+			Under sample added .htaccess or httpd.conf
 			SetEnv ADMIN_IP 192.168.1.1
 		*/
 		if( isset($_SERVER['ADMIN_ADDR']) ){
 			$_SERVER['ADMIN_IP'] = $_SERVER['ADMIN_ADDR']; 
 		}
 		$admin_ip = isset($_SERVER['ADMIN_IP']) ? $_SERVER['ADMIN_IP']: '127.0.0.1';
-//		$local    = $_SERVER['SERVER_ADDR'] === '127.0.0.1' ? true: false;
 		
 		// server admin(mail address)
 		if( preg_match('|[-_a-z0-9\.\+]+@[-_a-z0-9\.]+|i',@$_SERVER['SERVER_ADMIN']) ){
@@ -976,20 +953,12 @@ __EOL__;
 		}
 		
 		$this->SetEnv('class',      __CLASS__    );
-//		$this->SetEnv('local',      $local       );
-	//	$this->SetEnv('op_root',    $op_root     );
 		$this->SetEnv('doc_root',   $doc_root    );
 		$this->SetEnv('app_root',   $app_root    );
 		$this->SetEnv('site_root',  $site_root   );
 		$this->SetEnv('admin-ip',   $admin_ip    );
 		$this->SetEnv('admin-mail', $admin_mail  );
 		$this->SetEnv('newline',    PHP_EOL      );
-		
-		/*
-		foreach( $args as $key => $var ){
-			$this->SetEnv($key,$var);
-		}
-		*/
 	}
 	
 	/**
