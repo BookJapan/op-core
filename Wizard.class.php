@@ -414,13 +414,37 @@ class Wizard extends OnePiece5
 				
 				//	Get null from config.
 				$null = isset($config->table->$table_name->column->$column_name->null)
-							? $config->table->$table_name->column->$column_name->null:'YES';
+							? $config->table->$table_name->column->$column_name->null: 'YES';
 				$null = $null ? 'YES': 'NO';
 				
 				if( $structs[$column_name]['extra'] === 'auto_increment' OR
 					$structs[$column_name]['type'] === 'timestamp' OR
 					$structs[$column_name]['key'] === 'PRI' ){
 					$null = 'NO';
+				}
+				
+				//	Get index type
+				$index = isset( $config->table->$table_name->column->$column_name->index) ? 
+								$config->table->$table_name->column->$column_name->index: '';
+				
+				//	Convert index string
+				if( $index ){
+					switch($index){
+						case 'index':
+							$index = 'MUL';
+							break;
+							
+						case 'unique':
+							$index = 'UNI';
+							break;
+							
+						default:
+							$this->mark();
+					}
+				}else{
+					if( !empty($config->table->$table_name->column->$column_name->pkey) ){
+						$index = 'PRI';
+					}
 				}
 				
 				//	Convert config value
@@ -460,7 +484,16 @@ class Wizard extends OnePiece5
 					$io = false;
 					$temp = is_null($structs[$column_name]['default']) ? 'null': $structs[$column_name]['default'];
 					$hint = "default=$default not $temp";
-						
+				
+				//	Check index
+				}else if( $index !== $structs[$column_name]['key'] ){
+
+				//	$this->mark("$column_name=$index, {$structs[$column_name]['key']}");
+				//	$config->table->$table_name->column->$column_name->d();
+
+					$io = false;
+					$hint = "index=$index not {$structs[$column_name]['null']}";
+					
 				}else{
 					$io = true;
 				}
