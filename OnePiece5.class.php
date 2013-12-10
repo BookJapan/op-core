@@ -2179,14 +2179,15 @@ __EOL__;
 	 */
 	function PDO( $name=null )
 	{
-		if(!isset($this->pdo)){
-			if( is_null($name) ){
+		if( empty($this->pdo) ){
+			if( is_null($name) ){				
 				$name = 'PDO5';
 				$op_root = $this->GetEnv('op-root');
-				if( $io = file_exists($op_root.'PDO/PDO5.class.php') ){
-					include_once('PDO/PDO5.class.php');
+				$path = $op_root.'PDO/PDO5.class.php';
+				if( $io = file_exists($path) ){					
+					include_once($path);
 				}else{
-					$this->StackError("Does not exists file. (PDO/PDO5.class.php)");
+					$this->StackError("Does not exists file. ($path)");
 					return false;
 				}
 			}
