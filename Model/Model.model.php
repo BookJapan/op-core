@@ -259,8 +259,14 @@ class Config_Model extends OnePiece5
 		*/
 		
 		//	overwrite
-		foreach( $args as $key => $var ){
-			$config->$key = $var;
+		if( $args ){
+			foreach( $args as $key => $var ){
+				$config->$key = $var;
+			}
+		}
+		
+		if( strlen($config->user) > 16 ){
+			$this->mark("mysql user name is limit of 16 characters.");
 		}
 		
 		return $config;
