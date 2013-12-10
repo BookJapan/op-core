@@ -1,7 +1,7 @@
 <?php
 
 
-class DDL extends OnePiece5
+class DDL5 extends OnePiece5
 {
 	private $pdo = null;
 	private $driver = null;

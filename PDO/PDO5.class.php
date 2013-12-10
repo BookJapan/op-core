@@ -27,36 +27,58 @@ class PDO5 extends OnePiece5
 	 * @throws Exception
 	 * @return DML
 	 */
-	function DML( $name=null )
+	function DML( $name='DML5' )
 	{
 		if( empty($this->dml) ){
+
+			$path  = $this->GetEnv('op-root');
+			$path .= "PDO/$name.class.php";
+			$io = include_once($path);
+			if(!$io){
+				throw new Exception("Include failed.($path)");
+			}
+			
+			/*
 			if(!class_exists('DML',false)){
-				$io = include_once('PDO/DML.class.php');
+				$path  = $this->GetEnv('op-root');
+				$path .= 'PDO/DML.class.php';
+				$io = include_once($path);
 				if(!$io){
 					throw new Exception("Include failed.(PDO/DML.class.php)");
 				}
 			}
+			*/
 			
 			//  Init
-			$this->dml = new DML();
+			$this->dml = new $name();
 			$this->dml->SetPDO( $this->pdo, $this->driver );
 			$this->dml->InitQuote($this->driver);
 		}
 		return $this->dml;
 	}
 	
-	function DDL( $name=null )
+	function DDL( $name='DDL5' )
 	{
 		if( empty($this->ddl) ){
+			
+			$path  = $this->GetEnv('op-root');
+			$path .= "PDO/$name.class.php";
+			$io = include_once($path);
+			if(!$io){
+				throw new Exception("Include failed.($path)");
+			}
+			
+			/*
 			if(!class_exists('DDL',false)){
 				$io = include_once('PDO/DDL.class.php');
 				if(!$io){
 					throw new Exception("Include failed.(PDO/DDL.class.php)");
 				}
 			}
+			*/
 			
 			//  Init
-			$this->ddl = new DDL();
+			$this->ddl = new $name();
 			$this->ddl->SetPDO( $this->pdo, $this->driver );
 		}
 		return $this->ddl;
@@ -69,18 +91,28 @@ class PDO5 extends OnePiece5
 	 * @throws Exception
 	 * @return DCL
 	 */
-	function DCL( $name=null )
+	function DCL( $name='DCL5' )
 	{
 		if( empty($this->dcl) ){
+
+			$path  = $this->GetEnv('op-root');
+			$path .= "PDO/$name.class.php";
+			$io = include_once($path);
+			if(!$io){
+				throw new Exception("Include failed.($path)");
+			}
+			
+			/*
 			if(!class_exists('DCL',false)){
 				$io = include_once('PDO/DCL.class.php');
 				if(!$io){
 					throw new Exception("Include failed.(PDO/DCL.class.php)");
 				}
 			}
+			*/
 			
 			//  Init
-			$this->dcl = new DCL();
+			$this->dcl = new $name();
 			$this->dcl->SetPDO( $this->pdo, $this->driver );
 		}
 		return $this->dcl;

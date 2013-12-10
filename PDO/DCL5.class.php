@@ -1,7 +1,7 @@
 <?php
 # vim: tabstop=4
 /**
- *  DCL.class.php
+ *  DCL5.class.php
  *
  * @version   1.0
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -10,14 +10,14 @@
  */
 
 /**
- *  DCL
+ *  DCL5
  *
  * @version   1.0
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2011 (C) Tomoaki Nagahara All right reserved.
  * @package   op-core
  */
-class DCL extends OnePiece5
+class DCL5 extends OnePiece5
 {
 	private $pdo = null;
 	private $driver = null;
