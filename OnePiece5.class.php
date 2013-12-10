@@ -36,8 +36,12 @@ if( ! isset($_SERVER['OnePiece5']) ){
 if(!function_exists('__autoload')){
 	function __autoload($class_name)
 	{
+//		print $class_name.'<br/>';
+		
 		//  init
-		$sub_dir = null;
+		$sub_dir  = null;
+		$op_root  = OnePiece5::GetEnv('OP-Root');
+		$app_root = OnePiece5::GetEnv('App-Root');
 		
 		//  file name
 		switch($class_name){
@@ -47,6 +51,11 @@ if(!function_exists('__autoload')){
 
 			case 'Model_App':
 				$file_name = 'App.model.php';
+				break;
+
+			case 'Config_Model':
+				$file_name = 'Model.model.php';
+				$sub_dir   = 'Model';
 				break;
 				
 			case 'DML':
@@ -66,23 +75,25 @@ if(!function_exists('__autoload')){
 		 */
 		$dirs = array();
 	//	$dirs = explode( PATH_SEPARATOR, ini_get('include_path') );
-		$dirs[] = OnePiece5::GetEnv('OP-Root');
-		$dirs[] = OnePiece5::GetEnv('App-Root');
+		$dirs[] = $op_root;
+		$dirs[] = $app_root;
 		$dirs[] = '.';
-		$dirs = array_merge($dirs,explode( PATH_SEPARATOR, ini_get('include_path') ));
 		
 		//	Model (op-core)
-		$dirs[] = trim(OnePiece5::GetEnv('OP-Root'),DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'Model';
+		$dirs[] = $op_root.'Model';
 		
 		//	Model (app)
 		if( $dir = OnePiece5::GetEnv('model-dir') ){
 			$dirs[] = OnePiece5::ConvertPath($dir);
 		}
 		
-		//	PDO
+		//	PDO or Model
 		if( $sub_dir ){
-			$dirs[] = OnePiece5::GetEnv('OP-Root').DIRECTORY_SEPARATOR.$sub_dir;
+			$dirs[] = $op_root.$sub_dir;
 		}
+		
+		//	default
+		$dirs = array_merge($dirs,explode( PATH_SEPARATOR, ini_get('include_path') ));
 		
 		//	Delete duplicate directory
 		$dirs = array_unique($dirs);
@@ -2030,8 +2041,8 @@ __EOL__;
 				throw new OpModelException($msg);
 			}
 			
-			//	small -> Small		//	caMel -> Camel
-			$name = ucfirst($name);	//	$name = ucfirst(strtolower($name));
+			//	hogeHoge -> HogeHoge	//	hogeHoge -> Hogehoge
+			$name = ucfirst($name);		//	$name = ucfirst(strtolower($name));
 			
 			//  Notice
 			if( strpos( $name, '_') ){
