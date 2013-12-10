@@ -19,12 +19,11 @@ abstract class Model_Model extends OnePiece5
 		if( $this->Admin() ){
 			//	Model
 			if( method_exists( $this, 'Selftest') ){
-				$this->Selftest();
+			//	$this->Selftest();
 			}
 			//	Config
 			if( method_exists( $this->Config(), 'Selftest') ){
-				$config = $this->Config()->Selftest();
-				$this->Wizard()->SetSelftest( get_class($this), $config );
+				$this->Wizard()->SetSelftest( get_class($this), $this->Config()->Selftest() );
 			}
 		}
 	}
@@ -225,8 +224,7 @@ class Config_Model extends OnePiece5
 	function pdo($name=null)
 	{
 		if(!$this->_init_pdo){
-			$config = $this->database();
-			parent::pdo()->Connect($config);
+			parent::pdo()->Connect( $this->database() );
 			$this->_init_pdo = true;
 		}
 		return parent::pdo($name);
@@ -252,10 +250,17 @@ class Config_Model extends OnePiece5
 		$config->password = md5($password);
 		$config->charset  = 'utf8';
 		
+		/*
 		if(!$io = $this->_database_user_single()){
 			if( isset($args['user']) ){
 				$config->user = $args['user'];
 			}
+		}
+		*/
+		
+		//	overwrite
+		foreach( $args as $key => $var ){
+			$config->$key = $var;
 		}
 		
 		return $config;

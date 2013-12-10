@@ -12,7 +12,23 @@ class Wizard extends OnePiece5
 	private $config = null;
 	private $_result = null;
 	private $_wizard = null;
+	
+	/**
+	 * Execution flag of Wizard.
+	 * 
+	 * @var boolean
+	 */
+	private $_isWizard = null;
+	
+	function __destruct()
+	{
+		if(!$this->_isWizard){
+			$this->Selftest();
+		}
 		
+		parent::__destruct();
+	}
+	
 	/**
 	 * @return WizardConfig
 	 */
@@ -24,9 +40,18 @@ class Wizard extends OnePiece5
 		return $this->config;
 	}
 	
+	function isWizard( $io=null )
+	{
+		if( $io ){
+			$this->_isWizard = $io;
+		}
+		return $this->_isWizard;
+	}
+	
 	/**
 	 * Save selftest inner wizard
 	 * 
+	 * @param string $class_name
 	 * @param Config $config
 	 */
 	function SetSelftest( $class_name, Config $config )
@@ -41,12 +66,23 @@ class Wizard extends OnePiece5
 		}
 		
 		$selftest = $this->GetSession('selftest');
-		$selftest[$class_name] = $config;
+		$selftest[$class_name] = Toolbox::toArray($config); // anti of __php_incomplete_class
 		$this->SetSession('selftest',$selftest);
 	}
 	
-	function Selftest()
+	/**
+	 * Execution of Wizard. 
+	 * 
+	 * @return NULL|boolean
+	 */
+	public function Selftest()
 	{
+	//	$this->mark( $this->GetCallerLine() );
+		
+		//	Set flag
+		$this->_isWizard = true;
+		
+		//	Check admin
 		if(!$this->admin()){
 			return null;
 		}
@@ -64,11 +100,15 @@ class Wizard extends OnePiece5
 			foreach( $selftest as $class_name => $config ){
 				
 				try{
+					//	anti of __php_incomplete_class
+					$config = Toolbox::toObject($config);
+					
 					if( $io = $this->_Selftest($config) ){
 						$this->mark("![.blue[$class_name is selftest passed]]",'selftest');
 					}else{
 						$this->mark("![.red [$class_name is selftest failed]]",'selftest');
 					}
+					
 				}catch( Exception $e ){
 					$this->mark($e->getMessage());
 					$io = false;
@@ -76,7 +116,7 @@ class Wizard extends OnePiece5
 				
 				if( $io ){
 					//	passed through a self-test
-				}else{
+				}else{					
 					//	Wizard
 					if( $this->_Wizard($config) ){
 						//	case of success, do delete config from session.
@@ -84,7 +124,7 @@ class Wizard extends OnePiece5
 					}else{
 						$fail = true;
 					}
-				}
+				}				
 			}
 			
 			if( empty($fail) ){
@@ -113,6 +153,8 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
+	//	return true;
+		
 		$dbms  = $config->database->driver;
 		$host  = $config->database->host;
 		$port  = $config->database->port;
