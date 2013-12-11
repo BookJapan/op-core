@@ -181,7 +181,7 @@ class Wizard extends OnePiece5
 		}
 		
 		if(!$this->_CheckTable($config)){
-			$this->model('Log')->Set("FAILED: Table check.(host=$host, user=$user, db=$db)",false);
+		//	$this->model('Log')->Set("FAILED: Table check.(host=$host, user=$user, db=$db)",false);
 		//	$this->mark("Failed table check. (host=$host, user=$user, db=$db)");
 			return false;
 		}
@@ -361,14 +361,15 @@ class Wizard extends OnePiece5
 		//  Get table-name list.
 		if(!$table_list = $this->pdo()->GetTableList($config->database) ){
 			
-			//	Logger
-			$this->model('Log')->Set('FAILED: '.$this->pdo()->qu(),false);
-			
 			//	result
 			$host = $config->database->host;
 			$user = $config->database->user;
 			$db   = $config->database->database;
 			$this->_result->connect->$host->$user->$db = false;
+
+			//	Logger
+			$this->model('Log')->Set('FAILED: '.$this->pdo()->qu(),false);
+			$this->model('Log')->Set("FAILED: Does not access database.(host=$host, user=$user, db=$db)",false);
 			return false;
 		}
 		
@@ -420,6 +421,7 @@ class Wizard extends OnePiece5
 			
 			//	init
 			$io = null;
+			$hint = null;
 			
 			//	This column, Does not exists in the existing table.
 			if(!isset($structs[$column_name])){
@@ -540,6 +542,8 @@ class Wizard extends OnePiece5
 					$io = true;
 				}
 				
+			//	$this->mark($io);
+				
 				//	If false will change this column.
 				$this->_result->column->$table_name->$column_name = $io ? true: 'change,';
 			}
@@ -552,6 +556,9 @@ class Wizard extends OnePiece5
 			//	use create column
 			$after = $column_name;
 		}
+		
+		//	Logger
+		$this->model('Log')->Set("FAILED: table=$table_name, column=$column_name, $hint",false);
 		
 		//  Finish
 		return isset($return) ? $return: true;
