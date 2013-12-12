@@ -22,8 +22,10 @@ class Wizard extends OnePiece5
 	
 	function __destruct()
 	{
-		if(!$this->_isWizard){
-			$this->Selftest();
+		if( $this->Admin() ){
+			if(!$this->_isWizard){
+				$this->Selftest();
+			}
 		}
 		
 		parent::__destruct();
