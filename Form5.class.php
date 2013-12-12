@@ -35,7 +35,10 @@ class Form5 extends OnePiece5
 		$this->config = new Config();
 		
 		//	Test implements.
-		if( $this->admin() ){
+	//	if( $this->admin() ){
+		if( headers_sent( $file, $line ) ){
+			$this->mark("skip session regenerate. headers is already sent.($file, $line)");
+		}else{
 			$history = $this->GetSession('history');
 			$history[] = $_SERVER['REQUEST_URI'].', '.date('H:i:s');
 			$this->SetSession('history', $history);
