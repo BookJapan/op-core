@@ -462,7 +462,8 @@ class Form5 extends OnePiece5
 			}
 		}
 		
-		print nl2br($value);
+//		print nl2br($value);
+		print $value;
 		
 		return 'This method(function) is print.';
 	}
