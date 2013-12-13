@@ -503,6 +503,7 @@ class OnePiece5
 	 */
 	static function Admin()
 	{
+		/*
 		static $io = null;
 		if(!is_null($io)){
 			return $io;
@@ -518,6 +519,11 @@ class OnePiece5
 			$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
 			$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
 		}
+		*/
+		
+		$server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: '127.0.0.1';
+		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
+		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
 		
 		//	Identity
 		if( $server_addr == $remote_addr ){
