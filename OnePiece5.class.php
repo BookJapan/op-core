@@ -9,6 +9,12 @@
  * @package   op-core
  */
 
+if(!function_exists('mb_language') ){
+	print "<p>Does not install php-mbstring.</p>".PHP_EOL;
+	print __FILE__.' ('.__LINE__.')<br/>'.PHP_EOL;
+	exit;
+}
+
 /**
  * Added "op-root" to include_path.
  */
