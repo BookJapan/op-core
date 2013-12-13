@@ -531,10 +531,12 @@ class OnePiece5
 			$io = false;
 		}
 		
+		/*
 		//	developer
 		if(!$io){
 			$io = $this->_isDeveloper();
 		}
+		*/
 		
 		return $io;
 	}
