@@ -265,7 +265,14 @@ class PDO5 extends OnePiece5
 			//	Create DNS
 			$dns = "{$this->driver}:{$db}host={$this->host}";
 			
+			/*
 			//	Create PDO
+			$dns = "{$this->driver}: host={$this->host}";
+			if( $this->database ){
+				$dns .= " dbname={$this->database}";
+			}
+			*/
+			
 			if(!$this->pdo = new PDO( $dns, $this->user, $password, $options )){
 				$this->StackError("Can not connect database. ( $dns, {$this->user} )");
 				return false;
