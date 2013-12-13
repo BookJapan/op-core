@@ -613,7 +613,7 @@ class OnePiece5
 		/*
 		//	developer
 		if(!$io){
-			$io = $this->_isDeveloper();
+			$io = self::_isDeveloper();
 		}
 		*/
 		
@@ -1716,7 +1716,7 @@ __EOL__;
 		$this->laptime[] = array(
 				'label'   => $label,
 				'lap'     => $lap,
-				'elapsed' => $elapsed,
+				'elapsed' => $elapsed
 				);
 		
 		return "$elapsed ($lap)";
@@ -2069,16 +2069,20 @@ __EOL__;
 		return $path;
 	}
 	
-	private $_developer = null;
-	
 	function _setDeveloper( $name, $ip )
 	{
-		$this->_developer[$name] = $ip;
+		$developer = self::GetEnv('developer');
+		$developer[$name] = $ip;
+		self::SetEnv('developer',$developer);
 	}
 	
 	function _isDeveloper()
 	{
-		return in_array( $_SERVER['REMOTE_ADDR'], $this->_developer);
+		$developer = self::GetEnv('developer');
+		if(!$developer){
+			$developer = array();
+		}
+		return in_array( $_SERVER['REMOTE_ADDR'], $developer);
 	}
 	
 	/**
