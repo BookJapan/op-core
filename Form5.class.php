@@ -34,8 +34,7 @@ class Form5 extends OnePiece5
 		$this->status = new Config();
 		$this->config = new Config();
 		
-		//	Test implements.
-	//	if( $this->admin() ){
+		//	Session-ID is regenerate.
 		if( headers_sent( $file, $line ) ){
 			$this->mark("skip session regenerate. headers is already sent.($file, $line)");
 		}else{
