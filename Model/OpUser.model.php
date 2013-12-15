@@ -147,7 +147,7 @@ class Config_OpUser extends Config_Model
 	const TABLE_OP_USER_INFO	 = 'op-user_info';
 	const TABLE_OP_USER_AGENT	 = 'op-user_agent';
 	
-	function database()
+	function database( $args=null )
 	{
 		$args['user'] = 'op_mdl_opuser';
 		$config = parent::database($args);
