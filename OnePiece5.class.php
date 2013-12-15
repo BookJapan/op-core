@@ -43,12 +43,23 @@ if(!function_exists('__autoload')){
 		$op_root  = OnePiece5::GetEnv('OP-Root');
 		$app_root = OnePiece5::GetEnv('App-Root');
 		
+		//	case of model
+		if( preg_match('/(Model|Config)_([a-z0-9]+)/i', $class_name, $match) ){
+		//	var_dump($app_root);
+			$is_model = true;
+			$file_name = $match[2].'.model.php';
+		}
+
 		//  file name
 		switch($class_name){
+			case isset($is_model):
+				break;
+				
 			case 'Memcache':
 			case 'Memcached':
 				return;
-
+				
+				/*
 			case 'Model_App':
 				$file_name = 'App.model.php';
 				break;
@@ -57,6 +68,7 @@ if(!function_exists('__autoload')){
 				$file_name = 'Model.model.php';
 				$sub_dir   = 'Model';
 				break;
+				*/
 				
 			case 'DML':
 			case 'DML5':
@@ -75,10 +87,17 @@ if(!function_exists('__autoload')){
 		 */
 		$dirs = array();
 	//	$dirs = explode( PATH_SEPARATOR, ini_get('include_path') );
-		$dirs[] = $op_root;
-		$dirs[] = $app_root;
+		if( isset($is_model) ){
+			if( $dir = OnePiece5::GetEnv('model-dir') ){
+				$dirs[] = OnePiece5::ConvertPath($dir);
+			}
+			$dirs[] = $op_root.'model/';
+		}
 		$dirs[] = '.';
+		$dirs[] = $app_root;
+		$dirs[] = $op_root;
 		
+		/*
 		//	Model (op-core)
 		$dirs[] = $op_root.'Model';
 		
@@ -86,6 +105,7 @@ if(!function_exists('__autoload')){
 		if( $dir = OnePiece5::GetEnv('model-dir') ){
 			$dirs[] = OnePiece5::ConvertPath($dir);
 		}
+		*/
 		
 		//	PDO or Model
 		if( $sub_dir ){
@@ -99,10 +119,12 @@ if(!function_exists('__autoload')){
 		$dirs = array_unique($dirs);
 		
 		// check
+	//	print $class_name . '<br/>' . PHP_EOL;
 		foreach( $dirs as $dir ){
 			$file_path = rtrim($dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file_name;
 			
 		//	print $file_path . '<br/>' . PHP_EOL;
+		//	$_SERVER['hoge'][] = $file_path;
 			
 			if( file_exists($file_path) ){
 				include_once($file_path);
@@ -112,6 +134,16 @@ if(!function_exists('__autoload')){
 		
 		// check
 		if (!class_exists($class_name, false)) {
+		//	$call = array_shift(  );
+		//	print Dump::d(debug_backtrace());
+			
+			/*
+			print Dump::d($class_name);
+			print Dump::d($match);
+			print Dump::d($file_name);
+			print Dump::d($dirs);
+			*/
+			
 			trigger_error("Unable to auto load class: $class_name", E_USER_NOTICE);
 		}
 	}
@@ -123,7 +155,9 @@ if(!function_exists('__autoload')){
 if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
-	//	dump::d($_SERVER['hoge']);
+		if( isset($_SERVER['hoge']) ){
+			print Dump::d($_SERVER['hoge']);
+		}
 		
 		if(!OnePiece5::Admin()){
 			return;
@@ -341,7 +375,7 @@ class OnePiece5
 		 * @see http://www.ipa.go.jp/security/awareness/vendor/programmingv2/contents/405.html
 		 * @see http://msdn.microsoft.com/en-us/library/ms533020%28VS.85%29.aspx#Use_Cache-Control_Extensions
 		 */
-		header('X-Powered-By: OnePiece/1.0',true);
+	//	header('X-Powered-By: OnePiece/1.0',true);
 	//	Case of not set timezone
 	//	header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
 		
@@ -983,7 +1017,9 @@ __EOL__;
 		$var = self::_Env( $key, $var, 'set' );
 		if( $key === 'charset'){
 			if( headers_sent($file,$line) ){
-				$this->StackError("Header has already been sent.($file, $lien)");
+				if(isset($this)){
+					$this->StackError("Header has already been sent.($file, $lien)");
+				}
 			}else{
 				$io = header("Content-type: text/html; charset=$var",true);
 			}
@@ -2064,14 +2100,14 @@ __EOL__;
 				}
 			}
 			
-			//  include from user dir
+			//  include from app's model dir
 			$model_dir = $this->GetEnv('model-dir');
 			$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
 			if( $io = file_exists($path) ){
 				$io = include_once($path);
 			}
 			
-			//  include from master dir
+			//  include from op-core's model dir
 			if(!$io){
 				$path = self::ConvertPath("op:/Model/{$name}.model.php");
 				if( $io = file_exists($path) ){
