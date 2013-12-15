@@ -1469,7 +1469,7 @@ __EOL__;
 		
 		// displayed is Admin-ip and flag.
 		if( $mark_label ){
-			if(!Toolbox::GetSaveMarkLabelValue($mark_label)){
+			if(!Developer::GetSaveMarkLabelValue($mark_label)){
 				return;
 			}
 		}
@@ -1491,7 +1491,7 @@ __EOL__;
 														 'background-color'=>'white'
 														)));
 			// Dump.class.php include by __autoloader
-			@Dump::d($args);
+			Dump::d($args);
 		}else{
 			$line = self::Wiki2($line,array('tag'=>true));
 			print strip_tags($line);
