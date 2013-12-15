@@ -512,22 +512,22 @@ class Wizard extends OnePiece5
 				
 				//	Check type
 				if( $type != $structs[$column_name]['type'] ){
-					$io = false;
+					$fail = true;
 					$hint = "type=$type not {$structs[$column_name]['type']}";
 				
 				//	Check length
 				}else if( $length and $length != $structs[$column_name]['length'] ){
-					$io = false;
+					$fail = true;
 					$hint = "length=$length not {$structs[$column_name]['length']}";
 					
 				//	Check NULL
 				}else if( $null != $structs[$column_name]['null'] ){	
-					$io = false;
+					$fail = true;
 					$hint = "null=$null not {$structs[$column_name]['null']}";
 
 				//	Check default
 				}else if( !is_null($default) and $default != $structs[$column_name]['default'] ){
-					$io = false;
+					$fail = true;
 					$temp = is_null($structs[$column_name]['default']) ? 'null': $structs[$column_name]['default'];
 					$hint = "default=$default not $temp";
 				
@@ -537,22 +537,15 @@ class Wizard extends OnePiece5
 				//	$this->mark("$column_name=$index, {$structs[$column_name]['key']}");
 				//	$config->table->$table_name->column->$column_name->d();
 
-					$io = false;
+					$fail = true;
 					$hint = "index=$index not {$structs[$column_name]['null']}";
 					
 				}else{
-					$io = true;
+					$fail = false;
 				}
 				
-			//	$this->mark($io);
-				
 				//	If false will change this column.
-				$this->_result->column->$table_name->$column_name = $io ? true: 'change,';
-			}
-			
-			if(!$io){
-				$return = false;
-				$this->mark("![.red[table=$table_name, column=$column_name, $hint]]",'selftest');
+				$this->_result->column->$table_name->$column_name = $fail ? 'change,': null;
 			}
 			
 			//	use create column
@@ -560,10 +553,12 @@ class Wizard extends OnePiece5
 		}
 		
 		//	Logger
-		$this->model('Log')->Set("FAILED: table=$table_name, column=$column_name, $hint",false);
+		if( $fail ){
+			$this->model('Log')->Set("FAILED: table=$table_name, column=$column_name, hint=$hint",false);
+		}
 		
 		//  Finish
-		return isset($return) ? $return: true;
+		return empty($fail) ? true: false;
 	}
 	
 	private function _CheckPrivilege( Config $config )
