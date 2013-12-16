@@ -94,7 +94,7 @@ class Config extends stdClass
 	{
 		//	only admin
 		if(!OnePiece5::GetEnv('admin')){ return; }
-				
+		
 		// displayed is Admin-ip and flag.
 		if( $mark_label ){
 			if(!Developer::GetSaveMarkLabelValue($mark_label)){
