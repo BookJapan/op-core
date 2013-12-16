@@ -138,6 +138,9 @@ class PDO5 extends OnePiece5
 	
 	function Query( $qu, $key=null )
 	{
+		//	init
+		$result = null;
+		
 		//  Check PDO object
 		if(!$this->pdo instanceof PDO ){
 			$this->StackError("PDO is not instanced.");
@@ -179,11 +182,18 @@ class PDO5 extends OnePiece5
 			}else{
 				$this->d($st);
 			}
-		}else{			
-			//  failed
-			$result = false;
-			$temp = $this->pdo->errorInfo();
-			$this->StackError("{$temp[2]} : ![.gray[{$this->qu}]]");
+		}else{
+			switch(strtolower($key)){
+				case 'use':
+					$result = true;
+					break;
+					
+				default:
+					//  failed
+					$result = false;
+					$temp = $this->pdo->errorInfo();
+					$this->StackError("{$temp[2]} : ![.gray[{$this->qu}]]");
+			}
 		}
 		
 		return $result;
@@ -299,7 +309,7 @@ class PDO5 extends OnePiece5
 		//	Quote
 		$db_name = ConfigSQL::Quote( $db_name, $this->driver );
 		
-		if( $this->query("USE $db_name") === false){
+		if( $this->query("USE $db_name",'use') === false){
 			$me = "Database select is failed.";
 			//throw new OpException($me);
 			$this->StackError($me);
