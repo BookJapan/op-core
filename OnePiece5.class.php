@@ -475,32 +475,53 @@ class OnePiece5
 	public static function __callStatic( $name , $arguments )
 	{
 		//  PHP 5.3.0 later
+		$func    = __FUNCTION__;
+		$caller  = $this->GetCallerLine();
+		$message = "MAGIC METHOD ($func): $name, ".serialize($arguments);
+		
 		$this->StackError( __FUNCTION__ );
 		$this->mark(PHP_VERSION);
 	}
 	
 	function __set( $name, $value )
 	{
-		$this->StackError( __FUNCTION__ );
-		$this->mark("![.red .bold[ $name is not accessible property. (value=$value)]]");
+//		$value   = is_string($value) or is_numeric($value) ? $value: serialize($value);
+		$func    = __FUNCTION__;
+		$caller  = $this->GetCallerLine();
+		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller, value=$value)";
+		
+		$this->StackError($message);
+		$this->mark("![.red .bold[$message]]");
 	}
 	
 	function __get( $name )
 	{
-		$this->StackError( __FUNCTION__ );
-		$this->mark("![.red .bold[ `$name` is not accessible property.]]");
+		$func    = __FUNCTION__;
+		$caller  = $this->GetCallerLine();
+		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller)";
+		
+		$this->StackError($message);
+		$this->mark("![.red .bold[$message]]");
 	}
 	
 	function __isset( $name )
 	{
-		$this->StackError( __FUNCTION__ );
-		$this->mark("![.red .bold[ $name is not accessible property.]]");
+		$func    = __FUNCTION__;
+		$caller  = $this->GetCallerLine();
+		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller)";
+		
+		$this->StackError($message);
+		$this->mark("![.red .bold[$message]]");
 	}
 	
 	function __unset( $name )
 	{
-		$this->StackError( __FUNCTION__ );
-		$this->mark("![.red .bold[ $name is not accessible property.]]");
+		$func    = __FUNCTION__;
+		$caller  = $this->GetCallerLine();
+		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller)";
+		
+		$this->StackError($message);
+		$this->mark("![.red .bold[$message]]");
 	}
 	
 	/*
