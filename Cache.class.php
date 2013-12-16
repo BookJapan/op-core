@@ -113,6 +113,15 @@ class Cache extends OnePiece5
 		return $io;
 	}
 	
+	function CheckKeyName($key)
+	{
+		if( preg_match("|^([^-_a-z])$|i",$key,$match) ){
+			$this->mark($match[1]);
+			return false;
+		}
+		return true;
+	}
+	
 	function Set( $key, $value, $expire=0 )
 	{
 		static $skip;
@@ -144,6 +153,12 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
+		//	check
+		if(!$this->CheckKeyName($key)){
+			$this->StackError("Illegal key name. ($key)");
+			return false;
+		}
+		
 		//  TODO: compress option
 	//	$this->mark( get_class($this->_cache) );
 	//	$this->mark("$key, $value, $compress, $expire");
@@ -164,7 +179,13 @@ class Cache extends OnePiece5
 		if(!is_string($key)){
 			//	$key = serialize($key);
 			$type = gettype($key);
-			$this->StackError("key is not string. (type=)");
+			$this->StackError("key is not string. (type=$type)");
+			return false;
+		}
+
+		//	check
+		if(!$this->CheckKeyName($key)){
+			$this->StackError("Illegal key name. ($key)");
 			return false;
 		}
 		
@@ -188,7 +209,13 @@ class Cache extends OnePiece5
 		if(!is_string($key)){
 			//	$key = serialize($key);
 			$type = gettype($key);
-			$this->StackError("key is not string. (type=)");
+			$this->StackError("key is not string. (type=$type)");
+			return false;
+		}
+
+		//	check
+		if(!$this->CheckKeyName($key)){
+			$this->StackError("Illegal key name. ($key)");
 			return false;
 		}
 		
@@ -210,7 +237,13 @@ class Cache extends OnePiece5
 		if(!is_string($key)){
 			//	$key = serialize($key);
 			$type = gettype($key);
-			$this->StackError("key is not string. (type=)");
+			$this->StackError("key is not string. (type=$key)");
+			return false;
+		}
+
+		//	check
+		if(!$this->CheckKeyName($key)){
+			$this->StackError("Illegal key name. ($key)");
 			return false;
 		}
 		
@@ -232,10 +265,16 @@ class Cache extends OnePiece5
 		if(!is_string($key)){
 			//	$key = serialize($key);
 			$type = gettype($key);
-			$this->StackError("key is not string. (type=)");
+			$this->StackError("key is not string. (type=$type)");
 			return false;
 		}
-				
+
+		//	check
+		if(!$this->CheckKeyName($key)){
+			$this->StackError("Illegal key name. ($key)");
+			return false;
+		}
+		
 		return $this->_cache->delete( $key );
 	}
 	
