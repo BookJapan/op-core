@@ -408,14 +408,29 @@ class Wizard extends OnePiece5
 	
 	private function _CheckColumn( Config $config, $table_name )
 	{
+		if( $config->table->$table_name->column ){
+			//	OK
+		}else if( $config->table->$table_name->column === false){
+			return true;
+		}else{
+			$this->mark();
+			var_dump($config->table->$table_name->column);
+		}
+		
 		$columns = Toolbox::toArray($config->table->$table_name->column);
 		$structs = $this->pdo()->GetTableStruct( $table_name );
 		
 		//	use create column, new create column is after where column
 		$after = null;
 		
+	//	$this->mark($table_name);
+	//	$this->d($columns);
+		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
+
+		//	$this->mark("table=$table_name, column=$column_name");
+			
 			//	check
 			if(empty($column)){
 				continue;
@@ -443,7 +458,6 @@ class Wizard extends OnePiece5
 					}
 				}
 			}else{
-				
 				//  Get type from config.
 				$type = $config->table->$table_name->column->$column_name->type;
 				if(!is_string($type)){
@@ -550,6 +564,10 @@ class Wizard extends OnePiece5
 			
 			//	use create column
 			$after = $column_name;
+		}
+		
+		if(!isset($fail)){
+			$this->mark("table=$table_name");
 		}
 		
 		//	Logger
