@@ -404,7 +404,7 @@ class OnePiece5
 		
 		//  recovery (display_errors)
 		if( $this->admin() ){
-			ini_set('display_errors',1);
+		//	ini_set('display_errors',1); // call is duplicate 
 		}else{
 			ini_set('display_errors',0);
 		}
