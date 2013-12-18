@@ -263,8 +263,10 @@ class Config_Account extends Config_Model
 	function update_failed( $account_md5, $login )
 	{
 		$config = parent::update();
-		$config->set = null;
 		$config->where->{self::COLUMN_MD5} = $account_md5;
+		
+		unset($config->set);
+		
 		if( $login ){
 			$config->set->{self::COLUMN_FAIL}	 = 0;
 		}else{
