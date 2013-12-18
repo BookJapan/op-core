@@ -197,7 +197,7 @@ class Config_Account extends Config_Model
 		return $this->_limit_count;
 	}
 	
-	function Database()
+	function Database( $args=null )
 	{
 		$args['user'] = self::DB_USER_NAME;
 		$config = parent::Database($args);
