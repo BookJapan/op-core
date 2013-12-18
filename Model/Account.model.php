@@ -45,12 +45,13 @@ class Model_Account extends Model_Model
 	 */
 	function Auto()
 	{
-		if(!$this->form()->Secure( $this->Config()->form_name() ) ){
-		//	$this->Debug("Form5: " . $this->form()->getstatus( $this->Config()->form_name() ) );
+		$form_name = $this->Config()->form_name();
+		
+		if(!$this->form()->Secure( $form_name ) ){
+		//	$this->mark($this->form()->getstatus( $form_name ),'debug');
 			return false;
 		}
 		
-		$form_name = $this->Config()->form_name();
 		$account   = $this->form()->GetInputValue('account', $form_name);
 		$password  = $this->form()->GetInputValue('password',$form_name);
 		
