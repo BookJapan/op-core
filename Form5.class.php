@@ -1827,8 +1827,10 @@ class Form5 extends OnePiece5
 							$label = $input->value;
 						}
 						$label = sprintf('<label for="%s">%s</label>', $id, $label);
+						$nobr  = true;
 					}else{
 						$label = '';
+						$nobr  = false;
 					}
 					
 					//  tail
@@ -1842,11 +1844,13 @@ class Form5 extends OnePiece5
 					}
 					
 					//  create tag
-					$tag .= sprintf('<nobr><input type="%s" name="%s" value="%s" id="%s" %s />%s</nobr>', $type, $name, $value, $id, $attr, $label);
+					if( $nobr ){ $tag .= '<nobr>'; }
+					$tag .= sprintf('<input type="%s" name="%s" value="%s" id="%s" %s />%s', $type, $name, $value, $id, $attr, $label);
+					if( $nobr ){ $tag .= '</nobr>'; }
 				}
 				break;
 		}
-	
+		
 		//  dummy
 		if( $type === 'checkbox' and !isset($input->child) ){
 			$tag .= sprintf('<input type="hidden" name="%s[]" value=""/>', $input_name) . $nl;
