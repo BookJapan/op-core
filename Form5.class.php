@@ -264,8 +264,15 @@ class Form5 extends OnePiece5
 			$this->SetStatus( $form_name, self::STATUS_TOKEN_KEY_EMPTY );
 			
 			if( $_SERVER['REQUEST_URI']{strlen($_SERVER['REQUEST_URI'])-1} !== '/' ){
-				//  Apatch was transfer to real directory.
+				/*
+				 * Apatch was transfer to real directory.
+				 * Add of slash.
+				 * 
+				 * http://domain.tld/temp -> http://domain.tld/temp/
+				 * 
+				 */
 				if( file_exists($_SERVER['DOCUMENT_ROOT'].$_SERVER['REQUEST_URI']) ){
+				//	$this->mark($_SERVER['DOCUMENT_ROOT'].$_SERVER['REQUEST_URI']);
 					$this->mark('Add to slash(/) at action tail.');
 				}
 			}
