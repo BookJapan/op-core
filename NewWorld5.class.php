@@ -542,8 +542,14 @@ abstract class NewWorld5 extends OnePiece5
 				if( $this->admin() ){
 					$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
 				}
+				$io = false;
+			}else if(empty($layout)){
+				$io = true;
+				print $this->Content();
+			}else{
+				$io = false;
 			}
-			return false;
+			return $io;
 		}
 		
 		//  get controller name
