@@ -653,6 +653,7 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function Header( $str, $replace=null, $code=null )
 	{
+		/*
 		if( null === $replace ){
 			switch($str){
 				case 'hoge':
@@ -662,6 +663,7 @@ abstract class NewWorld5 extends OnePiece5
 					$replace = true;
 			}
 		}
+		*/
 	
 		if( headers_sent() ){
 			$io = false;
@@ -671,7 +673,7 @@ abstract class NewWorld5 extends OnePiece5
 			$str = str_replace( array("\n","\r"), '', $str );
 			header( $str, $replace, $code );
 		}
-	
+		
 		return $io;
 	}
 	
@@ -835,7 +837,8 @@ abstract class NewWorld5 extends OnePiece5
 		return $this->_json[$key];
 	}
 	
-	/* Save temporary data pass to template inside.
+	/**
+	 *  Save temporary data pass to template inside.
 	 * 
 	 * @param string  $key
 	 * @param mixed   $data
@@ -865,6 +868,19 @@ abstract class NewWorld5 extends OnePiece5
 			$this->SetSession($key,null);
 		}
 		return $data;
+	}
+	
+	static function SetEnv( $key, $var )
+	{
+		switch(strtolower($key)){
+			case 'cli':
+				$charset = parent::GetEnv('charset');
+			//	$doctype = parent::GetEnv('doctype');
+				$mime = $var ? 'text/plain': parent::GetEnv('mime'); // TODO: Do error is occurred?
+				self::Header("Content-Type: $mime; charset=$charset");
+				break;
+		}
+		return parent::SetEnv( $key, $var );
 	}
 }
 
