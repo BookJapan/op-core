@@ -403,6 +403,11 @@ class PDO5 extends OnePiece5
 			}
 		}
 		
+		//	Convert LIKE
+		if( $like ){
+			$like = 'LIKE ' . ConfigSQL::Quote( $like, $htis->driver);
+		}
+		
 		//  create qu
 		$qu = "SHOW TABLES FROM `$database` $like ";
 		
