@@ -238,6 +238,11 @@ class PDO5 extends OnePiece5
 			$config = Toolbox::toObject($config);
 		}
 		
+		if( empty($config->driver) ){
+			$this->StackError("Does not set driver. (ex: $config->drive = 'mysql';)");
+			return false;
+		}
+		
 		//  init
 		$this->driver   = isset($config->driver)   ? $config->driver  : null;
 		$this->host     = isset($config->host)     ? $config->host    : null;
@@ -374,18 +379,22 @@ class PDO5 extends OnePiece5
 		return $result;
 	}
 	
-	function GetTableList($config=null)
+	function GetTableList( $config=null, $like=null )
 	{
-		//  init config
-		if(!is_array($config)){
-			$config = Toolbox::toArray($config);
+		if(is_string($config)){
+			//  set database
+			$database = $config;
+		}else{
+			if(!is_array($config)){
+				$config = Toolbox::toArray($config);
+			}
+			
+			//  set database
+			$database = isset($config['database']) ? $config['database']: $this->database;
+			
+			//  set like
+			$like = isset($config['like']) ? $config['like']: null;
 		}
-		
-		//  database
-		$database = isset($config['database']) ? $config['database']: $this->database;
-		
-		//  like
-		$like = isset($config['like']) ? $config['like']: null;
 		
 		//  select database
 		if( $database ){
