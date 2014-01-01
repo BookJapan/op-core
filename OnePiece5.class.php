@@ -386,7 +386,8 @@ class OnePiece5
 		
 		if(!$this->GetEnv('cli') ){
 			//  unique id
-			if(!$this->GetCookie( self::KEY_COOKIE_UNIQ_ID )){
+		//	if(!$this->GetCookie( self::KEY_COOKIE_UNIQ_ID )){
+			if(empty($_COOKIE[self::KEY_COOKIE_UNIQ_ID])){
 				$this->SetCookie( self::KEY_COOKIE_UNIQ_ID, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
 			}
 		}
@@ -1180,7 +1181,6 @@ __EOL__;
 	
 	function GetCookie($key)
 	{
-		//$key = md5($key);
 		if( isset($_COOKIE[$key]) ){
 			$value = $_COOKIE[$key];
 			$value = unserialize($value);
