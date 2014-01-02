@@ -66,12 +66,12 @@ class Model_JapanesePref extends Model_Model
 		return isset($pref[$index]) ? $pref[$index]: null;
 	}
 	
-	function UsedToForm( $args=null )
+	function UsedToForms( $type=null, $is_value_of_int=false )
 	{
-		return self::UsedToForms( $args );
+		return self::UsedToForm( $type, $is_value_of_int );
 	}
 	
-	function UsedToForms( $type='object' )
+	function UsedToForm( $type='object', $is_value_of_int=false )
 	{
 		if(!$type){ $type = 'object'; }
 		
@@ -80,14 +80,14 @@ class Model_JapanesePref extends Model_Model
 		
 		//  init options
 		$options = new Config();
-		$options->{'00'}->value = '';
+		$options->{'e'}->value = '';
 		
 		foreach( $pref as $value => $label ){
 			if($type == 'object'){
-				$options->$value->value = $value;
+				$options->$value->value = $is_value_of_int ? (int)$value: $value;
 				$options->$value->label = $label;
 			}else if($type == 'array'){
-				$options[$value]['value'] = $value;
+				$options[$value]['value'] = $is_value_of_int ? (int)$value: $value;
 				$options[$value]['label'] = $label;
 			}
 		}
