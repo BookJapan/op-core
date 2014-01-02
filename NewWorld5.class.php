@@ -870,6 +870,7 @@ abstract class NewWorld5 extends OnePiece5
 		return $data;
 	}
 	
+	/*
 	static function SetEnv( $key, $var )
 	{
 		switch(strtolower($key)){
@@ -882,6 +883,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		return parent::SetEnv( $key, $var );
 	}
+	*/
 }
 
 class OpNwException extends OpException

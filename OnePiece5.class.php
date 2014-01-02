@@ -1037,15 +1037,17 @@ __EOL__;
 	static function SetEnv( $key, $var )
 	{
 		$var = self::_Env( $key, $var, 'set' );
+		/*
 		if( $key === 'charset'){
 			if( headers_sent($file,$line) ){
 				if(isset($this)){
 					$this->StackError("Header has already been sent.($file, $lien)");
 				}
 			}else{
-				$io = header("Content-type: text/html; charset=$var",true);
+				$io = header("Content-type: text/html; charset=$var");
 			}
 		}
+		*/
 	}
 
 	/**
