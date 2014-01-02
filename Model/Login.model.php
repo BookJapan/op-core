@@ -117,6 +117,7 @@ class Model_Login extends Model_Model
 	function Logout()
 	{
 		$this->SetSession( self::SESSION_LOGIN_ID, null );
+		return true;
 	}
 	
 	/**
