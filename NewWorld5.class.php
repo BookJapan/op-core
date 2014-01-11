@@ -210,25 +210,15 @@ abstract class NewWorld5 extends OnePiece5
 						$_file_does_not_exists_ = $this->GetSession('file_does_not_exists');
 						$_file_does_not_exists_[] = $full_path;
 						$this->SetSession('file_does_not_exists',$_file_does_not_exists_);
-					}else{
-						/*
-						$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER']: null;
-						$mail['to'] = $this->GetEnv('admin-mail');
-						$mail['subject'] = '[NewWorld] Admin notification';
-						$mail['message'] = 'Does not exists this file: '.$full_path."\n";
-						$mail['message'].= 'HTTP Referer: '.$referer."\n";
-						$mail['message'].= 'Request URI: '.$_SERVER['REQUEST_URI']."\n";
-						$mail['message'].= 'Remote user: '.$_SERVER['REMOTE_ADDR']."\n";
-						$mail['message'].= 'Timestamp(1): '.date('Y-m-d H:i:s')."\n";
-						$mail['message'].= 'Timestamp(2): '.date('r')."\n";
-						$mail['message'].= 'Timestamp(3): '.gmdate('Y-m-d H:i:s P (I)')."\n";
-						$this->Mail($mail);
-						*/
 					}
-					
+					/**
+					 * Is the URL specified file (with the extension), has been finished.
+					 * But does it become an attack?
+					 * 
 					//	exit
 					$this->SetEnv('cli',true);
 					exit;
+					*/
 				}
 			}
 		}
