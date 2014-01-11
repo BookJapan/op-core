@@ -9,6 +9,12 @@
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2006 (C) Tomoaki Nagahara All right reserved.
  */
+
+if(!defined('MCRYPT_BLOWFISH')){
+	print __FILE__.', '.__LINE__.'<br/>';
+	return;
+}
+
 class Blowfish
 {	
 	private $_cipher = null;
