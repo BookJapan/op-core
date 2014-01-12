@@ -23,9 +23,9 @@ class PDO5 extends OnePiece5
 	
 	/**
 	 * 
-	 * @param unknown_type $name
-	 * @throws Exception
-	 * @return DML
+	 * @param  string $name
+	 * @throws OpException
+	 * @return DML5
 	 */
 	function DML( $name='DML5' )
 	{
@@ -35,7 +35,7 @@ class PDO5 extends OnePiece5
 			$path .= "PDO/$name.class.php";
 			$io = include_once($path);
 			if(!$io){
-				throw new Exception("Include failed.($path)");
+				throw new OpException("Include failed.($path)");
 			}
 			
 			/*
@@ -57,6 +57,12 @@ class PDO5 extends OnePiece5
 		return $this->dml;
 	}
 	
+	/**
+	 * 
+	 * @param  string $name
+	 * @throws OpException
+	 * @return DDL5
+	 */
 	function DDL( $name='DDL5' )
 	{
 		if( empty($this->ddl) ){
@@ -65,7 +71,7 @@ class PDO5 extends OnePiece5
 			$path .= "PDO/$name.class.php";
 			$io = include_once($path);
 			if(!$io){
-				throw new Exception("Include failed.($path)");
+				throw new OpException("Include failed.($path)");
 			}
 			
 			/*
@@ -81,15 +87,15 @@ class PDO5 extends OnePiece5
 			$this->ddl = new $name();
 			$this->ddl->SetPDO( $this->pdo, $this->driver );
 		}
+		
 		return $this->ddl;
 	}
 	
 	/**
-	 * Wrapper DCL
 	 * 
 	 * @param  string $name
-	 * @throws Exception
-	 * @return DCL
+	 * @throws OpException
+	 * @return DCL5
 	 */
 	function DCL( $name='DCL5' )
 	{
@@ -99,7 +105,7 @@ class PDO5 extends OnePiece5
 			$path .= "PDO/$name.class.php";
 			$io = include_once($path);
 			if(!$io){
-				throw new Exception("Include failed.($path)");
+				throw new OpException("Include failed.($path)");
 			}
 			
 			/*
@@ -115,6 +121,7 @@ class PDO5 extends OnePiece5
 			$this->dcl = new $name();
 			$this->dcl->SetPDO( $this->pdo, $this->driver );
 		}
+		
 		return $this->dcl;
 	}
 	
