@@ -400,7 +400,7 @@ class OnePiece5
 		if( isset($_GET['mark_label']) ){
 			$mark_label = $_GET['mark_label'];
 			$mark_value = $_GET['mark_label_value'];
-			Toolbox::SaveMarkLabelValue($mark_label,$mark_value);
+			Developer::SaveMarkLabelValue($mark_label,$mark_value);
 		}
 		
 		//  recovery (display_errors)

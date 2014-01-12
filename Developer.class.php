@@ -54,13 +54,15 @@ class Developer
 	
 	static function PrintGetFlagList()
 	{
+		/*
 		static $isPrint = null;
 		if( $isPrint ){
 			return;
 		}else{
 			$isPrint = true;
 		}
-	
+		*/
+		
 		if( OnePiece5::GetEnv('cli') ){
 			return;
 		}
@@ -69,22 +71,21 @@ class Developer
 		if(!OnePiece5::admin()){
 			return;
 		}
-	
+					
+		//  Hide mark label links setting.
+		$key = 'hide_there_links';
+		$str = 'Hide there links';
+		$var = 1;
+		if( self::GetSaveMarkLabelValue($key) ){
+			return;
+		}
+		
 		//  Mark label links
 		$join = array();
-		if( isset($_SERVER['Toolbox']) ){
-				
-			//  Hide mark label links setting.
-			$key = 'hide_there_links';
-			$str = 'Hide there links';
-			$var = 1;
-			if( self::GetSaveMarkLabelValue($key) ){
-				return;
-			}
-	
-			$join[] = sprintf('<a href="?mark_label=%s&mark_label_value=%s">%s</a>', $key, $var, $str);
-				
-			foreach( $_SERVER['Toolbox']['MARK_LABEL'] as $mark_label => $null ){
+		$join[] = sprintf('<a href="?mark_label=%s&mark_label_value=%s">%s</a>', $key, $var, $str);
+		
+		if( isset($_SERVER[__CLASS__]) ){
+			foreach( $_SERVER[__CLASS__]['MARK_LABEL'] as $mark_label => $null ){
 				$key = $mark_label;
 				$var = self::GetSaveMarkLabelValue($mark_label);
 				$str = $var ? 'Hide': 'Show';
