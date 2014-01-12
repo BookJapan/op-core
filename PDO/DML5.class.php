@@ -626,31 +626,54 @@ class DML5 extends OnePiece5
 		$return = null;
 		
 		if( isset($conf['column']) ){
+						
 			if( is_array($conf['column']) ){
-				$cols = $conf['column'];
+				/**
+				 * Example:
+				 * array('id','name','timestamp');
+				 * array('id'=>true,'name'=>true,'timestamp'=>false);
+				 */
+				$cols_temp = $conf['column'];
 			}else if( is_string($conf['column']) ){
-				$cols = explode(',',$conf['column']);
+				/**
+				 * Example:
+				 * array('column'=>'id,name,timestamp');
+				 */
+				$cols_temp = explode(',',$conf['column']);
 			}else{
 				$this->StackError('column is not array or string.');
 				return false;
 			}
 			
 			$temp = array();
-			foreach( $cols as $key => $var ){
+			foreach( $cols_temp as $key => $var ){
 				
-				if( $key == '*' ){
-					//	ex: $config->column->{'*'} = true;
+				if( $key === '*' ){
+					/**
+					 * Example: 
+					 * $config->column->{'*'} = true;
+					 */	
 					if( $var ){
 						array_unshift($temp, $key);
 					}
 				}else if( is_bool($var) and $var ){
-					//	ex: $config->column->column_name = true;
+					/**
+					 * Example: 
+					 * $config->column->column_name = true;
+					 */
 					$temp[] = ConfigSQL::Quote( $key, $this->driver );
 				}else if( is_numeric($key) ){
-					//	ex: $config->column[] = 'column_name';
+					/**
+					 * Example:
+					 * $config->column[] = 'column_name';
+					 */
 					$temp[] = ConfigSQL::Quote( $var, $this->driver );
 				}else{
-					//	ex: $config->column->alias_name = "t_table.column_name";
+					/**
+					 * Example: 
+					 * $config->column->alias_name = "t_table.column_name";
+					 * $config->column->user_id = "t_user.id";
+					 */
 					$temp[] = ConfigSQL::Quote( $var, $this->driver )
 							 ." AS "
 							 .ConfigSQL::Quote( $key, $this->driver );
@@ -682,9 +705,6 @@ class DML5 extends OnePiece5
 			}
 		}
 		
-		//  init
-	//	$return = null;
-		
 		//  select columns
 		if( $cols ){
 			$return = $cols;
@@ -708,15 +728,6 @@ class DML5 extends OnePiece5
 				$return .= implode( ', ', $agg );
 			}
 		}
-		
-		//  Added astrisk
-		/*
-		if( isset($conf['column']['all']) and $conf['column']['all'] ){
-			//  No touch
-		}else{
-			$return = $return ? '*, '.$return: '*';
-		}
-		*/
 		
 		return $return;
 	}
