@@ -179,7 +179,19 @@ class DML5 extends OnePiece5
 			$offset = null;
 		}
 		
-		return "SELECT $column FROM $table $where $group $having $order $limit $offset ";
+		//	option
+		if(!empty($conf['distinct']) or !empty($conf['distinctrow'])){
+			$options[] = 'DISTINCT';
+		}
+		
+		//	merge option
+		if(isset($options)){
+			$option = join(' ',$options);
+		}else{
+			$option = null;
+		}
+		
+		return "SELECT $option $column FROM $table $where $group $having $order $limit $offset ";
 	}
 	
 	function GetInsert( $conf )
