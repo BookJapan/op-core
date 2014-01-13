@@ -25,7 +25,7 @@ class Model_Account extends Model_Model
 		return $this->Config()->form_name();
 	}
 	
-	function GetAccountRecord( $id )
+	function GetAccountRecord( $id, $keyword=null )
 	{
 		$config = $this->Config()->select();
 		$config->where->account_id = $id;
@@ -33,7 +33,9 @@ class Model_Account extends Model_Model
 		$record = $this->pdo()->select($config);
 		
 		//	encrypt email
-		$record['email'] = isset($record['account_enc']) ? $this->model('Blowfish')->Decrypt($record['account_enc']): null;
+		$record['email'] = isset($record['account_enc']) ? 
+							$this->model('Blowfish')->Decrypt($record['account_enc'],$keyword): 
+							null;
 		
 		return $record;
 	}
