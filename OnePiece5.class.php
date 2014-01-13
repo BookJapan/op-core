@@ -2336,13 +2336,16 @@ __EOL__;
 	 * 
 	 * @param  string $string
 	 * @param  array  $options
-	 * @return Ambigous <mixed, string|array, stdClass>|unknown
+	 * @return string
 	 */
 	static function Wiki2( $string, $options=null )
 	{
 		//  Check
-		if(!is_string($string)){
+		if(is_null($string)){
+			return '';
+		}else if(!is_string($string)){
 		//	self::d($string);
+		//	var_dump($string);
 			self::mark( 'Does not string - '.self::GetCallerLine() );
 			self::StackError("Does not string.");
 		}
