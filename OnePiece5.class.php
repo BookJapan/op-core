@@ -1355,14 +1355,16 @@ __EOL__;
 			$path = str_replace( '\\', '/', $path );
 		}
 		
-		$op_root  = self::GetEnv('op_root');
-		$app_root = self::GetEnv('app_root');
-		$doc_root = self::GetEnv('doc_root');
+		$op_root	 = self::GetEnv('op_root');
+		$app_root	 = self::GetEnv('app_root');
+		$doc_root	 = self::GetEnv('doc_root');
+	//	$ctrl_root	 = self::GetEnv('ctrl_root');
 		
 		//  remove slash (easy-to-read)
-		$op_root  = $op_root  ? rtrim($op_root, '/') : ' ';
-		$app_root = $app_root ? rtrim($app_root,'/') : ' ';
-		$doc_root = $doc_root ? rtrim($doc_root,'/') : ' ';
+		$op_root	 = $op_root   ? rtrim($op_root,  '/') : ' ';
+		$app_root	 = $app_root  ? rtrim($app_root, '/') : ' ';
+		$doc_root	 = $doc_root  ? rtrim($doc_root, '/') : ' ';
+	//	$ctrl_root	 = $ctrl_root ? rtrim($ctrl_root,'/') : ' ';
 		
 		$patt = array("|^$app_root|","|^$doc_root|","|^$op_root|");
 		$repl = array('App:','Doc:','OP:');
