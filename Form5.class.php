@@ -454,12 +454,19 @@ class Form5 extends OnePiece5
 				if( isset($input->options->$value) ){
 					if( isset($input->options->$value->label) ){
 						$value = $input->options->$value->label;
+					}else{
+						$this->mark('![.red[ Check here!! ]]');
+						$this->d($input->options->$value);
 					}
 				}else{
 					//  Brute search
+				//	$this->d(Toolbox::toArray($input->options));
 					foreach( $input->options as $option ){
+						if(!isset($option->value)){
+						//	$this->mark();
+						}else
 						if( $option->value == $value ){
-							if( isset($option->label) ) {
+							if( isset($option->label) ){
 								$value = $option->label;
 							}
 							break;
@@ -2269,16 +2276,29 @@ class Form5 extends OnePiece5
 	
 	function ValidateRequied( $input, $form_name, $value )
 	{
+	//	$this->mark($input->name.'='.$value);
+		
+		if( is_null($value) ){
+			if( $value = $this->GetSaveValue($input->name, $form_name) ){
+				//	check value is saved value. (submitted value)
+			}else if( isset($input->value) and strlen($input->value) ){
+				//	check value is default value.
+			}
+		}
+		
 		if(is_array($value)){
 			$value = implode('',$value);
 		}
 		
 		if( strlen($value) ){
 			$io = true;
+		/**
+		 * move to pre routine.
 		}else if( is_null($value) and $this->GetSaveValue($input->name, $form_name)){
 			$io = true;
 		}else if( is_null($value) and isset($input->value) and strlen($input->value) ){
 			$io = true;
+		*/
 		}else{
 			$io = false;
 		}
