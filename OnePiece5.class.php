@@ -869,9 +869,9 @@ __EOL__;
 		}
 		
 		if( preg_match('|([a-z]+)[-_]?([a-z]+)?\.?([-_a-z0-9]+)?|i', $locale, $match) or true){
-			$lang = @$match[1] ? $match[1]: 'ja';
-			$area = @$match[2] ? $match[2]: 'JP';
-			$code = @$match[3] ? $match[3]: 'utf-8';
+			$lang = isset($match[1]) ? $match[1]: 'ja';
+			$area = isset($match[2]) ? $match[2]: 'JP';
+			$code = isset($match[3]) ? $match[3]: 'utf-8';
 		}
 		
 		// Windows is unsupport utf-8
@@ -896,7 +896,7 @@ __EOL__;
 		 * timezone list
 		 * @see http://jp2.php.net/manual/ja/timezones.php 
 		 */
-		if( $area == 'JP'){
+		if( $area === 'JP'){
 			$timezone = 'Asia/Tokyo';
 		}
 		
@@ -943,6 +943,9 @@ __EOL__;
 				break;
 				
 			default:
+				/* Convert to unix path separator from Windows path separator.
+				 * C:¥www¥htdocs -> C:/www/htdocs
+				 */
 				if( preg_match( '/^([a-z0-9]+)[-_]?(root|dir|mail)$/',$key, $match ) ){
 					$key = $match[1].'_'.$match[2];
 					if( $match[2] === 'mail' ){
@@ -989,17 +992,17 @@ __EOL__;
 	
 	private function _InitEnv()
 	{
-		/**
-			Under sample added .htaccess or httpd.conf
-			SetEnv ADMIN_IP 192.168.1.1
-		*/
+		/* Added to .htaccess or httpd.conf the sample below.
+		 * SetEnv ADMIN_IP 192.168.1.1
+		 */
 		if( isset($_SERVER['ADMIN_ADDR']) ){
 			$_SERVER['ADMIN_IP'] = $_SERVER['ADMIN_ADDR']; 
 		}
 		$admin_ip = isset($_SERVER['ADMIN_IP']) ? $_SERVER['ADMIN_IP']: '127.0.0.1';
 		
 		// server admin(mail address)
-		if( preg_match('|[-_a-z0-9\.\+]+@[-_a-z0-9\.]+|i',@$_SERVER['SERVER_ADMIN']) ){
+		if( isset($_SERVER['SERVER_ADMIN']) and
+			preg_match('|[-_a-z0-9\.\+]+@[-_a-z0-9\.]+|i', $_SERVER['SERVER_ADMIN']) ){
 			$admin_mail = $_SERVER['SERVER_ADMIN'];
 		}else{
 			$admin_mail = 'noreply@onepiece-framework.com';
@@ -1907,6 +1910,7 @@ __EOL__;
 		}
 		
 		//  for developper's debug
+	//	$this->mark( $this->GetCallerLine(1) );
 		$this->mark($file,'template');
 		
 		//  access is deny, above current directory
