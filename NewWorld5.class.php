@@ -454,7 +454,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 
 		// controller root
-		$app_root = rtrim( $this->GetEnv('AppRoot'), '/');
+		$app_root = rtrim( $this->GetEnv('App-Root'), '/');
 		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
 		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
 		$this->SetEnv('Ctrl-Root',$ctrl_root);
