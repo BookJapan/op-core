@@ -61,7 +61,7 @@ class Cache extends OnePiece5
 		if( $memcache ){
 			$this->InitMemcache( $host, $port );
 		}else{
-		//	$this->mark("not found");
+			$this->mark("not found",'cache');
 		}
 		
 		return true;

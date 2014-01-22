@@ -155,7 +155,6 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
-	//	return true;
 		
 		$dbms  = $config->database->driver;
 		$host  = $config->database->host;
@@ -163,6 +162,27 @@ class Wizard extends OnePiece5
 		$user  = $config->database->user;
 		$db    = $config->database->database;
 		$host .= $port == 3306 ? '': ' : '.$port;
+		
+		/*
+		foreach( array('driver','host','port','user','database') as $key ){
+			if(!$var = is_string($config->database->$key)){
+				$fail = true;
+				$this->StackError("$key is empty.");
+			}else{
+				if( $key === 'database' ){
+					$key = 'db';
+				}
+				if( $key === 'driver' ){
+					$key = 'dbms';
+				}
+				${$key} = $var;
+			}
+		}
+		
+		if($fail){
+			return false;
+		}
+		*/
 		
 		//	Database connection test
 		$io = $this->pdo()->Connect($config->database);

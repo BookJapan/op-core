@@ -250,14 +250,6 @@ class Config_Model extends OnePiece5
 		$config->password = md5($password);
 		$config->charset  = 'utf8';
 		
-		/*
-		if(!$io = $this->_database_user_single()){
-			if( isset($args['user']) ){
-				$config->user = $args['user'];
-			}
-		}
-		*/
-		
 		//	overwrite
 		if( $args ){
 			foreach( $args as $key => $var ){

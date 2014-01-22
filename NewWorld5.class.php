@@ -462,6 +462,11 @@ abstract class NewWorld5 extends OnePiece5
 		// change dir
 		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
 		
+		/*
+		$this->d($route);
+		$this->mark( 'chdir='.$chdir );
+		*/
+		
 		if( isset($route['pass']) and $route['pass'] ){
 			chdir( dirname($route['fullpath']) );
 		}else{
@@ -469,11 +474,17 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  Controller file path.
-		$path = getcwd().'/'.$route['file'];		
-		
+		$path = getcwd().'/'.$route['file'];
+
+		/*
+		$this->mark( getcwd() );
+		$this->mark( $route['file'] );
+		$this->mark($path);
+		*/
+				
 		//	Execute controller.
 		$this->_content .= $this->GetTemplate($path);
-				
+		
 		return true;
 	}
 	
@@ -556,6 +567,7 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  for debug
 		if( 0 ){
+			$this->d($_SERVER[Env::_ONE_PIECE_]);
 			$temp['controller'] = $controller;
 			$temp['layout']     = $layout;
 			$temp['layout_dir'] = $layout_dir.' ('.$this->GetEnv('layout-dir').')';
