@@ -1039,18 +1039,11 @@ __EOL__;
 	 */
 	static function SetEnv( $key, $var )
 	{
-		$var = self::_Env( $key, $var, 'set' );
-		/*
-		if( $key === 'charset'){
-			if( headers_sent($file,$line) ){
-				if(isset($this)){
-					$this->StackError("Header has already been sent.($file, $lien)");
-				}
-			}else{
-				$io = header("Content-type: text/html; charset=$var");
-			}
+		if( isset($_SERVER['REMOTE_ADDR']) and  $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ){
+			Env::Set($key, $var);
+		}else{
+			self::_Env( $key, $var, 'set' );
 		}
-		*/
 	}
 
 	/**
@@ -1060,6 +1053,10 @@ __EOL__;
 	 */
 	static function GetEnv( $key )
 	{
+		if( isset($_SERVER['REMOTE_ADDR']) and  $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ){
+			return Env::Get($key);
+		}
+		
 		switch(strtolower($key)){
 			case 'url':
 				if(empty($this)){
@@ -2466,5 +2463,111 @@ class OpException extends Exception
 	function GetWizard()
 	{
 		return OnePiece5::GetEnv('wizard');
+	}
+}
+
+class Env
+{
+	const _ONE_PIECE_ = 'ONE_PIECE_5';
+	
+	static private function _Convert( $key, $var=null )
+	{
+		switch($key){
+			case 'NL':
+				$key = 'NEW_LINE';
+				break;
+			case 'HREF':
+				$key = 'HTTP_REFERER';
+				break;
+			case 'LANG':
+				$key = 'LANGUAGE';
+				break;
+			case 'FQDN':
+			case 'DOMAIN':
+				$key = 'HTTP_HOST';
+				break;
+			default:
+				if(
+					/* Match from
+					 * OP_ROOT  or OP-ROOT
+					 * APP_ROOT or APP-ROOT
+					 * DOC_ROOT or DOC-ROOT
+					 */
+					strlen($key) > 6 &&
+				   ($key[strlen($key)-5] === '_' ||
+					$key[strlen($key)-5] === '-')&& 
+					$key[strlen($key)-4] === 'R' &&
+					$key[strlen($key)-3] === 'O' &&
+					$key[strlen($key)-2] === 'O' &&
+					$key[strlen($key)-1] === 'T' 
+				){
+					/* Convert to 
+					 * OP-ROOT  -> OP_ROOT
+					 * APP-ROOT -> APP_ROOT
+					 * DOC-ROOT -> DOC_ROOT
+					 */
+					$is_path = true;
+					$key[strlen($key)-5] = '_';
+				}else
+				if(
+					strlen($key) > 5 &&
+				   ($key[strlen($key)-4] === '_' ||
+					$key[strlen($key)-4] === '-')&&
+					$key[strlen($key)-3] === 'D' &&
+					$key[strlen($key)-2] === 'I' &&
+					$key[strlen($key)-1] === 'R'
+				){
+					$is_path = true;
+					$key[strlen($key)-4] = '_';
+				}
+		}
+			
+		//	If var of path.
+		if( $var and !empty($is_path) ){
+			/*  Convert to unix path separator from Windows path separator.
+			 * 
+			 * Example
+			 * C:¥www¥htdocs¥ -> C:/www/htdocs/
+			 */
+			$var = str_replace('\\', '/', $var);
+			/* Add a slash at the end of the path.
+			 * 
+			 * Example
+			 * /var/www/html -> /var/www/html/
+			 */
+			$var = rtrim( $var, '/').'/';
+			
+			/*
+			var_dump($key);
+			var_dump($var);
+			print '<hr/>';
+			*/
+		}
+		
+		return array( $key, $var );
+	}
+	
+	static function Get( $key )
+	{
+		$key = strtoupper($key);
+		
+		list( $key, $var ) = self::_Convert( $key );
+		
+		if( isset($_SERVER[self::_ONE_PIECE_][$key]) ){
+			$var = $_SERVER[self::_ONE_PIECE_][$key];
+		}else if( isset($_SERVER[$key]) ){
+			$var = $_SERVER[$key];
+		}else{
+			$var = null;
+		}
+		
+		return $var;
+	}
+	
+	static function Set( $key, $var )
+	{
+		$key = strtoupper($key);
+		list( $key, $var ) = self::_Convert( $key, $var );
+		$_SERVER[self::_ONE_PIECE_][$key] = $var;
 	}
 }
