@@ -30,6 +30,28 @@ if( ! isset($_SERVER['OnePiece5']) ){
 }
 
 /**
+ * check if localhost.
+ */
+
+
+if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
+	$_SERVER['OP_IS_LOCALHOST'] = true;
+}else{
+	$_SERVER['OP_IS_LOCALHOST'] = false;
+}
+
+/**
+ * check if administrator.
+ */ 
+if($_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP']){
+	$_SERVER['OP_IS_ADMIN'] = true;
+	$_SERVER['OP_IS_DEVELOPER'] = null;
+}else{
+	$_SERVER['OP_IS_ADMIN'] = false;
+	$_SERVER['OP_IS_DEVELOPER'] = null;	
+}
+
+/**
  * TODO: We (will|should) support to spl_autoload_register
  * @see http://www.php.net/manual/ja/function.spl-autoload-register.php
  */
@@ -299,10 +321,11 @@ if(!function_exists('OnePieceExceptionHandler')){
 	function OnePieceExceptionHandler($e)
 	{
 		//  TODO: 
-		print "<h1>Please implement the e-mail alert.</h1>";
+		print "<h1>Catch the Exception.</h1>";
+		
 		$op = new OnePiece5();
 		$op->StackError( $e->getMessage() );
-		printf('<div><p>[%s] %s</p><p>%s : %s</p></div>', get_class($e), $e->GetMessage(), $e->GetFile(), $e->GetLine() );
+		printf('<div style="background-color:black; color:white;">[%s] %s<br/>%s : %s</div>', get_class($e), $e->GetMessage(), $e->GetFile(), $e->GetLine() );
 	}
 	set_exception_handler('OnePieceExceptionHandler');
 }
@@ -1039,11 +1062,11 @@ __EOL__;
 	 */
 	static function SetEnv( $key, $var )
 	{
-		if( isset($_SERVER['REMOTE_ADDR']) and  $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ){
-			Env::Set($key, $var);
-		}else{
-			self::_Env( $key, $var, 'set' );
+		if($_SERVER['OP_IS_LOCALHOST']){
+			return Env::Set($key, $var);
 		}
+		
+		return self::_Env( $key, $var, 'set' );
 	}
 
 	/**
@@ -1053,7 +1076,7 @@ __EOL__;
 	 */
 	static function GetEnv( $key )
 	{
-		if( isset($_SERVER['REMOTE_ADDR']) and  $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ){
+		if($_SERVER['OP_IS_LOCALHOST']){
 			return Env::Get($key);
 		}
 		
@@ -1067,6 +1090,7 @@ __EOL__;
 				break;
 				
 			default:
+				var_dump($_SERVER['REMOTE_ADDR']);
 				$result = self::_Env( $key, null, 'get' );
 		}
 		
@@ -2059,7 +2083,7 @@ __EOL__;
 			if( $root = OnePiece5::GetEnv($label) ){
 				$path = str_replace( $match[0], $root, $path );
 			}else{
-				$this->StackError("$label is not set.");
+				self::StackError("$label is not set.");
 			}
 		}else
 		if( preg_match('|^([-_a-zA-Z0-9]+):/|',$path,$match) ){
@@ -2067,7 +2091,7 @@ __EOL__;
 			if( $root = self::GetEnv($label) ){
 				$path = str_replace( $match[0], $root, $path );
 			}else{
-				$this->StackError("$label is not set.");
+				self::StackError("$label is not set.");
 			}
 		}
 				
@@ -2476,16 +2500,20 @@ class Env
 			case 'NL':
 				$key = 'NEW_LINE';
 				break;
+				
 			case 'HREF':
 				$key = 'HTTP_REFERER';
 				break;
+				
 			case 'LANG':
 				$key = 'LANGUAGE';
 				break;
+				
 			case 'FQDN':
 			case 'DOMAIN':
 				$key = 'HTTP_HOST';
 				break;
+				
 			default:
 				if(
 					/* Match from
@@ -2536,7 +2564,6 @@ class Env
 			 * /var/www/html -> /var/www/html/
 			 */
 			$var = rtrim( $var, '/').'/';
-			
 			/*
 			var_dump($key);
 			var_dump($var);

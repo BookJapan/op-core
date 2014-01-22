@@ -155,7 +155,6 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
-		
 		$dbms  = $config->database->driver;
 		$host  = $config->database->host;
 		$port  = $config->database->port;
