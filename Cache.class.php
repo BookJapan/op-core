@@ -3,7 +3,7 @@
 class Cache extends OnePiece5
 {
 	/**
-	 * Instance of Memcache or Memcached.
+	 * Instance of Memcache or Memcached or Redis.
 	 * 
 	 * @var Memcache|Memcached|Redis
 	 */
@@ -16,49 +16,62 @@ class Cache extends OnePiece5
 	 */
 	private $_compress = false;
 	
+	/**
+	 * Connection flag.
+	 * 
+	 * @var boolean
+	 */
 	private $_isConnect = null;
+	
+	/**
+	 * String of 'memcache' or 'memcached' or 'redis'.
+	 * 
+	 * @var string
+	 */
+	private $_cache_type = null;
+	
+	private $_use_cas = true;
+	private $_cas_list = array();
 	
 	function Init()
 	{
 		parent::Init();
 		
 		//  Get use flag
-		$redis     = $this->GetEnv('USE_REDIS');
-		$memcache  = $this->GetEnv('USE_MEMCACHE');
-		$memcached = $this->GetEnv('USE_MEMCACHED');
+		$use_redis     = $this->GetEnv('OP_USE_REDIS');
+		$use_memcache  = $this->GetEnv('OP_USE_MEMCACHE');
+		$use_memcached = $this->GetEnv('OP_USE_MEMCACHED');
 		
 		//	get host & port
-		$host = $this->GetEnv('cache-host');
-		$port = $this->GetEnv('cache-port');
+		$host = $this->GetEnv('OP_CACHE_HOST');
+		$port = $this->GetEnv('OP_CACHE_PORT');
 		
 		$host = $host ? $host : 'localhost';
 		$port = $port ? $port : '11211';
 		
-		if( is_null($memcache)){
-			$memcache = class_exists('Memcache',false);
+		if( is_null($use_memcached)){
+			$use_memcached = class_exists('Memcached',false);
+		}else
+		
+		if( is_null($use_memcache)){
+			$use_memcache = class_exists('Memcache',false);
+		}else
+		
+		if( is_null($use_redis)){
+			$use_redis = class_exists('Redis',false);
 		}
 		
-		if( is_null($memcached)){
-			$memcached = class_exists('Memcached',false);
-		}
-		
-		if( is_null($redis)){
-			$redis = class_exists('Redis',false);
-		}
-		
-		if( $redis ){
+		if( $use_redis ){
 			if( $this->_cache = new Redis() ){
 				$this->InitRedis();
 			}
 		}else
 		
-		if( $memcached ){
-			if( $this->_cache = new Memcached( $host, $port ) ){
-				$this->InitMemcached();
-			}
+		if( $use_memcached ){
+			$this->InitMemcached( $host, $port );
 		}else
 		
-		if( $memcache ){
+		if( $use_memcache ){
 			$this->InitMemcache( $host, $port );
 		}else{
 			$this->mark("not found",'cache');
@@ -69,6 +82,8 @@ class Cache extends OnePiece5
 	
 	function InitMemcache( $host='localhost', $port='11211', $weight=10 )
 	{
+		$this->_cache_type = 'memcache';
+		
 		//  Change modan method.
 		if(!$hash_strategy = $this->GetEnv('memcache.hash_strategy') ){
 			$hash_strategy = 'consistent';
@@ -85,8 +100,17 @@ class Cache extends OnePiece5
 	
 	function InitMemcached( $host='localhost', $port='11211', $weight=10 )
 	{
+		$this->_cache_type = 'memcached';
+		
+		//	Connect
+		if( $this->_cache = new Memcached( $persistent_id = null ) ){
+			//	Do not know whether the connection is successful at this stage.
+			$this->_isConnect = true;
+		}
+		
+		//	Add server pool.
 		if(!$io = $this->AddServer( $host, $port, $weight )){
-			throw new Exception("Failed addServer method.");
+			$this->StackError('AddServer method is failed.');
 		}
 	}
 	
@@ -95,8 +119,6 @@ class Cache extends OnePiece5
 		//  Init
 		$persistent = true;
 		
-		//	
-		//$this->mark( get_class($this->_cache) );
 		switch(get_class($this->_cache)){
 			case 'Memcached':
 				$io = $this->_cache->addServer( $host, $port, $weight );
@@ -111,6 +133,16 @@ class Cache extends OnePiece5
 		}
 		
 		return $io;
+	}
+	
+	function SetCompress( $var=true )
+	{
+		if( $this->_cache_type === 'memcached' ){
+			//	Memcached instance's default is true.
+			$this->_cache->setOption( Memcached::OPT_COMPRESSION, $var );
+		}else{
+			$this->_compress = $var;
+		}
 	}
 	
 	function CheckKeyName($key)
@@ -132,22 +164,8 @@ class Cache extends OnePiece5
 			return null;
 		}
 		
-		switch( $name = get_class($this->_cache) ){
-			case 'Memcached':
-				break;
-				
-			case 'Memcache':
-				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
-				break;
-				
-			default:
-				$this->mark($name);
-				return false;
-		}
-		
 		//	key
 		if(!is_string($key)){
-		//	$key = serialize($key);
 			$type = gettype($key);
 			$this->StackError("key is not string. (type=$type)");
 			return false;
@@ -159,13 +177,25 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
-		//  TODO: compress option
-	//	$this->mark( get_class($this->_cache) );
-	//	$this->mark("$key, $value, $compress, $expire");
-		return $this->_cache->Set( $key, $value, $compress, $expire );
+		switch( $name = get_class($this->_cache) ){
+			case 'Memcached':
+				if( isset( $this->_cas_list[md5($key)] ) ){
+					$cas = $this->_cas_list[md5($key)];
+					return $this->_cache->cas( $cas, $key, $value, $expire );
+				}else{
+					return $this->_cache->Set( $key, $value, $expire );
+				}
+		
+			case 'Memcache':
+				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
+				return $this->_cache->Set( $key, $value, $compress, $expire );
+		
+			default:
+				$this->StackError("undefine $name.");
+		}
 	}
 	
-	function Get( $key )
+	function Get( $key, $use_cas=true )
 	{
 		static $skip;
 		if( $skip ){
@@ -182,17 +212,29 @@ class Cache extends OnePiece5
 			$this->StackError("key is not string. (type=$type)");
 			return false;
 		}
-
+		
 		//	check
 		if(!$this->CheckKeyName($key)){
 			$this->StackError("Illegal key name. ($key)");
 			return false;
 		}
 		
-		//	TODO: compress option
-		$value = $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
-		
-		return $value;
+		switch( $this->_cache_type ){
+			case 'memcache':
+				return $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
+				
+			case 'memcached':
+				if( $use_cas ){
+					$cas = &$this->_cas_list[md5($key)];
+				}else{
+					$cas = null;
+					unset(  $this->_cas_list[md5($key)]);
+				}
+				return $this->_cache->Get( $key, null, $cas );
+				
+			default:
+				$this->StackError("undefined {$this->_cache_type}.");
+		}
 	}
 	
 	function Increment( $key, $value=1 )
@@ -302,5 +344,13 @@ class Cache extends OnePiece5
 		}
 		
 		return $this->_cache->resetServerList();
+	}
+	
+	function GetStatus()
+	{
+		$code = $this->_cache->getResultCode();
+		$mess = $this->_cache->getResultMessage();
+		$status = "$mess ($code)";
+		return $status;
 	}
 }
