@@ -160,7 +160,7 @@ abstract class NewWorld5 extends OnePiece5
 	}
 	
 	/**
-	 * 
+	 * Determine the route to dispatch.
 	 * 
 	 * @param string $request_uri
 	 * @return multitype:
@@ -274,7 +274,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  Init
-		$app_root = $this->GetEnv('AppRoot');
+		$app_root = $this->GetEnv('App-Root');
 		$app_root = rtrim($app_root,'/').'/';
 		$dirs = explode( '/', rtrim($file_path,'/') );
 		$args = array();
