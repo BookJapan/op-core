@@ -1824,8 +1824,10 @@ class Form5 extends OnePiece5
 						$tag .= $this->CreateInputTag($child, $form_name);
 					}
 				}else{
-					//  single
-					//  checkbox and radio
+					//	single
+					$label_tag = null;
+					
+					//	checkbox and radio
 					if( $type === 'checkbox' or $type === 'radio' ){
 						//  value
 						$value = $input->value;
@@ -1833,16 +1835,17 @@ class Form5 extends OnePiece5
 						if(!isset($label)){
 							$label = $input->value;
 						}
-						$label = sprintf('<label for="%s">%s</label>', $id, $label);
-						$nobr  = true;
+						$label_tag = sprintf('<label id="%s-label" %s>', $id, $attr);
+					//	$label = sprintf('<label for="%s">%s</label>', $id, $label);
+					//	$nobr  = false;
 					}else{
-						$label = '';
-						$nobr  = false;
+					//	$label = '';
+					//	$nobr  = false;
 					}
 					
 					//  tail
 					if(isset($tail)){
-						$label .= $tail;
+						$label_tag .= $tail;
 					}
 					
 					//  checked
@@ -1851,9 +1854,11 @@ class Form5 extends OnePiece5
 					}
 					
 					//  create tag
-					if( $nobr ){ $tag .= '<nobr>'; }
+				//	if( $nobr ){ $tag .= '<nobr>'; }
+					if( $label_tag ){ $tag .= $label_tag; }
 					$tag .= sprintf('<input type="%s" name="%s" value="%s" id="%s" %s />%s', $type, $name, $value, $id, $attr, $label);
-					if( $nobr ){ $tag .= '</nobr>'; }
+				//	if( $nobr ){ $tag .= '</nobr>'; }
+					if( $label_tag ){ $tag .= '</label>'; }
 				}
 				break;
 		}
@@ -1866,6 +1871,13 @@ class Form5 extends OnePiece5
 		return $tag . $nl;
 	}
 	
+	/**
+	 * Create select's option.
+	 * 
+	 * @param  array  $options
+	 * @param  string $save_value
+	 * @return string
+	 */
 	function CreateOption( $options, $save_value )
 	{
 		$result = '';
@@ -1924,21 +1936,19 @@ class Form5 extends OnePiece5
 	function Input( $input_name, $value=null, $form_name=null )
 	{
 		print $this->GetInput( $input_name, $form_name, $value );
-		return 'This method(function) is print.';
 	}
 	
 	function Label( $input_name, $form_name=null )
 	{
 		print $this->GetInputLabel( $input_name, $form_name );
-		return 'This method(function) is print.';
 	}
 	
+	/*
 	function InputLabel( $input_name, $form_name=null )
 	{
-		$label = $this->GetInputLabel( $input_name, $form_name );
-		print $label;
-		return 'This method(function) is print.';
+		print $this->GetInputLabel( $input_name, $form_name );
 	}
+	*/
 
 	function GetLabel( $input_name, $form_name=null, $option_value=null )
     {
@@ -1999,7 +2009,6 @@ class Form5 extends OnePiece5
 	function Error( $input_name, $html='span 0xff0000', $form_name=null )
 	{
 		print $this->GetInputError( $input_name, $form_name, $html );
-		return $this->i18n()->Get('This method(function) is print.');
 	}
 	
 	/*
