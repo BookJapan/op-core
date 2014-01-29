@@ -32,8 +32,6 @@ if( ! isset($_SERVER['OnePiece5']) ){
 /**
  * check if localhost.
  */
-
-
 if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
 	$_SERVER['OP_IS_LOCALHOST'] = true;
 }else{
@@ -43,11 +41,11 @@ if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1')
 /**
  * check if administrator.
  */ 
-if($_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP']){
+if( isset($_SERVER['ADMIN_IP']) and $_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP']){
 	$_SERVER['OP_IS_ADMIN'] = true;
 	$_SERVER['OP_IS_DEVELOPER'] = null;
 }else{
-	$_SERVER['OP_IS_ADMIN'] = false;
+	$_SERVER['OP_IS_ADMIN'] = null;
 	$_SERVER['OP_IS_DEVELOPER'] = null;	
 }
 
@@ -55,10 +53,13 @@ if($_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP']){
  * TODO: We (will|should) support to spl_autoload_register
  * @see http://www.php.net/manual/ja/function.spl-autoload-register.php
  */
-if(!function_exists('__autoload')){
+if( function_exists('__autoload') ){
+//	print "<p>__autoload is already exists.</p>";
+}else{
+//	print __FILE__.", ".__LINE__;
 	function __autoload($class_name)
 	{
-//		print $class_name.'<br/>';
+	//	print $class_name.'<br/>';
 		
 		//  init
 		$sub_dir  = null;
@@ -600,23 +601,9 @@ class OnePiece5
 	 */
 	static function Admin()
 	{
-		/*
-		static $io = null;
-		if(!is_null($io)){
-			return $io;
+		if(!is_null($_SERVER['OP_IS_ADMIN'])){
+			return  $_SERVER['OP_IS_ADMIN'];
 		}
-		
-		static $server_addr;
-		if(!$server_addr){
-			$server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: '127.0.0.1';
-		}
-		
-		static $remote_addr;
-		if(!$remote_addr){
-			$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
-			$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
-		}
-		*/
 		
 		$server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: '127.0.0.1';
 		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
@@ -634,12 +621,7 @@ class OnePiece5
 			$io = false;
 		}
 		
-		/*
-		//	developer
-		if(!$io){
-			$io = self::_isDeveloper();
-		}
-		*/
+		$_SERVER['OP_IS_ADMIN'] = $io;
 		
 		return $io;
 	}
@@ -1293,7 +1275,7 @@ __EOL__;
 							$vars[] = self::Escape($var);
 							break;
 						case 'array':
-							$str = var_export($var,true);
+						//	$str = var_export($var,true);
 							$str = str_replace(array("\n","\r","\t"), '', $str);
 							$str = str_replace("\\'", "'", $str);
 							$str = str_replace(",)", ") ", $str);
@@ -2594,7 +2576,17 @@ class Env
 	static function Set( $key, $var )
 	{
 		$key = strtoupper($key);
+		if( $key === 'DEVELOPER' ){
+			return self::SetDeveloper($var);
+		}
 		list( $key, $var ) = self::_Convert( $key, $var );
 		$_SERVER[self::_ONE_PIECE_][$key] = $var;
+	}
+	
+	static function SetDeveloper( $var )
+	{
+		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
+		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
+		$_SERVER['OP_IS_ADMIN'] = $remote_addr === $var ? true: false;
 	}
 }
