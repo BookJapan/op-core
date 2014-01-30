@@ -123,9 +123,6 @@ class Form5 extends OnePiece5
 	
 	public function Secure( $form_name )
 	{
-		//	Log
-		if( $this->_log ){ $this->_log[] = __METHOD__ .', '. $this->status->$form_name->message; }
-		
 		if(!$this->CheckConfig( $form_name )){
 			return false;
 		}
@@ -178,12 +175,16 @@ class Form5 extends OnePiece5
 	{	
 		//	Create Token-key
 		$token_key = md5( $form_name . microtime() . $_SERVER['REMOTE_ADDR'] );
-
-		//	Log
-		if( $this->_log ){ $this->_log[] = __METHOD__.", $form_name, $token_key"; }
 		
 		//	Set new token-key
 		$this->SetTokenKey($form_name, $token_key);
+		
+		//	save generate history for debug
+		if( $this->Admin() ){
+			$saved = $this->GetSession('save-token-key');
+			$saved[] = "$form_name, $token_key, ".date('H:i:s');
+			$this->SetSession('save-token-key', $saved);
+		}
 	}
 	
 	private function SetTokenKey( $form_name, $token_key )
@@ -201,7 +202,6 @@ class Form5 extends OnePiece5
 		//	Save new token
 		$token[$form_name] = $token_key;
 		$this->SetSession('token',$token);
-
 	}
 	
 	private function GetTokenKey( $form_name )
@@ -233,7 +233,7 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-		//	TODO: Please leave comment.
+		//	get token key from form name.
 		$token_key_name = $this->GetTokenKeyName($form_name);
 		
 		//	get saved last time token by form_name, save to session
@@ -250,6 +250,13 @@ class Form5 extends OnePiece5
 				break;
 			default:
 				$this->mark();
+		}
+		
+		//	post token key is save to session for debug.
+		if( $this->Admin() ){
+			$saved = $this->GetSession('post-token-key');
+			$saved[] = "$form_name, $post_token, ".date('H:i:s');
+			$this->SetSession('post-token-key', $saved);
 		}
 		
 		if( !$save_token and !$post_token ){
@@ -276,7 +283,7 @@ class Form5 extends OnePiece5
 				 */
 				if( file_exists($_SERVER['DOCUMENT_ROOT'].$_SERVER['REQUEST_URI']) ){
 				//	$this->mark($_SERVER['DOCUMENT_ROOT'].$_SERVER['REQUEST_URI']);
-					$this->mark('Add to slash(/) at action tail.');
+					$this->mark('Add to slash(/) at action tail.',__CLASS__);
 				}
 			}
 			
@@ -284,6 +291,7 @@ class Form5 extends OnePiece5
 			
 		}else if( $save_token !== $post_token ){
 			
+			$this->mark("save=$save_token, post=$post_token",__CLASS__);
 			$this->SetStatus( $form_name, self::STATUS_TOKEN_KEY_UNMATCH );
 			return false;
 			
@@ -1205,7 +1213,7 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-		//  support plural form
+		//  support "plural form"
 		if(isset($config->inputs) and empty($config->input)){
 			$config->input = $config->inputs;
 		}
@@ -1632,15 +1640,16 @@ class Form5 extends OnePiece5
 				case 'textarea':
 					$join[] = 'class="op-input op-input-text op-input-textarea"';
 					break;
-
+					
 				case 'password':
 					$join[] = 'class="op-input op-input-text op-input-password"';
 					break;
-						
+					
 				default:
 					$join[] = sprintf('class="op-input op-input-%s"',$type);
 			}	
 		}
+	//	$this->mark($class);
 		
 		//  Other attributes
 		$attr = join(' ',$join);
@@ -1978,7 +1987,7 @@ class Form5 extends OnePiece5
 	function Debug( $form_name )
 	{
 		if(!$this->admin() ){
-			$this->mark('Does not view debug info. because you are not admin.');
+		//	$this->mark('Does not view debug info. because you are not admin.');
 			return false;
 		}
 		
@@ -1995,10 +2004,12 @@ class Form5 extends OnePiece5
 		$temp['Errors']	 = $this->status->$form_name->stack;
 		$temp['session'] = $this->GetSession('form');
 		$temp['history'] = $this->GetSession('history');
+		$temp['save_token_key'] = $this->GetSession('save-token-key');
+		$temp['post_token_key'] = $this->GetSession('post-token-key');
 		
 		//  Print debug information
 		$call = $this->GetCallerLine();
-		$this->p("Form debugging[ ![.small[ $call ]] ]");
+		$this->p("Form debugging (![.small[ $call ]])");
 		Dump::d($temp);
 	}
 	
