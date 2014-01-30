@@ -37,11 +37,14 @@ class Form5 extends OnePiece5
 		//	Session-ID is regenerate.
 		if( headers_sent( $file, $line ) ){
 			$this->mark("skip session regenerate. headers is already sent.($file, $line)");
-		}else{
+		}else if( $this->admin() ){
+			//	history for debug. 
 			$history = $this->GetSession('history');
 			$history[] = $_SERVER['REQUEST_URI'].', '.date('H:i:s');
+			if( count($history) > 20 ){
+				$history = array_splice( $history, -1, 20);
+			}
 			$this->SetSession('history', $history);
-		//	$io = session_regenerate_id(true);
 		}
 	}
 	
