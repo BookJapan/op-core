@@ -1033,7 +1033,7 @@ __EOL__;
 		$this->SetEnv('site_root',  $site_root   );
 		$this->SetEnv('admin-ip',   $admin_ip    );
 		$this->SetEnv('admin-mail', $admin_mail  );
-		$this->SetEnv('newline',    PHP_EOL      );
+		$this->SetEnv('new_line',    PHP_EOL      );
 	}
 	
 	/**
