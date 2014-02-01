@@ -30,6 +30,14 @@ class Cache extends OnePiece5
 	 */
 	private $_cache_type = null;
 	
+	/**
+	 * If this flag is true case, skip security check for key name.
+	 * (be a little faster.)
+	 * 
+	 * @var boolean
+	 */
+	private $_is_force_md5 = null;
+	
 	private $_use_cas = true;
 	private $_cas_list = array();
 	
@@ -171,10 +179,15 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
-		//	check
-		if(!$this->CheckKeyName($key)){
-			$this->StackError("Illegal key name. ($key)");
-			return false;
+		if( $this->_is_force_md5 ){
+			//	skip security check for key name.
+			$key = md5($key);
+		}else{
+			//	security check
+			if(!$this->CheckKeyName($key)){
+				$this->StackError("Illegal key name. ($key)");
+				return false;
+			}
 		}
 		
 		switch( $name = get_class($this->_cache) ){
