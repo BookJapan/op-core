@@ -201,7 +201,10 @@ class Cache extends OnePiece5
 		
 			case 'Memcache':
 				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
-				return $this->_cache->Set( $key, $value, $compress, $expire );
+				if(!$io = $this->_cache->replace($key, $value, $compress, $expire) ){
+					$io = $this->_cache->Set( $key, $value, $compress, $expire );
+				}
+				return $io;
 		
 			default:
 				$this->StackError("undefine $name.");
