@@ -1595,8 +1595,13 @@ class Form5 extends OnePiece5
 				case 'group':
 					break;
 					
+				case 'class':
+					$class = $var;
+				//	$this->mark($var);
+					
 				default:
 					if(!is_string($var)){
+						$this->d($var);
 						$var = Toolbox::toString( $var, ' ');
 					}
 					$join[] = sprintf('%s="%s"',$key,$var);
@@ -1845,14 +1850,9 @@ class Form5 extends OnePiece5
 						$value = $input->value;
 						//  label
 						if(!isset($label)){
-							$label = $input->value;
+							$label = $value;
 						}
 						$label_tag = sprintf('<label id="%s-label" %s>', $id, $attr);
-					//	$label = sprintf('<label for="%s">%s</label>', $id, $label);
-					//	$nobr  = false;
-					}else{
-					//	$label = '';
-					//	$nobr  = false;
 					}
 					
 					//  tail
@@ -1866,11 +1866,9 @@ class Form5 extends OnePiece5
 					}
 					
 					//  create tag
-				//	if( $nobr ){ $tag .= '<nobr>'; }
 					if( $label_tag ){ $tag .= $label_tag; }
-					$tag .= sprintf('<input type="%s" name="%s" value="%s" id="%s" %s />%s', $type, $name, $value, $id, $attr, $label);
-				//	if( $nobr ){ $tag .= '</nobr>'; }
-					if( $label_tag ){ $tag .= '</label>'; }
+					$tag .= sprintf('<input type="%s" name="%s" value="%s" %s />', $type, $name, $value, $attr);
+					if( $label_tag ){ $tag .= $label.'</label>'; }
 				}
 				break;
 		}
