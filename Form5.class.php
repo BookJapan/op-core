@@ -441,9 +441,10 @@ class Form5 extends OnePiece5
 	/*******************************************************************************/
 	
 	/**
+	 * Display for value.
 	 * 
-	 * @param  unknown $input_name
-	 * @param  string  $joint
+	 * @param  string $input_name
+	 * @param  string $joint
 	 * @return string
 	 */
 	public function Value( $input_name, $form_name=null, $joint=null )
@@ -453,7 +454,7 @@ class Form5 extends OnePiece5
 		
 		//  Get config
 		if(!$input = $this->GetConfig( $form_name, $input_name )){
-			return "form_name=$form_name, input_name=$input_name";
+			return "Empty, form_name=$form_name, input_name=$input_name";
 		}
 		
 		//  Supports the options value (Get option's label)
@@ -489,8 +490,6 @@ class Form5 extends OnePiece5
 		
 //		print nl2br($value);
 		print $value;
-		
-		return 'This method(function) is print.';
 	}
 	
 	/**

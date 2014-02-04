@@ -38,17 +38,6 @@ class PDO5 extends OnePiece5
 				throw new OpException("Include failed.($path)");
 			}
 			
-			/*
-			if(!class_exists('DML',false)){
-				$path  = $this->GetEnv('op-root');
-				$path .= 'PDO/DML.class.php';
-				$io = include_once($path);
-				if(!$io){
-					throw new Exception("Include failed.(PDO/DML.class.php)");
-				}
-			}
-			*/
-			
 			//  Init
 			$this->dml = new $name();
 			$this->dml->SetPDO( $this->pdo, $this->driver );
@@ -74,15 +63,6 @@ class PDO5 extends OnePiece5
 				throw new OpException("Include failed.($path)");
 			}
 			
-			/*
-			if(!class_exists('DDL',false)){
-				$io = include_once('PDO/DDL.class.php');
-				if(!$io){
-					throw new Exception("Include failed.(PDO/DDL.class.php)");
-				}
-			}
-			*/
-			
 			//  Init
 			$this->ddl = new $name();
 			$this->ddl->SetPDO( $this->pdo, $this->driver );
@@ -107,15 +87,6 @@ class PDO5 extends OnePiece5
 			if(!$io){
 				throw new OpException("Include failed.($path)");
 			}
-			
-			/*
-			if(!class_exists('DCL',false)){
-				$io = include_once('PDO/DCL.class.php');
-				if(!$io){
-					throw new Exception("Include failed.(PDO/DCL.class.php)");
-				}
-			}
-			*/
 			
 			//  Init
 			$this->dcl = new $name();

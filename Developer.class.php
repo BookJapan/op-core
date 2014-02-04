@@ -11,7 +11,7 @@ class Developer
 	{
 		$this->mark("$func is not implements.");
 	}
-
+	
 	/**
 	 * Save mark-label for use footer links.
 	 *

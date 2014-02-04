@@ -10,12 +10,18 @@
  */
 class Dump
 {
+	/**
+	 * Dump
+	 * 
+	 * @param mixed   $args
+	 * @param integer $depth
+	 */
 	static function D( $args, $lifetime=null ){
 		if( is_array($args) and count($args) === 0 ){
 			print self::GetDump( ' ', null, null, false );
 			return;
 		}
-		@self::PrintDump( $args, $lifetime );
+		self::PrintDump( $args, $lifetime );
 	}
 	
 	static function PrintDump( $args, $lifetime=null ){
