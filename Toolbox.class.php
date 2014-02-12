@@ -373,4 +373,17 @@ class Toolbox
 		$conf['path']   = isset($conf['path'])   ? $conf['path']  : false;
 		return self::GetURL($conf);
 	}
+	
+	static function GetMIME()
+	{
+		if(!$mime = OnePiece5::GetEnv('mime')){
+			foreach( $list = headers_list() as $header ){
+				list( $key, $var ) = explode(':',$header);
+				if( $key === 'Content-Type' ){
+					$mime = trim($var);
+				}
+			}
+		}
+		return $mime;
+	}
 }
