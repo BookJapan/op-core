@@ -54,24 +54,21 @@ class Developer
 	
 	static function PrintGetFlagList()
 	{
-		/*
-		static $isPrint = null;
-		if( $isPrint ){
-			return;
-		}else{
-			$isPrint = true;
-		}
-		*/
-		
-		if( OnePiece5::GetEnv('cli') ){
-			return;
-		}
-	
 		// Only admin
 		if(!OnePiece5::admin()){
 			return;
 		}
-					
+		
+		//	If CLI case
+		if( OnePiece5::GetEnv('cli') ){
+			return;
+		}
+		
+		//	Check MIME
+		if( Toolbox::GetMIME() !== 'text/html' ){
+			return;
+		}
+		
 		//  Hide mark label links setting.
 		$key = 'hide_there_links';
 		$str = 'Hide there links';
