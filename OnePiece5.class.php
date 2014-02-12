@@ -178,10 +178,6 @@ if( function_exists('__autoload') ){
 if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
-		if( isset($_SERVER['hoge']) ){
-			print Dump::d($_SERVER['hoge']);
-		}
-		
 		if(!OnePiece5::Admin()){
 			return;
 		}
@@ -238,7 +234,8 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		$mime = OnePiece5::GetEnv('mime');
+		//$mime = OnePiece5::GetEnv('mime');
+		$mime = Toolbox::GetMIME();
 		if( strpos( $mime, '/') ){
 			list( $main_type, $sub_type ) = explode('/',$mime);
 		}else{
@@ -247,6 +244,9 @@ if(!function_exists('OnePieceShutdown')){
 		
 		switch( strtolower($sub_type) ){
 			case 'plain':
+			//	print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
+				break;
+				
 			case 'css':
 			case 'javascript':
 				print PHP_EOL . '/* OnePiece is shutdown. */' . PHP_EOL;
@@ -1072,7 +1072,6 @@ __EOL__;
 				break;
 				
 			default:
-				var_dump($_SERVER['REMOTE_ADDR']);
 				$result = self::_Env( $key, null, 'get' );
 		}
 		
@@ -1275,7 +1274,7 @@ __EOL__;
 							$vars[] = self::Escape($var);
 							break;
 						case 'array':
-						//	$str = var_export($var,true);
+							$str = var_export($var,true);
 							$str = str_replace(array("\n","\r","\t"), '', $str);
 							$str = str_replace("\\'", "'", $str);
 							$str = str_replace(",)", ") ", $str);
