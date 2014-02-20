@@ -81,18 +81,7 @@ if( function_exists('__autoload') ){
 			case 'Memcache':
 			case 'Memcached':
 				return;
-				
-				/*
-			case 'Model_App':
-				$file_name = 'App.model.php';
-				break;
-
-			case 'Config_Model':
-				$file_name = 'Model.model.php';
-				$sub_dir   = 'Model';
-				break;
-				*/
-				
+								
 			case 'DML':
 			case 'DML5':
 			case 'DDL':
@@ -119,16 +108,6 @@ if( function_exists('__autoload') ){
 		$dirs[] = '.';
 		$dirs[] = $app_root;
 		$dirs[] = $op_root;
-		
-		/*
-		//	Model (op-core)
-		$dirs[] = $op_root.'Model';
-		
-		//	Model (app)
-		if( $dir = OnePiece5::GetEnv('model-dir') ){
-			$dirs[] = OnePiece5::ConvertPath($dir);
-		}
-		*/
 		
 		//	PDO or Model
 		if( $sub_dir ){
@@ -248,8 +227,10 @@ if(!function_exists('OnePieceShutdown')){
 				break;
 				
 			case 'css':
-			case 'javascript':
 				print PHP_EOL . '/* OnePiece is shutdown. */' . PHP_EOL;
+				break;
+				
+			case 'javascript':
 				break;
 				
 			case 'json':
