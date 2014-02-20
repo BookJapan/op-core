@@ -97,6 +97,7 @@ class Wiki2Engine extends OnePiece5
 	static function GetAttribute( $attribute, $options )
 	{
 		foreach(explode(' ',trim($attribute)) as $temp){
+			
 			if(preg_match('/^([a-z]+)$/i',$temp,$m)){
 				$tag = $m[1];
 			}else if(preg_match('/^\.([-_a-z0-9]+)/',$temp,$m)){
@@ -105,8 +106,12 @@ class Wiki2Engine extends OnePiece5
 				$id[] = $m[1];
 			}else if(preg_match('/^0x([0-0a-f]{3,6})/i',$temp,$m)){
 				$color[] = 'color:#'.$m[1];
-			}else if(preg_match('/^([-_a-z0-9:]+)/',$temp,$m)){
-				$style[] = $m[1];
+			}else if(preg_match('/^([-_a-z0-9]+):([-_a-z0-9]+)/',$temp,$m)){
+				if( $m[1] === 'colspan' or $m[1] === 'rowspan' ){
+					$tag .= " {$m[1]}={$m[2]}"; 
+				}else{
+					$style[] = $m[1].':'.$m[2];
+				}
 			}else{
 			//	var_dump($temp);
 			}
