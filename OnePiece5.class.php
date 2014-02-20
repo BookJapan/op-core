@@ -784,6 +784,7 @@ __EOL__;
 		return true;
 	}
 	
+	/*
 	function StackLog( $string, $tag=null )
 	{
 		$class    = self::GetCallerLine( 1, 1, '$class'); // get_called_class
@@ -826,6 +827,7 @@ __EOL__;
 			print '</div>' . $nl;
 		}
 	}
+	*/
 	
 	/**
 	 * locale setting.
