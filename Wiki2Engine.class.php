@@ -22,8 +22,6 @@ class Wiki2Engine extends OnePiece5
 	static $pattAttr = '[-_a-z0-9:#\.\s]+';
 	
 	static function Wiki2( $string, $options = null ){
-		//dump::d($string);
-		//dump::d($options);
 		
 		if( is_null($options) and true ){
 			$options['id']     = false;
@@ -41,7 +39,6 @@ class Wiki2Engine extends OnePiece5
 		
 		$i = null;
 		while(preg_match($pattern, $string, $match)){
-		//	print dump::d($match);
 			$i++;
 			$replace = sprintf('__%s_%s__', $i, md5($match[0]));
 			
@@ -51,8 +48,6 @@ class Wiki2Engine extends OnePiece5
 			$engine['body'] = $match[2]; // body (tag's inner content)
 			$elements[] = $engine;
 			$string = preg_replace($pattern, $replace, $string, 1);
-			
-		//	print dump::d($string);
 		}
 		
 		foreach( array_reverse($elements) as $element ){
@@ -120,12 +115,9 @@ class Wiki2Engine extends OnePiece5
 		// TODO: $tagがunsetされる、、、なぜ？！
 		if(isset($tag)){
 			$save_tag = $tag;
-		//	print __LINE__;
-		//	var_dump($tag);
 		}
 		
 		//  delete deny attribute
-		//dump::d($options);
 		if($options){
 			foreach( $options as $key => $var ){
 				if(!$var){
@@ -144,22 +136,8 @@ class Wiki2Engine extends OnePiece5
 				$style = $color;
 			}
 		}
-
-		//	TODO: なんで、なんで、なんで？！
-		/*
-		if(isset($tag)){
-			print __LINE__;
-			var_dump($tag);
-		}else{
-			print "tag is empty<br/>";
-			if( isset($tags) ){
-				var_dump($tags);
-			}
-		}
-		*/
-		
+				
 		$attr['id']     = isset($id)    ? $id: '';
-	//	$attr['tag']    = isset($tag)   ? $tag: 'span'; // TODO: なんでなくなる？！
 		$attr['tag']    = isset($save_tag )   ? $save_tag : 'span';
 		$attr['class']  = isset($class) ? implode(' ',  $class): '';
 		$attr['style']  = isset($style) ? implode('; ', $style): '';
