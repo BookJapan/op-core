@@ -2454,7 +2454,9 @@ class OpException extends Exception
 
 class Env
 {
-	const _ONE_PIECE_ = 'ONE_PIECE_5';
+	const _NAME_SPACE_		 = 'ONE_PIECE_5';
+	const _ADMIN_IP_ADDR_	 = 'admin_ip';
+	const _ADMIN_EMAIL_ADDR_ = 'admin_mail';
 	
 	static private function _Convert( $key, $var=null )
 	{
@@ -2542,8 +2544,8 @@ class Env
 		
 		list( $key, $var ) = self::_Convert( $key );
 		
-		if( isset($_SERVER[self::_ONE_PIECE_][$key]) ){
-			$var = $_SERVER[self::_ONE_PIECE_][$key];
+		if( isset($_SERVER[self::_NAME_SPACE_][$key]) ){
+			$var = $_SERVER[self::_NAME_SPACE_][$key];
 		}else if( isset($_SERVER[$key]) ){
 			$var = $_SERVER[$key];
 		}else{
@@ -2560,7 +2562,7 @@ class Env
 			return self::SetDeveloper($var);
 		}
 		list( $key, $var ) = self::_Convert( $key, $var );
-		$_SERVER[self::_ONE_PIECE_][$key] = $var;
+		$_SERVER[self::_NAME_SPACE_][$key] = $var;
 	}
 	
 	static function SetDeveloper( $var )
