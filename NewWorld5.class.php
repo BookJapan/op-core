@@ -84,13 +84,16 @@ abstract class NewWorld5 extends OnePiece5
 	}
 	
 	function __destruct()
-	{
-		//	Log
-		if( $this->_log ){ $this->_log[] = __METHOD__; }
-		
+	{	
 		//  Called dispatch?
 		if(!$this->_isDispatch){
-			$this->StackError('App has not dispatched. Please call $app->Dispatch();');
+		//	$class_name = get_class($this);
+		//	$this->StackError($class_name.' has not dispatched. Please call $app->Dispatch();');
+			Error::Set($class_name.' has not dispatched. Please call $app->Dispatch();');
+			Error::Set($this->_isDispatch);
+			Error::Set($_SERVER['REQUEST_URI']);
+		}else{
+			
 		}
 		
 		//	mime
@@ -347,10 +350,12 @@ abstract class NewWorld5 extends OnePiece5
 						
 					case 'css':
 						$this->doCss($route);
+						$this->_isDispatch = true;
 						exit(0);
 						
 					case 'js':
 						$this->doJs($route);
+						$this->_isDispatch = true;
 						exit(0);
 					default:
 						$this->mark("![.red[Does not match extension. ($extension)]]");
@@ -644,13 +649,11 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  Execute.
 		$this->template( $route['fullpath'] );
-		exit(0);
 	}
 	
 	function doJs($route)
 	{
 		$this->SetEnv('cli',true);
-		exit(0);
 	}
 	
 	function Header( $str, $replace=null, $code=null )
