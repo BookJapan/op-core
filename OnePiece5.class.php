@@ -157,6 +157,10 @@ if( function_exists('__autoload') ){
 if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
+		//	Error
+		Error::Report(OnePiece5::Admin());
+		
+		//	Check
 		if(!OnePiece5::Admin()){
 			return;
 		}
@@ -615,6 +619,13 @@ class OnePiece5
 	 */
 	static function StackError( $args )
 	{
+		/*
+		if( OnePiece5::Admin() ){
+			Error::Set($args);
+			return;
+		}
+		*/
+		
 		$encoding = mb_internal_encoding();
 		
 		//  TODO: To model
@@ -2626,7 +2637,7 @@ class Error
 	function Report( $admin )
 	{
 		if(empty($_SESSION[self::_NAME_SPACE_])){
-			print "<p>Error is not occur.</p>";
+		//	print "<p>Error is not occur.</p>";
 			return;
 		}
 		
@@ -2649,7 +2660,7 @@ class Error
 		}
 	}
 	
-	private function _formatBacktrace( $index, $backtrace )
+	private function _formatBacktrace( $index, $backtrace, $color=null )
 	{
 		$file	 = isset($backtrace['file'])	 ? $backtrace['file']:	 null;
 		$line	 = isset($backtrace['line'])	 ? $backtrace['line']:	 null;
@@ -2658,31 +2669,43 @@ class Error
 		$type	 = isset($backtrace['type'])	 ? $backtrace['type']:	 null;
 		$args	 = isset($backtrace['args'])	 ? $backtrace['args']:	 null;
 		
+		//$line	 = $line ? "[$line]": null;
 		$file	 = OnePiece5::CompressPath($file);
 		
 		if( $index === 0 ){
-			$info = "![div .small .red [$file [$line] {$args[0]}]]";
+			$tail	 = $args[0]; // error message
 		}else{
 			$args	 = $args ? self::_Serialize($args): null;
 			$method	 = $type ? $class.$type.$func: $func;
-			$info = "![div .small [$file [$line] $method($args)]]";
+			$tail	 = "$method($args)";
 		}
 		
-		return Wiki2Engine::Wiki2(htmlentities($info)).PHP_EOL;
+		$info = "![tr $color [ ![td[ $index ]] ![td[ $file ]] ![td .right[ $line ]] ![td[ $tail ]] ]]";
+		
+		return $info.PHP_EOL;
 	}
 	
 	private function _getBacktrace()
 	{
-		$return = '';
+		$i = 0;
+		$return = '![table .small [';
 		foreach( $_SESSION[self::_NAME_SPACE_] as $error ){
+			$i++;
 			$message = $error['message'];
 			$backtraces = $error['backtrace'];
+			
+			//	Sequence no.
+			$return .= "![tr[ ![th colspan:3 .left [ Error #{$i} ]] ]]";
+			
+			$count = count($backtraces);
 			foreach( $backtraces as $index => $backtrace ){
 				//	dump::d($backtrace);
-				$return .= self::_formatBacktrace( $index, $backtrace );
+				$color = $index === 0 ? '.red':null;
+				$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
 			}
 		}
-		return $return;
+		$return .= ']]'.PHP_EOL;
+		return Wiki2Engine::Wiki2($return);
 	}
 	
 	private function _toDisplay()
@@ -2782,8 +2805,14 @@ class Error
 				case 'string':
 					$var = "'$arg'";
 					break;
+				case 'boolean':
+					$var = $var ? 'true':'false';
+					break;
 				case 'array':
 					$var = self::_SerializeArray($arg);
+					break;
+				case 'object':
+					$var = get_class($arg);
 					break;
 				default:
 					$var = "$type $arg";
