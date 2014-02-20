@@ -2454,9 +2454,14 @@ class OpException extends Exception
 	}
 }
 
+/**
+ * Env controller
+ *
+ * 2014-01-22
+ */
 class Env
 {
-	const _NAME_SPACE_		 = 'ONE_PIECE_5';
+	const _NAME_SPACE_		 = 'ONEPIECE_5';
 	const _ADMIN_IP_ADDR_	 = 'admin_ip';
 	const _ADMIN_EMAIL_ADDR_ = 'admin_mail';
 	
@@ -2481,6 +2486,14 @@ class Env
 				break;
 				
 			default:
+				if( preg_match('/(ROOT|DIR)$/',$key) ){
+					$is_path = true;
+				}
+				
+				if( $key = preg_replace('/-/', '_', $key) ){
+					//	throw
+				}else
+				
 				if(
 					/* Match from
 					 * OP_ROOT  or OP-ROOT
