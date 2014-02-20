@@ -1200,36 +1200,50 @@ __EOL__;
 	 */
 	static function GetCallerLine( $depth=0, $num=1, $format=null )
 	{
-		// file system encoding
+		//	file system encoding
 		$encode_file_system = PHP_OS === 'WINNT' ? 'sjis-win': 'utf-8';
 		
-		//  init
+		//	init
 		$call_line = '';
 		$depth++;
 		$nl = self::GetEnv('nl');
-		//  debug_backtrace
+		
+		//	debug_backtrace
 		if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
 			$back = debug_backtrace(false);
 		}else{
 			$back = debug_backtrace();
 		}
+		//dump::d($back);
 		
-		// num
+		//	num
 		if( $num >= count($back) or $num <= 0 ){
 			$num = count($back) -1;
+		}
+		
+		//	Not exists
+		if( count($back) <= $depth ){
+			return 'null';
 		}
 		
 		// loop
 		for($i=1; $i <= $num; $depth++, $i++){
 			
-			$func  = $back[$depth]['function'];
-			$args  = $back[$depth]['args'];
-			$file  = isset($back[$depth]['file'])  ? $back[$depth]['file']:  '';
-			$line  = isset($back[$depth]['line'])  ? $back[$depth]['line']:  '';
-			$type  = isset($back[$depth]['type'])  ? $back[$depth]['type']:  '';
-			$class = isset($back[$depth]['class']) ? $back[$depth]['class']: '';
+			$func   = isset($back[$depth]['function']) ? $back[$depth]['function']: null;
+			$args   = isset($back[$depth]['args'])     ? $back[$depth]['args']:     null;
+			$file   = isset($back[$depth]['file'])     ? $back[$depth]['file']:     null;
+			$line   = isset($back[$depth]['line'])     ? $back[$depth]['line']:     null;
+			$type   = isset($back[$depth]['type'])     ? $back[$depth]['type']:     null;
+			$class  = isset($back[$depth]['class'])    ? $back[$depth]['class']:    null;
+			$line1m = isset($back[$depth-1]['line'])   ? $back[$depth-1]['line']:   null;
 			
-			$line1m = isset($back[$depth-1]['line']) ? $back[$depth-1]['line']: '';
+			/*
+			if(!$line){
+				$count = count($back);
+				dump::d("depth=$depth, count=$count");
+				dump::d($back[$depth]);
+			}
+			*/
 			
 			$filefull = $file;
 			$function = $func;
@@ -1267,17 +1281,20 @@ __EOL__;
 						case 'string':
 							$vars[] = self::Escape($var);
 							break;
+							
 						case 'array':
-							$str = var_export($var,true);
+							$str = '';//serialize($var);//var_export($var,true);
 							$str = str_replace(array("\n","\r","\t"), '', $str);
 							$str = str_replace("\\'", "'", $str);
 							$str = str_replace(",)", ") ", $str);
 							$str = str_replace(",  )", ") ", $str);
 							$vars[] = self::Escape($str);
 							break;
+							
 						case 'object':
 							$vars[] = get_class($var);
 							break;
+							
 						default:
 							$vars[] = gettype($var);
 					}
@@ -1307,6 +1324,10 @@ __EOL__;
 			}
 			
 			switch(strtolower($format)){
+				case 'mark':
+					$format = '$file [$line] ';
+					break;
+					
 				case 'incident':
 					$format = '![.bold[$class$type$func]] [$line1m]' ;
 					break;
@@ -1319,7 +1340,7 @@ __EOL__;
 				case 'null':
 					if( $func ){
 						if( $method ){
-							$format = '$file [$line] ';
+							$format = '$file ($class$type$func) [$line] ';
 						}else if( $class ){
 							$format = '$file ($class$type$func) [$line] ';
 						}else{
@@ -1402,7 +1423,7 @@ __EOL__;
 		$memory = sprintf('![ .gray [(%s.![.smaller[%s]] KB)]]', number_format($mem_int), $mem_dec );
 		
 		//  call line
-		$call_line = self::GetCallerLIne();
+		$call_line = self::GetCallerLIne(0,1,'mark');
 		
 		//  message
 		if( is_null($str) ){
