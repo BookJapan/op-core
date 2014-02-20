@@ -2572,3 +2572,228 @@ class Env
 		$_SERVER['OP_IS_ADMIN'] = $remote_addr === $var ? true: false;
 	}
 }
+
+/**
+ * Error controller
+ * 
+ * 2014-02-18
+ */
+class Error
+{
+	const _NAME_SPACE_ = '_STACK_ERROR_';
+	
+	function Set( $message )
+	{
+		//	save debug backtrace
+		if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
+			$backtrace = debug_backtrace(false);
+		}else{
+			$backtrace = debug_backtrace();
+		}
+		
+		//	creat check key (duplicate check)
+		$key = md5(serialize($backtrace));
+		
+		//	already exists?
+		if( isset($_SESSION[self::_NAME_SPACE_][$key]) ){
+			return true;
+		}
+		
+		//	save
+		$error['message'] = $message;
+		$error['backtrace'] = $backtrace;
+		$error['timestamp'] = date('Y-m-d H:i:s');
+		
+		//	save to session
+		$_SESSION[self::_NAME_SPACE_][$key] = $error;
+	}
+	
+	function Report( $admin )
+	{
+		if(empty($_SESSION[self::_NAME_SPACE_])){
+			print "<p>Error is not occur.</p>";
+			return;
+		}
+		
+		if( $admin ){
+			$io = self::_toDisplay();
+		}else{
+			$io = self::_toMail();
+		}
+		
+		if($io){
+			unset($_SESSION[self::_NAME_SPACE_]);
+		}
+	}
+	
+	private function _getMailSubject()
+	{
+		foreach($_SESSION[self::_NAME_SPACE_] as $key => $backtraces){
+		//	dump::d($backtraces['backtrace'][0]);
+			return  strip_tags(self::_formatBacktrace( 0, $backtraces['backtrace'][0] ));
+		}
+	}
+	
+	private function _formatBacktrace( $index, $backtrace )
+	{
+		$file	 = isset($backtrace['file'])	 ? $backtrace['file']:	 null;
+		$line	 = isset($backtrace['line'])	 ? $backtrace['line']:	 null;
+		$func	 = isset($backtrace['function']) ? $backtrace['function']: null;
+		$class	 = isset($backtrace['class'])	 ? $backtrace['class']:	 null;
+		$type	 = isset($backtrace['type'])	 ? $backtrace['type']:	 null;
+		$args	 = isset($backtrace['args'])	 ? $backtrace['args']:	 null;
+		
+		$file	 = OnePiece5::CompressPath($file);
+		
+		if( $index === 0 ){
+			$info = "![div .small .red [$file [$line] {$args[0]}]]";
+		}else{
+			$args	 = $args ? self::_Serialize($args): null;
+			$method	 = $type ? $class.$type.$func: $func;
+			$info = "![div .small [$file [$line] $method($args)]]";
+		}
+		
+		return Wiki2Engine::Wiki2(htmlentities($info)).PHP_EOL;
+	}
+	
+	private function _getBacktrace()
+	{
+		$return = '';
+		foreach( $_SESSION[self::_NAME_SPACE_] as $error ){
+			$message = $error['message'];
+			$backtraces = $error['backtrace'];
+			foreach( $backtraces as $index => $backtrace ){
+				//	dump::d($backtrace);
+				$return .= self::_formatBacktrace( $index, $backtrace );
+			}
+		}
+		return $return;
+	}
+	
+	private function _toDisplay()
+	{
+		print self::_getBacktrace();
+		return true;
+	}
+	
+	private function _toMail()
+	{
+	//	dump::d($_SERVER);
+		
+		$from = $_SERVER['SERVER_ADMIN'];
+		$from_name = 'OnePiece-Framework/Error';
+		
+		$to = Env::Get(Env::_ADMIN_EMAIL_ADDR_);
+		$subject = '[Error] '.self::_getMailSubject();
+		$message = '';
+		$headers = '';
+		$parameters = "-f $from";
+		$boundary = "--".uniqid(rand(),1);
+		
+		//	get html message
+		$html = self::_getMailMessage();
+		$text = strip_tags($html);
+		
+		//	create multipart header
+		$headers .= "Content-Type: multipart/alternative; boundary=\"$boundary\"\r\n";
+		$headers .= "Content-Transfer-Encoding: binary\r\n";
+		$headers .= "MIME-Version: 1.0\r\n";
+		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
+		$headers .= "From: ".mb_encode_mimeheader($from_name)."<$from>\r\n";
+		
+		//	create multipart message
+		$message .= "--$boundary\r\n";
+		$message .= "Content-Type: text/plain; charset=UTF-8\r\n";
+		$message .= "Content-Disposition: inline\r\n";
+		$message .= "Content-Transfer-Encoding: quoted-printable\r\n";
+		$message .= "\r\n";
+		$message .= quoted_printable_decode($text)."\r\n";
+		$message .= "\r\n";
+		$message .= "--$boundary\r\n";
+		$message .= "Content-Type: text/html; charset=UTF-8\r\n";
+		$message .= "Content-Disposition: inline\r\n";
+		$message .= "Content-Transfer-Encoding: quoted-printable\r\n";
+		$message .= "\r\n";
+		$message .= quoted_printable_decode($html)."\r\n";
+		$message .= "--$boundary\r\n";
+		
+	//	dump::d($to);
+	//	dump::d($subject);
+	//	print nl2br($text);
+	//	print $html;
+		
+		if(!$io = mail($to, $subject, $message, $headers, $parameters)){
+			print '<p style="color:white;background-color:black;">failed to send the error mail.</p>';
+		}else{
+			print "<p>Sendmail is successful.</p>";
+		}
+		return $io;
+	}
+	
+	private function _getMailMessage()
+	{
+		$key = 'Timestamp';
+		$var = date('Y-m-d H:i:s');
+		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
+		
+		$key = 'UserAgent';
+		$var = $_SERVER['HTTP_USER_AGENT'];
+		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
+		
+		$key = 'URL';
+		$var = $_SERVER['HTTP_HOST']. urldecode( $_SERVER['REQUEST_URI'] );
+		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
+		
+		$key = 'Referer';
+		$var = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER']: null;
+		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
+		
+		$table = '![table['.join('',$tr).']]'.PHP_EOL;
+		
+		$message  = Wiki2Engine::Wiki2($table);
+		$message .= '<hr/>'.PHP_EOL;
+		$message .= self::_getBacktrace();
+		return $message;
+	}
+	
+	private function _Serialize( $args )
+	{
+		$serial = '';
+		foreach( $args as $arg ){
+			switch($type = gettype($arg)){
+				case 'NULL':
+					$var = 'null';
+					break;
+				case 'string':
+					$var = "'$arg'";
+					break;
+				case 'array':
+					$var = self::_SerializeArray($arg);
+					break;
+				default:
+					$var = "$type $arg";
+			}
+			$serial .= "$var, ";
+		}
+		//$serial = preg_replace('/, $/', '', $serial);
+		$serial = trim($serial,', ');
+		return $serial;
+	}
+	
+	private function _SerializeArray($args)
+	{
+		$serial = 'array(';
+		foreach($args as $key => $var){
+			switch($type = gettype($var)){
+				case 'string':
+					$var = "'$var'";
+					break;
+				default:
+			}
+			$serial .= "$key => $var, ";
+		}
+		$serial = trim($serial,', ');
+		$serial .= ')'; 
+		return $serial;
+	}
+}
