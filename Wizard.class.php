@@ -22,6 +22,8 @@ class Wizard extends OnePiece5
 	
 	function __destruct()
 	{
+	//	$this->mark(__METHOD__);
+		
 		if( $this->Admin() ){
 			if(!$this->_isWizard){
 				$this->Selftest();
@@ -51,7 +53,7 @@ class Wizard extends OnePiece5
 	}
 	
 	/**
-	 * Save selftest inner wizard
+	 * Save selftest to wizard.
 	 * 
 	 * @param string $class_name
 	 * @param Config $config
@@ -79,7 +81,15 @@ class Wizard extends OnePiece5
 	 */
 	public function Selftest()
 	{
-	//	$this->mark( $this->GetCallerLine() );
+		if( Env::Get('is_wizard') ){
+			$this->mark("Wizard is already executing.");
+		}
+		Env::Set('is_wizard',true);
+		
+		
+		if( $this->_isWizard ){
+			return;
+		}
 		
 		//	Set flag
 		$this->_isWizard = true;
@@ -97,9 +107,17 @@ class Wizard extends OnePiece5
 			
 			//  Init form config.
 			$this->form()->AddForm( $this->config()->MagicForm() );
-			
+						
 			//	Check each class
 			foreach( $selftest as $class_name => $config ){
+				$this->mark($class_name);
+				
+				//	Get Cache
+				$key = md5($class_name.', '.serialize($config));
+				if( $io = $this->Cache()->Get($key) ){
+					$this->mark($io);
+					continue;
+				}
 				
 				try{
 					//	anti of __php_incomplete_class
@@ -116,17 +134,19 @@ class Wizard extends OnePiece5
 					$io = false;
 				}
 				
-				if( $io ){
-					//	passed through a self-test
-				}else{					
-					//	Wizard
+				//	Set Cache
+				$this->Cache()->Set($key,$io);
+				$this->mark($io);
+				
+				if(!$io){
+					//	Execute the Wizard.
 					if( $this->_Wizard($config) ){
 						//	case of success, do delete config from session.
 						unset($selftest[$class_name]);
 					}else{
 						$fail = true;
 					}
-				}				
+				}
 			}
 			
 			if( empty($fail) ){
@@ -246,6 +266,14 @@ class Wizard extends OnePiece5
 				$this->_CreateUser($config);
 				$this->_CreateGrant($config);
 			}
+		}else{
+			/*
+			$this->mark( $this->GetCallerLine(3) );
+			$this->mark( $this->GetCallerLine(2) );
+			$this->mark( $this->GetCallerLine(1) );
+			$this->mark('![.red[form is not secure]]','selftest');
+			$this->mark( $this->form()->GetStatus($form_name) );
+			*/
 		}
 		
 		//	Logger
@@ -256,6 +284,14 @@ class Wizard extends OnePiece5
 	
 	private function _PrintForm( $config )
 	{
+		/*
+		$this->mark( $this->GetCallerLine(5) );
+		$this->mark( $this->GetCallerLine(4) );
+		$this->mark( $this->GetCallerLine(3) );
+		$this->mark( $this->GetCallerLine(2) );
+		$this->mark( $this->GetCallerLine(1) );
+		*/
+		
 		$css = '
 		<style>
 		#form-wizard{
@@ -344,8 +380,8 @@ class Wizard extends OnePiece5
 		//	
 		$title	 = $config->title;
 		$message = $config->message;
-		if(!is_string($title)){ $title = 'miss!'; }
-		if(!is_string($message)){ $message = 'miss!'; }
+		if(!is_string($title)){ $title = 'Please set "$config->form->title".'; }
+		if(!is_string($message)){ $message = 'Please set "$config->form->message".'; }
 		
 		print $css;
 		$this->form()->Start($form_name);

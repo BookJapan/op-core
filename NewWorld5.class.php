@@ -419,6 +419,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	Selftest
+		/*
 		if( $this->GetEnv('cli') ){
 			//	through
 		}else if( $this->Admin() ){
@@ -434,6 +435,7 @@ abstract class NewWorld5 extends OnePiece5
 				}
 			}
 		}
+		*/
 		
 		//  layout
 		try{
