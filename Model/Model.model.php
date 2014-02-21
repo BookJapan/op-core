@@ -156,7 +156,6 @@ class Config_Model extends OnePiece5
 	function Init()
 	{
 		parent::Init();
-		
 		if( $config = $this->GetEnv(self::CONFIG_DATABASE) ){
 			foreach( $config as $key => $var ){
 				if( empty($var) ){
@@ -329,6 +328,13 @@ class Config_Model extends OnePiece5
 		if(!$table){
 			//	get table name by extends class
 			$class = get_class($this);
+			/*
+			$this->mark($class);
+			$this->mark($this->GetCallerLine(1));
+			$this->mark($this->GetCallerLine(2));
+			$this->mark($this->GetCallerLine(3));
+			$this->mark($this->GetCallerLine(4));
+			*/
 			$table = $class::TABLE_NAME;
 		}
 		
