@@ -157,6 +157,8 @@ if( function_exists('__autoload') ){
 if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
+	//	OnePiece5::Mark(__FUNCTION__.', START');
+		
 		//	Error
 		Error::Report(OnePiece5::Admin());
 		
@@ -250,6 +252,7 @@ if(!function_exists('OnePieceShutdown')){
 				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
 				break;
 		}
+	//	OnePiece5::Mark(__FUNCTION__.', FINISH');
 	}
 	register_shutdown_function('OnePieceShutdown');
 }
@@ -619,12 +622,12 @@ class OnePiece5
 	 */
 	static function StackError( $args )
 	{
-		/*
-		if( OnePiece5::Admin() ){
+	//	OnePiece5::mark($args);
+		
+		if( $io = OnePiece5::Admin() ){
 			Error::Set($args);
-			return;
+		//	return;
 		}
-		*/
 		
 		$encoding = mb_internal_encoding();
 		
@@ -1340,11 +1343,11 @@ __EOL__;
 				case 'null':
 					if( $func ){
 						if( $method ){
-							$format = '$file ($class$type$func) [$line] ';
+							$format = '$file [$line] ';
 						}else if( $class ){
-							$format = '$file ($class$type$func) [$line] ';
+							$format = '$file [$line] ';
 						}else{
-							$format = '$file ($func) [$line] ';
+							$format = '$file [$line] ';
 						}
 					}else{
 						$format = '$file [$line] ';
@@ -1523,8 +1526,8 @@ __EOL__;
 		$line = self::GetCallerLine();
 		
 		//	CLI
-		if( $this->GetEnv('cli') ){
-			$this->p($line);
+		if( self::GetEnv('cli') ){
+			self::p($line);
 			var_dump($args);
 			return;
 		}
@@ -2629,8 +2632,10 @@ class Error
 {
 	const _NAME_SPACE_ = '_STACK_ERROR_';
 	
-	function Set( $message )
+	static function Set( $message )
 	{
+	//	OnePiece5::Mark($message);
+		
 		//	save debug backtrace
 		if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
 			$backtrace = debug_backtrace(false);
@@ -2655,10 +2660,10 @@ class Error
 		$_SESSION[self::_NAME_SPACE_][$key] = $error;
 	}
 	
-	function Report( $admin )
+	static function Report( $admin )
 	{
-		if(empty($_SESSION[self::_NAME_SPACE_])){
-		//	print "<p>Error is not occur.</p>";
+		if( empty($_SESSION[self::_NAME_SPACE_]) ){
+		//	OnePiece5::mark("Error is not occur.");
 			return;
 		}
 		
