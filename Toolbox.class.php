@@ -380,7 +380,7 @@ class Toolbox
 			foreach( $list = headers_list() as $header ){
 				list( $key, $var ) = explode(':',$header);
 				if( $key === 'Content-Type' ){
-					$mime = trim($var);
+					list($mime,$charset) = explode(';',trim($var));
 				}
 			}
 		}
