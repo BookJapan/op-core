@@ -29,7 +29,12 @@ class Model_File extends Model_Model
 			}
 			
 			$is_dir = is_dir($path.$name);
-			$ext = !$is_dir ? array_pop(explode('.',$name)) : null;
+			if(!$is_dir){
+				$tmp = explode('.',$name);
+				$ext = array_pop( $tmp );
+			}else{
+				$ext = null;
+			}
 			
 			$file = array();
 			$file['dir']  = $is_dir;
