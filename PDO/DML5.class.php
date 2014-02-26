@@ -272,7 +272,10 @@ class DML5 extends OnePiece5
 		}
 		
 		//  limit
-		if( isset($conf['limit']) ){
+		if($this->_is_table_join){
+			//	Can not use LIMIT by JOIN TABLE case.
+			$limit = null;
+		}else if( isset($conf['limit']) ){
 			if( $conf['limit'] == -1 ){
 				$limit = null;
 			}else{
