@@ -1,9 +1,20 @@
 <?php
 /**
- * Sample of how to make the model.
+ * Account.model.php
  *
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- *
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright Copyright &copy; 2014 Tomoaki Nagahara
+ * @version   1.0
+ * @package   op-core
+ */
+
+/**
+ * Model_Account
+ * 
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright Copyright &copy; 2014 Tomoaki Nagahara
+ * @version   1.0
+ * @package   op-core
  */
 class Model_Account extends Model_Model
 {
