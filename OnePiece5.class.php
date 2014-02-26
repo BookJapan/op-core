@@ -2688,7 +2688,7 @@ class Error
 		}
 	}
 	
-	private function _getMailSubject()
+	static private function _getMailSubject()
 	{
 		foreach($_SESSION[self::_NAME_SPACE_] as $key => $backtraces){
 		//	dump::d($backtraces['backtrace'][0]);
@@ -2696,7 +2696,7 @@ class Error
 		}
 	}
 	
-	private function _formatBacktrace( $index, $backtrace, $color=null )
+	static private function _formatBacktrace( $index, $backtrace, $color=null )
 	{
 		$file	 = isset($backtrace['file'])	 ? $backtrace['file']:	 null;
 		$line	 = isset($backtrace['line'])	 ? $backtrace['line']:	 null;
@@ -2721,7 +2721,7 @@ class Error
 		return $info.PHP_EOL;
 	}
 	
-	private function _getBacktrace()
+	static private function _getBacktrace()
 	{
 		$i = 0;
 		$return = '![table .small [';
@@ -2744,13 +2744,13 @@ class Error
 		return Wiki2Engine::Wiki2($return);
 	}
 	
-	private function _toDisplay()
+	static private function _toDisplay()
 	{
 		print self::_getBacktrace();
 		return true;
 	}
 	
-	private function _toMail()
+	static private function _toMail()
 	{
 	//	dump::d($_SERVER);
 		
@@ -2804,7 +2804,7 @@ class Error
 		return $io;
 	}
 	
-	private function _getMailMessage()
+	static private function _getMailMessage()
 	{
 		$key = 'Timestamp';
 		$var = date('Y-m-d H:i:s');
@@ -2830,7 +2830,7 @@ class Error
 		return $message;
 	}
 	
-	private function _Serialize( $args )
+	static private function _Serialize( $args )
 	{
 		$serial = '';
 		foreach( $args as $arg ){
@@ -2860,7 +2860,7 @@ class Error
 		return $serial;
 	}
 	
-	private function _SerializeArray($args)
+	static private function _SerializeArray($args)
 	{
 		$serial = 'array(';
 		foreach($args as $key => $var){
