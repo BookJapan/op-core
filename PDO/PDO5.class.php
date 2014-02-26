@@ -877,7 +877,7 @@ class PDO5 extends OnePiece5
 		if(!empty($config['cache'])){
 
 			//	Get cache key
-			if( isset($config['cache_key']) ){
+			if( isset( $config['cache_key'] ) ){
 				$key = $config['cache_key'];
 			}else{
 			//	$key = md5(serialize($config));
@@ -892,6 +892,21 @@ class PDO5 extends OnePiece5
 				$this->mark("hit cache!! expire is {$config['cache']}sec.",'cache');
 				//	Return cache value
 				return $records;
+			}
+		}
+		
+		//	fat mode in the case of join table.
+		if( empty($config['column']) and strpos($config['table'],'=') ){
+			//	init
+			if(!isset($config['column'])){ $config['column'] = ''; }
+			//	database
+			$database = isset($config['table']) ? $config['table']: null;
+			//	Does not think use of USING.
+			foreach(explode('=',$config['table']) as $temp){
+				list($table,$column) = explode('.',trim($temp));
+				foreach($this->GetTableColumn($table,$database) as $column ){
+					$config['alias']["{$table}.{$column}"] = "{$table}.{$column}";
+				}
 			}
 		}
 		
