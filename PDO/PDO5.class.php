@@ -441,6 +441,14 @@ class PDO5 extends OnePiece5
 		return $struct;
 	}
 	
+	function GetTableColumn( $table, $database=null )
+	{
+		foreach($this->GetTableStruct($table,$database) as $struct ){
+			$columns[] = $struct['field'];
+		}
+		return $columns;
+	}
+	
 	function GetUserList()
 	{
 		//  Select database
