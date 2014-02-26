@@ -619,12 +619,14 @@ class DML5 extends OnePiece5
 	protected function ConvertSelectColumn($conf)
 	{
 		//  init
-		$join = array();
-		$agg  = array();
-		$return = null;
+		$join	 = array();
+		$agg	 = array();
+		$alias	 = array();
+		$return	 = null;
 		
-		if( isset($conf['column']) ){
-						
+		if( empty($conf['column']) ){
+			$cols = null;
+		}else{		
 			if( is_array($conf['column']) ){
 				/**
 				 * Example:
@@ -679,13 +681,11 @@ class DML5 extends OnePiece5
 			}
 			$cols = join(', ',$temp);
 			$temp = null;
-		}else{
-			$cols = null;
 		}
 		
 		//  
 		if( isset($conf['alias']) ){
-			if(!$this->ConvertAlias( $conf, $join )){
+			if(!$this->ConvertAlias( $conf, $alias )){
 				return false;
 			}
 		}
@@ -709,32 +709,49 @@ class DML5 extends OnePiece5
 		}
 		
 		//  exists select column
-		if( !count($join) and !count($agg) and !$cols){
+		if( !count($join) and !count($agg) and !count($alias) and !$cols){
 			$return = '*';
 		}else{
 			
-			//  Standard
-			//if( $temp = array_diff( $join, $agg ) ){
+			//  Standard (used only case?)
 			if( $join ){
 				$return .= $return ? ', ': '';
 				$return .= '`'.implode( '`, `', $join ).'`';
 			}
-						
+			
 			//  aggregate
 			if( $agg ){
 				$return .= $return ? ', ': '';
 				$return .= implode( ', ', $agg );
+			}
+			
+			//  alias
+			if( $alias ){
+				$return .= $return ? ', ': '';
+				$return .= implode( ', ', $alias );
 			}
 		}
 		
 		return $return;
 	}
 	
-	protected function ConvertAlias( $conf, &$join )
+	protected function ConvertAlias( $conf, &$alias )
 	{
-		foreach( $conf['alias'] as $key => $var ){
-			$join[] = sprintf("{$this->ql}%s{$this->qr} as {$this->ql}%s{$this->qr}",
-			 trim($this->pdo->quote($var),"'"), trim($this->pdo->quote($key),"'") );
+		foreach( $conf['alias'] as $from => $to ){
+			//	make from
+			if( strpos($from,'.') ){
+				list($table,$column) = explode('.',$from);
+				$from  = "";
+				$from .= $this->ql.trim($this->pdo->quote($table),"'").$this->qr;
+				$from .= '.';
+				$from .= $this->ql.trim($this->pdo->quote($column),"'").$this->qr;
+			}else{
+				$from  = $this->ql.trim($this->pdo->quote($from),"'").$this->qr;
+			}
+			//	make to
+			$to = $this->ql.trim($this->pdo->quote($to),"'").$this->qr;
+			//	join
+			$alias[] = "$from AS $to";
 		}
 		
 		return true;
