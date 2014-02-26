@@ -1544,6 +1544,10 @@ __EOL__;
 			                            				 'font-size' => '9pt',
 														 'background-color'=>'white'
 														)));
+			if( $args instanceof Config ){
+				$args = Toolbox::toArray($args);
+			}
+			
 			// Dump.class.php include by __autoloader
 			Dump::d($args);
 		}else{
