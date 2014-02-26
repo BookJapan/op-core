@@ -482,7 +482,11 @@ abstract class NewWorld5 extends OnePiece5
 		if( isset($route['pass']) and $route['pass'] ){
 			chdir( dirname($route['fullpath']) );
 		}else{
-			chdir( $chdir );
+			if( file_exists($chdir) ){
+				chdir( $chdir );
+			}else{
+				$this->StackError("Does not exists dir. ($chdir)");
+			}
 		}
 		
 		//  Controller file path.
