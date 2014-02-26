@@ -10,7 +10,7 @@ class DML5 extends OnePiece5
 	//private $pdo = null;
 	private $ql  = null;
 	private $qr  = null;
-	private $is_table_join = null;
+	private $_is_table_join = null;
 
 	//  NEW
 	private $pdo    = null;
@@ -44,7 +44,7 @@ class DML5 extends OnePiece5
 		}
 		
 		//  init flag
-		$this->is_table_join = false;
+		$this->_is_table_join = false;
 		
 		//  table
 		if(isset($conf['table'])){
@@ -401,7 +401,7 @@ class DML5 extends OnePiece5
 		$qr = $this->qr;
 		
 		//  table join flag
-		$this->is_table_join = true;
+		$this->_is_table_join = true;
 		
 		//  replase space
 		$table = str_replace(' ', '', $conf['table']);
