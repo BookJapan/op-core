@@ -34,24 +34,6 @@ class DML5 extends OnePiece5
 		}
 	}
 	
-	/*
-	function Quote( $var )
-	{
-		if( is_array($var) ){
-			foreach( $var as $tmp ){
-				$safe[] = $this->Quote($tmp);
-			}
-		}else if( strpos($var,'.') ){
-			$temp = explode('.',$var);
-			$this->d($temp);
-			$safe = $this->ql .trim($temp[0]). $this->qr.'.'.$this->ql .trim($temp[1]). $this->qr;
-		}else{
-			$safe = $this->ql .trim($var). $this->qr;
-		}
-		return $safe;
-	}
-	*/
-	
 	function GetSelect( $conf )
 	{
 		//  database
