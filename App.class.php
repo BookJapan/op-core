@@ -153,7 +153,7 @@ class App extends NewWorld5
 			default:
 				$doctype = '<!DOCTYPE html>';
 		}
-		print $doctype;
+		print $doctype.PHP_EOL;
 	}
 
 	function SetLang( $var )
