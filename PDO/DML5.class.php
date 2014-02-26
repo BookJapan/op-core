@@ -533,14 +533,15 @@ class DML5 extends OnePiece5
 		foreach( $conf['set'] as $key => $var ){
 			
 			//	Escape
-			$key = $this->ql.$key.$this->qr;
-			
-			/*
-			if(!(is_string($var) or is_numeric($var)) ){
-				$this->StackError("Set is only string. ($key)");
-				continue;
+			if(strpos($key,'.')){
+				list($table,$column) = explode('.',$key);
+				$key  = '';
+				$key .= $this->ql.$table.$this->qr;
+				$key .= '.';
+				$key .= $this->ql.$column.$this->qr;
+			}else{
+				$key = $this->ql.$key.$this->qr;
 			}
-			*/
 			
 			//	Case of not support value.
 			if( is_array($var) or is_object($var) ){
