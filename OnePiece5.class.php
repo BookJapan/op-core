@@ -969,6 +969,12 @@ __EOL__;
 			default:
 				if( $ope == 'set' ){
 					
+					//	If admin-ip case
+					if( $key === 'admin-ip' or $key === 'admin_ip' ){
+						//	reset flag
+						$_SERVER['OP_IS_ADMIN'] = null;
+					}
+					
 					$_SERVER[__CLASS__]['env'][$key] = $var;
 					
 				}else if( $ope == 'get' ){
