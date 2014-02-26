@@ -41,6 +41,15 @@ class Cache extends OnePiece5
 	private $_use_cas = true;
 	private $_cas_list = array();
 	
+	function Test()
+	{
+		$key = 'count';
+		$var = $this->Get($key);
+		$var = $var +1;
+		$this->Set($key,$var);
+		$this->mark($var);
+	}
+	
 	function Debug()
 	{
 		$args = array();
