@@ -365,6 +365,11 @@ abstract class NewWorld5 extends OnePiece5
 		return false;
 	}
 	
+	function SetDispatchFlag($flag)
+	{
+		$this->_isDispatch = $flag;
+	}
+	
 	function Dispatch($route=null)
 	{
 		// Deny two time dispatch
