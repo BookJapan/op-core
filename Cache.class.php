@@ -41,6 +41,17 @@ class Cache extends OnePiece5
 	private $_use_cas = true;
 	private $_cas_list = array();
 	
+	function Debug()
+	{
+		$args = array();
+		$args['type']		 = $this->_cache_type;
+		$args['connect']	 = $this->_isConnect;
+		$args['compress']	 = $this->_compress;
+		$args['use cas']	 = $this->_use_cas;
+		$args['cache']		 = $this->_cache;
+		$this->d($args);
+	}
+	
 	function Init()
 	{
 		parent::Init();
