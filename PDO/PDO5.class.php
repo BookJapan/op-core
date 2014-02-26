@@ -894,7 +894,6 @@ class PDO5 extends OnePiece5
 		
 		//  execute
 		$records = $this->query($qu);
-		
 		if( $records === false ){
 			return false;
 		}
@@ -908,8 +907,7 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Check cache setting. If record is empty case does not cache.
-		if( /*isset($config['cache'])*/ isset($key) and !empty($records) ){
-		//	$key = md5(serialize($config));
+		if( isset($key) and !empty($records) ){
 			$io = $this->Cache()->Set( $key, $records, (int)$config['cache'] );
 		}
 		
