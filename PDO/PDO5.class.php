@@ -895,7 +895,7 @@ class PDO5 extends OnePiece5
 			}
 		}
 		
-		//	fat mode in the case of join table.
+		//	FAT-MODE in the case of join table.
 		if( empty($config['column']) and strpos($config['table'],'=') ){
 			//	init
 			if(!isset($config['column'])){ $config['column'] = ''; }
@@ -908,6 +908,11 @@ class PDO5 extends OnePiece5
 					$config['alias']["{$table}.{$column}"] = "{$table}.{$column}";
 				}
 			}
+		}
+		
+		//	Change database
+		if(isset($config['database'])){
+			$this->SetDatabase($config['database']);
 		}
 		
 		//  get select query
@@ -950,6 +955,11 @@ class PDO5 extends OnePiece5
 		if(!is_array($config)){
 			$config = Toolbox::toArray($config);
 		}
+
+		//	Change database
+		if(isset($config['database'])){
+			$this->SetDatabase($config['database']);
+		}
 		
 		//  get query
 		if(!$qu = $this->dml()->GetInsert($config)){
@@ -985,6 +995,11 @@ class PDO5 extends OnePiece5
 		if(!is_array($config)){
 			$config = Toolbox::toArray($config);
 		}
+
+		//	Change database
+		if(isset($config['database'])){
+			$this->SetDatabase($config['database']);
+		}
 		
 		//  get query
 		if(!$qu = $this->dml()->GetUpdate($config)){
@@ -1008,6 +1023,11 @@ class PDO5 extends OnePiece5
 		//  object to array
 		if(!is_array($config)){
 			$config = Toolbox::toArray($config);
+		}
+
+		//	Change database
+		if(isset($config['database'])){
+			$this->SetDatabase($config['database']);
 		}
 		
 		//  get query
