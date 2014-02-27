@@ -748,12 +748,12 @@ __EOL__;
 		if( $cli /*self::GetEnv('Pacifista')*/ ){
 			print strip_tags( html_entity_decode( $print, ENT_QUOTES, $this->GetEnv('charset') ) );
 		}else if( !self::Admin() ){
-			$ua   = $this->GetEnv('UserAgent');
-			$ip   = $this->GetEnv('RemoteIp');
-			$href = $this->GEtEnv('href');
+			$ua   = $_SERVER['HTTP_USER_AGENT'];
+			$ip   = $_SERVER['REMOTE_ADDR'];
+			$href = $_SERVER['HTTP_REFERER'];
 			$host = $ip ? gethostbyaddr($ip): null;
 			$date = date('Y-m-d H:i:s');
-			$url  = $this->GetURL('url');
+			$url  = Toolbox::GetURL();
 			
 			//  The same mail is not delivered repeatedly.
 			$key = 'mail-notify-' . md5($errors[0]['trace']);
