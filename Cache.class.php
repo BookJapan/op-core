@@ -192,6 +192,12 @@ class Cache extends OnePiece5
 			}
 		}
 		
+		//	Can not serialize SimpleXMLElement.
+		if( $value instanceof SimpleXMLElement ){
+			$this->mark("Can not serialize SimpleXMLElement. (Serialization of 'SimpleXMLElement' is not allowed )");
+			return false;
+		}
+		
 		switch( $name = get_class($this->_cache) ){
 			case 'Memcached':
 				if( isset( $this->_cas_list[md5($key)] ) ){
