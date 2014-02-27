@@ -64,47 +64,29 @@ class Cache extends OnePiece5
 	function Init()
 	{
 		parent::Init();
-		
+	
 		//  Get use flag
-		$use_redis     = $this->GetEnv('OP_USE_REDIS');
-		$use_memcache  = $this->GetEnv('OP_USE_MEMCACHE');
-		$use_memcached = $this->GetEnv('OP_USE_MEMCACHED');
-		
+		//	$use_memcache  = $this->GetEnv('OP_USE_MEMCACHE');
+		//	$use_memcached = $this->GetEnv('OP_USE_MEMCACHED');
+	
 		//	get host & port
 		$host = $this->GetEnv('OP_CACHE_HOST');
 		$port = $this->GetEnv('OP_CACHE_PORT');
-		
+	
 		$host = $host ? $host : 'localhost';
 		$port = $port ? $port : '11211';
-		
-		if( is_null($use_memcached)){
-			$use_memcached = class_exists('Memcached',false);
-		}else
-		
-		if( is_null($use_memcache)){
-			$use_memcache = class_exists('Memcache',false);
-		}else
-		
-		if( is_null($use_redis)){
-			$use_redis = class_exists('Redis',false);
-		}
-		
-		if( $use_redis ){
-			if( $this->_cache = new Redis() ){
-				$this->InitRedis();
-			}
-		}else
-		
-		if( $use_memcached ){
+	
+		$is_memcache  = class_exists('Memcache',false);
+		$is_memcached = class_exists('Memcached',false);
+	
+		if( $is_memcached ){
 			$this->InitMemcached( $host, $port );
-		}else
-		
-		if( $use_memcache ){
+		}else if( $is_memcache ){
 			$this->InitMemcache( $host, $port );
 		}else{
 			$this->mark("not found",'cache');
 		}
-		
+	
 		return true;
 	}
 	
