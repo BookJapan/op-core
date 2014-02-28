@@ -2868,6 +2868,9 @@ class Error
 				case 'string':
 					$var = "'$var'";
 					break;
+				case 'object':
+					$var = 'object('.__METHOD__.')';
+					break;
 				default:
 			}
 			$serial .= "$key => $var, ";
