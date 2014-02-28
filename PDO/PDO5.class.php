@@ -443,10 +443,12 @@ class PDO5 extends OnePiece5
 	
 	function GetTableColumn( $table, $database=null )
 	{
-		foreach($this->GetTableStruct($table,$database) as $struct ){
-			$columns[] = $struct['field'];
+		if( $structs = $this->GetTableStruct($table,$database) ){
+			foreach( $structs as $struct ){
+				$columns[] = $struct['field'];
+			}
 		}
-		return $columns;
+		return isset($columns) ? $columns: array();
 	}
 	
 	function GetUserList()
