@@ -1411,7 +1411,7 @@ __EOL__;
 	 * @param string  $str
 	 * @param boolean $mark_labels
 	 */
-	function Mark( $str='', $mark_labels=false )
+	static function Mark( $str='', $mark_labels=false )
 	{
 		// displayed is only Admin-ip.
 		if(!self::admin()){ return; }
@@ -1516,7 +1516,7 @@ __EOL__;
 	 * @param string|array $args
 	 * @param string $use_get_flag
 	 */
-	function D( $args, $mark_label=null )
+	static function D( $args, $mark_label=null )
 	{
 		// displayed is only admin-ip.
 		if(!self::admin()){ return; }
