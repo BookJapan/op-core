@@ -675,7 +675,7 @@ class OnePiece5
 	function PrintError()
 	{
 		// init
-		$nl		 = self::GetEnv('nl');
+		$nl		 = "\r\n";//self::GetEnv('nl');
 		$cli	 = self::GetEnv('cli');
 		$mime	 = self::GetEnv('mime');
 		$class	 = 'OnePiece5';
