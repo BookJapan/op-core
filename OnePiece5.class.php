@@ -2679,15 +2679,28 @@ class Error
 {
 	const _NAME_SPACE_ = '_STACK_ERROR_';
 	
-	static function Set( $message )
+	static function Set( $e )
 	{
 	//	OnePiece5::Mark($message);
 		
-		//	save debug backtrace
-		if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
-			$backtrace = debug_backtrace(false);
+		if( $e instanceof Exception ){
+			$message   = $e->getMessage();
+			$backtrace = $e->getTrace();
+			$traceStr  = $e->getTraceAsString();
+			$file      = $e->getFile();
+			$line      = $e->getLine();
+			$prev      = $e->getPrevious();
+			$code      = $e->getCode();
 		}else{
-			$backtrace = debug_backtrace();
+			//	is message
+			$message = $e;
+			
+			//	save debug backtrace
+			if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
+				$backtrace = debug_backtrace(false);
+			}else{
+				$backtrace = debug_backtrace();
+			}
 		}
 		
 		//	creat check key (duplicate check)
