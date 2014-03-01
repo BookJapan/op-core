@@ -2781,7 +2781,7 @@ class Error
 			$backtraces = $error['backtrace'];
 			
 			//	Sequence no.
-			$return .= "![tr[ ![th colspan:3 .left [ Error #{$i} ]] ]]";
+			$return .= "![tr[ ![th colspan:4 .left [ Error #{$i} {$message} ]] ]]";
 			
 			$count = count($backtraces);
 			foreach( $backtraces as $index => $backtrace ){
