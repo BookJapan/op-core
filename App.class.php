@@ -173,7 +173,17 @@ class App extends NewWorld5
 	
 	function GetCharset( $args=null )
 	{
-		print $this->GetEnv('charset');
+		return $this->GetEnv('charset');
+	}
+	
+	function SetMime( $mime )
+	{
+		$this->SetEnv('mime',$mime);
+	}
+	
+	function GetMime()
+	{
+		return $this->GetEnv('mime');
 	}
 	
 	function AddKeyword( $var )
