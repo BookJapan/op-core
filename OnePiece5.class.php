@@ -1994,7 +1994,7 @@ __EOL__;
 	 * @param string $path
 	 * @return string
 	 */
-	function ConvertURL( $args, $domain=false )
+	static function ConvertURL( $args, $domain=false )
 	{
 		//	Check if abstract path.
 		if( preg_match('|^([a-z][a-z0-9]+):/(.*)|i',$args,$match) ){
@@ -2008,6 +2008,15 @@ __EOL__;
 				case 'dot':
 					$route = self::GetEnv('route');
 					$tmp_root = rtrim( $route['path'], '/' ) . '/'; 
+					break;
+					
+				case 'app':
+					$tmp_root = dirname($_SERVER['SCRIPT_NAME']).'/';
+					break;
+					
+				case 'layout':
+					$tmp_root  = self::GetEnv('layout_dir');
+					$tmp_root .= self::GetEnv('layout').'/';
 					break;
 					
 				default:
@@ -2035,8 +2044,8 @@ __EOL__;
 		$doc_root = self::GetEnv('doc-root');
 		
 		//	If path is alias.
-		if( $alias_root = self::GetEnv('alias-root') ){
-			
+//		if( $alias_root = self::GetEnv('alias-root') ){
+			/*
 			//	
 			$base_url = str_replace( $doc_root, '/', $alias_root);
 			
@@ -2053,12 +2062,25 @@ __EOL__;
 				default:
 					$this->mark($modifier);
 			}
-		}else{
+			*/
+//		}else{
+			
 			//	replace
 			$patt = array(); 
+			$repl = array();
 			$patt[] = "|^$doc_root|i";
-			$url = preg_replace($patt,'',$absolute);
-		}
+			$repl[] = "";
+			$patt[] = '|^app:|';
+			$repl[] = dirname($_SERVER['SCRIPT_NAME']);
+			$url = preg_replace($patt,$repl,$absolute);
+			
+			/*
+			print 'doc='.$doc_root . PHP_EOL;
+			print 'abs='.$absolute . PHP_EOL;
+			print 'url='.$url . PHP_EOL;
+			*/
+			
+//		}
 		
 		//	Added domain
 		if( $domain ){
@@ -2068,6 +2090,21 @@ __EOL__;
 		}
 		
 		return rtrim($domain,'/').'/'.ltrim($url,'/');
+	}
+	
+	static function ConvertURL2( $meta_url )
+	{
+	//	self::d($_SERVER);
+		self::mark( self::GetEnv('app-root') ); // from the root 
+		self::mark( $meta_url );
+		
+		//	calc app-root
+		$app_root = dirname($_SERVER['SCRIPT_NAME']); // from the document root.
+		
+		
+		
+		$return = '';
+		return $return;
 	}
 	
 	/**

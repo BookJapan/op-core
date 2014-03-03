@@ -163,7 +163,7 @@ class App extends NewWorld5
 	
 	function GetLang()
 	{
-		print $this->GetEnv('lang');
+		return $this->GetEnv('lang');
 	}
 
 	function SetCharset( $var )
@@ -173,7 +173,17 @@ class App extends NewWorld5
 	
 	function GetCharset( $args=null )
 	{
-		print $this->GetEnv('charset');
+		return $this->GetEnv('charset');
+	}
+	
+	function SetMime( $mime )
+	{
+		$this->SetEnv('mime',$mime);
+	}
+	
+	function GetMime()
+	{
+		return $this->GetEnv('mime');
 	}
 	
 	function AddKeyword( $var )
@@ -200,7 +210,7 @@ class App extends NewWorld5
 	
 	function GetKeywords()
 	{
-		print $this->GetEnv('keywords');
+		return $this->GetEnv('keywords');
 	}
 	
 	function Keywords()
@@ -215,7 +225,7 @@ class App extends NewWorld5
 	
 	function GetDescription()
 	{
-		print $this->GetEnv('description');
+		return $this->GetEnv('description');
 	}
 	
 	function Description()

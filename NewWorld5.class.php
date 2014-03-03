@@ -185,13 +185,27 @@ abstract class NewWorld5 extends OnePiece5
 				
 		//	full path
 		$full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
+		$full_path = dirname($_SERVER['SCRIPT_FILENAME']) . $path;
+		/*
+		$this->mark($path);
+		$this->mark(dirname($_SERVER['SCRIPT_NAME']));
+		$this->mark(dirname($_SERVER['SCRIPT_FILENAME']));
+		$this->mark($_SERVER['DOCUMENT_ROOT']);
+		$this->mark($this->GetEnv('app:/'));
+		*/
+		$pattern = dirname($_SERVER['SCRIPT_NAME']);
+		$meta_root = preg_replace("|{$pattern}$|","",dirname($_SERVER['SCRIPT_FILENAME']));
+		$meta_root .= $path;
+		$full_path = $meta_root;
 		
+		/*
 		//	If alias path is set.
 		if( $alias_root = self::GetEnv('alias-root') ){
 			$app_root = self::GetEnv('app-root');
 			$full_path = $app_root.str_replace( $alias_root, '/', $full_path);
 		}
-				
+		*/
+		
 		// Does path exist? (in route table)
 		if( $route = $this->_routeTable[md5($path)] ){
 			return $route;
@@ -226,6 +240,7 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}
 		
+		/*
 		// separate query
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
 		
@@ -239,15 +254,20 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//	absolute from current dir
 		$file_path = preg_replace("|$app_root|",'',$absolute_path);
+		*/
+		
+		$file_path = $full_path;
 		
 		//	search controller
-		$this->_getController( $dirs, $args, $file_path, $controller );
+		$route = $this->_getController( /*$dirs, $args,*/ $file_path /*, $controller*/ );
 		
 		//  build
+		/*
 		$route['path'] = '/'.join('/',$dirs);
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
-				
+		*/
+		
 		//  escape
 		$route = $this->Escape($route);
 		
@@ -268,7 +288,7 @@ abstract class NewWorld5 extends OnePiece5
 		$this->SetEnv('alias_root',$alias_root);
 	}
 	
-	private function _getController( &$dirs, &$args, $file_path, &$controller )
+	private function _getController( /*&$dirs, &$args,*/ $file_path /*, &$controller*/ )
 	{
 		// controller file name
 		if(!$controller = $this->GetEnv('controller-name')){
@@ -276,9 +296,12 @@ abstract class NewWorld5 extends OnePiece5
 			throw new OpNwException($m);
 		}
 		
-		//  Init
+		//	app-root
 		$app_root = $this->GetEnv('App-Root');
 		$app_root = rtrim($app_root,'/').'/';
+		//	remove app-root
+		$file_path = preg_replace("|^$app_root|",'',$file_path);
+		//	separate
 		$dirs = explode( '/', rtrim($file_path,'/') );
 		$args = array();
 		
@@ -299,7 +322,13 @@ abstract class NewWorld5 extends OnePiece5
 			$args[0] = null;
 		}
 		
-		return true;
+		$route = array();
+		$route['path'] = '/'.join('/',$dirs);
+		$route['file'] = $controller;
+		$route['args'] = array_reverse($args);
+		//$this->D($route);
+		
+		return $route;
 	}
 	
 	function HtmlPassThrough( $match, $full_path )
@@ -411,7 +440,7 @@ abstract class NewWorld5 extends OnePiece5
 			if( $_file_does_not_exists_ = $this->GetSession('file_does_not_exists') ){
 				if( $this->admin() ){
 					$this->p("![.red .bold[This file is not exists.]]",'div');
-					Dump::d($_file_does_not_exists_);
+					$this->d($_file_does_not_exists_);
 				}
 			}
 			$this->SetSession('file_does_not_exists',null);
@@ -547,10 +576,18 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function doLayout()
 	{
+		//	get charset
+		$charset = $this->GetEnv('charset');
+		
+		//	get mime
 		$mime = $this->GetEnv('mime');
-		if( !is_null($mime) and $mime != 'html' ){
+		if( !is_null($mime) and $mime != 'text/html' ){
+		//	$this->mark($mime);
 			return true;
 		}
+		
+		//	set header
+		header("Content-type: $mime; charset=$charset"); 
 		
 		//  check the layout is set. 
 		if(!$layout = $this->GetEnv('layout') ){
@@ -569,7 +606,7 @@ abstract class NewWorld5 extends OnePiece5
 			return $io;
 		}
 		
-		//  get controller name
+		//  get controller name (layout controller)
 		$controller = $this->GetEnv('controller-name');
 		
 		//  check the layout-directory is set.
