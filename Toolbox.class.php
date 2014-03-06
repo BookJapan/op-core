@@ -374,16 +374,31 @@ class Toolbox
 		return self::GetURL($conf);
 	}
 	
-	static function GetMIME()
+	static function GetMIME($only_sub_type=null)
 	{
-		if(!$mime = OnePiece5::GetEnv('mime')){
+		if( headers_sent($file,$line) ){
 			foreach( $list = headers_list() as $header ){
 				list( $key, $var ) = explode(':',$header);
 				if( $key === 'Content-Type' ){
-					list($mime,$charset) = explode(';',trim($var));
+					list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
 				}
 			}
+		}else if($mime = OnePiece5::GetEnv('mime')){
+			//	throw
+		}else{
+			$mime = 'text/html';
 		}
-		return $mime;
+		
+		if( $only_sub_type ){
+			list($temp,$mime) = explode('/',$mime);
+		}
+		
+		return strtolower(trim($mime));
+	}
+	
+	static function isHtml()
+	{
+		$mime = self::GetMIME();
+		return $mime === 'text/html' ? true: false;
 	}
 }

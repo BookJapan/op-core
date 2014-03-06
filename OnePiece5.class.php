@@ -219,15 +219,9 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		//$mime = OnePiece5::GetEnv('mime');
-		$mime = Toolbox::GetMIME();
-		if( strpos( $mime, '/') ){
-			list( $main_type, $sub_type ) = explode('/',$mime);
-		}else{
-			$sub_type = $mime;
-		}
+		$mime = Toolbox::GetMIME(true);
 		
-		switch( strtolower($sub_type) ){
+		switch( $mime ){
 			case 'plain':
 			//	print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
 				break;
@@ -252,7 +246,6 @@ if(!function_exists('OnePieceShutdown')){
 				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
 				break;
 		}
-	//	OnePiece5::Mark(__FUNCTION__.', FINISH');
 	}
 	register_shutdown_function('OnePieceShutdown');
 }
@@ -1413,10 +1406,13 @@ __EOL__;
 	 */
 	static function Mark( $str='', $mark_labels=false )
 	{
-		// displayed is only Admin-ip.
+		//	displayed is only Admin-ip.
 		if(!self::admin()){ return; }
 		
-		// displayed is Admin-ip and flag.
+		//	
+		if(!self::GetEnv('mark')){ return; }
+		
+		//	displayed is Admin-ip and flag.
 		if( $mark_labels ){
 			foreach( explode(',',$mark_labels) as $mark_label ){
 				Developer::SetMarkLabel( $mark_label );
@@ -1426,15 +1422,15 @@ __EOL__;
 			}
 		}
 		
-		// php momory usage 
+		//	php momory usage 
 		$memory_usage = memory_get_usage(true) /1000;
 		list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
 		$memory = sprintf('![ .gray [(%s.![.smaller[%s]] KB)]]', number_format($mem_int), $mem_dec );
 		
-		//  call line
+		//	call line
 		$call_line = self::GetCallerLIne(0,1,'mark');
 		
-		//  message
+		//	message
 		if( is_null($str) ){
 			$str = '![ .red [null]]';
 		}else
@@ -1446,11 +1442,12 @@ __EOL__;
 			$str = str_replace( array("\r","\n"), array('',''), $str);
 		}
 		
-		$nl = self::GetEnv('nl');
+		$nl   = self::GetEnv('nl');
 		$attr['class'] = array('OnePiece','mark');
 		$attr['style'] = array('font-size'=>'9pt','background-color'=>'white');
 		$string = self::Html("$nl$call_line - $str $memory$nl",'div',$attr);
-		if( self::GetEnv('cli') ){
+		
+		if(!Toolbox::isHtml()){
 			$string = strip_tags($string);
 			if( self::GetEnv('css') ){
 				$string = "/* ". trim($string) ." */$nl";
