@@ -526,7 +526,29 @@ abstract class NewWorld5 extends OnePiece5
 		$this->mark( $route['file'] );
 		$this->mark($path);
 		*/
-				
+		
+		//	@see http://d.hatena.ne.jp/sen-u/20131130/p1
+		header("X-Frame-Options: SAMEORIGIN");
+		header("X-XSS-Protection: 1; mode=block");
+		header("X-Permitted-Cross-Domain-Policies: master-only");
+		header("X-Download-Options: noopen");
+		header("X-Content-Type-Options: nosniff");
+		
+		//header("Content-Security-Policy: default-src 'self'");
+		//header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
+		
+		/* cache control
+		 header("Cache-Control: no-cache, no-store, must-revalidate");
+		header("pragma: no-cache");
+		*/
+		
+		/* permit cross domain
+		 header("Access-Control-Allow-Origin: http://www.example.com");
+		header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+		header("Access-Control-Allow-Headers: X-TRICORDER");
+		header("Access-Control-Max-Age: 1728000");
+		*/
+		
 		//	Execute controller.
 		$this->_content .= $this->GetTemplate($path);
 		
@@ -587,7 +609,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	set header
-		header("Content-type: $mime; charset=$charset"); 
+		header("Content-type: $mime; charset=$charset");
 		
 		//  check the layout is set. 
 		if(!$layout = $this->GetEnv('layout') ){
