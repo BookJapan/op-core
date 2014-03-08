@@ -72,7 +72,7 @@ class DML5 extends OnePiece5
 		}
 		
 		//  wheres
-		if(isset($conf['wheres'])){
+		if(!empty($conf['wheres'])){
 			if(!$where = 'WHERE ' . $this->ConvertWheres($conf['wheres'])){
 				return false;
 			}
@@ -257,7 +257,7 @@ class DML5 extends OnePiece5
 		}
 		
 		//  where(s)
-		if(isset($conf['wheres'])){
+		if(!empty($conf['wheres'])){
 			$where = 'WHERE ' . $this->ConvertWheres($conf['wheres']);
 		}else{
 			$this->StackError('Empty where. (ex. $conf[where][id]=1)');
@@ -321,7 +321,7 @@ class DML5 extends OnePiece5
 		}
 		
 		//  where(s)
-		if(isset($conf['wheres'])){
+		if(!empty($conf['wheres'])){
 			$where = 'WHERE ' . $this->ConvertWheres($conf['wheres']);
 		}else{
 			$this->StackError('Empty where. (ex. $conf[where][id]=1)');
@@ -799,6 +799,8 @@ class DML5 extends OnePiece5
 	
 	protected function ConvertWhere( $where, $joint='AND')
 	{
+		$join = array();
+		
 		//  check
 		if(!is_array($where) ){
 			$this->StackError('$where is not array.');
