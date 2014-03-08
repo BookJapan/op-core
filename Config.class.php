@@ -115,4 +115,13 @@ class Config extends stdClass
 			Dump::D(Toolbox::toArray($this));
 		}
 	}
+	
+	function isEmpty()
+	{
+		foreach($this as $key => $var){
+			return false;
+		}
+		
+		return true;
+	}
 }
