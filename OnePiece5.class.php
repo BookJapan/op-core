@@ -671,6 +671,7 @@ class OnePiece5
 		$nl		 = "\r\n";//self::GetEnv('nl');
 		$cli	 = self::GetEnv('cli');
 		$mime	 = self::GetEnv('mime');
+		$charset = self::GetEnv('charset');
 		$class	 = 'OnePiece5';
 		
 		//	Check CLI mode
@@ -732,15 +733,24 @@ __EOL__;
 		}
 		$print .= '</div>';
 		
-		// text/plane
-		if( false ){
-			$print = strip_tags( $print, null );
-		}
-		
 		// Finish
-		if( $cli /*self::GetEnv('Pacifista')*/ ){
-			print strip_tags( html_entity_decode( $print, ENT_QUOTES, $this->GetEnv('charset') ) );
-		}else if( !self::Admin() ){
+		//if( /*$cli*/ /*self::GetEnv('Pacifista')*/ ){
+		//	print strip_tags( html_entity_decode( $print, ENT_QUOTES, $charset ) );
+		//}else
+		 
+		if( self::Admin() ){
+
+			//	Notify
+			if( Toolbox::isHtml() ){
+				print $javascript . $nl;
+				print $print;
+			}else{
+				//	Not HTML
+				print html_entity_decode(strip_tags( $print, null ),ENT_QUOTES,$charset);
+			}
+			
+		}else{
+			//	Notify at email.
 			$ua   = $_SERVER['HTTP_USER_AGENT'];
 			$ip   = $_SERVER['REMOTE_ADDR'];
 			$href = $_SERVER['HTTP_REFERER'];
@@ -783,9 +793,6 @@ __EOL__;
 			$mail['subject'] = $subject;
 			$mail['message'] = html_entity_decode( $message, ENT_QUOTES, 'utf-8');
 			self::Mail($mail);
-		}else{
-			print $javascript . $nl;
-			print $print;
 		}
 		
 		return true;
@@ -2780,7 +2787,7 @@ class Error
 			$backtraces = $error['backtrace'];
 			
 			//	Sequence no.
-			$return .= "![tr[ ![th colspan:4 .left [ Error #{$i} {$message} ]] ]]";
+			$return .= "![tr[ ![th colspan:4 .left [ Error #{$i} {$message} ]] ]]".PHP_EOL;
 			
 			$count = count($backtraces);
 			foreach( $backtraces as $index => $backtrace ){
@@ -2795,7 +2802,12 @@ class Error
 	
 	static private function _toDisplay()
 	{
-		print self::_getBacktrace();
+		if( Toolbox::isHtml() ){
+			print self::_getBacktrace();
+		}else{
+			print PHP_EOL.PHP_EOL;
+			print html_entity_decode(strip_tags(self::_getBacktrace()),ENT_QUOTES);
+		}
 		return true;
 	}
 	
