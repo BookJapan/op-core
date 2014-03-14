@@ -1410,7 +1410,9 @@ __EOL__;
 		if(!self::admin()){ return; }
 		
 		//	
-		if(!self::GetEnv('mark')){ return; }
+		if(!self::GetEnv('mark') === false){
+			return; 
+		}
 		
 		//	displayed is Admin-ip and flag.
 		if( $mark_labels ){
