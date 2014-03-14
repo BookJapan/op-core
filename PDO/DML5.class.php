@@ -173,14 +173,17 @@ class DML5 extends OnePiece5
 			$option = null;
 		}
 		
-		return "SELECT $option $column FROM $table $where $group $having $order $limit $offset ";
+		//	WHERE modifire
+		$is_where = $where ? 'WHERE': null;
+		
+		return "SELECT $option $column FROM $table $is_where $where $group $having $order $limit $offset ";
 	}
 	
 	function GetInsert( $conf )
 	{
 		//  database
 		if(isset($conf['database'])){
-			$database = $this->ql.$conf['database'].$this->qr;
+			$database = $this->ql.$conf['database'].$this->qr.'.';
 		}else{
 			$database = null;
 		}
@@ -228,7 +231,7 @@ class DML5 extends OnePiece5
 	{
 		//  database
 		if(isset($conf['database'])){
-			$database = $this->ql.$conf['database'].$this->qr;
+			$database = $this->ql.$conf['database'].$this->qr.'.';
 		}else{
 			$database = null;
 		}
@@ -302,7 +305,7 @@ class DML5 extends OnePiece5
 	{
 		//  database
 		if(isset($conf['database'])){
-			$database = $this->ql.$conf['database'].$this->qr;
+			$database = $this->ql.$conf['database'].$this->qr.'.';
 		}else{
 			$database = null;
 		}
