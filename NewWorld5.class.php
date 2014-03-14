@@ -212,7 +212,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  Real file is pass through.
-		if( preg_match('/\/([-_a-z0-9]+)\.(html|css|js)$/i',$path,$match) ){
+		if( preg_match('/\/([-_a-z0-9\.]+)\.(html|css|js)$/i',$path,$match) ){
 			if( $route = $this->HtmlPassThrough( $match, $full_path ) ){
 				return $route;
 			}
@@ -723,7 +723,20 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function doJs($route)
 	{
+		//  Init garbage code. 
+	//	ob_clean();
+		
+		//  Print headers.
+		header("Content-Type: text/javascript");
+	//	header("X-Content-Type-Options: nosniff");
+		
+		//  Change cli mode.
 		$this->SetEnv('cli',true);
+		$this->SetEnv('js',true);
+		$this->SetEnv('mime','text/javascript');
+		
+		//  Execute.
+		$this->template( $route['fullpath'] );
 	}
 	
 	function Header( $str, $replace=null, $code=null )
