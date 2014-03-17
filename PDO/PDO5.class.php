@@ -427,14 +427,20 @@ class PDO5 extends OnePiece5
 			return false;
 		}
 		
-		//  length
+		//  separate length from type
 		foreach( $records as $record ){
 			$record = array_change_key_case( $record, CASE_LOWER );
 			$name = $record['field'];
-			if(preg_match('/([a-z]+)\(([0-9]+)\)/',$record['type'],$match)){
+			
+			//	int(11), char(10), enum('A','B')
+			if( preg_match('|^([a-z]+)\(([-_a-z0-9\'\,]+)\)$|i',$record['type'],$match) ){
 				$record['type']   = $match[1];
 				$record['length'] = $match[2];
+			}else{
+				$record['type']   = $record['type'];
+				$record['length'] = null;
 			}
+			
 			$struct[$name] = $record;
 		}
 		
