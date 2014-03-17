@@ -363,17 +363,28 @@ class DML5 extends OnePiece5
 	
 	protected function EscapeColumn( $column )
 	{
+		return $this->_QuoteColumn($column);
+	}
+	
+	private function _QuoteColumn( $column )
+	{
 		//  if table join
 		if( strpos($column, '.') ){
-			$temp = explode('.',trim($column));
-			$column = $this->ql.trim($temp[0]).$this->ql.'.'.$this->ql.trim($temp[1]).$this->ql;
+			list($table_name,$column_name) = explode('.',trim($column));
+			$column = $this->_quote($table_name).'.'.$this->_quote($column_name);
 		}else{
 			if(!empty($conf['join'])){
+				//	Please tell us about the condition this is necessary. (leave comment.)
 				$this->StackError('Faild column name. (if table join, table_name.column_name)');
 			}
-			$column = $this->ql.trim($column).$this->ql;
+			$column = $this->_quote($column);
 		}
 		return $column;
+	}
+	
+	private function _quote( $var )
+	{
+		return $this->ql.trim($var).$this->qr;
 	}
 	
 	protected function ConvertTable( $conf )
