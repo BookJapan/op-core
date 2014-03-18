@@ -394,21 +394,19 @@ class DML5 extends OnePiece5
 			return false;
 		}
 		
-		if( is_string($conf['table']) ){
-			if( $io = strpos($conf['table'], '=') ){
-				//  table join
-				if(!$table = $this->ConvertTableJoin($conf) ){
-					return;
-				}
-			}else{
-				//  single table
-				$table = $this->ql.$conf['table'].$this->qr;
-			}
-		}else{
-			$this->mark('Does not implement yet.');
+		if(!is_string($conf['table']) ){
+			$type = gettype($conf['table']);
+			$this->StackError("Does not implement this type at table yet. (type=$type)");
+			return false;
 		}
 		
-		return $table;
+		if( strpos($conf['table'],'=') ){
+			//  join table
+			return$this->ConvertTableJoin($conf);
+		}
+		
+		//  single table
+		return $this->_quote($conf['table']);
 	}
 	
 	protected function ConvertTableJoin( $conf )
