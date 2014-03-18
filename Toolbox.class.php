@@ -383,9 +383,11 @@ class Toolbox
 					list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
 				}
 			}
-		}else if($mime = OnePiece5::GetEnv('mime')){
-			//	throw
 		}else{
+			$mime = OnePiece5::GetEnv('mime');
+		}
+		
+		if(is_null($mime)){
 			$mime = 'text/html';
 		}
 		
