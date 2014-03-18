@@ -1,3 +1,4 @@
+(You can read in 20 seconds this document.) 
 
 Welcome to OnePiece-Framework!!
 
@@ -47,13 +48,15 @@ Welcome to OnePiece-Framework!!
 	
 	3. Form
 	
-		* Present form.
+		* Present form feature.
 		
-		* Anti-CSRF.
+		* Anti XSS / CSRF.
 		
 	4. PDO
 		
-		* Present database access.
+		* Present database control feature.
+		
+		* Anti SQL injection.
 	
 	5. Wiki2 
 	
@@ -61,7 +64,18 @@ Welcome to OnePiece-Framework!!
 	
 	6. Wizard
 		
-		* Database scheme is selftest. (auto recovery)
+		* Database scheme is selftest. (easy recovery)
 	
+	7. Cache
+		
+		* Present memcach access.
+		
+		* memcach / memcached module both use transparently.
+		
+	8. internationalization (i18n)
+	
+	9. Dump
+	
+	10. Blowfish
 	
 	
