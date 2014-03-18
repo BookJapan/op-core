@@ -947,29 +947,18 @@ class DML5 extends OnePiece5
 	protected function ConvertOrder( $conf )
 	{
 		if( is_string($conf['order']) ){
-			$orders = explode(',',$conf['order']);
+			$orders = explode(',',trim($conf['order']));
 		}else{
 			$orders = $conf['order'];
 		}
 		
 		foreach( $orders as $order ){
-			if( preg_match('/^desc | desc$/i', trim($order), $match)){
-				$desc = ' DESC';
-				$order = preg_replace(array('/^desc | desc$/i'),'',$order);
-			}else{
-				$desc = '';
+			$sc = null;
+			if( preg_match('/ (asc|desc)$/i', trim($order), $match)){
+				$order = preg_replace('/ (asc|desc)$/i','',trim($order));
+				$sc = " ".strtoupper($match[1]);
 			}
-			$order = preg_replace(array('/^asc /i'),'',$order);
-			
-			if( strpos( $order, '.') ){
-				list( $table, $column ) = explode( '.', $order );
-				$join[] = $this->ql.trim($table).$this->qr
-						. '.'
-						. $this->ql.trim($column).$this->qr
-						. $desc;
-			}else{
-				$join[] = $this->ql.trim($order).$this->qr . $desc;
-			}
+			$join[] = $this->_QuoteColumn($order).$sc;
 		}
 		
 		return 'ORDER BY '.join(', ',$join);
