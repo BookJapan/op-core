@@ -1382,6 +1382,37 @@ class Form5 extends OnePiece5
 		return true;
 	}
 	
+	private $_stack_attribute = null;
+	
+	public function AddAttribute( $key, $var, $input_name=null, $form_name=null )
+	{
+		//	Save on the stack.
+		if(!$input_name){
+			//	stack add attribute. $form->AddAttribute('class','class_a')->Input('input_name');
+			$this->_stack_attribute[$key] = explode(' ',$var);
+			return $this;
+		}
+		
+		//	Recovery from stack.
+		if(!$key){
+			//	If stack is empty.
+			if(empty($this->_stack_attribute)){
+				//	Do nothing.
+				return $this;
+			}
+		}
+		
+		$config = $this->GetConfig( $form_name, $input_name );
+		//	Case of not set input name. 
+		foreach( $this->_stack_attribute as $key => $var ){
+			$config->$key = join(' ',array_unique(array_merge(explode(' ',$config->$key),$var)));
+		}
+		
+		$this->SetConfig( $config, $form_name, $input_name );
+		
+		return true;
+	}
+	
 	/*******************************************************************************/
 	
 	public function Start( $form_name=null, $action=null )
@@ -1935,9 +1966,13 @@ class Form5 extends OnePiece5
 	
 	function GetInput( $input_name, $form_name=null, $value=null )
 	{
+		//	Recovery from stacked at attribute.
+		$this->AddAttribute( null, null, $input_name, $form_name );
+		
 		if(!$input = $this->GetConfig( $form_name, $input_name )){
 			return '';
 		}
+		
 		return $this->CreateInputTag( $input, $form_name, $value );
 	}
 	
