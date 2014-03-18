@@ -13,6 +13,11 @@ class DML5 extends OnePiece5
 	private $_is_table_join = null;
 
 	//  NEW
+	/**
+	 * PHP's PDO
+	 * 
+	 * @var PDO
+	 */
 	private $pdo    = null;
 	private $driver = null;
 	
@@ -60,50 +65,101 @@ class DML5 extends OnePiece5
 		}
 		
 		//  where (and)
-		if(isset($conf['where'])){
+		if( isset($conf['where-and']) ){
+			$conf['where'] = $conf['where-and'];
+		}
+		if( isset($conf['where_and']) ){
+			$conf['where'] = $conf['where_and'];
+		}
+		if( isset($conf['where']) ){
 			$conf['wheres']['and'] = $conf['where'];
 		}
 		
 		//  where (or)
 		if( isset($conf['where-or']) ){
-			$conf['wheres']['or'] = $conf['where-or'];
-		}else if( isset($conf['where_or']) ){
+			$conf['where_or'] = $conf['where-or'];
+		}
+		if( isset($conf['where_or']) ){
 			$conf['wheres']['or'] = $conf['where_or'];
 		}
 		
 		//  wheres
 		if(!empty($conf['wheres'])){
-			if(!$where = 'WHERE ' . $this->ConvertWheres($conf['wheres'])){
+			if(!$where = $this->ConvertWheres($conf['wheres'])){
+				var_dump($where);
 				return false;
 			}
 		}else{
 			$where = null;
 		}
 		
-		//  in
+		//	in
+		if( isset($conf['in']) ){
+			$conf['where-in'] = $conf['in'];
+		}
+		
+		//  in (and)
 		if(isset($conf['where-in'])){
-			if(!$where .= $this->ConvertWhereIn($conf, 'AND') ){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->ConvertWhereIn($conf, 'AND') ){
 				return false;
 			}
 		}
 		
 		//  in (or)
 		if(isset($conf['where-in-or'])){
-			if(!$where .= $this->ConvertWhereIn($conf, 'OR') ){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->ConvertWhereIn($conf, 'OR') ){
 				return false;
 			}
 		}
 		
+		//	not in
+		if( isset($conf['not-in']) ){
+			$conf['where-not-in'] = $conf['not-in'];
+		}
+		
+		//  not in (and)
+		if(isset($conf['where-not-in'])){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->ConvertWhereNotIn($conf, 'AND') ){
+				return false;
+			}
+		}
+		
+		//  not in (or)
+		if(isset($conf['where-not-in-or'])){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->ConvertWhereNotIn($conf, 'OR') ){
+				return false;
+			}
+		}
+		
+		//	between
+		if( isset($conf['between']) ){
+			$conf['where-between'] = $conf['between'];
+		}
+		
 		//  between (and)
-		if(isset($conf['where-between'])){
-			if(!$where .= $this->ConvertWhereBetween($conf, 'AND') ){
+		if( isset($conf['where-between']) ){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->ConvertWhereBetween($conf, 'AND') ){
 				return false;
 			}
 		}
 		
 		//  between (or)
 		if(isset($conf['where-between-or'])){
-			if(!$where .= $this->ConvertWhereBetween($conf, 'OR') ){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->ConvertWhereBetween($conf, 'OR') ){
+				return false;
+			}
+		}
+		
+		//	each columns
+		if( isset($conf['where_column']) ){
+			$is_where = $where ? ' AND ': null;
+			if(!$where .= $is_where.$this->_convertWhereAtColumn($conf['where_column'])){
 				return false;
 			}
 		}
@@ -785,17 +841,18 @@ class DML5 extends OnePiece5
 		return true;
 	}
 
-	protected function ConvertWheres( $wheres, $joint='AND' )
+	protected function ConvertWheres( $wheres, $joint=' AND ' )
 	{
 		foreach( $wheres as $ope => $arr ){
-			switch($ope){
+			switch(strtolower($ope)){
 				case 'and':
 				case 'or':
-					if(!$join[] = $this->ConvertWhere($arr, $ope) ){
-						return false;
+					$tmp = $this->ConvertWhere($arr, $ope);
+					if( $tmp ){
+						$join[] = $tmp;
 					}
 					break;
-				
+					
 				//  Case of nest.
 				case 'wheres':
 					$join[] = $this->ConvertWheres($arr);
@@ -805,11 +862,164 @@ class DML5 extends OnePiece5
 					$this->mark("![.red .bold[Does not define '$ope']]");
 			}
 		}
-		
-		return join($joint,$join);
+		return isset($join) ? join($joint,$join): true;
+	}
+
+	protected function ConvertWhereBetween( $conf, $joint=' AND ')
+	{
+		foreach($conf['between'] as $column => $value){
+			$column = $this->EscapeColumn($column);
+			$temp   = explode('-',$value);
+			$less   = (int)$temp[0];
+			$grat   = (int)$temp[1];
+			$join[] = "$column BETWEEN $less AND $grat";
+		}
+		return '('.join(" $joint ", $join).')';
 	}
 	
-	protected function ConvertWhere( $where, $joint='AND')
+	protected function ConvertWhereIn( $conf, $joint=' AND ')
+	{
+		foreach($conf['in'] as $column => $value){
+			$column = $this->EscapeColumn($column);
+			foreach(explode(',',$value) as $target){
+				$temp[] = $this->pdo->quote(trim($target));
+			}
+			$join[] = "$column IN (".join(',',$temp).")";
+		}
+		return '('.join(" $joint ", $join).')';
+	}
+	
+	private function _convertBetweenValue( $var )
+	{
+		if( preg_match('/(from)? ?([-0-9:]+) *(to|and) *([-0-9:]+)/i',$var,$match) ){
+			$from = $this->pdo->quote(trim($match[2]));
+			$to   = $this->pdo->quote(trim($match[4]));
+			$var = "$from AND $to";
+		}else{
+			$this->StackError("Does not match between's value is this '$var'. (ex.: \$var = 'From 1 to 10')");
+			$var = null;
+		}
+		return $var;
+	}
+	
+	private function _convertInValue( $var )
+	{
+		foreach(explode(',',$var) as $tmp){
+			$join[] = $this->pdo->quote(trim($tmp));
+		}
+		if(isset($join)){
+			$var = "(".join(',',$join).")";
+		}else{
+			$io = false;
+		}
+		return $var;
+	}
+	
+	private function _convertLikeValue( &$var )
+	{
+		$var = $this->pdo->quote($var);
+		return $var;
+	}
+	
+	private function _getWhereModifier( $key )
+	{
+		switch($key = strtolower($key)){
+			case 'in':
+				$modifier = 'IN';
+				break;
+			case 'not_in':
+				$modifier = 'NOT IN';
+				break;
+			case 'like':
+				$modifier = 'LIKE';
+				break;
+			case 'not_like':
+				$modifier = 'NOT LIKE';
+				break;
+			case 'null':
+				$modifier = 'IS NULL';
+				break;
+			case 'not_null':
+				$modifier = 'IS NOT NULL';
+				break;
+			case 'between':
+				$modifier = 'BETWEEN';
+				break;
+			case 'not_between':
+				$modifier = 'NOT BETWEEN';
+				break;
+			default:
+				$modifier = '=';
+		}
+		return $modifier;
+	}
+	
+	/**
+	 * Different conditions of the same column.
+	 * 
+	 * @param  array  $where_column
+	 * @return string
+	 */
+	private function _convertWhereAtColumn( $where_column )
+	{
+		$charset = $this->GetEnv('charset');
+		$result = array();
+		foreach( $where_column as $column_name => $condition ){
+			//	table.column -> `table`.`column`
+			$column_name = $this->EscapeColumn($column_name);
+			$join_and = null;
+			$join_or  = null;
+			foreach( $condition as $key => $csv ){
+				if(is_null($csv)){ continue; }
+				if(is_array($csv)){ $this->StackError("Specified at array was abolished."); continue; }
+				$modifier = $this->_getWhereModifier($key);
+				foreach(str_getcsv(str_replace('&quot;','"',$csv)) as $var){
+					switch($modifier){
+						case 'IN':
+							$join_or[] = "$column_name $modifier ".$this->_convertInValue($var);
+							break;
+						case 'NOT IN':
+							$join_and[] = "$column_name $modifier ".$this->_convertInValue($var);
+							break;
+						case 'LIKE':
+							$join_or[] = "$column_name $modifier ".$this->_convertLikeValue($var);
+							break;
+						case 'NOT LIKE':
+							$join_and[] = "$column_name $modifier ".$this->_convertLikeValue($var);
+							break;
+						case 'IS NULL':
+							$join_or[] = "$column_name $modifier";
+							break;
+						case 'IS NOT NULL':
+							$join_and[] = "$column_name $modifier";
+						 	break;
+						case 'BETWEEN':
+							$join_or[] = "$column_name $modifier ".$this->_convertBetweenValue($var);
+							break;
+						case 'NOT BETWEEN':
+							$join_and[] = "NOT $column_name BETWEEN ".$this->_convertBetweenValue($var);
+							break;
+						default:
+							$join_or[] = "$column_name $modifier ".$this->pdo->quote($var);
+					}
+				}
+			}
+			//	each columns.
+			$ands = empty($join_and) ? null: join(' AND ',$join_and);
+			$ors  = empty($join_or)  ? null: join(' OR ', $join_or);
+			
+			if( $ands and $ors ){
+				$result[] = "($ands) AND ($ors)";
+			}else if( $ands or $ors ){
+				$result[] = "($ands"."$ors)";
+			}else{
+				//	noting
+			}
+		}
+		return empty($result) ? null: join(' AND ',$result);
+	}
+	
+	protected function ConvertWhere( $where, $joint=' AND ')
 	{
 		$join = array();
 		
@@ -820,29 +1030,35 @@ class DML5 extends OnePiece5
 		}
 		
 		foreach($where as $key => $var){
+			$modifier = strtoupper($key);
 			$column = $this->EscapeColumn($key);
 			
 			//  value is case of some value.
 			if( is_array($var) ){
 				
 				//  WHERE id IN ( 1, 2, 3 )
-				switch($key = strtoupper(trim($key))){
+				switch(strtoupper(trim($key))){
 					case 'LIKE':
 					case 'NOT LIKE':
 						foreach( $var as $column => $value ){
 							$column = $this->EscapeColumn($column);
 							$value  = $this->pdo->quote($value);
-							$join[] = "$column $key $value";
+							$join[] = "$column $modifier $value";
 						}
 						break;
 						
 					case 'BETWEEN':
 						foreach( $var as $column => $value ){
 							$column = $this->EscapeColumn($column);
-							$temp   = explode('-',$value);
-							$less   = (int)$temp[0];
-							$grat   = (int)$temp[1];
-							$join[] = "$column BETWEEN $less TO $grat";
+							if( preg_match('/([-0-9: ]+) ?(-|to|and) ?([-0-9: ]+)/i',$value,$match) ){
+								//	OK
+								$less   = (int)$match[1];
+								$grat   = (int)$match[3];
+							}else{
+								//	NG
+								$this->StackError("Does not match between format.");
+							}
+							$join[] = "$column BETWEEN $less AND $grat";
 						}
 						break;
 						
@@ -861,11 +1077,18 @@ class DML5 extends OnePiece5
 							}
 							$column = $this->EscapeColumn($column);
 							$temp   = join(', ', $in);
-							$join[] = "$column $key ( $temp )";
+							$join[] = "$column $modifier ( $temp )";
 						}
 						break;
 					default:
-						$this->mark("Does not support this. ($key)");
+						//var_dump($key);
+						//var_dump($var);
+						$tmp = $this->_convertWhereAtColumn(array($key=>$var));
+						//var_dump($tmp);
+						if( $tmp ){
+							$join[] = $tmp;
+						}
+						//$this->mark("Does not support this. ($key)");
 				}
 				
 				continue;
@@ -903,7 +1126,7 @@ class DML5 extends OnePiece5
 			$join[] = "$column $ope $var";
 		}
 		
-		return '('.join(" $joint ", $join).')';
+		return empty($join) ? null: '('.join(" $joint ", $join).')';
 	}
 	
 	protected function ConvertGroup( $conf )
