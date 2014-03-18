@@ -246,7 +246,7 @@ class Form5 extends OnePiece5
 				break;
 				
 			case 'get':
-				$post_token = $this->GetCookie($key);
+				$post_token = $this->GetCookie($token_key_name);
 				break;
 			default:
 				$this->mark();
@@ -1600,7 +1600,6 @@ class Form5 extends OnePiece5
 					
 				default:
 					if(!is_string($var)){
-						$this->d($var);
 						$var = Toolbox::toString( $var, ' ');
 					}
 					$join[] = sprintf('%s="%s"',$key,$var);
