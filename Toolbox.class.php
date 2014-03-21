@@ -374,6 +374,11 @@ class Toolbox
 		return self::GetURL($conf);
 	}
 	
+	static function SetMIME($mime)
+	{
+		OnePiece5::SetEnv('mime',$mime);
+	}
+	
 	static function GetMIME($only_sub_type=null)
 	{
 		if( headers_sent($file,$line) ){
