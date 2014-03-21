@@ -110,12 +110,12 @@ class Wizard extends OnePiece5
 						
 			//	Check each class
 			foreach( $selftest as $class_name => $config ){
-				$this->mark($class_name);
+				$this->mark($class_name,'wizard');
 				
 				//	Get Cache
 				$key = md5($class_name.', '.serialize($config));
 				if( $io = $this->Cache()->Get($key) ){
-					$this->mark($io);
+					$this->mark($io,'wizard');
 					continue;
 				}
 				
