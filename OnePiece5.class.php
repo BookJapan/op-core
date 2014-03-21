@@ -566,6 +566,7 @@ class OnePiece5
 			return true;
 		}
 		
+		/*
 		//  Create i18n configuration file path.
 		$path = $this->ConvertPath('op:/i18n/'.get_class($this).'.i18n.php');
 		
@@ -573,6 +574,7 @@ class OnePiece5
 		if( file_exists($path) ){
 			$this->i18n()->SetByFile($path);
 		}
+		*/
 		
 		return true;
 	}
