@@ -381,18 +381,18 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		if( headers_sent($file,$line) ){
-			foreach( $list = headers_list() as $header ){
+		if( headers_sent($file,$line) ){			
+			foreach( $list = headers_list() as $header ){				
 				list( $key, $var ) = explode(':',$header);
-				if( $key === 'Content-Type' ){
+				if( strtolower($key) === 'content-type' ){					
 					list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
 				}
 			}
-		}else{
+		}else{			
 			$mime = OnePiece5::GetEnv('mime');
 		}
 		
-		if(is_null($mime)){
+		if( empty($mime) ){
 			$mime = 'text/html';
 		}
 		
