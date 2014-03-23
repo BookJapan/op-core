@@ -127,6 +127,9 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		//	Since safety was confirmed, will change the token.
+		$this->GenerateTokenKey($form_name);
+		
 		return 'secure' == $this->status->$form_name->message ? true: false;
 	}
 	
