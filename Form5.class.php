@@ -185,6 +185,9 @@ class Form5 extends OnePiece5
 		//	save generate history for debug
 		if( $this->Admin() ){
 			$saved = $this->GetSession('save-token-key');
+			if(count($saved) > 20){
+				$saved = array_slice($saved, -20);
+			}
 			$saved[] = "$form_name, $token_key, ".date('H:i:s');
 			$this->SetSession('save-token-key', $saved);
 		}
