@@ -56,11 +56,8 @@ if( isset($_SERVER['ADMIN_IP']) and $_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_
 if( function_exists('__autoload') ){
 //	print "<p>__autoload is already exists.</p>";
 }else{
-//	print __FILE__.", ".__LINE__;
 	function __autoload($class_name)
 	{
-	//	print $class_name.'<br/>';
-		
 		//  init
 		$sub_dir  = null;
 		$op_root  = OnePiece5::GetEnv('OP-Root');
@@ -68,46 +65,45 @@ if( function_exists('__autoload') ){
 		
 		//	case of model
 		if( preg_match('/(Model|Config)_([a-z0-9]+)/i', $class_name, $match) ){
-		//	var_dump($app_root);
 			$is_model = true;
 			$file_name = $match[2].'.model.php';
-		}
-
-		//  file name
-		switch($class_name){
-			case isset($is_model):
-				break;
-				
-			case 'Memcache':
-			case 'Memcached':
-				return;
-								
-			case 'DML':
-			case 'DML5':
-			case 'DDL':
-			case 'DDL5':
-			case 'DCL':
-			case 'DCL5':
-				$sub_dir = 'PDO';
-				
-			default:
-				$file_name = $class_name . '.class.php';
+		}else{
+			//  file name
+			switch($class_name){
+				/*
+				case isset($is_model):
+					break;
+				*/
+				case 'Memcache':
+				case 'Memcached':
+					return;
+					
+				case 'DML':
+				case 'DML5':
+				case 'DDL':
+				case 'DDL5':
+				case 'DCL':
+				case 'DCL5':
+					$sub_dir = 'PDO';
+					
+				default:
+					$file_name = $class_name . '.class.php';
+			}
 		}
 		
 		/**
 		 *  Setup of the file reading directory.
 		 */
 		$dirs = array();
-	//	$dirs = explode( PATH_SEPARATOR, ini_get('include_path') );
 		if( isset($is_model) ){
 			if( $dir = OnePiece5::GetEnv('model-dir') ){
 				$dirs[] = OnePiece5::ConvertPath($dir);
 			}
-			$dirs[] = $op_root.'model/';
+			$dirs[] = $op_root.'Model/';
 		}
 		$dirs[] = '.';
-		$dirs[] = $app_root;
-		$dirs[] = $op_root;
+		if($app_root){ $dirs[] = $app_root; }
+		if($op_root){  $dirs[] = $op_root;  }
 		
 		//	PDO or Model
 		if( $sub_dir ){
@@ -121,7 +117,6 @@ if( function_exists('__autoload') ){
 		$dirs = array_unique($dirs);
 		
 		// check
-	//	print $class_name . '<br/>' . PHP_EOL;
 		foreach( $dirs as $dir ){
 			$file_path = rtrim($dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file_name;
 			
@@ -136,16 +131,6 @@ if( function_exists('__autoload') ){
 		
 		// check
 		if (!class_exists($class_name, false)) {
-		//	$call = array_shift(  );
-		//	print Dump::d(debug_backtrace());
-			
-			/*
-			print Dump::d($class_name);
-			print Dump::d($match);
-			print Dump::d($file_name);
-			print Dump::d($dirs);
-			*/
-			
 			trigger_error("Unable to auto load class: $class_name", E_USER_NOTICE);
 		}
 	}
@@ -157,8 +142,6 @@ if( function_exists('__autoload') ){
 if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
-	//	OnePiece5::Mark(__FUNCTION__.', START');
-		
 		//	Error
 		Error::Report(OnePiece5::Admin());
 		
