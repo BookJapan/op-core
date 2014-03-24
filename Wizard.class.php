@@ -22,14 +22,13 @@ class Wizard extends OnePiece5
 	
 	function __destruct()
 	{
-	//	$this->mark(__METHOD__);
-		
 		if( $this->Admin() ){
 			if(!$this->_isWizard){
-				$this->Selftest();
+				if( Toolbox::GetMIME(true) === 'html' ){
+					$this->Selftest();
+				}
 			}
 		}
-		
 		parent::__destruct();
 	}
 	
@@ -110,12 +109,11 @@ class Wizard extends OnePiece5
 						
 			//	Check each class
 			foreach( $selftest as $class_name => $config ){
-				$this->mark($class_name,'wizard');
 				
 				//	Get Cache
 				$key = md5($class_name.', '.serialize($config));
-				if( $io = $this->Cache()->Get($key) ){
-					$this->mark($io,'wizard');
+				if( $io = $this->Cache()->Get($key) and false ){
+					$this->mark("return cache value ($class_name, $key)",'wizard');
 					continue;
 				}
 				
@@ -136,16 +134,20 @@ class Wizard extends OnePiece5
 				
 				//	Set Cache
 				$this->Cache()->Set($key,$io);
-				$this->mark($io);
 				
 				if(!$io){
-					//	Execute the Wizard.
-					if( $this->_Wizard($config) ){
-						//	case of success, do delete config from session.
-						unset($selftest[$class_name]);
-					}else{
-						$fail = true;
-					}
+					$do_wizard = true;
+					$config_list[] = $config;
+				}
+			}
+
+			if(!empty($do_wizard)){
+				//	Execute the Wizard.
+				if( $this->_Wizard($config_list) ){
+					//	case of success, do delete config from session.
+					unset($selftest[$class_name]);
+				}else{
+					$fail = true;
 				}
 			}
 			
@@ -230,7 +232,7 @@ class Wizard extends OnePiece5
 		return true;
 	}
 	
-	private function _Wizard( Config $config )
+	private function _Wizard( $config_list )
 	{
 		//  Get form name.
 		$form_name = $this->config()->GetFormName();
@@ -238,35 +240,41 @@ class Wizard extends OnePiece5
 		//  Check secure
 		if( $this->form()->Secure($form_name) ){
 			
-			$database = Toolbox::Copy( $config->database );
-			$database->user     = $this->form()->GetInputValue('user',$form_name);
-			$database->password = $this->form()->GetInputValue('password',$form_name);
-			
-			//  Remove database name. (only connection, If not exists database.)
-			unset($database->database);
-			
-			//  Connect to administrator account.
-			if(!$io = $this->pdo()->Connect( $database ) ){
+			foreach( $config_list as $config ){
 				
-				//	Information
-				$this->p("Does not access from {$database->user} user.");
-				dump::d(Toolbox::toArray($database));
+				$database = Toolbox::Copy( $config->database );
+				$database->user     = $this->form()->GetInputValue('user',$form_name);
+				$database->password = $this->form()->GetInputValue('password',$form_name);
 				
-				//	Discard
-				$this->form()->Flash($form_name);
-			}else{
-				$this->model('Log')->Set("Connect {$database->user} account.",true);
-			}
-
-			//  Create
-			if( $io ){ 
-				$this->_CreateDatabase($config);
-				$this->_CreateTable($config);
-				$this->_CreateColumn($config);
-				$this->_CreateUser($config);
-				$this->_CreateGrant($config);
+				//  Remove database name. (only connection, If not exists database.)
+				unset($database->database);
+				
+				//  Connect to administrator account.
+				if(!$io = $this->pdo()->Connect( $database ) ){
+					
+					//	Information
+					$this->p("Does not access from {$database->user} user.");
+					dump::d(Toolbox::toArray($database));
+					
+					//	Discard
+					$this->form()->Flash($form_name);
+				}else{
+					$this->model('Log')->Set("Connect {$database->user} account.",true);
+				}
+	
+				//  Create
+				if( $io ){ 
+					$this->D($this->_result,'wizard');
+					$this->_CreateDatabase($config);
+					$this->_CreateTable($config);
+					$this->_CreateColumn($config);
+					$this->_CreateUser($config);
+					$this->_CreateGrant($config);
+				}
 			}
 		}else{
+			//$this->form()->Debug($form_name);
+			
 			/*
 			$this->mark( $this->GetCallerLine(3) );
 			$this->mark( $this->GetCallerLine(2) );
@@ -432,6 +440,7 @@ class Wizard extends OnePiece5
 		
 		//  Loop
 		foreach( $config->table as $table_name => $table ){
+		//	$this->mark("Check $table_name table",'selftest');
 			
 			//  Check table exists.
 			if( array_search( $table_name, $table_list) === false ){
@@ -462,7 +471,10 @@ class Wizard extends OnePiece5
 	}
 	
 	private function _CheckColumn( Config $config, $table_name )
-	{
+	{	
+		//	return value
+		$result = true;
+		
 		if( $config->table->$table_name->column ){
 			//	OK
 		}else if( $config->table->$table_name->column === false){
@@ -478,13 +490,12 @@ class Wizard extends OnePiece5
 		//	use create column, new create column is after where column
 		$after = null;
 		
-	//	$this->mark($table_name);
-	//	$this->d($columns);
-		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
+		//	$this->mark("table=$table_name, column=$column_name",'selftest');
 
-		//	$this->mark("table=$table_name, column=$column_name");
+			//	init
+			$fail = false;
 			
 			//	check
 			if(empty($column)){
@@ -497,6 +508,10 @@ class Wizard extends OnePiece5
 			
 			//	This column, Does not exists in the existing table.
 			if(!isset($structs[$column_name])){
+				
+				$this->mark("![.red[$column_name is fail]]");
+				$fail = true;
+				
 				if( empty($config->table->$table_name->column->$column_name->rename) ){
 					//	create new column
 					$this->_result->column->$table_name->$column_name = 'create,'.$after;
@@ -557,8 +572,12 @@ class Wizard extends OnePiece5
 							$this->mark();
 					}
 				}else{
-					if( !empty($config->table->$table_name->column->$column_name->pkey) ){
+					if( !empty($config->table->$table_name->column->$column_name->pkey) or
+						!empty($config->table->$table_name->column->$column_name->ai)
+						){
 						$index = 'PRI';
+					}else if(!empty($config->table->$table_name->column->$column_name->unique)){
+						$index = 'UNI';
 					}
 				}
 				
@@ -568,7 +587,11 @@ class Wizard extends OnePiece5
 				}
 				
 				//	Convert existing table value
-				if( $type == 'enum'){
+				if( $type === 'enum' or $type === 'set' ){
+					
+					$length = "'".join("','",array_map('trim',explode(',',$length)))."'";
+					
+					/*
 					if(preg_match( '/^enum\((.+)\)$/', $structs[$column_name]['type'], $match )){
 						$join = array();
 						foreach( explode(',',$match[1]) as $temp ){
@@ -577,6 +600,7 @@ class Wizard extends OnePiece5
 						$structs[$column_name]['length'] = join(',',$join);
 					}
 					$structs[$column_name]['type'] = 'enum';
+					*/
 				}
 				
 				//	Check type
@@ -605,33 +629,41 @@ class Wizard extends OnePiece5
 
 				//	$this->mark("$column_name=$index, {$structs[$column_name]['key']}");
 				//	$config->table->$table_name->column->$column_name->d();
-
-					$fail = true;
-					$hint = "index=$index not {$structs[$column_name]['null']}";
 					
+					$fail = true;
+					$hint = "index=$index not {$structs[$column_name]['key']}";
+					
+					/*
+					$this->mark($hint);
+					$this->mark($index);
+					$this->d($structs[$column_name]);
+					*/
+						
 				}else{
-					$fail = false;
+				//	$fail = false;
 				}
 				
 				//	If false will change this column.
-				$this->_result->column->$table_name->$column_name = $fail ? 'change,': null;
+				$this->_result->column->$table_name->$column_name = $fail ? 'change,': true;
 			}
 			
 			//	use create column
 			$after = $column_name;
-		}
-		
-		if(!isset($fail)){
-			$this->mark("table=$table_name");
-		}
-		
-		//	Logger
-		if( $fail ){
-			$this->model('Log')->Set("FAILED: table=$table_name, column=$column_name, hint=$hint",false);
+
+			//	Logger
+			if( $fail ){
+				$this->model('Log')->Set("ERROR: table=$table_name, column=$column_name, hint=$hint",false);
+			}
+			
+			if( $fail ){
+				$result = false;
+			}
+			
+		//	$this->mark("fail=$fail");
 		}
 		
 		//  Finish
-		return empty($fail) ? true: false;
+		return $result;
 	}
 	
 	private function _CheckPrivilege( Config $config )
@@ -758,10 +790,14 @@ class Wizard extends OnePiece5
 	
 	private function _CreateColumn( Config $config )
 	{
+		$this->mark(__METHOD__);
+		$this->d($config);
+		
 		//  Select database
 		$this->pdo()->Database($config->database->database);
 		
 		foreach( $config->table as $table_name => $table ){
+			$this->mark($table_name);
 			
 			//	Check
 			if(!$table instanceof Config ){
@@ -794,6 +830,8 @@ class Wizard extends OnePiece5
 			
 			//	result of selftest
 			foreach( $this->_result->column->$table_name as $column_name => $value ){
+				$this->mark($column_name);
+					
 				if( $value === true ){
 					continue;
 				}else if( $value === false ){
@@ -801,6 +839,7 @@ class Wizard extends OnePiece5
 					continue;
 				}
 				
+
 				list( $acd, $after ) = explode(',',$value);
 				
 				//	create or change
@@ -829,6 +868,9 @@ class Wizard extends OnePiece5
 						//	join
 						$change->column->$column_name = $config->table->$table_name->column->$column_name;
 						break;
+						
+					default:
+						$this->StackError("ACD is not set.");
 				}
 				
 				//	
@@ -914,7 +956,7 @@ class Wizard extends OnePiece5
 			if( isset($grant) ){
 				unset($grant);
 			}
-
+			
 			if( isset($revoke) ){
 				unset($revoke);
 			}
