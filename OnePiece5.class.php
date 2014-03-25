@@ -1014,14 +1014,19 @@ __EOL__;
 			$app_root  = str_replace( '\\', '/', $app_root  );
 			$site_root = str_replace( '\\', '/', $site_root );
 		}
+
+		$this->SetEnv('new_line',PHP_EOL);
+		$this->SetEnv('class',__CLASS__);
 		
-		$this->SetEnv('class',      __CLASS__    );
-		$this->SetEnv('doc_root',   $doc_root    );
-		$this->SetEnv('app_root',   $app_root    );
-		$this->SetEnv('site_root',  $site_root   );
-		$this->SetEnv('admin-ip',   $admin_ip    );
-		$this->SetEnv('admin-mail', $admin_mail  );
-		$this->SetEnv('new_line',    PHP_EOL      );
+		$this->SetEnv('doc_root',$doc_root);
+		$this->SetEnv('app_root',$app_root);
+		$this->SetEnv('site_root',$site_root);
+		
+		$this->SetEnv('admin-ip',$admin_ip);
+		$this->SetEnv('admin-mail',$admin_mail);
+		
+		$this->SetEnv('mime','text/html');
+		$this->SetEnv('charset','utf-8');
 	}
 	
 	/**

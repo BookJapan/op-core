@@ -452,25 +452,6 @@ abstract class NewWorld5 extends OnePiece5
 			$this->StackError($e);
 		}
 		
-		//	Selftest
-		/*
-		if( $this->GetEnv('cli') ){
-			//	through
-		}else if( $this->Admin() ){
-			if( ob_start() ){
-				
-				//	Selftest
-				$this->Wizard()->Selftest();
-				
-				//	Get content
-				$this->_content .= ob_get_contents();
-				if(!ob_end_clean() ){
-					$this->mark("ob_end_clean is failed");
-				}
-			}
-		}
-		*/
-		
 		//  layout
 		try{
 			$this->doLayout();
@@ -503,11 +484,6 @@ abstract class NewWorld5 extends OnePiece5
 		// change dir
 		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
 		
-		/*
-		$this->d($route);
-		$this->mark( 'chdir='.$chdir );
-		*/
-		
 		if( isset($route['pass']) and $route['pass'] ){
 			chdir( dirname($route['fullpath']) );
 		}else{
@@ -520,13 +496,7 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  Controller file path.
 		$path = getcwd().'/'.$route['file'];
-
-		/*
-		$this->mark( getcwd() );
-		$this->mark( $route['file'] );
-		$this->mark($path);
-		*/
-		
+				
 		//	@see http://d.hatena.ne.jp/sen-u/20131130/p1
 		header("X-Frame-Options: SAMEORIGIN");
 		header("X-XSS-Protection: 1; mode=block");
@@ -538,12 +508,12 @@ abstract class NewWorld5 extends OnePiece5
 		//header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
 		
 		/* cache control
-		 header("Cache-Control: no-cache, no-store, must-revalidate");
+		header("Cache-Control: no-cache, no-store, must-revalidate");
 		header("pragma: no-cache");
 		*/
 		
 		/* permit cross domain
-		 header("Access-Control-Allow-Origin: http://www.example.com");
+		header("Access-Control-Allow-Origin: http://www.example.com");
 		header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 		header("Access-Control-Allow-Headers: X-TRICORDER");
 		header("Access-Control-Max-Age: 1728000");
@@ -603,8 +573,9 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//	get mime
 		$mime = $this->GetEnv('mime');
-		if( !is_null($mime) and $mime != 'text/html' ){
-		//	$this->mark($mime);
+		
+		//	not do layout.
+		if( $mime != 'text/html' ){
 			return true;
 		}
 		
@@ -977,21 +948,6 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		return $data;
 	}
-	
-	/*
-	static function SetEnv( $key, $var )
-	{
-		switch(strtolower($key)){
-			case 'cli':
-				$charset = parent::GetEnv('charset');
-			//	$doctype = parent::GetEnv('doctype');
-				$mime = $var ? 'text/plain': parent::GetEnv('mime'); // TODO: Do error is occurred?
-				self::Header("Content-Type: $mime; charset=$charset");
-				break;
-		}
-		return parent::SetEnv( $key, $var );
-	}
-	*/
 }
 
 class OpNwException extends OpException
