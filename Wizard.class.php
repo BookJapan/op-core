@@ -9,9 +9,9 @@
  */
 class Wizard extends OnePiece5
 {
-	private $config = null;
-	private $_result = null;
-	private $_wizard = null;
+	private $config = null;  // what is this?
+	private $_result = null; // check's result
+	private $_wizard = null; // do wizard's result
 	
 	/**
 	 * Execution flag of Wizard.
@@ -159,8 +159,9 @@ class Wizard extends OnePiece5
 		}
 		
 		//	check
-		$this->_result->D('selftest');
-		$this->_wizard->D('selftest');
+	//	$this->mark('wizard is successful.');
+	//	$this->d( $this->_result );
+	//	$this->d( $this->_wizard );
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
@@ -183,27 +184,6 @@ class Wizard extends OnePiece5
 		$user  = $config->database->user;
 		$db    = $config->database->database;
 		$host .= $port == 3306 ? '': ' : '.$port;
-		
-		/*
-		foreach( array('driver','host','port','user','database') as $key ){
-			if(!$var = is_string($config->database->$key)){
-				$fail = true;
-				$this->StackError("$key is empty.");
-			}else{
-				if( $key === 'database' ){
-					$key = 'db';
-				}
-				if( $key === 'driver' ){
-					$key = 'dbms';
-				}
-				${$key} = $var;
-			}
-		}
-		
-		if($fail){
-			return false;
-		}
-		*/
 		
 		//	Database connection test
 		$io = $this->pdo()->Connect($config->database);
@@ -274,14 +254,6 @@ class Wizard extends OnePiece5
 			}
 		}else{
 			//$this->form()->Debug($form_name);
-			
-			/*
-			$this->mark( $this->GetCallerLine(3) );
-			$this->mark( $this->GetCallerLine(2) );
-			$this->mark( $this->GetCallerLine(1) );
-			$this->mark('![.red[form is not secure]]','selftest');
-			$this->mark( $this->form()->GetStatus($form_name) );
-			*/
 		}
 		
 		//	Logger
@@ -292,14 +264,6 @@ class Wizard extends OnePiece5
 	
 	private function _PrintForm( $config )
 	{
-		/*
-		$this->mark( $this->GetCallerLine(5) );
-		$this->mark( $this->GetCallerLine(4) );
-		$this->mark( $this->GetCallerLine(3) );
-		$this->mark( $this->GetCallerLine(2) );
-		$this->mark( $this->GetCallerLine(1) );
-		*/
-		
 		$css = '
 		<style>
 		#form-wizard{
@@ -789,10 +753,7 @@ class Wizard extends OnePiece5
 	}
 	
 	private function _CreateColumn( Config $config )
-	{
-		$this->mark(__METHOD__);
-		$this->d($config);
-		
+	{	
 		//  Select database
 		$this->pdo()->Database($config->database->database);
 		
@@ -814,8 +775,7 @@ class Wizard extends OnePiece5
 			
 			//	
 			if( empty($this->_result->column->$table_name) ){
-				$this->mark("$table_name is empty?",'debug wizard');
-			//	$this->_result->column->d();
+				$this->mark("![.red[$table_name is empty?]]");
 				continue;
 			}
 			
@@ -831,7 +791,7 @@ class Wizard extends OnePiece5
 			//	result of selftest
 			foreach( $this->_result->column->$table_name as $column_name => $value ){
 				$this->mark($column_name);
-					
+				
 				if( $value === true ){
 					continue;
 				}else if( $value === false ){
