@@ -79,7 +79,9 @@ class Blowfish
 	function SetKeyFromString( $keyword=null )
 	{
 		if(!$keyword){
-			$keyword = OnePiece5::GetEnv('admin-mail');
+			if(!$keyword = OnePiece5::GetEnv('encrypt-keyword')){
+				$keyword = OnePiece5::GetEnv('admin-mail');
+			}
 		}
 		$this->_key = pack('H*', bin2hex($keyword));
 	}
