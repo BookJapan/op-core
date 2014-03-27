@@ -7,14 +7,6 @@ class Model_Blowfish /* extends Model_Model */
 	 */
 	private $_blowfish = null;
 	
-	/*
-	function Init()
-	{
-		parent::Init();
-		$this->_blowfish = new Blowfish();
-	}
-	*/
-	
 	function Encrypt( $data, $password=null )
 	{
 		if(!$this->_blowfish){
