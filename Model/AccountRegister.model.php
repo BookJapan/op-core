@@ -1,7 +1,14 @@
 <?php
 
-class Model_AccountRegister extends Model_Model
+class Model_AccountRegister extends Model_Account
 {
+	function init()
+	{
+		$this->mark('This model is discontinued.');
+		return parent::Init();
+	}
+	
+	/*
 	const STATUS_ACCOUNT_EXISTS = 'Account is exists.';
 	const STATUS_ACCOUNT_CREATE = 'Account was created.';
 	const STATUS_ACCOUNT_FAILED = 'Create account was failed.';
@@ -49,6 +56,7 @@ class Model_AccountRegister extends Model_Model
 	{
 		return $this->_status;
 	}
+	*/
 }
 
 class Config_AccountRegister extends Config_Model

@@ -19,7 +19,8 @@
 class Model_Account extends Model_Model
 {
 	private $_log = array();
-	private $_status = null;
+	private $_message = null;
+	private $_success = null;
 	
 	/**
 	 * @return Config_Account
@@ -60,6 +61,7 @@ class Model_Account extends Model_Model
 	 */
 	function Auto()
 	{
+		$this->InitForm();
 		$form_name = $this->Config()->form_name();
 		
 		if(!$this->form()->Secure( $form_name ) ){
@@ -83,7 +85,7 @@ class Model_Account extends Model_Model
 	function Auth( $account=null, $password=null )
 	{
 		if( empty($account) or empty($password) ){
-			$this->SetStatus("Empty id or password.");
+			$this->SetMessage("Empty id or password.");
 			return false;
 		}
 		
@@ -98,10 +100,26 @@ class Model_Account extends Model_Model
 		//	login result
 		$login = empty($record) ? false: true;
 		
+		//	Failed num
+		$fail = $record[Config_Account::COLUMN_FAIL];
+
+		//	limited of failed count
+		$limit_count = $this->config()->limit_count();
+			
+		//	failed.
+		if( $fail > $limit_count ){
+			$this->_success = false;
+			$this->SetMessage( Config_Account::GetConst('auth_fail_limit') );
+			$this->mark("Over the failed.($fail > $limit_count)",'debug');
+			return false;
+		}
+		
 		if( $login ){
-			$this->SetStatus('account and password is matched.');
+			$this->_success = true;
+			$this->SetMessage( Config_Account::GetConst('auth_success') );
 		}else{
-			$this->SetStatus('account and password is not matched.');
+			$this->_success = false;
+			$this->SetMessage( Config_Account::GetConst('auth_fail') );
 			
 			//	update failed count
 			$config = $this->Config()->update_failed($account, $login);
@@ -110,41 +128,19 @@ class Model_Account extends Model_Model
 		}
 		
 		//	Reset failed count.
-		$config = $this->config()->update_failed_reset($account);
-		if( $num = $this->pdo()->update($config) ){
-			//	set status information
-		//	$this->mark('Reset failed count','debug');
-			$this->SetStatus("Reset failed count.");
+		if( $fail ){
+			$config = $this->config()->update_failed_reset($account);
+			$num = $this->pdo()->update($config);
+			$this->mark( $this->pdo()->qu(),'debug');
+			$this->SetMessage( Config_Account::GetConst('auth_fail_reset') );
 			
 			//	re select
 			$select = $this->config()->select_auth( $account, $password );
 			$record = $this->pdo()->select($select);
-			$this->mark( $this->pdo()->qu() );
-		}else{
-			/*
-			$this->mark("num: $num");
-			$this->mark( $this->pdo()->qu() );
-			$config->d();
-			*/
-		}
-		
-		//	Failed num
-		$fail = $record[Config_Account::COLUMN_FAIL];
-		
-		//	limited of failed count
-		$limit_count = $this->config()->limit_count();
-		
-		//	failed.
-		if( $fail > $limit_count ){
-		//	$this->d($record);
-			$this->mark("Over the failed.($fail > $limit_count)",'debug');
-			$this->SetStatus("Over the failed.");
-			return false;
 		}
 		
 		//	ID
 		$id = $record[Config_Account::COLUMN_ID];
-		$this->SetStatus("ID is $id");
 		
 		return $id;
 	}
@@ -162,15 +158,64 @@ class Model_Account extends Model_Model
 		}
 	}
 	
-	function SetStatus( $status )
+	function SetMessage( $status )
 	{
-		$this->_status = $status;
+		$this->_message = $status;
 		$this->_log[]  = $status;
 	}
 	
-	function GetStatus()
+	function GetMessage()
 	{
-		return $this->_status;
+		return $this->_message;
+	}
+	
+	function ShowRecord( $limit=10, $offset=0, $order='account_id')
+	{
+		$select = $this->Config()->select_record( $limit, $offset, $order );
+		$record = $this->pdo()->Select($select);
+		foreach($record as $temp){
+			$keyword = $this->form()->GetInputValue('keyword',Config_Account::GetConst('form_name'));
+			$temp['decrypt'] = $this->model('Blowfish')->Decrypt($temp['account_enc'], $keyword);
+			dump::d($temp);
+		}
+	}
+	
+	const STATUS_ACCOUNT_EXISTS = 'Account is exists.';
+	const STATUS_ACCOUNT_CREATE = 'Account was created.';
+	const STATUS_ACCOUNT_FAILED = 'Create account was failed.';
+	
+	function Create( $account, $password )
+	{
+		//	Get table name
+		$table_name = $this->model('Account')->Config()->GetTableName();
+	
+		//	Check unique account.
+		$select = $this->Config()->select($table_name);
+		$select->where->account_md5 = md5($account);
+		$num = $this->pdo()->count($select);
+		if( $num ){
+			$this->_message = Config_Account::GetConst('create_exists');
+			return false;
+		}
+		
+		//	Get insert config
+		$insert = $this->Config()->insert($table_name);
+		$insert->set->account_enc  = $this->model('Blowfish')->Encrypt($account);
+		$insert->set->account_md5  = md5($account);
+		$insert->set->password_md5 = md5($password);
+		
+		//	Execute insert
+		$id = $this->pdo()->Insert($insert);
+		$this->_success = $id ? true: false;
+		$this->_message = $id ? Config_Account::GetConst('create_success'): Config_Account::GetConst('create_fail'); 
+		
+		//	return id
+		return $id;
+	}
+	
+	function isSuccess()
+	{
+		return $this->_success;
 	}
 }
 
@@ -180,10 +225,64 @@ class Config_Account extends Config_Model
 	const DB_USER_NAME = 'op_mdl_account';
 	
 	private $_form_name		 = 'model_account_login';
-//	private $_table_prefix	 = 'op';
-//	private $_table_name	 = 'account';
 	private $_limit_second	 = 600; // ten minutes.
 	private $_limit_count	 = 5; // failed.
+	
+	static function GetConst($key)
+	{
+		switch(strtolower($key)){
+			
+			case 'form_name':
+				$var = 'model_account_login';
+				break;
+				
+			case 'account':
+			case 'form_input_account':
+				$var = 'account';
+				break;
+			case 'password':
+			case 'form_input_password':
+				$var = 'password';
+				break;
+			case 'keyword':
+				$var = 'keyword';
+				break;
+			case 'submit':
+			case 'form_input_submit':
+				$var = 'submit';
+				break;
+			
+			case 'auth_success':
+				$var = 'authorization is success.';
+				break;
+			case 'auth_fail':
+				$var = 'authorization is fail.';
+				break;
+			case 'auth_fail_limit':
+				$var = 'fail has exceeded the limit.';
+				break;
+			case 'auth_fail_reset':
+				$var = 'reset the fail count.';
+				break;
+				
+			case 'create_success':
+			case 'create_successful':
+				$var = 'create account is success.';
+				break;
+			case 'create_fail':
+			case 'create_faild':
+				$var = 'create account is failed.';
+				break;
+			case 'create_exists':
+				$var = 'account was exists.';
+				break;
+			
+			default:
+				OnePiece5::Mark("Does not define constant. ($key)");
+				$var = $key;
+		}
+		return $var;
+	}
 	
 	function SetTableName( $table_name )
 	{
@@ -195,12 +294,17 @@ class Config_Account extends Config_Model
 		return $this->table_name();
 	}
 	
-	/*
-	function table_name( $key=null, $value=null )
+	function GetDatabasePassword($config)
 	{
-		return $this->_table_prefix.'_'.$this->_table_name;
+		/*******************************************************************
+		 * モデルが変わっても、同じユーザー名の場合は、同じパスワードが使えなければならない。
+		 * ホスト.データベース毎に変わる。
+		 */
+		$host = $config->host;
+		$user = $config->user;
+		$database = $config->database;
+		return md5("{$host}.{$database},{$user}");
 	}
-	*/
 	
 	function limit_date()
 	{
@@ -216,6 +320,7 @@ class Config_Account extends Config_Model
 	{
 		$args['user'] = self::DB_USER_NAME;
 		$config = parent::Database($args);
+		$config->password = self::GetDatabasePassword($config);
 		return $config;
 	}
 	
@@ -232,6 +337,16 @@ class Config_Account extends Config_Model
 		return $config;
 	}
 	
+	function select_record( $limit=10, $offset=0, $order='account_id' )
+	{
+		$select = $this->select();
+		$select->column = 'account_id, account_enc, account_md5, password_md5';
+		$select->limit  = $limit;
+		$select->offset = $offset;
+		$select->order  = $order;
+		return $select;
+	}
+	
 	function select_auth( $account, $password )
 	{
 		$config = $this->select();
@@ -240,17 +355,14 @@ class Config_Account extends Config_Model
 		$config->cache = null;
 		return $config;
 	}
-	
-	/*
-	function select_failed()
+
+	function select_account( $account )
 	{
 		$config = $this->select();
-		$config->where->{self::COLUMN_ID} = $id;
-		$config->where->updated = '> '.$this->limit_date();
-		
+		$config->where->{self::COLUMN_MD5}		 = $account;
+	//	$config->cache = null;
 		return $config;
 	}
-	*/
 	
 	/**
 	 * Reset login failed count.
@@ -291,26 +403,14 @@ class Config_Account extends Config_Model
 		return $config;
 	}
 	
-	/*
-	function update_success( $id )
-	{
-		$config = parent::update( $this->table_name() );
-		$config->set->failed = null;
-		return $config;
-	}
-	
-	function update_failed( $id )
-	{
-		$config = parent::update( $this->table_name() );
-		$config->set->failed = '+1';
-		return $config;
-	}
-	*/
-	
 	function form_name( $key=null, $value=null )
 	{
 		return $this->_form_name;
 	}
+	
+	const _FORM_INPUT_ACCOUNT_  = 'account';
+	const _FORM_INPUT_PASSWORD_ = 'password';
+	const _FORM_INPUT_SUBMIT_   = 'submit'; 
 	
 	function form_login()
 	{
@@ -320,7 +420,7 @@ class Config_Account extends Config_Model
 		$config->name = $this->form_name();
 		
 		//	ID
-		$name = 'account';
+		$name = self::GetConst('account');
 		$config->input->$name->type   = 'text';
 		$config->input->$name->class  = 'op-input op-input-text mdl-account-account';
 		$config->input->$name->cookie = true;
@@ -328,14 +428,30 @@ class Config_Account extends Config_Model
 		$config->input->$name->error->required		 = 'account is empty.';
 		
 		//	Password
-		$name = 'password';
+		$name = self::GetConst('password');
 		$config->input->$name->type   = 'password';
 		$config->input->$name->class  = 'op-input op-input-text op-input-password mdl-account-password';
 		$config->input->$name->validate->required	 = true;
 		$config->input->$name->error->required		 = 'password is empty.';
+
+		//	Password(confirm)
+		/*
+		$name = self::GetConst('confirm');
+		$config->input->$name->type   = 'password';
+		$config->input->$name->class  = 'op-input op-input-text op-input-password mdl-account-password';
+		$config->input->$name->validate->required	 = true;
+		$config->input->$name->error->required		 = 'password(confirm) is empty.';
+		$config->input->$name->validate->compare	 = self::GetConst('password');
+		$config->input->$name->error->compare		 = 'Does not match password. ($value)';
+		*/
+
+		//	Encrypt / Decrypt Keyword.
+		$name = self::GetConst('keyword');
+		$config->input->$name->value  = $this->Model('Blowfish')->GetEncryptKeyword();
+		$config->input->$name->class  = 'op-input op-input-button op-input-submit mdl-account-submit';
 		
 		//	Submit
-		$name = 'submit';
+		$name = self::GetConst('submit');
 		$config->input->$name->type   = 'submit';
 		$config->input->$name->value  = ' Login ';
 		$config->input->$name->class  = 'op-input op-input-button op-input-submit mdl-account-submit';
@@ -368,43 +484,43 @@ class Config_Account extends Config_Model
 		$name = self::COLUMN_ID;
 		$config->table->$table_name->column->$name->type    = 'int';
 		$config->table->$table_name->column->$name->ai      = true;
-
+		
 		$name = self::COLUMN_MD5;
 		$config->table->$table_name->column->$name->type    = 'char';
 		$config->table->$table_name->column->$name->length  = 32;
 		$config->table->$table_name->column->$name->null    = null;
-		$config->table->$table_name->column->$name->comment = 'MD5 hash';
+		$config->table->$table_name->column->$name->comment = 'MD5 hash of account value. (use search)';
 		
 		$name = self::COLUMN_ACCOUNT;
 		$config->table->$table_name->column->$name->type    = 'text';
 		$config->table->$table_name->column->$name->null    = null;
-		$config->table->$table_name->column->$name->comment = 'Are encrypted.';
+		$config->table->$table_name->column->$name->comment = 'Are encrypted. (can decrypt)';
 		
 		$name = self::COLUMN_PASSWORD;
 		$config->table->$table_name->column->$name->type    = 'char';
 		$config->table->$table_name->column->$name->length  = 32;
 		$config->table->$table_name->column->$name->null    = null;
-		$config->table->$table_name->column->$name->comment = 'MD5 hash';
-
+		$config->table->$table_name->column->$name->comment = 'MD5 hash. (can not decrypt)';
+		
 		$name = self::COLUMN_FAIL;
 		$config->table->$table_name->column->$name->type	 = 'int';
 		$config->table->$table_name->column->$name->null	 =  false;
 		$config->table->$table_name->column->$name->default	 =  0;
 		$config->table->$table_name->column->$name->comment	 = 'Count of failed';
-
+		
 		$name = self::COLUMN_FAILED;
 		$config->table->$table_name->column->$name->type	 = 'datetime';
 		$config->table->$table_name->column->$name->comment	 = 'Timestamp of failed';
 		
 		$name = 'created';
 		$config->table->$table_name->column->$name->type	 = 'datetime';
-
+		
 		$name = 'updated';
 		$config->table->$table_name->column->$name->type	 = 'datetime';
-
+		
 		$name = 'deleted';
 		$config->table->$table_name->column->$name->type	 = 'datetime';
-
+		
 		$name = 'timestamp';
 		$config->table->$table_name->column->$name->type	 = 'timestamp';
 		
