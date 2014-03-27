@@ -36,7 +36,7 @@ class Form5 extends OnePiece5
 		
 		//	Session-ID is regenerate.
 		if( headers_sent( $file, $line ) ){
-			$this->mark("skip session regenerate. headers is already sent.($file, $line)");
+			$this->mark("skip session regenerate. headers is already sent.($file, $line)",'debug');
 		}else if( $this->admin() ){
 			//	history for debug. 
 			$history = $this->GetSession('history');
