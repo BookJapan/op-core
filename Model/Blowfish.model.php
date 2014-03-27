@@ -22,4 +22,12 @@ class Model_Blowfish /* extends Model_Model */
 		}
 		return $this->_blowfish->Decrypt( $string, $password );
 	}
+	
+	function GetEncryptKeyword()
+	{
+		if(!$this->_blowfish){
+			$this->_blowfish = new Blowfish();
+		}
+		return $this->_blowfish->GetEncryptKeyword();
+	}
 }

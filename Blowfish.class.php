@@ -76,12 +76,18 @@ class Blowfish
 		$this->_key = pack('H*', $data);
 	}
 	
+	function GetEncryptKeyword()
+	{
+		if(!$keyword = OnePiece5::GetEnv('encrypt-keyword')){
+			$keyword = OnePiece5::GetEnv('admin-mail');
+		}
+		return $keyword;
+	}
+	
 	function SetKeyFromString( $keyword=null )
 	{
 		if(!$keyword){
-			if(!$keyword = OnePiece5::GetEnv('encrypt-keyword')){
-				$keyword = OnePiece5::GetEnv('admin-mail');
-			}
+			$keyword = $this->GetEncryptKeyword();
 		}
 		$this->_key = pack('H*', bin2hex($keyword));
 	}
