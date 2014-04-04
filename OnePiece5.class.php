@@ -2692,15 +2692,25 @@ class Error
 			$message = $e;
 			
 			//	save debug backtrace
-			if( version_compare(PHP_VERSION, '5.2.5') >= 0 ){
+			$v = PHP_VERSION;
+			if( version_compare($v,'5.4.0') >= 0 ){
+				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+			}else if( version_compare($v,'5.3.6') >= 0 ){
+				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+			}else if(version_compare($v,'5.2.5') >= 0 ){
 				$backtrace = debug_backtrace(false);
+			}else if(version_compare($v,'5.1.1') >= 0 ){
+				$backtrace = debug_backtrace();
 			}else{
 				$backtrace = debug_backtrace();
 			}
+			
+			//	serialize backtrace
+			$traceStr  = serialize($backtrace);
 		}
 		
 		//	creat check key (duplicate check)
-		$key = md5(serialize($backtrace));
+		$key = md5($traceStr);
 		
 		//	already exists?
 		if( isset($_SESSION[self::_NAME_SPACE_][$key]) ){
