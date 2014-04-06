@@ -233,9 +233,9 @@ class Form5 extends OnePiece5
 	
 	const STATUS_VISIT_FIRST       = '1st visit';
 	const STATUS_SESSION_DESTORY   = 'session is destory';
-	const STATUS_TOKEN_KEY_EMPTY   = 'empty submit token key';
-	const STATUS_TOKEN_KEY_MATCH   = 'match token key';
-	const STATUS_TOKEN_KEY_UNMATCH = 'unmatch token key';
+	const STATUS_TOKEN_KEY_EMPTY   = 'token key was not submit.';
+	const STATUS_TOKEN_KEY_MATCH   = 'token key is match.';
+	const STATUS_TOKEN_KEY_UNMATCH = 'token key is not match.';
 	const STATUS_UNKNOWN_ERROR     = 'unknown error';
 	
 	private function CheckTokenKey( $form_name )
