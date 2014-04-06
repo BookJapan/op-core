@@ -12,6 +12,7 @@ class Form5 extends OnePiece5
 	private $config;
 	private	$session;
 	private $_log = null;
+	private $_token = null;
 	
 	function __destruct()
 	{
@@ -33,6 +34,7 @@ class Form5 extends OnePiece5
 		parent::Init();
 		$this->status = new Config();
 		$this->config = new Config();
+		$this->_token = &$_SESSION[__CLASS__]['token'];
 		
 		//	Session-ID is regenerate.
 		if( headers_sent( $file, $line ) ){
@@ -128,7 +130,7 @@ class Form5 extends OnePiece5
 		}
 		
 		//	Since safety was confirmed, will change the token.
-		$this->GenerateTokenKey($form_name);
+	//	$this->GenerateTokenKey($form_name); // token may not match.
 		
 		return 'secure' == $this->status->$form_name->message ? true: false;
 	}
@@ -184,10 +186,10 @@ class Form5 extends OnePiece5
 		
 		//	save generate history for debug
 		if( $this->Admin() ){
-			$saved = $this->GetSession('save-token-key');
-			if(count($saved) > 20){
-				$saved = array_slice($saved, -20);
-			}
+				$saved = $this->GetSession('save-token-key');
+				if(count($saved) > 20){
+					$saved = array_slice($saved, -20);
+				}
 			$saved[] = "$form_name, $token_key, ".date('H:i:s');
 			$this->SetSession('save-token-key', $saved);
 		}
@@ -199,15 +201,18 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		/*
 		//	Get token table
 		$token = $this->GetSession('token');
-		
-		//	Log
-		if( $this->_log ){ $this->_log[] = __METHOD__." | Current Token key: $token_key"; }
 		
 		//	Save new token
 		$token[$form_name] = $token_key;
 		$this->SetSession('token',$token);
+		*/
+		
+		$this->_token[$form_name] = $token_key;
+		
+		return true;
 	}
 	
 	private function GetTokenKey( $form_name )
@@ -216,11 +221,12 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
+		/*
 		$token = $this->GetSession('token');
 		$token_key = isset($token[$form_name]) ? $token[$form_name]: null;
+		*/
 		
-		//	Log
-		if( $this->_log ){ $this->_log[] = __METHOD__." | Current Token key: $token_key"; }
+		$token_key = isset($this->_token[$form_name]) ? $this->_token[$form_name]: null;
 		
 		return $token_key;
 	}
@@ -261,6 +267,9 @@ class Form5 extends OnePiece5
 		//	post token key is save to session for debug.
 		if( $this->Admin() ){
 			$saved = $this->GetSession('post-token-key');
+			if(count($saved) > 20){
+				$saved = array_slice($saved, 1, 10);
+			}
 			$saved[] = "$form_name, $post_token, ".date('H:i:s');
 			$this->SetSession('post-token-key', $saved);
 		}
@@ -1473,7 +1482,6 @@ class Form5 extends OnePiece5
 		printf('<form name="%s" action="%s" method="%s" %s Accept-Charset="%s" %s %s>'.$nl, $form_name, $action, $method, $enctype, $charset, $class, $style);
 		
 		if( $method == 'GET' ){
-			$this->mark();
 			$this->SetCookie( $token_key_name, $token_key, 0 );
 		}else{
 			printf('<input type="hidden" name="%s" value="%s" />'.$nl, $token_key_name, $token_key);
@@ -2112,6 +2120,7 @@ class Form5 extends OnePiece5
 				if( isset($input->error->$key) ){
 					$format = '![ $html ['.$input->error->$key.']]';
 				}else{
+					//	TODO: \$[_a-z][-_a-z0-9]* <- i18n's support variable
 					$format = $this->i18n()->Get('$label is error. This field is $key. ($value)');
 					$format = "![ $html [$format]]";
 				}
@@ -2686,7 +2695,7 @@ class Form5 extends OnePiece5
 		//	Does not check by localhost
 		if( $_SERVER['REMOTE_ADDR'] == '127.0.0.1' or 
 			$_SERVER['REMOTE_ADDR'] == '::1' ){
-			$this->mark("![.gray[Skipped remote IP address check. ({$_SERVER['REMOTE_ADDR']})]]");
+			$this->mark("![.gray[Skipped remote IP address check. ({$_SERVER['REMOTE_ADDR']})]]",'debug');
 			$this->SetStatus($form_name, "XX: Skip check host. ($input->name, $value)");
 			return true;
 		}
