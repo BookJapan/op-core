@@ -12,6 +12,7 @@ class Wizard extends OnePiece5
 	private $config = null;  // what is this?
 	private $_result = null; // check's result
 	private $_wizard = null; // do wizard's result
+	private $_status = null; //	Wizard status
 	
 	/**
 	 * Execution flag of Wizard.
@@ -156,6 +157,8 @@ class Wizard extends OnePiece5
 			}else{
 				$this->_PrintForm($config->form);
 			}
+		}else{
+		//	$this->form()->Debug($this->config()->GetFormName());
 		}
 		
 		//	check
@@ -165,6 +168,11 @@ class Wizard extends OnePiece5
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
+		
+		//	status
+		if( $this->_status ){
+			$this->mark( $this->_status );
+		}
 		
 		return isset($io) ? $io: true;
 	}
@@ -218,7 +226,13 @@ class Wizard extends OnePiece5
 		$form_name = $this->config()->GetFormName();
 		
 		//  Check secure
-		if( $this->form()->Secure($form_name) ){
+		if(!$this->form()->Secure($form_name) ){
+			$this->_status = $this->form()->GetStatus($form_name);
+			
+		//	$this->form()->Debug($form_name);
+		//	$this->d($_POST);
+		}else{
+			$this->_status = 'Is secure.';
 			
 			foreach( $config_list as $config ){
 				
@@ -252,8 +266,6 @@ class Wizard extends OnePiece5
 					$this->_CreateGrant($config);
 				}
 			}
-		}else{
-			//$this->form()->Debug($form_name);
 		}
 		
 		//	Logger
@@ -270,13 +282,14 @@ class Wizard extends OnePiece5
 			margin: 1em;
 			border: 0px solid #d8d7da;
 			background-Color: #e8e2f3;
+			width: 450px;
 		}
 		
 		#form-wizard div.headline{
-			padding: 0.1em 1em;
+			padding: 0.5em 1em;
 			background-Color: #583e8d;
 			color: white;
-			font-size: 200%;
+			font-size: 150%;
 			font-weight: bold;
 		}
 		
@@ -293,6 +306,7 @@ class Wizard extends OnePiece5
 			margin: 1em;
 			color: #21045a;
 			border: 0px solid #d8d7da;
+			font-size: 125%;
 		}
 		
 		#form-wizard div.content{
@@ -315,6 +329,11 @@ class Wizard extends OnePiece5
 		#form-wizard input.op-input-button:hover{
 			background-color: #7538ef;
 		}
+				
+		#form-wizard .form-area{
+			margin-left: 0px;
+			width: 260px;
+		}
 		</style>
 		';
 		
@@ -323,9 +342,9 @@ class Wizard extends OnePiece5
 			<div class="headline">
 				<span>%s</span>
 			</div>
-			<div class="content-area">
+			<div class="content-area" style="">
 				<p class="message">%s</p>
-				<div class="form-area">
+				<div class="form-area table" style="">
 					%s
 				</div>
 			</div>
@@ -758,7 +777,7 @@ class Wizard extends OnePiece5
 		$this->pdo()->Database($config->database->database);
 		
 		foreach( $config->table as $table_name => $table ){
-			$this->mark($table_name);
+		//	$this->mark('table: '.$table_name);
 			
 			//	Check
 			if(!$table instanceof Config ){
@@ -790,7 +809,7 @@ class Wizard extends OnePiece5
 			
 			//	result of selftest
 			foreach( $this->_result->column->$table_name as $column_name => $value ){
-				$this->mark($column_name);
+			//	$this->mark('column: '.$column_name);
 				
 				if( $value === true ){
 					continue;
