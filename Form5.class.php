@@ -11,8 +11,8 @@ class Form5 extends OnePiece5
 	private	$status;
 	private $config;
 	private	$session;
-	private $_log = null;
-	private $_token = null;
+	private $_log	 = null;
+	private $_token	 = null;
 	
 	function __destruct()
 	{
@@ -34,12 +34,15 @@ class Form5 extends OnePiece5
 		parent::Init();
 		$this->status = new Config();
 		$this->config = new Config();
-		$this->_token = &$_SESSION[__CLASS__]['token'];
+		$this->_token = &$_SESSION['OnePiece5']['Form5']['token'];
 		
 		//	Session-ID is regenerate.
+		/*
 		if( headers_sent( $file, $line ) ){
 			$this->mark("skip session regenerate. headers is already sent.($file, $line)",'debug');
-		}else if( $this->admin() ){
+		}else
+		*/
+		if( $this->admin() ){
 			//	history for debug. 
 			$history = $this->GetSession('history');
 			$history[] = $_SERVER['REQUEST_URI'].', '.date('H:i:s');
