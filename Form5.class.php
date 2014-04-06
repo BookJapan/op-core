@@ -179,7 +179,7 @@ class Form5 extends OnePiece5
 	private function GenerateTokenKey( $form_name )
 	{	
 		//	Create Token-key
-		$token_key = md5( $form_name . microtime() . $_SERVER['REMOTE_ADDR'] );
+		$token_key = md5( microtime() /* . $form_name . $_SERVER['REMOTE_ADDR']*/ );
 		
 		//	Set new token-key
 		$this->SetTokenKey($form_name, $token_key);
