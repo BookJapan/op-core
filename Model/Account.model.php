@@ -100,20 +100,6 @@ class Model_Account extends Model_Model
 		//	login result
 		$login = empty($record) ? false: true;
 		
-		//	Failed num
-		$fail = $record[Config_Account::COLUMN_FAIL];
-
-		//	limited of failed count
-		$limit_count = $this->config()->limit_count();
-			
-		//	failed.
-		if( $fail > $limit_count ){
-			$this->_success = false;
-			$this->SetMessage( Config_Account::GetConst('auth_fail_limit') );
-			$this->mark("Over the failed.($fail > $limit_count)",'debug');
-			return false;
-		}
-		
 		if( $login ){
 			$this->_success = true;
 			$this->SetMessage( Config_Account::GetConst('auth_success') );
@@ -124,6 +110,20 @@ class Model_Account extends Model_Model
 			//	update failed count
 			$config = $this->Config()->update_failed($account, $login);
 			$num = $this->pdo()->Update($config);
+			return false;
+		}
+
+		//	Failed num
+		$fail = $record[Config_Account::COLUMN_FAIL];
+		
+		//	limited of failed count
+		$limit_count = $this->config()->limit_count();
+			
+		//	failed.
+		if( $fail > $limit_count ){
+			$this->_success = false;
+			$this->SetMessage( Config_Account::GetConst('auth_fail_limit') );
+			$this->mark("Over the failed.($fail > $limit_count)",'debug');
 			return false;
 		}
 		
