@@ -9,6 +9,14 @@
  * @package   op-core
  */
 
+/**
+ * OnePiece defined
+ */
+define('OP_DATABASE_USER_SINGLE', 'OP_DATABASE_USER_SINGLE', true);
+
+/**
+ * Check mbstring installed.
+ */
 if(!function_exists('mb_language') ){
 	print "<p>Does not install php-mbstring.</p>".PHP_EOL;
 	print __FILE__.' ('.__LINE__.')<br/>'.PHP_EOL;
@@ -2364,6 +2372,28 @@ __EOL__;
 	}
 	
 	/**
+	 * So-called, factory of singleton.
+	 * 
+	 * I recently learned that this is called a singleton in general.
+	 * Anyone come up with this, It's not special technique.
+	 * 
+	 * @param  string $name
+	 * @return OnePiece5
+	 */
+	function Singleton($name)
+	{
+		if(isset($_SERVER[__CLASS__]['singleton'][$name])){
+			return $_SERVER[__CLASS__]['singleton'][$name];
+		}
+	
+		if($_SERVER[__CLASS__]['singleton'][$name] = new $name()){
+			return $_SERVER[__CLASS__]['singleton'][$name];
+		}
+	
+		return new OnePiece5();
+	}
+	
+	/**
 	 * Abstract Form object.
 	 * 
 	 * @param  string $name Class name
@@ -2371,15 +2401,7 @@ __EOL__;
 	 */
 	function Form( $name='Form5' )
 	{
-		$obj = &$_SERVER[__CLASS__][__METHOD__];
-		
-		if( empty($obj) ){
-			if(!$obj = new $name()){
-				$obj = OnePiece5();
-			}
-		}
-		
-		return $obj;
+		return self::Singleton($name);
 	}
 	
 	/**
@@ -2390,15 +2412,27 @@ __EOL__;
 	 */
 	function i18n( $name='i18n' )
 	{
-		static $obj;
+		return self::Singleton($name);
+	}
+	
+	/**
+	 * Cache is presents the memcached interface.
+	 *
+	 * @param  string $name
+	 * @throws Exception
+	 * @return Cache
+	 */
+	function Cache($name='Cache')
+	{
+		return $this->Singleton($name);
+	}
 
-		if( empty($obj) ){
-			if(!$obj = new $name()){
-				$obj = OnePiece5();
-			}
-		}
-		
-		return $obj;
+	/**
+	 * @return Wizard
+	 */
+	function Wizard($name='Wizard')
+	{
+		return $this->Singleton($name);
 	}
 	
 	/**
@@ -2413,8 +2447,6 @@ __EOL__;
 		if(is_null($string)){
 			return '';
 		}else if(!is_string($string)){
-		//	self::d($string);
-		//	var_dump($string);
 			self::mark( 'Does not string - '.self::GetCallerLine() );
 			self::StackError("Does not string.");
 		}
@@ -2424,28 +2456,6 @@ __EOL__;
 		}else{
 			return nl2br(trim($string)) . PHP_EOL;
 		}
-	}
-	
-	/**
-	 * Cache is presents the [memcache/memcached/other] interface.
-	 * 
-	 * @param  string $name
-	 * @throws Exception
-	 * @return Cache
-	 */
-	function Cache($name='Cache')
-	{
-		if(empty($_SERVER[__CLASS__]['singleton'][$name])){
-			if(!class_exists($name)){				
-				if(!include("$name.class.php") ){
-					throw new OpException("Include is failed. ($name)");
-				}
-			}
-			if(!$_SERVER[__CLASS__]['singleton'][$name] = new $name() ){
-				throw new OpException("Instance object is failed. ($name)");
-			}
-		}
-		return $_SERVER[__CLASS__]['singleton'][$name];
 	}
 	
 	/**
@@ -2494,17 +2504,6 @@ __EOL__;
 			//  release
 			unset($_SESSION[__CLASS__]['vivre']);
 		}
-	}
-	
-	/**
-	 * @return Wizard
-	 */
-	function Wizard()
-	{
-		if( !isset($_SERVER[__CLASS__]['singleton']['Wizard']) ){
-			$_SERVER[__CLASS__]['singleton']['Wizard'] = new Wizard();
-		}
-		return $_SERVER[__CLASS__]['singleton']['Wizard'];
 	}
 }
 
