@@ -66,7 +66,11 @@ class Wizard extends OnePiece5
 		}
 		
 		if( empty($config->database->port) ){
-			$config->database->port = 3306;
+			if(is_array($config->database)){
+				$config->database['port'] = '3306';
+			}else{
+				$config->database->port = '3306';
+			}
 		}
 		
 		$selftest = $this->GetSession('selftest');
