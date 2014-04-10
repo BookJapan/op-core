@@ -1059,7 +1059,7 @@ __EOL__;
 	 */
 	static function GetEnv( $key )
 	{
-		if($_SERVER['OP_IS_LOCALHOST']){
+		if( isset($_SERVER) and $_SERVER['OP_IS_LOCALHOST']){
 			return Env::Get($key);
 		}
 		
@@ -2331,7 +2331,7 @@ __EOL__;
 	function PDO( $name=null )
 	{
 		if( empty($this->pdo) ){
-			if( is_null($name) ){				
+			if( is_null($name) ){
 				$name = 'PDO5';
 				$op_root = $this->GetEnv('op-root');
 				$path = $op_root.'PDO/PDO5.class.php';
