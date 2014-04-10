@@ -25,9 +25,12 @@ class Wizard extends OnePiece5
 	{
 		if( $this->Admin() ){
 			if(!$this->_isWizard){
+				/*
 				if( Toolbox::GetMIME(true) === 'html' ){
 					$this->Selftest();
 				}
+				*/
+				$this->StackError('Please Execute Selftest at Wizard.');
 			}
 		}
 		parent::__destruct();
