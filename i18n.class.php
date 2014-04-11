@@ -18,6 +18,8 @@ class i18n extends Api
 	private $_table_prefix	 = 'op';
 	private $_table_name	 = 'i18n';
 	
+	private $_lang = null;
+	
 	/**
 	 * PDO interface object.
 	 * 
@@ -33,6 +35,11 @@ class i18n extends Api
 	function GetProp( $key )
 	{
 		return $this->{$key};
+	}
+	
+	function SetLang( $lang )
+	{
+		$this->_lang = $lang;
 	}
 	
 	function GetDatabase()
@@ -94,7 +101,11 @@ class i18n extends Api
 	function Get( $text, $from='en', $to=null )
 	{
 		if(!$to){
-			$to = $this->GetEnv('lang');
+			if( $this->_lang ){
+				$to = $this->_lang;
+			}else{
+				$to = $this->GetEnv('lang');
+			}
 		}
 		
 		$url = self::_API_UQUNIE_COM_;
