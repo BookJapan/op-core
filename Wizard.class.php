@@ -30,7 +30,7 @@ class Wizard extends OnePiece5
 					$this->Selftest();
 				}
 				*/
-				$this->StackError('Please Execute Selftest at Wizard.');
+			//	$this->StackError('Please Execute Selftest at Wizard.');
 			}
 		}
 		parent::__destruct();

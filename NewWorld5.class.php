@@ -436,17 +436,26 @@ abstract class NewWorld5 extends OnePiece5
 			//	Reload route info
 			$route = $this->GetEnv('route');
 			
-			//	Read a file that does not exist (Warning to developper)
-			if( $_file_does_not_exists_ = $this->GetSession('file_does_not_exists') ){
-				if( $this->admin() ){
-					$this->p("![.red .bold[This file is not exists.]]",'div');
-					$this->d($_file_does_not_exists_);
+			//	Display to case of html.
+			list($uri) = explode('?',$_SERVER['REQUEST_URI']);			
+			if(!preg_match('/\.([-_a-z0-9]{2,5})$/i',$uri,$match) ){
+				//	This file did not exist. (Warning to developer)
+				if( $_file_does_not_exists_ = $this->GetSession('file_does_not_exists') ){
+					if( $this->admin() ){
+						$this->p("![.red .bold[This file is not exists.]]",'div');
+						$this->d($_file_does_not_exists_);
+					}
 				}
+				$this->SetSession('file_does_not_exists',null);
 			}
-			$this->SetSession('file_does_not_exists',null);
 			
 			//  content
 			$this->doContent();
+			
+			//	do wizard
+			if( $this->admin() ){
+				$this->Wizard()->Selftest();
+			}
 			
 		}catch( Exception $e ){
 			$this->StackError($e);
