@@ -81,14 +81,14 @@ class i18n extends Api
 		return $this->_pdo;
 	}
 	
-	function En($text)
+	function En($text,$to=null)
 	{
-		return $this->Get($text,'en');
+		return $this->Get($text,'en',$to);
 	}
 	
-	function Ja($text)
+	function Ja($text,$to=null)
 	{
-		return $this->Get($text,'ja');
+		return $this->Get($text,'ja',$to);
 	}
 	
 	function Get( $text, $from='en', $to=null )
@@ -222,7 +222,7 @@ class i18n extends Api
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'char';
 		$config->table->{$table_name}->column->{$column_name}->length	 = '32';
-		//	$config->table->{$table_name}->column->{$column_name}->index	 = true;
+	//	$config->table->{$table_name}->column->{$column_name}->index	 = true;
 		$config->table->{$table_name}->column->{$column_name}->pkey		 = true;
 		$config->table->{$table_name}->column->{$column_name}->comment	 = '';
 		
