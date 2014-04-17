@@ -454,7 +454,13 @@ abstract class NewWorld5 extends OnePiece5
 			
 			//	do wizard
 			if( $this->admin() ){
-				$this->Wizard()->Selftest();
+				if( ob_start() ){
+					$this->Wizard()->Selftest();
+					$this->_content .= ob_get_contents();
+					ob_end_clean();
+				}else{
+					$this->StackError("ob_start is failed. Does not execute selftest.");
+				}
 			}
 			
 		}catch( Exception $e ){
