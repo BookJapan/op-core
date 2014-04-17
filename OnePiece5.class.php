@@ -2767,7 +2767,7 @@ class Error
 			$tail	 = "$method($args)";
 		}
 		
-		$info = "![tr $color [ ![td[ $index ]] ![td[ $file ]] ![td .right[ $line ]] ![td[ $tail ]] ]]";
+		$info = "![tr $color [ ![td .w1em [ $index ]] ![td .w10em .nobr[ $file ]] ![td .right[ $line ]] ![td[ $tail ]] ]]";
 		
 		return $info.PHP_EOL;
 	}
