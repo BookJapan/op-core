@@ -907,7 +907,6 @@ class Wizard extends OnePiece5
 		//  Check user exists.
 		$io = array_search( $config->user->user, $list ) !== false ? true: false;
 		if( $io ){
-			
 			//	Logger
 			$this->model('Log')->Set("CHECK: {$config->user->user} user is already exists.");
 			
@@ -927,7 +926,7 @@ class Wizard extends OnePiece5
 		
 		return $io;
 	}
-
+	
 	private function _CreateGrant($config)
 	{
 		//	Check
