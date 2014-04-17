@@ -896,8 +896,8 @@ class Wizard extends OnePiece5
 	
 	private function _CreateUser($config)
 	{
-		//  Inist
-		$config->user->host     = $config->database->host;
+		//	CREATE USER 'new-user-name'@'permit-host-name' IDENTIFIED BY '***';
+		$config->user->host     = $_SERVER['SERVER_ADDR']; // $config->database->host; This is database host name.
 		$config->user->user     = $config->database->user;
 		$config->user->password = $config->database->password;
 		
