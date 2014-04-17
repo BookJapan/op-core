@@ -655,6 +655,11 @@ class OnePiece5
 		$_SERVER['OnePiece5']['errors'][] = $error;
 	}
 	
+	function FetchError()
+	{
+		return array_shift($_SERVER['OnePiece5']['errors']);
+	}
+	
 	/**
 	 * Error print.
 	 */
@@ -2723,10 +2728,14 @@ class Error
 		$_SESSION[self::_NAME_SPACE_][$key] = $error;
 	}
 	
+	static function Get()
+	{
+		return array_shift($_SESSION[self::_NAME_SPACE_]);
+	}
+	
 	static function Report( $admin )
 	{
 		if( empty($_SESSION[self::_NAME_SPACE_]) ){
-		//	OnePiece5::mark("Error is not occur.");
 			return;
 		}
 		
