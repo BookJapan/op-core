@@ -202,6 +202,11 @@ class Wizard extends OnePiece5
 		
 		//	Database connection test
 		$io = $this->pdo()->Connect($config->database);
+		if(!$io){
+			$this->d($this->FetchError(),'debug');
+			$this->d(Error::Get(),'debug');
+			$this->d($config,'debug');
+		}
 		
 		//	Save result of connection
 		$this->_result->connect->$host->$user->$db = $io;
@@ -252,6 +257,9 @@ class Wizard extends OnePiece5
 				
 				//  Connect to administrator account.
 				if(!$io = $this->pdo()->Connect( $database ) ){
+					//	remove error information
+					$this->d($this->FetchError(),'debug');
+					$this->d(Error::Get(),'debug');
 					
 					//	Information
 					$this->p("Does not access from {$database->user} user.");
@@ -799,9 +807,9 @@ class Wizard extends OnePiece5
 				return false;
 			}
 			
-			//	
+			//	There is no column to change.
 			if( empty($this->_result->column->$table_name) ){
-				$this->mark("![.red[$table_name is empty?]]");
+			//	$this->mark("![.red[$table_name is empty]]");
 				continue;
 			}
 			
