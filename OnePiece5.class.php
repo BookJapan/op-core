@@ -2676,8 +2676,6 @@ class Error
 	
 	static function Set( $e )
 	{
-	//	OnePiece5::Mark($message);
-		
 		if( $e instanceof Exception ){
 			$message   = $e->getMessage();
 			$backtrace = $e->getTrace();
@@ -2746,7 +2744,6 @@ class Error
 	static private function _getMailSubject()
 	{
 		foreach($_SESSION[self::_NAME_SPACE_] as $key => $backtraces){
-		//	dump::d($backtraces['backtrace'][0]);
 			return  strip_tags(self::_formatBacktrace( 0, $backtraces['backtrace'][0] ));
 		}
 	}
@@ -2760,7 +2757,6 @@ class Error
 		$type	 = isset($backtrace['type'])	 ? $backtrace['type']:	 null;
 		$args	 = isset($backtrace['args'])	 ? $backtrace['args']:	 null;
 		
-		//$line	 = $line ? "[$line]": null;
 		$file	 = OnePiece5::CompressPath($file);
 		
 		if( $index === 0 ){
@@ -2790,7 +2786,6 @@ class Error
 			
 			$count = count($backtraces);
 			foreach( $backtraces as $index => $backtrace ){
-				//	dump::d($backtrace);
 				$color = $index === 0 ? '.red':null;
 				$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
 			}
@@ -2812,8 +2807,6 @@ class Error
 	
 	static private function _toMail()
 	{
-	//	dump::d($_SERVER);
-		
 		$from = $_SERVER['SERVER_ADMIN'];
 		$from_name = 'OnePiece-Framework/Error';
 		
@@ -2850,11 +2843,6 @@ class Error
 		$message .= "\r\n";
 		$message .= quoted_printable_decode($html)."\r\n";
 		$message .= "--$boundary\r\n";
-		
-	//	dump::d($to);
-	//	dump::d($subject);
-	//	print nl2br($text);
-	//	print $html;
 		
 		if(!$io = mail($to, $subject, $message, $headers, $parameters)){
 			print '<p style="color:white;background-color:black;">failed to send the error mail.</p>';
@@ -2915,7 +2903,6 @@ class Error
 			}
 			$serial .= "$var, ";
 		}
-		//$serial = preg_replace('/, $/', '', $serial);
 		$serial = trim($serial,', ');
 		return $serial;
 	}
