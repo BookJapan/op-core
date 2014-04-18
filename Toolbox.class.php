@@ -74,6 +74,11 @@ class Toolbox
 		return $arr;
 	}
 	
+	static function toConfig($args)
+	{
+		return self::toObject($args);
+	}
+	
 	static function toObject($args)
 	{
 		switch($type = gettype($args)){
