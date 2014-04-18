@@ -3,6 +3,9 @@
 
 class DDL5 extends OnePiece5
 {
+	/**
+	 * @var PDO
+	 */
 	private $pdo = null;
 	private $driver = null;
 	
@@ -12,17 +15,19 @@ class DDL5 extends OnePiece5
 		$this->driver = $driver;
 	}
 	
-	function GetPassword( $args )
+	function GetPassword($args)
 	{
 		$user = isset($args['name']) ? $args['name']: null;
 		$user = isset($args['user']) ? $args['user']: $user;
 		$host = $args['host'];
 		$password = $args['password'];
+
+		$host = $this->pdo->quote($host);
+		$user = $this->pdo->quote($user);
+		$password = $this->pdo->quote($password);
 		
-		//  SET PASSWORD FOR 'op_model_opuser'@'localhost' = PASSWORD( '***' )
-		$query = "SET PASSWORD FOR '{$user}'@'{$host}' = PASSWORD('{$password}')";
-		
-		return $query;
+		//  SET PASSWORD FOR 'user-name'@'permit-host' = PASSWORD('***')
+		return "SET PASSWORD FOR {$user}@{$host} = PASSWORD({$password})";
 	}
 	
 	function GetCreateUser( $args )
@@ -31,30 +36,34 @@ class DDL5 extends OnePiece5
 		$user = isset($args['user']) ? $args['user']: $user;
 		$host = $args['host'];
 		$password = $args['password'];
-	
+		
 		if(!$host){
 			$this->StackError("Empty host name.");
 			return false;
 		}
-	
+		
 		if(!$user){
 			$this->StackError("Empty user name.");
 			return false;
 		}
-	
+		
 		if(!$password){
-			$this->StackError("Empty password name.");
+			$this->StackError("Empty password.");
 			return false;
 		}
-	
+		
 		if( strlen($user) > 16 ){
 			$this->StackError("User name is maximum 16 character.");
 			return false;
 		}
 		
+		$host = $this->pdo->quote($host);
+		$user = $this->pdo->quote($user);
+		$password = $this->pdo->quote($password);
+		
 		//	CREATE USER 'user-name'@'host-name' IDENTIFIED BY '***';
-		$query = "CREATE USER '{$user}'@'{$host}' IDENTIFIED BY '{$password}'";
-	
+		$query = "CREATE USER {$user}@{$host} IDENTIFIED BY {$password}";
+		
 		return $query;
 	}
 	
@@ -140,14 +149,14 @@ class DDL5 extends OnePiece5
 		
 		//	Database Engine
 		if( isset($args['engine']) ){
-			$engine = "ENGINE = ".$args['engine'];
+			$engine = "ENGINE = ".ConfigSQL::QuoteType($args['engine']);
 		}else{
 			$engine = "ENGINE = MYISAM";
 		}
 		
 		//	COLLATE
 		if( isset($args['collate']) ){
-			$collate = 'COLLATE '.$args['collate'];
+			$collate = 'COLLATE '.ConfigSQL::QuoteType($args['collate']);
 		}else{
 			//	default
 			$collate = null;
@@ -155,14 +164,14 @@ class DDL5 extends OnePiece5
 		
 		//	CHARACTER SET
 		if( isset($args['character']) ){
-			$character = 'CHARACTER SET '.$args['character'];
+			$character = 'CHARACTER SET '.ConfigSQL::QuoteType($args['character']);
 		}else{
 			$character = null;
 		}
 		
 		//	TABLE COMMENT
 		if( isset($args['comment']) ){
-			$comment = "COMMENT = '{$args['comment']}'";
+			$comment = "COMMENT = ".$this->pdo->quote($args['comment']);
 		}else{
 			$comment = null;
 		}
@@ -271,10 +280,6 @@ class DDL5 extends OnePiece5
 		
 		//	INIT
 		$indexes = array();
-	//	$pkeys	 = null;
-		
-		//	Quote mark
-		list( $ql, $qr ) = ConfigSQL::GetQuote($this->driver);
 		
 		//  loop from many columns
 		foreach($args['column'] as $name => $temp){
@@ -285,29 +290,27 @@ class DDL5 extends OnePiece5
 					$temp['name'] = $temp['field'];
 				}else{
 					$temp['name'] = $name;
-				//	$this->StackError("Empty column name. ($name)");
-				//	continue;
 				}
 			}
 			
 			//	init
 			$type		 = isset($temp['type'])       ? strtoupper($temp['type']) : null;
-			$name		 = isset($temp['name'])       ? $ql.$temp['name'].$qr     : $ql.$name.$qr;
-			$rename		 = isset($temp['rename'])     ? $ql.$temp['rename'].$qr   : null;
+			$name		 = isset($temp['name'])       ? $temp['name']             : $name;
+			$rename		 = isset($temp['rename'])     ? $temp['rename']           : null;
 			$length		 = isset($temp['length'])     ? $temp['length']           : null;
 			$value		 = isset($temp['value'])      ? $temp['value']            : null; // 複数形苦手対応
 			$values		 = isset($temp['values'])     ? $temp['values']           : $value;
 			$attribute	 = isset($temp['attribute'])  ? $temp['attribute']        : null; // 複数形苦手対応
 			$attributes	 = isset($temp['attributes']) ? $temp['attributes']       : $attribute;
-			$charset	 = isset($temp['charset'])	  ? $temp['character']        : null;
+			$charset	 = isset($temp['charset'])	  ? $temp['charset']          : null;
 			$charset	 = isset($temp['character'])  ? $temp['character']        : $charset;
 			$collate	 = isset($temp['collate'])    ? $temp['collate']          : null; // 英語圏対応
-			$collation	 = isset($temp['collation'])  ? $temp['collation']        : $collate;
+			$collate	 = isset($temp['collation'])  ? $temp['collation']        : $collate;
 			$null		 = isset($temp['null'])	      ? $temp['null']             : null;
-			$default	 = isset($temp['default'])	  ? $temp['default']				 : null;
-			$comment	 = isset($temp['comment'])    ? "COMMENT '{$temp['comment']}'": null;
-			$first		 = (isset($temp['first']) and $temp['first']) ? $temp['first']  : null; // 先頭に追加
-			$after		 = (isset($temp['after']) and $temp['after']) ? "AFTER {$ql}{$temp['after']}{$qr}": null; // 指定カラムの後ろに追加
+			$default	 = isset($temp['default'])	  ? $temp['default']          : null;
+			$comment	 = isset($temp['comment'])    ? $temp['comment']          : null;
+			$first		 = (isset($temp['first']) and $temp['first']) ? $temp['first'] : null; // Add top.
+			$after		 = (isset($temp['after']) and $temp['after']) ? $temp['after'] : null; // Add after specified column.
 			
 			$ai			 = isset($temp['auto_increment']) ? $temp['auto_increment']: null;
 			$ai			 = isset($temp['a_i'])    ? $temp['a_i']  : null;
@@ -316,6 +319,32 @@ class DDL5 extends OnePiece5
 			$index		 = isset($temp['index'])  ? $temp['index']: null;
 			$unique		 = isset($temp['unique']) ? $temp['unique']: null;
 			
+			$name		 = ConfigSQL::Quote($name,$this->driver);
+			$type		 = ConfigSQL::QuoteType($type,$this->driver);
+			$rename		 = ConfigSQL::Quote($rename,$this->driver);
+			$values		 = ConfigSQL::Quote($values,$this->driver);
+			$attributes	 = ConfigSQL::Quote($attributes,$this->driver);
+			$charset	 = ConfigSQL::Quote($charset,$this->driver);
+			$collate	 = ConfigSQL::Quote($collate,$this->driver);
+			$null		 = ConfigSQL::Quote($null,$this->driver);
+			$default	 = ConfigSQL::Quote($default,$this->driver);
+			$first		 = ConfigSQL::Quote($first,$this->driver);
+			$after		 = ConfigSQL::Quote($after,$this->driver);
+			
+			if( $length and $type !== 'ENUM' and $type !== 'SET' ){
+				if(!is_numeric($length)){
+					$length	 = $this->pdo->quote($length);
+				}
+			}
+			
+			if( $comment ){
+				$comment = "COMMENT ".$this->pdo->quote($comment);
+			}
+			
+			if( $after ){
+				$after = "AFTER $after";
+			}
+			
 			//	type
 			switch($type){
 				case 'TIMESTAMP':
@@ -323,7 +352,7 @@ class DDL5 extends OnePiece5
 					$default	 = "DEFAULT CURRENT_TIMESTAMP";
 					$null		 = 'NOT NULL';
 					break;
-		
+					
 				case 'SET':
 				case 'ENUM':
 					if(!$values){
@@ -342,7 +371,7 @@ class DDL5 extends OnePiece5
 						$type .= "({$length}{$values})";
 					}
 			}
-				
+			
 			//	auto_increment
 			if( $ai ){
 				$attributes = "AUTO_INCREMENT";
@@ -403,7 +432,7 @@ class DDL5 extends OnePiece5
 				return false;
 			}
 			
-			//  Doth not select both.
+			//  Do not select both.
 			if( $first and $after ){
 				$this->StackError('FIRST and AFTER are selected. Either one.');
 				return false;

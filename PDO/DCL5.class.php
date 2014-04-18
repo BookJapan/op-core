@@ -35,7 +35,6 @@ class DCL5 extends OnePiece5
 		$table		 = isset($args['table'])       ? $args['table']       : null;
 		$user		 = isset($args['user'])        ? $args['user']        : null;
 		$password	 = isset($args['password'])    ? $args['password']    : null;
-		$identified  = isset($args['password'])    ? "IDENTIFIED BY '{$password}'": null;
 		
 		if(!$host){
 			$this->StackError("Empty host name.");
@@ -57,19 +56,28 @@ class DCL5 extends OnePiece5
 			return false;
 		}
 		
+		//	privilege
+		$privilege = $this->GetPrivilege($args);
+		
 		//  Do quote
 		$database = ConfigSQL::Quote( $database, $this->driver );
 		
-		//  All tables, not quote. 
+		//  Case of all tables does not quote. 
 		if( $table !== '*' ){
 			$table = ConfigSQL::Quote( $table, $this->driver );
 		}
 		
-		//	privilege
-		$privilege = $this->GetPrivilege($args);
+		//	Do quote
+		$host = $this->pdo->quote($host);
+		$user = $this->pdo->quote($user);
+		if( $password ){
+			$identified = "IDENTIFIED BY ".$this->pdo->quote($password);
+		}else{
+			$identified = null;
+		}
 		
 		//  Create Query
-		$query = "GRANT {$privilege} ON {$database}.{$table} TO '{$user}'@'{$host}' $identified";
+		$query = "GRANT {$privilege} ON {$database}.{$table} TO {$user}@{$host} $identified";
 		
 		return $query;
 	}
@@ -101,19 +109,23 @@ class DCL5 extends OnePiece5
 			return false;
 		}
 		
+		//	privilege
+		$privilege = $this->GetPrivilege($args);
+		
 		//  Do quote
 		$database = ConfigSQL::Quote( $database, $this->driver );
 		
-		//  All tables, not quote.
+		//  Case of all tables does not quote.
 		if( $table !== '*' ){
 			$table = ConfigSQL::Quote( $table, $this->driver );
 		}
 		
-		//	privilege
-		$privilege = $this->GetPrivilege($args);
+		//	Do quote
+		$host = $this->pdo->quote($host);
+		$user = $this->pdo->quote($user);
 		
 		//  Create Query
-		return "REVOKE {$privilege} ON {$database}.{$table} FROM '{$user}'@'{$host}'";
+		return "REVOKE {$privilege} ON {$database}.{$table} FROM {$user}@{$host}";
 	}
 	
 	function GetPrivilege( $args )

@@ -365,7 +365,7 @@ class DML5 extends OnePiece5
 		}else{
 			$database = null;
 		}
-				
+		
 		//  table
 		if(isset($conf['table'])){
 			$table = $this->ConvertTable($conf);

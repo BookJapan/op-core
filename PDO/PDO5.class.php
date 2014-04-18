@@ -6,7 +6,9 @@
  */
 class PDO5 extends OnePiece5
 {
-	/* @var $pdo PDO */
+	/**
+	 * @var PDO
+	 */
 	private $pdo = null;
 	private $dcl = null;
 	private $ddl = null;
@@ -234,13 +236,9 @@ class PDO5 extends OnePiece5
 		
 		try {
 			//	Supports PHP 5.1 ( USE db_name is not supports. )
-			/*
-			$io = version_compare( PHP_VERSION, 5.1 );
-			$this->mark($io);
-			*/
 			$db  = $this->database ? 'dbname='.$this->database.';': null;
 			if( $this->charset ){
-				if( $this->driver == 'mysql' ){
+				if( $this->driver === 'mysql' ){
 					$options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '{$this->charset}'";
 				}
 			}
@@ -248,14 +246,7 @@ class PDO5 extends OnePiece5
 			//	Create DNS
 			$dns = "{$this->driver}:{$db}host={$this->host}";
 			
-			/*
-			//	Create PDO
-			$dns = "{$this->driver}: host={$this->host}";
-			if( $this->database ){
-				$dns .= " dbname={$this->database}";
-			}
-			*/
-			
+			//	Instance PDO
 			if(!$this->pdo = new PDO( $dns, $this->user, $password, $options )){
 				$this->StackError("Can not connect database. ( $dns, {$this->user} )");
 				return false;
@@ -475,24 +466,36 @@ class PDO5 extends OnePiece5
 		
 		return $result;
 	}
-
+	
+	/**
+	 * Quick select
+	 * 
+	 * Case of get record.(all column value)
+	 * $this->PDO()->Quick('table_name.id = 1');
+	 * 
+	 * Case of join table.(all column value)
+	 * $this->PDO()->Quick('table_A.id <= table_B.id = 1');
+	 * 
+	 * Case of get single column value.
+	 * $this->PDO()->Quick('email <- table_name.id = 1');
+	 * 
+	 * @param  string $string
+	 * @param  array  $config
+	 * @return string|array
+	 */
 	function Quick( $string, $config=null)
 	{
-		//  TODO:
-		/*
-		$cache_key = md5($string .'; '. serialize($config));
-		if( $value = $this->Cache()->Get($cache_key) ){
-			return $value;
+		//	Check memcache
+		$chachekey = md5($string.', '.serialize($config));
+		if( $record = $this->Cache()->Get($chachekey) ){
+			return $record;
 		}
-		*/
 		
 		//  Get value
-		//list( $left, $value ) = explode('=', trim($string) );
 		if( preg_match('/(.+)[^><=]([=<>]{1,2})(.+)/', $string, $match) ){
 			$left  = $match[1];
 			$ope   = $match[2] == '=' ? null: $match[2].' ';
 			$value = $match[3];
-		//	$this->d($match);
 		}else{
 			$this->StackError("Format error. ($string)");
 			return false;
@@ -505,7 +508,6 @@ class PDO5 extends OnePiece5
 			$location = $left;
 			$column = null;
 		}
-		//$this->mark("column=$column, location=$location, ope=$ope, value=$value");
 	
 		//  Generate define
 		$locations = array_reverse( explode('.', trim($location) ) );
@@ -557,7 +559,6 @@ class PDO5 extends OnePiece5
 		$config->order    = $order;
 		$config->where->$target = $ope.$value;
 		$config->cache    = $cache;
-	//	$config->d();
 	
 		//  Fetch record
 		$record = $this->Select($config);
@@ -590,37 +591,18 @@ class PDO5 extends OnePiece5
 			$return = array();
 		}
 		
-		return $return;
+		//	Save to memcache
+		$this->Cache()->Set( $key, $return, $cache );
 		
-		//==============================================//
-		
-		if( $record === false ){
-			$this->mark();
-			return false;
-		}
-		
-		//  return all
-		if( !$column or $limit != 1 ){
-			$this->mark();
-			return $record;
-		}
-		
-		//  return one
-		if( count($columns) === 1 ){
-			$this->d($columns);
-		//	return isset($record[$columns[0]]) ? $record[$columns[0]]: null;
-			return array_shift($record);
-		}
-	
-		//  return many
-		foreach( $record as $key => $var ){
-		//	$return[$key] = $var; // default is not index key.
-			$return[] = $var;
-		}
-	
 		return $return;
 	}
-	
+
+	/**
+	 * Create database
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean
+	 */
 	function CreateDatabase( $conf )
 	{
 		//  object to array
@@ -639,7 +621,13 @@ class PDO5 extends OnePiece5
 		
 		return $io;
 	}
-	
+
+	/**
+	 * Create table
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean
+	 */
 	function CreateTable( $conf )
 	{
 		//  object to array
@@ -655,8 +643,14 @@ class PDO5 extends OnePiece5
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
-	
-	function CreateUser( $conf )
+
+	/**
+	 * Create User
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean
+	 */
+	function CreateUser($conf)
 	{
 		//  object to array
 		if(!is_array($conf)){
@@ -671,22 +665,34 @@ class PDO5 extends OnePiece5
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
-	
-	function Password( $conf )
+
+	/**
+	 * Change password
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean
+	 */
+	function Password($args)
 	{
 		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!is_array($args)){
+			$conf = Toolbox::toArray($args);
 		}
 		
 		//  get select query
 		$qu = $this->ddl()->GetPassword($conf);
-			
+		
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
-	
-	function Grant( $conf )
+
+	/**
+	 * Grant
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean
+	 */
+	function Grant($conf)
 	{
 		//  object to array
 		if(!is_array($conf)){
@@ -701,14 +707,20 @@ class PDO5 extends OnePiece5
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
-	
-	function Revoke( $conf )
+
+	/**
+	 * Revoke
+	 *
+	 * @param  array|Config $conf
+	 * @return boolean
+	 */
+	function Revoke($conf)
 	{
 		//  object to array
 		if(!is_array($conf)){
 			$conf = Toolbox::toArray($conf);
 		}
-	
+		
 		//  get select query
 		if(!$qu = $this->dcl()->GetRevoke($conf)){
 			return false;
@@ -721,15 +733,16 @@ class PDO5 extends OnePiece5
 	/**
 	 * Change table or column
 	 * 
-	 * @param  unknown $conf
+	 * @param  array|Config $conf
 	 * @return boolean
 	 */
-	function AlterTable( $conf )
+	function AlterTable($conf)
 	{
 		//  object to array
 		if(!is_array($conf)){
 			$conf = Toolbox::toArray($conf);
 		}
+		
 		//  get select query
 		if(!$qu = $this->dcl()->GetAlterTable($conf)){
 			return false;
@@ -747,7 +760,7 @@ class PDO5 extends OnePiece5
 	 * @param  array|Config $conf
 	 * @return boolean|string
 	 */
-	function AddColumn( $conf )
+	function AddColumn($conf)
 	{
 		//  object to array
 		if(!is_array($conf)){
@@ -782,7 +795,7 @@ class PDO5 extends OnePiece5
 	 * @param  array|Config $conf
 	 * @return boolean|string
 	 */
-	function ChangeColumn( $conf )
+	function ChangeColumn($conf)
 	{
 		//  object to array
 		if(!is_array($conf)){
@@ -811,9 +824,9 @@ class PDO5 extends OnePiece5
 		return $this->query( $qu, 'alter' );
 	}
 	
-	function AddIndex( $conf )
+	function AddIndex($args)
 	{
-	//	ALTER TABLE `t_table` ADD INDEX `column_name` ( `column_name` ); 
+	//	ALTER TABLE `t_table` ADD INDEX `column_name` ( `column_name` );
 	}
 	
 	function DropPrimarykey( $table_name )
@@ -1032,7 +1045,7 @@ class PDO5 extends OnePiece5
 		if(!is_array($config)){
 			$config = Toolbox::toArray($config);
 		}
-
+		
 		//	Change database
 		if(isset($config['database'])){
 			$this->SetDatabase($config['database']);
@@ -1063,6 +1076,23 @@ class PDO5 extends OnePiece5
 	{
 		$this->pdo->commit();
 	}
+	
+	/*
+	function Quote($args)
+	{
+		$return = array();
+		foreach( $args as $key => $var ){
+			$key = $this->pdo->quote($key);
+			if( is_array($var) or is_object($var) ){
+				$return[$key] = $this->Quote($var);
+			}else{
+				$var = $this->pdo->quote($var);
+				$return[$key] = $var;
+			}
+		}
+		return $return;
+	}
+	*/
 }
 
 class ConfigSQL extends OnePiece5
@@ -1090,26 +1120,35 @@ class ConfigSQL extends OnePiece5
 		
 		if( is_array($var) ){
 			$safe = null;
-			foreach( $var as $tmp ){
-				$safe[] = self::Quote($tmp);
+			foreach( $var as $key => $tmp ){
+				$safe[$key] = self::Quote($tmp);
 			}
-		}else if( strpos($var,'.') ){
-			$temp = explode('.',$var);
-			$safe = $ql.trim($temp[0]).$qr.'.'.$ql.trim($temp[1]).$qr;
+		}else if( is_string($var) and strlen($var) ){
+			
+			//	Replase quote
+			$patt = ($ql === $qr) ? $ql: $ql.$qr;
+			$patt = preg_quote($patt,'/');
+			if( preg_match("/[$patt]/",$var) ){
+				$var = preg_replace("/[$patt]/", '', $var);
+			}
+			
+			//	Case of table
+			if( strpos($var,'.') ){
+				$temp = explode('.',$var);
+				$safe = $ql.trim($temp[0]).$qr.'.'.$ql.trim($temp[1]).$qr;
+			}else{
+				$safe = $ql.trim($var).$qr;
+			}
 		}else{
-			$safe = $ql.trim($var).$qr;
+			$safe = $var;
 		}
-		
-		/*
-		if( empty($safe) ){
-			$this->mark($var);
-			$this->mark($driver);
-			OnePiece5::StackError("Empty args.");
-			$safe = null;
-		}
-		*/
 		
 		return $safe;
+	}
+	
+	static function QuoteType( $var, $driver=null )
+	{
+		return preg_replace('/[^-_a-z0-9]/i', '', $var);
 	}
 	
 	static function CacheKey( $args )
