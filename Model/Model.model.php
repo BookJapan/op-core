@@ -15,12 +15,16 @@ abstract class Model_Model extends OnePiece5
 	{
 		parent::Init();
 		
-		//	Do selftest is only admin
+		//	Selftest is execute only in the Admin.
 		if( $this->Admin() ){
+			/**
+			 * Selftest is execute in NewWorld at Dispatch.
+			 * 
 			//	Model
 			if( method_exists( $this, 'Selftest') ){
-			//	$this->Selftest();
+				$this->Selftest();
 			}
+			*/
 			//	Config
 			if( method_exists( $this->Config(), 'Selftest') ){
 				$this->Wizard()->SetSelftest( get_class($this), $this->Config()->Selftest() );
