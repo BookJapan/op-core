@@ -10,11 +10,6 @@
  */
 
 /**
- * OnePiece defined
- */
-define('OP_DATABASE_USER_SINGLE', 'OP_DATABASE_USER_SINGLE', true);
-
-/**
  * Check mbstring installed.
  */
 if(!function_exists('mb_language') ){
