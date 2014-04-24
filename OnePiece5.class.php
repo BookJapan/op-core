@@ -19,6 +19,13 @@ if(!function_exists('mb_language') ){
 }
 
 /**
+ * If time zone is not set, then set to UTC.
+ */
+if(!ini_get('date.timezone')){
+	date_default_timezone_set('UTC');
+}
+
+/**
  * Added "op-root" to include_path.
  */
 if( ! isset($_SERVER['OnePiece5']) ){
@@ -743,6 +750,7 @@ __EOL__;
 			}
 			
 		}else{
+			
 			//	Notify at email.
 			$ua   = $_SERVER['HTTP_USER_AGENT'];
 			$ip   = $_SERVER['REMOTE_ADDR'];
