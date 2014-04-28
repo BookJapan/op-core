@@ -214,28 +214,37 @@ class PDO5 extends OnePiece5
 	
 	function Connect( $config )
 	{
-		if( is_array($config) ){
-			$config = Toolbox::toObject($config);
-		}
-		
-		if( empty($config->driver) ){
-			$this->StackError("Does not set driver. (ex: $config->drive = 'mysql';)");
-			return false;
+		if( is_object($config) ){
+			$args = Toolbox::toArray($config);
+		}else{
+			$args = $config;
 		}
 		
 		//  init
-		$this->driver   = isset($config->driver)   ? $config->driver  : null;
-		$this->host     = isset($config->host)     ? $config->host    : null;
-		$this->port     = isset($config->port)     ? $config->port    : null;
-		$this->user     = isset($config->user)     ? $config->user    : null;
-		$password       = isset($config->password) ? $config->password: null;
-		$this->database = isset($config->database) ? $config->database: null;
-		$this->charset  = isset($config->charset)  ? $config->charset : null;
+		$this->driver   = isset($args['driver'])   ? $args['driver']   : 'mysql';
+		$this->host     = isset($args['host'])     ? $args['host']     : 'localhost';
+		$this->port     = isset($args['port'])     ? $args['port']     : '3306';
+		$this->user     = isset($args['user'])     ? $args['user']     : null;
+		$password       = isset($args['password']) ? $args['password'] : null;
+		$this->database = isset($args['database']) ? $args['database'] : null;
+		$this->charset  = isset($args['charset'])  ? $args['charset']  : strtolower($this->GetEnv('charset'));
+		$options        = array();
 		
-		$options = array();
+		//	convert
+		if( $this->charset === 'utf-8' ){
+			$this->charset = 'utf8';
+		}
 		
-		try {
-			//	Supports PHP 5.1 ( USE db_name is not supports. )
+		//	check
+		foreach( array('driver','host','user') as $key ){
+			if( empty($this->$key) ){
+				$this->StackError("Empty $key");
+				return false;
+			}
+		}
+		
+		try{
+			//	Support to PHP 5.1 ( USE db_name is not supports. )
 			$db  = $this->database ? 'dbname='.$this->database.';': null;
 			if( $this->charset ){
 				if( $this->driver === 'mysql' ){

@@ -14,7 +14,7 @@ class Api extends OnePiece5
 		curl_setopt( $ch, CURLOPT_COOKIE, $this->_cookie );
 		curl_setopt( $ch, CURLOPT_TIMEOUT, $this->_timeout );
 		
-		if(!$result = curl_exec($ch)){	
+		if(!$result = curl_exec($ch)){
 			return false;
 		}
 		

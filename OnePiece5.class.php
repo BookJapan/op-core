@@ -2324,39 +2324,34 @@ __EOL__;
 	}
 	
 	/**
-	 * Separate for each instance.
-	 * 
-	 * @var PDO5
-	 */
-	private $pdo;
-	
-	/**
 	 * Get PDO5 object
 	 * 
 	 * @param  $name class name
 	 * @return PDO5
 	 */
-	function PDO( $name=null )
+	function PDO()
 	{
-		if( empty($this->pdo) ){
-			if( is_null($name) ){
-				$name = 'PDO5';
-				$op_root = $this->GetEnv('op-root');
-				$path = $op_root.'PDO/PDO5.class.php';
-				if( $io = file_exists($path) ){					
-					include_once($path);
-				}else{
-					$this->StackError("Does not exists file. ($path)");
-					return false;
-				}
-			}
-			if(!$this->pdo = new $name()){
-				$this->StackError("Can not create object. ($name)");
+		static $pdo = null;
+		
+		if(!$pdo){
+			$op_root = $this->GetEnv('op-root');
+			$path = $op_root.'PDO/PDO5.class.php';
+			
+			if(!file_exists($path)){
+				$this->StackError("Does not exists file. ($path)");
 				return false;
 			}
+			
+			if(!include_once($path) ){
+				$this->StackError("Does not include file. ($path)");
+				return false;
+			}
+			
+			//	Instance
+			$pdo = new PDO5();
 		}
 		
-		return $this->pdo;
+		return $pdo;
 	}
 	
 	/**
