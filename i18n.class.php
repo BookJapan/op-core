@@ -7,6 +7,7 @@ class i18n extends Api
 	private $_use_memcache	 = false;
 	private $_use_database	 = true;
 	
+	private $_db_single		 = false;
 	private $_db_prod		 = 'mysql';
 	private $_db_host		 = 'localhost';
 	private $_db_port		 = '3306';
@@ -44,17 +45,17 @@ class i18n extends Api
 	
 	function GetDatabase()
 	{
-		if( $this->GetEnv(OP_DATABASE_USER_SINGLE) ){
-			$this->mark();
+		if( $this->_db_single ){
+			$config = $this->GetEnv('database');
 		}else{
-			$config = array();
-			$config['driver']	 = $this->_db_prod;
-			$config['host']		 = $this->_db_host;
-			$config['port']		 = $this->_db_port;
-			$config['user']		 = $this->_db_user;
-			$config['password']	 = $this->_db_password;
-			$config['database']	 = $this->_db_name;
-			$config['charset']	 = $this->_db_charset;
+			$config  = new Config();
+			$config->driver		 = $this->_db_prod;
+			$config->host		 = $this->_db_host;
+			$config->port		 = $this->_db_port;
+			$config->user		 = $this->_db_user;
+			$config->password	 = $this->_db_password;
+			$config->database	 = $this->_db_name;
+			$config->charset	 = $this->_db_charset;
 		}
 		return $config;
 	}

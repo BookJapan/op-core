@@ -88,11 +88,11 @@ class Wizard extends OnePiece5
 	 */
 	public function Selftest()
 	{
+		/*
 		if( Env::Get('is_wizard') ){
 			$this->mark("Wizard is already executing.");
 		}
 		Env::Set('is_wizard',true);
-		
 		
 		if( $this->_isWizard ){
 			return;
@@ -100,6 +100,7 @@ class Wizard extends OnePiece5
 		
 		//	Set flag
 		$this->_isWizard = true;
+		*/
 		
 		//	Check admin
 		if(!$this->admin()){
@@ -198,7 +199,9 @@ class Wizard extends OnePiece5
 		$port  = $config->database->port;
 		$user  = $config->database->user;
 		$db    = $config->database->database;
-		$host .= $port == 3306 ? '': ' : '.$port;
+		if( $port and $port !== '3306' ){
+			$host .=  ':'.$port;
+		}
 		
 		//	Database connection test
 		$io = $this->pdo()->Connect($config->database);
