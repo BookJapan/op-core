@@ -2324,6 +2324,13 @@ __EOL__;
 	}
 	
 	/**
+	 * PDO5 Object
+	 * 
+	 * @var PDO5
+	 */
+	private $_pdo = null;
+	
+	/**
 	 * Get PDO5 object
 	 * 
 	 * @param  $name class name
@@ -2331,9 +2338,7 @@ __EOL__;
 	 */
 	function PDO()
 	{
-		static $pdo = null;
-		
-		if(!$pdo){
+		if(!$this->_pdo){
 			$op_root = $this->GetEnv('op-root');
 			$path = $op_root.'PDO/PDO5.class.php';
 			
@@ -2348,10 +2353,10 @@ __EOL__;
 			}
 			
 			//	Instance
-			$pdo = new PDO5();
+			$this->_pdo = new PDO5();
 		}
 		
-		return $pdo;
+		return $this->_pdo;
 	}
 	
 	/**
