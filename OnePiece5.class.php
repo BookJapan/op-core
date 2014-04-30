@@ -2577,62 +2577,25 @@ class Env
 				
 				if( $key = preg_replace('/-/', '_', $key) ){
 					//	throw
-				}else
-				
-				if(
-					/* Match from
-					 * OP_ROOT  or OP-ROOT
-					 * APP_ROOT or APP-ROOT
-					 * DOC_ROOT or DOC-ROOT
-					 */
-					strlen($key) > 6 &&
-				   ($key[strlen($key)-5] === '_' ||
-					$key[strlen($key)-5] === '-')&& 
-					$key[strlen($key)-4] === 'R' &&
-					$key[strlen($key)-3] === 'O' &&
-					$key[strlen($key)-2] === 'O' &&
-					$key[strlen($key)-1] === 'T' 
-				){
-					/* Convert to 
-					 * OP-ROOT  -> OP_ROOT
-					 * APP-ROOT -> APP_ROOT
-					 * DOC-ROOT -> DOC_ROOT
-					 */
-					$is_path = true;
-					$key[strlen($key)-5] = '_';
-				}else
-				if(
-					strlen($key) > 5 &&
-				   ($key[strlen($key)-4] === '_' ||
-					$key[strlen($key)-4] === '-')&&
-					$key[strlen($key)-3] === 'D' &&
-					$key[strlen($key)-2] === 'I' &&
-					$key[strlen($key)-1] === 'R'
-				){
-					$is_path = true;
-					$key[strlen($key)-4] = '_';
 				}
 		}
 			
-		//	If var of path.
+		//	$var is a case of path.
 		if( $var and !empty($is_path) ){
+			
 			/*  Convert to unix path separator from Windows path separator.
 			 * 
 			 * Example
 			 * C:¥www¥htdocs¥ -> C:/www/htdocs/
 			 */
 			$var = str_replace('\\', '/', $var);
+			
 			/* Add a slash at the end of the path.
 			 * 
 			 * Example
 			 * /var/www/html -> /var/www/html/
 			 */
 			$var = rtrim( $var, '/').'/';
-			/*
-			var_dump($key);
-			var_dump($var);
-			print '<hr/>';
-			*/
 		}
 		
 		return array( $key, $var );
