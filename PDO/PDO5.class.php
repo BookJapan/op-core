@@ -501,9 +501,10 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  Get value
-		if( preg_match('/(.+)[^><=]([=<>]{1,2})(.+)/', $string, $match) ){
+	//	if( preg_match('/(.+)[^><=]([=<>]{1,2})(.+)/', $string, $match) ){
+		if( preg_match('/(.+)([=<>]{1,2})(.+)/', $string, $match) ){
 			$left  = $match[1];
-			$ope   = $match[2] == '=' ? null: $match[2].' ';
+			$ope   = $match[2] === '=' ? null: $match[2].' ';
 			$value = $match[3];
 		}else{
 			$this->StackError("Format error. ($string)");
