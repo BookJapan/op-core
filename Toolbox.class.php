@@ -344,13 +344,20 @@ class Toolbox
 		$domain	 = isset($conf['domain']) ? $conf['domain']: true;
 		$path	 = isset($conf['path'])   ? $conf['path']:   true;
 		$query	 = isset($conf['query'])  ? $conf['query']:  false;
-	
+		
+		/**
+		 * $_SERVER['HTTP_X_FORWARDED_FOR'] is IP-Address
+		 * $_SERVER['HTTP_X_FORWARDED_HOST'] is Host name
+		 * $_SERVER['HTTP_X_FORWARDED_SERVER'] is Server name
+		 * 
+		 * Difference between HTTP_X_FORWARDED_HOST and HTTP_X_FORWARDED_SERVER unclear.
+		 */
 		if( $domain ){
-			$domain = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['HTTP_HOST'];
+			$domain = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: $_SERVER['HTTP_HOST'];
 		}else{
 			$domain = null;
 		}
-	
+		
 		if( $scheme ){
 			$scheme = $_SERVER['SERVER_PORT'] !== '443' ? 'http://': 'https://';
 		}else{
