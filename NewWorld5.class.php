@@ -350,6 +350,8 @@ abstract class NewWorld5 extends OnePiece5
 				$app_path = $match[1];
 			}else if( preg_match("|^$doc_path(.+)|", $full_path, $match) ){
 				$app_path = $match[1];
+			}else{
+				$app_path = $full_path;
 			}
 			
 			$route = array();
