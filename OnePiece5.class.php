@@ -851,10 +851,8 @@ __EOL__;
 	 * @param string $locale lang_territory.codeset@modifier
 	 * @return void
 	 */
-	private function _InitLocale( $locale=null ){
-		
-		// @todo We will support to de_DE@euro
-		
+	private function _InitLocale( $locale=null )
+	{
 		/**
 		 * Windows 
 		 * 	Japanese_Japan.932 = sjis
@@ -899,8 +897,10 @@ __EOL__;
 		 * timezone list
 		 * @see http://jp2.php.net/manual/ja/timezones.php 
 		 */
-		if( $area === 'JP'){
-			$timezone = 'Asia/Tokyo';
+		switch( $area ){
+			case 'JP':
+				$timezone = 'Asia/Tokyo';
+				break;
 		}
 		
 		mb_language($lang);
@@ -1030,7 +1030,7 @@ __EOL__;
 			$app_root  = str_replace( '\\', '/', $app_root  );
 			$site_root = str_replace( '\\', '/', $site_root );
 		}
-
+		
 		$this->SetEnv('new_line',PHP_EOL);
 		$this->SetEnv('class',__CLASS__);
 		
@@ -1053,7 +1053,7 @@ __EOL__;
 	 */
 	static function SetEnv( $key, $var )
 	{
-		if($_SERVER['OP_IS_LOCALHOST']){
+		if( $_SERVER['OP_IS_LOCALHOST'] ){
 			return Env::Set($key, $var);
 		}
 		
@@ -2430,9 +2430,9 @@ __EOL__;
 	 * @throws Exception
 	 * @return Cache
 	 */
-	function Cache($name='Cache')
+	function Cache()
 	{
-		return $this->Singleton($name);
+		return $this->Singleton('Cache');
 	}
 
 	/**
