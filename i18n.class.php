@@ -3,8 +3,8 @@
 class i18n extends Api
 {
 	const _API_UQUNIE_COM_ = 'http://api.uqunie.com/i18n/';
-
-	private $_use_memcache	 = false;
+	
+	private $_use_memcache	 = true;
 	private $_use_database	 = true;
 	
 	private $_db_single		 = false;
@@ -141,13 +141,18 @@ class i18n extends Api
 		$translate = $json['translate'];
 		
 		//	Save memcache
-		if( $this->_use_memcache ){
+		if( $this->_use_memcache and $translate ){
 			$this->Cache()->Set( $key, $translate );
 		}
 		
 		//	Save database
-		if( $this->_use_database ){
+		if( $this->_use_database and $translate ){
 			$this->Insert( $text, $from, $to, $translate );
+		}
+		
+		//	Case of does not fetch.
+		if(!$translate){
+			$translate = $text;
 		}
 		
 		//	Finish
@@ -186,6 +191,10 @@ class i18n extends Api
 	
 	function Insert( $text, $from, $to, $translate )
 	{
+		if(!$translate){
+			return false;
+		}
+		
 		$table_name = $this->GetTableName();
 		
 		$key = md5("$text, $from, $to");
