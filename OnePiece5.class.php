@@ -2104,21 +2104,6 @@ __EOL__;
 		return rtrim($domain,'/').'/'.ltrim($url,'/');
 	}
 	
-	static function ConvertURL2( $meta_url )
-	{
-	//	self::d($_SERVER);
-		self::mark( self::GetEnv('app-root') ); // from the root 
-		self::mark( $meta_url );
-		
-		//	calc app-root
-		$app_root = dirname($_SERVER['SCRIPT_NAME']); // from the document root.
-		
-		
-		
-		$return = '';
-		return $return;
-	}
-	
 	/**
 	 * Convert server-side full-path.
 	 * 
