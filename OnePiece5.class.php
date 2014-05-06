@@ -866,7 +866,9 @@ __EOL__;
 		 */
 		
 		if(!$locale){
-			$locale = 'ja_JP.utf-8';
+			if(!$locale = $this->GetCookie('locale') ){
+				$locale = 'ja_JP.utf-8';
+			}
 		}
 		
 		if( preg_match('|([a-z]+)[-_]?([a-z]+)?\.?([-_a-z0-9]+)?|i', $locale, $match) or true){
