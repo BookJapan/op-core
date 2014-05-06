@@ -43,6 +43,40 @@ class i18n extends Api
 		$this->_lang = $lang;
 	}
 	
+	/**
+	 * Get support language list
+	 * 
+	 * @param  string|null $lang
+	 * @return array
+	 */
+	function GetLanguageList($lang=null)
+	{
+		//	translate language
+		if(!$lang){
+			$lang = $this->GetLang();
+		}
+		
+		//	URL
+		$url = "http://api.uqunie.com/i18n/lang/$lang";
+				
+		//	Do
+		if(!$json = parent::Curl($url)){
+			//	Fail
+			return $text;
+		}
+		
+		//	Get support language list
+		$temp = json_decode($json,true);
+		
+		if( $temp['status'] ){
+			$error = $temp['error'];
+			$this->StackError("Can not get language list. ($error)");
+			return array();
+		}
+		
+		return $temp['language'];
+	}
+	
 	function GetDatabase()
 	{
 		if( $this->_db_single ){
