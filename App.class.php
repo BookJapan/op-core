@@ -155,17 +155,30 @@ class App extends NewWorld5
 		}
 		print $doctype.PHP_EOL;
 	}
-
+	
+	function InitLang()
+	{
+		if( $lang = $this->GetCookie('lang') ){
+			$this->SetLang($lang);
+		}
+	}
+	
 	function SetLang( $var )
 	{
-		$this->SetEnv('lang',$var);
+		if( $var ){
+			$this->SetEnv('lang',$var);
+			$this->SetCookie('lang', $var);
+		}
 	}
 	
 	function GetLang()
 	{
-		return $this->GetEnv('lang');
+		if(!$lang = $this->GetEnv('lang')){
+			$lang = $this->GetCookie('lang');
+		}
+		return $lang;
 	}
-
+	
 	function SetCharset( $var )
 	{
 		$this->SetEnv('charset',$var);
