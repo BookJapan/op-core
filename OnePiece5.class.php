@@ -391,7 +391,7 @@ class OnePiece5
 		}
 		
 		//  init
-		$this->_InitEnv( /*$args*/ );
+		$this->_InitEnv();
 		$this->_InitLocale($this->GetEnv('locale'));
 		
 		//  mark_label
@@ -2391,43 +2391,41 @@ __EOL__;
 	/**
 	 * Abstract Form object.
 	 * 
-	 * @param  string $name Class name
 	 * @return Form5
 	 */
-	function Form( $name='Form5' )
+	function Form()
 	{
-		return self::Singleton($name);
+		return self::Singleton('Form5');
 	}
 	
 	/**
 	 * i18n is translate object.
 	 * 
-	 * @param  string $name Object name
 	 * @return i18n
 	 */
-	function i18n( $name='i18n' )
+	function i18n()
 	{
-		return self::Singleton($name);
+		return self::Singleton('i18n');
 	}
 	
 	/**
 	 * Cache is presents the memcached interface.
 	 *
-	 * @param  string $name
-	 * @throws Exception
 	 * @return Cache
 	 */
 	function Cache()
 	{
 		return $this->Singleton('Cache');
 	}
-
+	
 	/**
+	 * Wizard
+	 * 
 	 * @return Wizard
 	 */
-	function Wizard($name='Wizard')
+	function Wizard()
 	{
-		return $this->Singleton($name);
+		return $this->Singleton('Wizard');
 	}
 	
 	/**
