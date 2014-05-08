@@ -1158,6 +1158,8 @@ class Form5 extends OnePiece5
 		}else
 		if( isset($_form) ){
 			$config = Toolbox::toObject($_form);
+		}else{
+			
 		}
 		
 		if(!isset($config)){

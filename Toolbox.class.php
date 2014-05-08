@@ -81,7 +81,7 @@ class Toolbox
 	
 	static function toObject($args)
 	{
-		switch($type = gettype($args)){
+		switch( $type = gettype($args) ){
 			case 'object':
 				return $args;
 				

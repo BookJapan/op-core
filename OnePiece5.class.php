@@ -1690,7 +1690,7 @@ __EOL__;
 	 */
 	static function EscapeObject( &$args, $charset='utf-8' )
 	{
-		$temp = new stdClass();
+		$temp = new Config();
 		foreach ( $args as $key => $var ){
 			$key = self::EscapeString( $key, $charset );
 			$var = self::Escape( $var, $charset );
