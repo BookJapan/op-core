@@ -27,24 +27,31 @@ abstract class Model_Base extends OnePiece5
 		$this->mark("Does not implements help.");
 	}
 	
-	function pdo($name=null)
+	function pdo()
 	{
 		//  get pdo object
-		$pdo = parent::pdo($name);
-	
+		$pdo = parent::pdo();
+		
 		//  check connection
 		if(!$pdo->isConnect()){
-				
+			
+			//	implement check
+			$obj = $this->config();
+			if(!method_exists($obj, 'database')){
+				$this->StackError('Does not exists database method at '.get_class($obj));
+				return parent::PDO();
+			}
+			
 			//  get database config
-			$config = $this->config()->database();
-				
+			$config = $obj->database();
+			
 			//  database connection
 			if(!$io = $pdo->Connect($config)){
-	
+				
 				//  Notice to admin
 				$config->myname = get_class($this);
 				$config->Caller = $this->GetCallerLine();
-	
+				
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
 					$e = new OpException();
