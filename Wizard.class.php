@@ -252,8 +252,8 @@ class Wizard extends OnePiece5
 			foreach( $config_list as $config ){
 				
 				$database = Toolbox::Copy( $config->database );
-				$database->user     = $this->form()->GetInputValue('user',$form_name);
-				$database->password = $this->form()->GetInputValue('password',$form_name);
+				$database->user     = $this->form()->GetInputValue(WizardConfig::_INPUT_USERNAME_,$form_name);
+				$database->password = $this->form()->GetInputValue(WizardConfig::_INPUT_PASSWORD_,$form_name);
 				
 				//  Remove database name. (only connection, If not exists database.)
 				unset($database->database);
@@ -294,108 +294,21 @@ class Wizard extends OnePiece5
 	
 	private function _PrintForm( $config )
 	{
-		$css = '
-		<style>
-		#form-wizard{
-			margin: 1em;
-			border: 0px solid #d8d7da;
-			background-Color: #e8e2f3;
-			width: 450px;
-		}
-		
-		#form-wizard div.headline{
-			padding: 0.5em 1em;
-			background-Color: #583e8d;
-			color: white;
-			font-size: 150%;
-			font-weight: bold;
-		}
-		
-		#form-wizard div.content-area{
-			margin:  0;
-			padding: 0em;
-			padding-left: 1em;
-			padding-bottom: 1em;
-			color: #2b1e44;
-			border: 1px solid #d8d7da;
-		}
-		
-		#form-wizard p.message{
-			margin: 1em;
-			color: #21045a;
-			border: 0px solid #d8d7da;
-			font-size: 125%;
-		}
-		
-		#form-wizard div.content{
-			margin: 1em;
-		}
-		
-		#form-wizard input.op-input{
-			border: 1px solid #4c455b;
-			width: 16em;
-		}
-		
-		#form-wizard input.op-input-button{
-			margin: 0;
-			color: white;
-			font-weight: bold;
-			background-color: #653cb8;
-			font-family: sans-serif;
-		}
-		
-		#form-wizard input.op-input-button:hover{
-			background-color: #7538ef;
-		}
-				
-		#form-wizard .form-area{
-			margin-left: 0px;
-			width: 260px;
-		}
-		</style>
-		';
-		
-		$html = '
-		<div id="form-wizard" class="">
-			<div class="headline">
-				<span>%s</span>
-			</div>
-			<div class="content-area" style="">
-				<p class="message">%s</p>
-				<div class="form-area table" style="">
-					%s
-				</div>
-			</div>
-		</div>
-		';
-		
-		//	Get form name
-		$form_name = $this->config()->GetFormName();
-		
-		//  Get input decorate
-		$decorate = $this->config()->InputDecorate();
-		
-		//	Get input
-		$form = '';
-		foreach ( array('user','password','submit') as $input_name ){
-			$form .= sprintf(
-				$decorate,
-				$this->form()->GetLabel($input_name,$form_name),
-				$this->form()->GetInput($input_name,$form_name),
-				$this->form()->GetError($input_name,$form_name)
-			);
-		}
-		
-		//	
-		$title	 = $config->title;
+		//	get form title and form message
+		$title   = $config->title;
 		$message = $config->message;
-		if(!is_string($title)){ $title = 'Please set "$config->form->title".'; }
-		if(!is_string($message)){ $message = 'Please set "$config->form->message".'; }
 		
-		print $css;
-		$this->form()->Start($form_name);
-		printf( $html, $title, $message, $form );
-		$this->form()->Finish($form_name);
+		//	check and wiki2
+		$title   = is_string($title)   ? $this->Wiki2($title):   'Please set "$config->form->title".';
+		$message = is_string($message) ? $this->Wiki2($message): 'Please set "$config->form->message".';
+		
+		$args['title'] = $title;
+		$args['message'] = $message;
+		$args['form_name'] = WizardConfig::_FORM_NAME_;
+		$args['input_username'] = WizardConfig::_INPUT_USERNAME_;
+		$args['input_password'] = WizardConfig::_INPUT_PASSWORD_;
+		$args['input_submit']   = WizardConfig::_INPUT_SUBMIT_;
+		$this->Template('op:/Template/wizard-form.phtml',$args);
 	}
 	
 	private function _CheckDatabase( Config $config )
@@ -1028,11 +941,14 @@ class Wizard extends OnePiece5
 
 class WizardConfig extends ConfigMgr
 {
-	const FORM_NAME = 'op_magic_form';
+	const _FORM_NAME_ = 'op_magic_form';
+	const _INPUT_USERNAME_ = 'username';
+	const _INPUT_PASSWORD_ = 'password';
+	const _INPUT_SUBMIT_   = 'submit';
 	
 	function GetFormName()
 	{
-		return self::FORM_NAME;
+		return self::_FORM_NAME_;
 	}
 	
 	function MagicForm()
@@ -1040,19 +956,19 @@ class WizardConfig extends ConfigMgr
 		$config = new Config();
 		
 		//  form name
-		$config->name  = self::FORM_NAME;
+		$config->name  = self::_FORM_NAME_;
 		$config->id    = 'form-wizard';
 		$config->class = 'form-wizard';
 		
 		//  user
-		$input_name = 'user';
+		$input_name = self::_INPUT_USERNAME_;
 		$config->input->$input_name->label = 'User';
 		$config->input->$input_name->name  = $input_name;
 		$config->input->$input_name->value = 'root';
 		$config->input->$input_name->validate->required = true;
 		
 		//  password
-		$input_name = 'password';
+		$input_name = self::_INPUT_PASSWORD_;
 		$config->input->$input_name->label = 'Password';
 		$config->input->$input_name->name  = $input_name;
 		$config->input->$input_name->type  = 'password';
