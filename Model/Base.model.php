@@ -27,6 +27,27 @@ abstract class Model_Base extends OnePiece5
 		$this->mark("Does not implements help.");
 	}
 	
+	function Config()
+	{
+		static $cmgr;
+	
+		if(!$cmgr){
+			//	get config name
+			$tmp = explode('_',get_class($this));
+			$name = 'Config_'.$tmp[1];
+			//	check
+			if(!class_exists( $name, true ) ){
+				throw new OpException("Does not exists this class.($name)");
+			}
+			//	instance
+			if(!$cmgr = new $name()){
+				throw new OpException("Failed to instance of the $name.");
+			}
+		}
+	
+		return $cmgr;
+	}
+	
 	function pdo()
 	{
 		//  get pdo object
@@ -49,40 +70,20 @@ abstract class Model_Base extends OnePiece5
 			if(!$io = $pdo->Connect($config)){
 				
 				//  Notice to admin
-				$config->myname = get_class($this);
-				$config->Caller = $this->GetCallerLine();
+			//	$config->myname = get_class($this);
+			//	$config->Caller = $this->GetCallerLine();
 				
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
 					$e = new OpException();
 					throw $e;
 				}else{
+					$this->mark('![.red[Connect was denied.]]');
 					$this->d($config);
 				}
 			}
 		}
 		return $pdo;
-	}
-	
-	function Config()
-	{
-		static $cmgr;
-		
-		if(!$cmgr){
-			//	get config name
-			$tmp = explode('_',get_class($this));
-			$name = 'Config_'.$tmp[1];
-			//	check
-			if(!class_exists( $name, true ) ){
-				throw new OpException("Does not exists this class.($name)");
-			}
-			//	instance
-			if(!$cmgr = new $name()){
-				throw new OpException("Failed to instance of the $name.");
-			}
-		}
-		
-		return $cmgr;
 	}
 	
 	private $_const = array();
@@ -100,5 +101,36 @@ abstract class Model_Base extends OnePiece5
 
 class Config_Base extends OnePiece5
 {
-	
+	function database($args=null)
+	{
+		if(empty($args['driver'])){
+			$args['driver'] = 'mysql';
+		}
+		
+		if(empty($args['host'])){
+			$args['host'] = 'localhost';
+		}
+		
+		if(empty($args['user'])){
+			$args['user'] = 'op_mdl_base';
+		}else if($args['driver']==='mysql' and strlen($args['user']) > 16){
+			$this->StackError("user name is over 16 character.");
+		}
+		
+		if(empty($args['password'])){
+			$key = $_SERVER['HTTP_HOST'].', '.$args['user'].', '.$this->GetEnv('admin-mail');
+			$password = md5($key);
+			$args['password'] = $password;
+		}
+		
+		if(empty($args['database'])){
+			$args['database'] = 'onepiece';
+		}
+		
+		if(empty($args['charset'])){
+			$args['charset'] = 'utf8';
+		}
+		
+		return $args;
+	}
 }
