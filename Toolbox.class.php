@@ -420,4 +420,24 @@ class Toolbox
 		$mime = self::GetMIME();
 		return $mime === 'text/html' ? true: false;
 	}
+	
+	static function Curl( $url, $args=null, $method='get')
+	{
+		if( $args ){
+			foreach( $args as $key => $var ){
+				$join[] = urlencode($key).'='.urlencode($var);
+			}
+			$url .= '?'.join('&',$join);
+		}
+	
+		//	CURL
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$json = curl_exec($ch);
+		curl_close($ch);
+	
+		return json_decode($json,true);
+	}
 }
