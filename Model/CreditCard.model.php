@@ -12,30 +12,6 @@ class Model_CreditCard extends Model_Base
 		return parent::Config('Config_CreditCard');
 	}
 	
-	private function _GetURL($key)
-	{
-		$url = 'http://api.uqunie.com/';
-		switch($key){
-			case 'payment':
-				$url .= 'payment/';
-				break;
-		}
-		return $url;
-	}
-	
-	private function _curl($url)
-	{
-		//	CURL
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$json = curl_exec($ch);
-		curl_close($ch);
-		
-		return json_decode($json,true);
-	}
-	
 	function GetFormName()
 	{
 		return Config_CreditCard::_FORM_NAME_;
@@ -113,30 +89,18 @@ class Model_CreditCard extends Model_Base
 			return false;
 		}
 		
-		//	submit value
-		$form_name = Config_CreditCard::form_name;
-		$card_no = $this->form()->GetInputValue(Config_CreditCard::input_card_no,$form_name);
-		$exp_yy  = $this->form()->GetInputValue(Config_CreditCard::input_exp_yy, $form_name);
-		$exp_mm  = $this->form()->GetInputValue(Config_CreditCard::input_exp_mm, $form_name);
-		$csc     = $this->form()->GetInputValue(Config_CreditCard::input_csc,    $form_name);
-		
-		//	get query
-		$query = array();
-		$query[] = Config_CreditCard::post_cardno.'='.$card_no;
-		$query[] = Config_CreditCard::post_exp.'='.$exp_mm.$exp_yy;
-		$query[] = Config_CreditCard::post_csc.'='.$csc;
-		$query[] = Config_CreditCard::post_amount.'='.$price;
-		$query[] = Config_CreditCard::post_label.'='.$label;
-		
 		//	url
-		$url  = $this->_GetURL('payment');
-		$url .= '?'.join('&',$query);
+		$url  = $this->Config()->GetURL('payment');
+		$args = $this->Config()->GetArgsPayment($price,$label);
 		
 		//	get json
-		$json = $this->_curl($url);
+		$json = Toolbox::Curl( $url, $args, 'get' );
 		
+		/*
 		$this->mark($url);
+		$this->d($args);
 		$this->d($json);
+		*/
 		
 		//	error check
 		if(isset($json['error'])){
@@ -268,7 +232,7 @@ class Config_CreditCard extends Config_Base
 			$config->input->$input_name->options->$i->value = sprintf('%02d',$i);
 		}
 		
-		$input_name = self::_INPUT_INCOUNT_;
+		$input_name = self::_INPUT_PAYMODE_;
 		$config->input->$input_name->label	 = $this->i18n()->ja('支払い方法');
 		$config->input->$input_name->type	 = 'select';
 		$config->input->$input_name->id		 = $input_name;
@@ -289,7 +253,7 @@ class Config_CreditCard extends Config_Base
 		$config->input->$input_name->options->{'80'}->label = $this->i18n()->ja('リボルビング');
 		$config->input->$input_name->options->{'80'}->value = '80';
 		
-		$input_name = self::_INPUT_PAYMODE_;
+		$input_name = self::_INPUT_INCOUNT_;
 		$config->input->$input_name->label	 = $this->i18n()->ja('分割回数');
 		$config->input->$input_name->type	 = 'select';
 		$config->input->$input_name->id		 = $input_name;
@@ -306,7 +270,35 @@ class Config_CreditCard extends Config_Base
 		
 		return $config;
 	}
-
+	
+	function GetURL($key)
+	{
+		$url = 'http://api.uqunie.com/';
+		switch($key){
+			case 'payment':
+				$url .= 'payment/';
+				break;
+		}
+		return $url;
+	}
+	
+	function GetArgsPayment( $amount, $label )
+	{
+		$form_name = self::_FORM_NAME_;
+		$card_no = $this->form()->GetInputValue(self::_INPUT_CARD_NO_,$form_name);
+		$exp_yy  = $this->form()->GetInputValue(self::_INPUT_EXP_YY_, $form_name);
+		$exp_mm  = $this->form()->GetInputValue(self::_INPUT_EXP_MM_, $form_name);
+		$csc     = $this->form()->GetInputValue(self::_INPUT_CSS_,    $form_name);
+		
+		$args[self::_POST_CARD_NO_]	 = $card_no;
+		$args[self::_POST_EXP_]		 = $exp_yy.$exp_mm;
+		$args[self::_POST_CSC_]		 = $csc;
+		$args[self::_POST_AMOUNT_]	 = $amount;
+		$args[self::_POST_LABEL_]	 = $label;
+		
+		return $args;
+	}
+	
 	const _COLUMN_ID_		 = 'id';
 	const _COLUMN_UID_		 = 'uid';
 	const _COLUMN_SID_		 = 'sid';
@@ -337,11 +329,18 @@ class Config_CreditCard extends Config_Base
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'char';
 		$config->table->{$table_name}->column->{$column_name}->length	 = self::_COLUMN_UID_LENGHT_;
+		$config->table->{$table_name}->column->{$column_name}->comment	 = 'User ID';
 		
 		$column_name = self::_COLUMN_SID_;
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'char';
 		$config->table->{$table_name}->column->{$column_name}->length	 = self::_COLUMN_SID_LENGHT_;
+		$config->table->{$table_name}->column->{$column_name}->comment	 = 'Shopping ID';
+		
+		$column_name = self::_COLUMN_AMOUNT_;
+		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
+		$config->table->{$table_name}->column->{$column_name}->type		 = 'int';
+		$config->table->{$table_name}->column->{$column_name}->comment	 = 'Charge amount';
 		
 		$name = 'created';
 		$config->table->$table_name->column->$name->type = 'datetime';
