@@ -205,18 +205,14 @@ class i18n extends Api
 	
 	function Select( $text, $from, $to )
 	{
-		$table_name = $this->GetTableName();
-		
-		$key = md5("$text, $from, $to");
-		
-		$config = array();
-		$config['table'] = $table_name;
-		$config['where'][self::_COLUMN_ID_] = $key;
-		$config['limit'] = 1;
-		
 		if(!$pdo = $this->pdo()){
 			return false;
 		}
+		
+		$config = array();
+		$config['table'] = $this->GetTableName();
+		$config['limit'] = 1;
+		$config['where'][self::_COLUMN_ID_] = md5("$text, $from, $to");
 		
 		$record = $pdo->Select($config);
 		
@@ -228,23 +224,19 @@ class i18n extends Api
 		if(!$translate){
 			return false;
 		}
-		
-		$table_name = $this->GetTableName();
-		
-		$key = md5("$text, $from, $to");
+
+		if(!$pdo = $this->pdo()){
+			return false;
+		}
 		
 		$config = array();
-		$config['table'] = $table_name;
-		$config['set'][self::_COLUMN_ID_]		 = $key;
+		$config['table'] = $this->GetTableName();
+		$config['set'][self::_COLUMN_ID_]		 = md5("$text, $from, $to");
 		$config['set'][self::_COLUMN_LANG_FROM_] = $from;
 		$config['set'][self::_COLUMN_LANG_TO_]	 = $to;
 		$config['set'][self::_COLUMN_TEXT_FROM_] = $text;
 		$config['set'][self::_COLUMN_TEXT_TO_]	 = $translate;
 		$config['set']['created'] = gmdate('Y-m-d H:i:s');
-		
-		if(!$pdo = $this->pdo()){
-			return false;
-		}
 		
 		return $pdo->Insert($config);
 	}
