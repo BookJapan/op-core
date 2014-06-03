@@ -2371,7 +2371,7 @@ __EOL__;
 	 * @param  string $name
 	 * @return OnePiece5
 	 */
-	function Singleton($name)
+	static function Singleton($name)
 	{
 		if(isset($_SERVER[__CLASS__]['singleton'][$name])){
 			return $_SERVER[__CLASS__]['singleton'][$name];
