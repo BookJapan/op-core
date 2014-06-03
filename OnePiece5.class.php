@@ -1945,16 +1945,12 @@ __EOL__;
 	 */
 	function Template( $file, $data=null )
 	{
-	//	print $this->GetCallerLine() . PHP_EOL;
-	//	print "$file" . PHP_EOL;
-		
 		if(!is_string($file)){
 			$this->StackError("Passed arguments is not string. (".gettype($file).")");
 			return false;
 		}
 		
 		//  for developper's debug
-	//	$this->mark( $this->GetCallerLine(1) );
 		$this->mark($file,'template');
 		
 		//  access is deny, above current directory
