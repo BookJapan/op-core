@@ -2602,19 +2602,24 @@ class Env
 	static function Set( $key, $var )
 	{
 		$key = strtoupper($key);
+		/*
 		if( $key === 'DEVELOPER' ){
 			return self::SetDeveloper($var);
 		}
+		*/
 		list( $key, $var ) = self::_Convert( $key, $var );
 		$_SERVER[self::_NAME_SPACE_][$key] = $var;
+	//	$_SERVER[self::_NAME_SPACE_][$key] = OnePiece5::Escape($var);
 	}
 	
+	/*
 	static function SetDeveloper( $var )
 	{
 		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
 		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
 		$_SERVER['OP_IS_ADMIN'] = $remote_addr === $var ? true: false;
 	}
+	*/
 }
 
 /**
