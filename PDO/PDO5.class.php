@@ -357,7 +357,7 @@ class PDO5 extends OnePiece5
 		return $result;
 	}
 	
-	function GetTableList( $config=null, $like=null )
+	function GetTableList( $config=null/*, $like=null*/ )
 	{
 		if(is_string($config)){
 			//  set database
@@ -464,13 +464,57 @@ class PDO5 extends OnePiece5
 		
 		//  Get users list
 		$select = new Config();
-		$select->table = 'user';
+		$select->table  = 'user';
 		$select->column = 'User';
 		$record = $this->select($select);
 		
 		//  
 		for( $i=0, $c=count($record); $i<$c; $i++ ){
 			$result[] = $record[$i]['User'];
+		}
+		
+		return $result;
+	}
+	
+	function GetUserPrivilege( $args )
+	{
+		//	check
+		if(!is_array($args)){
+			$args = Toolbox::toArray($args);
+		}
+		
+		//	init
+		$host     = isset($args['host'])     ? $args['host']    : null; 
+		$database = isset($args['database']) ? $args['database']: null; 
+		$user     = isset($args['user'])     ? $args['user']    : null;
+		
+		//  Select database
+		$this->Database('mysql');
+		
+		//  Get users list
+		$select = new Config();
+		$select->table  = 'tables_priv';
+		$select->column = 'Host, Db, User, Table_name, Table_priv, Column_priv';
+		if( $host ){ $select->where->Host = $host; }
+		if( $database ){ $select->where->Db	 = $database; }
+		if( $user ){ $select->where->User = $user; }
+		
+		$record = $this->select($select);
+		$result = array();
+		
+		foreach( $record as $temp ){
+			$host	 = $temp['Host'];
+			$db		 = $temp['Db'];
+			$user	 = $temp['User'];
+			$table	 = $temp['Table_name'];
+			
+			$table_priv	 = strlen($temp['Table_priv'])>0 ? $temp['Table_priv']: '%';
+			$column_priv = $temp['Column_priv'];
+			
+			foreach(explode(',',$table_priv) as $priv){
+				$priv = strtolower($priv);
+				$result[$user][$host][$db][$table][$priv] = true;
+			}
 		}
 		
 		return $result;
