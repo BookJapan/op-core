@@ -88,20 +88,6 @@ class Wizard extends OnePiece5
 	 */
 	public function Selftest()
 	{
-		/*
-		if( Env::Get('is_wizard') ){
-			$this->mark("Wizard is already executing.");
-		}
-		Env::Set('is_wizard',true);
-		
-		if( $this->_isWizard ){
-			return;
-		}
-		
-		//	Set flag
-		$this->_isWizard = true;
-		*/
-		
 		//	Check admin
 		if(!$this->admin()){
 			return null;
@@ -170,16 +156,16 @@ class Wizard extends OnePiece5
 		}
 		
 		//	check
-	//	$this->mark('wizard is successful.');
-	//	$this->d( $this->_result );
-	//	$this->d( $this->_wizard );
+		//$this->mark('wizard is successful.');
+		$this->d($this->_result,'selftest');
+		$this->d($this->_wizard,'selftest');
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
 		
 		//	status
 		if( $this->_status ){
-			$this->mark( $this->_status );
+			$this->mark($this->_status,'selftest');
 		}
 		
 		return isset($io) ? $io: true;
@@ -880,16 +866,19 @@ class Wizard extends OnePiece5
 			$revoke = Toolbox::Copy($grant);
 			
 			//	If connect is successful case
-			if( $this->_result->connect->$host->$user->$db === true ){
-				//	Does not revoke alter.
-			}else{
-				//	Revoke all plivilage
-				$revoke->table = $table_name;
-				$revoke->privilage = 'ALL PRIVILEGES';
-				$io = $this->pdo()->Revoke($revoke);
-				
-				//  Log (revoke)
-				$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			if( $this->_result->connect->$host->$user->$db !== true ){
+				//	get user privilege
+				$user_priv = $this->pdo()->GetUserPrivilege(array('user'=>$user));
+				//	
+				if( $user_priv ){					
+					//	Revoke all plivilage
+					$revoke->table = $table_name;
+					$revoke->privilege = 'ALL PRIVILEGES';
+					$io = $this->pdo()->Revoke($revoke);
+					
+					//  Log (revoke)
+					$this->model('Log')->Set( $this->pdo()->qu(), $io);
+				}
 			}
 			
 			//	Set table name
