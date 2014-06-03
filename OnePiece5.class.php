@@ -1626,13 +1626,13 @@ __EOL__;
 			case 'double':
 				break;
 			case 'string':
-				$args = self::EscapeString($args);
+				$args = self::EscapeString($args,$charset);
 				break;
 			case 'array':
-				$args = self::EscapeArray($args);
+				$args = self::EscapeArray($args,$charset);
 				break;
 			case 'object':
-				$args = self::EscapeObject($args);
+				$args = self::EscapeObject($args,$charset);
 				break;
 			default:
 				self::p("[".__METHOD__."] undefined type($type)");
