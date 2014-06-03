@@ -1,4 +1,5 @@
 <style>
+
 #form-wizard{
 	margin: 1em;
 	border: 0px solid #d8d7da;
@@ -21,6 +22,22 @@
 	padding-bottom: 1em;
 	color: #2b1e44;
 	border: 1px solid #d8d7da;
+}
+
+#form-wizard div.table{
+	border: 0px dotted black;
+    display: table;
+}
+
+#form-wizard div.tr{
+	border: 0px dotted blue;
+    display: table-row;
+}
+
+#form-wizard div.td{
+	border: 0px dotted yellow;
+    display: table-cell;
+    vertical-align: top;
 }
 
 #form-wizard p.message{
@@ -75,7 +92,7 @@
 		<span><?php print $title ?></span>
 	</div>
 	<div class="content-area" style="">
-		<p class="message"><?php print $title ?></p>
+		<p class="message"><?php print $message ?></p>
 		<div class="form-area table" style="">
 			<?php $this->form()->Start($form_name) ?>
 			<div class="table">
