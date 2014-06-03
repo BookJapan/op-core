@@ -1553,7 +1553,7 @@ __EOL__;
 		}
 		
 		if( class_exists('Dump',true) ){
-			self::p($line, 'div', array('class' => array('OnePiece','small','bold','mark'), 
+			self::p($line, 'div', array('class' => array('OnePiece','small','_bold','mark'), 
 			                            'style' => array('color'=>'black',
 			                            				 'font-size' => '9pt',
 														 'background-color'=>'white'
