@@ -81,11 +81,6 @@ class Wizard extends OnePiece5
 		$this->SetSession('selftest',$selftest);
 	}
 	
-	/**
-	 * Execution of Wizard. 
-	 * 
-	 * @return NULL|boolean
-	 */
 	public function Selftest()
 	{
 		//	Check admin
@@ -172,11 +167,11 @@ class Wizard extends OnePiece5
 	}
 	
 	/**
-	 * Selftest
+	 * Check database struct.
+	 * Result is save to $this->_result.
 	 * 
-	 * @param Config $config
-	 * @throws OpWzException
-	 * @return void|boolean
+	 * @param  Config $config
+	 * @return boolean
 	 */
 	private function _Selftest( Config $config )
 	{
@@ -202,25 +197,27 @@ class Wizard extends OnePiece5
 		
 		if(!$io){
 			$this->model('Log')->Set("FAILED: Database connect is failed.(host=$host, user=$user, db=$db)",false);
-		//	$this->mark("Failed database connect. (host=$host, user=$user, db=$db)");
 			return false;
 		}
 		
 		if(!$this->_CheckDatabase($config)){
 			$this->model('Log')->Set("FAILED: Database check. (host=$host, user=$user, db=$db)",false);
-		//	$this->mark("Failed database check. (host=$host, user=$user, db=$db)");
 			return false;
 		}
 		
 		if(!$this->_CheckTable($config)){
-		//	$this->model('Log')->Set("FAILED: Table check.(host=$host, user=$user, db=$db)",false);
-		//	$this->mark("Failed table check. (host=$host, user=$user, db=$db)");
 			return false;
 		}
 		
 		return true;
 	}
 	
+	/**
+	 * Execute database rebuild.
+	 * 
+	 * @param  array $list_of_config_array
+	 * @return boolean
+	 */
 	private function _Wizard( $config_list )
 	{
 		//  Get form name.
@@ -229,9 +226,6 @@ class Wizard extends OnePiece5
 		//  Check secure
 		if(!$this->form()->Secure($form_name) ){
 			$this->_status = $this->form()->GetStatus($form_name);
-			
-		//	$this->form()->Debug($form_name);
-		//	$this->d($_POST);
 		}else{
 			$this->_status = 'Is secure.';
 			
@@ -259,10 +253,13 @@ class Wizard extends OnePiece5
 				}else{
 					$this->model('Log')->Set("Connect {$database->user} account.",true);
 				}
-	
+				
 				//  Create
-				if( $io ){ 
-					$this->D($this->_result,'wizard');
+				if( $io ){
+					//	re:check table's column
+					$this->_CheckTable($config);
+					
+					$this->D($this->_result,'selftest');
 					$this->_CreateDatabase($config);
 					$this->_CreateTable($config);
 					$this->_CreateColumn($config);
@@ -689,9 +686,9 @@ class Wizard extends OnePiece5
 	}
 	
 	private function _CreateColumn( Config $config )
-	{	
+	{
 		//  Select database
-		$this->pdo()->Database($config->database->database);
+		$this->pdo()->SetDatabase($config->database->database);
 		
 		foreach( $config->table as $table_name => $table ){
 		//	$this->mark('table: '.$table_name);
@@ -711,7 +708,7 @@ class Wizard extends OnePiece5
 			
 			//	There is no column to change.
 			if( empty($this->_result->column->$table_name) ){
-			//	$this->mark("![.red[$table_name is empty]]");
+				$this->mark("![.red[$table_name is empty]]");
 				continue;
 			}
 			
