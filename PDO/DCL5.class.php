@@ -110,7 +110,7 @@ class DCL5 extends OnePiece5
 		}
 		
 		//	privilege
-		$privilege = $this->GetPrivilege($args);
+		$privilege = $this->_GetPrivilege($args);
 		
 		//  Do quote
 		$database = ConfigSQL::Quote( $database, $this->driver );
@@ -128,7 +128,7 @@ class DCL5 extends OnePiece5
 		return "REVOKE {$privilege} ON {$database}.{$table} FROM {$user}@{$host}";
 	}
 	
-	function GetPrivilege( $args )
+	private function _GetPrivilege( $args )
 	{
 		//	valid privilege
 		$valid_privilege = array('SELECT','INSERT','UPDATE','DELETE','REFERENCES','USAGE');
