@@ -131,7 +131,7 @@ class DCL5 extends OnePiece5
 	private function _GetPrivilege( $args )
 	{
 		//	valid privilege
-		$valid_privilege = array('SELECT','INSERT','UPDATE','DELETE','REFERENCES','USAGE');
+		$valid_privilege = array('SELECT','INSERT','UPDATE','DELETE','REFERENCES','USAGE','ALL PRIVILEGES');
 		
 		if( !isset($args['privilege']) ){
 			
