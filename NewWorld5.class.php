@@ -48,13 +48,6 @@ abstract class NewWorld5 extends OnePiece5
 	private $_data		 = array();
 	
 	/**
-	 * use to inner trace.
-	 * 
-	 * @var array
-	 */
-	private $_log		 = null;
-	
-	/**
 	 * use to json.
 	 * 
 	 * save to assoc format.
@@ -69,9 +62,6 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function __construct($args=array())
 	{
-		//	Log
-		if( $this->_log){ $this->_log[] = __METHOD__; }
-		
 		//  output is buffering.
 		$io = ob_start();
 		$io = parent::__construct($args);
@@ -134,9 +124,6 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//  
 		$io = parent::__destruct();
-		
-		//	Log
-		if( $this->_log ){ $this->d( $this->_log ); }
 		
 		return $io;
 	}
@@ -548,9 +535,6 @@ abstract class NewWorld5 extends OnePiece5
 		 * Search begins from AppRoot.
 		 * settings-file is looked for forward Dispatch-dir, from AppRoot
 		 */
-
-		//	Log
-		if( isset($this->_log) ){ $this->_log[] = __METHOD__.", {$route['path']}"; }
 		
 		//  Get settings file name.
 		if(!$setting = $this->GetEnv('setting-name') ){
@@ -772,7 +756,6 @@ abstract class NewWorld5 extends OnePiece5
 			$temp = explode('?',$_SERVER['REQUEST_URI']);
 			if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
 				$this->mark("Location is Infinite loop. ($url)");
-				if( $this->_log ){ $this->_log[] = __METHOD__.", Infinite loop."; }
 				return false;
 			}
 		}
@@ -808,9 +791,6 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function SetForward( $url )
 	{
-		//	Log
-		if( isset($this->_log) ){ $this->_log[] = __METHOD__.", $url"; }
-		
 		//	Reset forward URL
 		if( empty($url) ){
 			$this->SetEnv('forward', null);
@@ -833,9 +813,6 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function doForward()
 	{
-		//	Log
-		if( isset($this->_log) ){ $this->_log[] = __METHOD__; }
-		
 		//	Forward URL
 		if(!$url = $this->GetEnv('forward')){
 			return false;
