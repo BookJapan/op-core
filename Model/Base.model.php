@@ -44,7 +44,6 @@ abstract class Model_Base extends OnePiece5
 				throw new OpException("Failed to instance of the $name.");
 			}
 		}
-	
 		return $cmgr;
 	}
 	
@@ -69,10 +68,6 @@ abstract class Model_Base extends OnePiece5
 			//  database connection
 			if(!$io = $pdo->Connect($config)){
 				
-				//  Notice to admin
-			//	$config->myname = get_class($this);
-			//	$config->Caller = $this->GetCallerLine();
-				
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
 					$e = new OpException();
@@ -84,18 +79,6 @@ abstract class Model_Base extends OnePiece5
 			}
 		}
 		return $pdo;
-	}
-	
-	private $_const = array();
-	
-	function SetConst( $key, $var )
-	{
-		$this->_const[$key] = $var;
-	}
-	
-	function GetConst( $key )
-	{
-		return isset($this->_const[$key]) ? $this->_const[$key]: null;
 	}
 }
 
