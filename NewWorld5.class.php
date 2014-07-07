@@ -144,7 +144,7 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function SetRoute($request_uri, $route)
 	{
-		@list( $path, $query_string ) = explode('?',$request_uri);
+		list( $path, $query_string ) = explode('?',$request_uri);
 		$route = $this->Escape($route);
 		$this->_routeTable[md5($path)] = $route;
 	}
@@ -169,28 +169,32 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//	separate query
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
-				
-		//	full path
-		$full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
-		$full_path = dirname($_SERVER['SCRIPT_FILENAME']) . $path;
-		/*
-		$this->mark($path);
-		$this->mark(dirname($_SERVER['SCRIPT_NAME']));
-		$this->mark(dirname($_SERVER['SCRIPT_FILENAME']));
-		$this->mark($_SERVER['DOCUMENT_ROOT']);
-		$this->mark($this->GetEnv('app:/'));
-		*/
-		$pattern = dirname($_SERVER['SCRIPT_NAME']);
-		$meta_root = preg_replace("|{$pattern}$|","",dirname($_SERVER['SCRIPT_FILENAME']));
-		$meta_root .= $path;
-		$full_path = $meta_root;
+		
+		//	full path (support the alias path)
+		$real = explode('/',dirname( str_replace($_SERVER['DOCUMENT_ROOT'],'',$_SERVER['SCRIPT_FILENAME']) ));
+		$meta = explode('/',$path);
+		$temp = array();
+		for($i=0, $c=count($meta); $i<$c; $i++){
+			$temp[] = isset($real[$i]) ? $real[$i]: $meta[$i];
+			if( empty($real[$i]) and empty($meta_root) ){
+				$meta_root = join('/',$temp);
+			}
+		}
+		$full_path = $_SERVER['DOCUMENT_ROOT'].join('/',$temp);
 		
 		/*
-		//	If alias path is set.
-		if( $alias_root = self::GetEnv('alias-root') ){
-			$app_root = self::GetEnv('app-root');
-			$full_path = $app_root.str_replace( $alias_root, '/', $full_path);
-		}
+		$temp = array();
+		$temp['real_path']	 = $_SERVER['DOCUMENT_ROOT'].join('/',$real);
+		$temp['meta_path']	 = $_SERVER['DOCUMENT_ROOT'].join('/',$meta);
+		$temp['meta_root']	 = $meta_root;
+		$temp['full_path']	 = $full_path;
+		$temp['app_root']	 = $this->GetEnv('app_root');
+		$temp['app:/']		 = $this->ConvertURL('app:/');
+		$temp['REQUEST_URI']	 = $_SERVER['REQUEST_URI'];
+		$temp['DOCUMENT_ROOT']	 = $_SERVER['DOCUMENT_ROOT'];
+		$temp['SCRIPT_NAME']	 = $_SERVER['SCRIPT_NAME'];
+		$temp['SCRIPT_FILENAME'] = $_SERVER['SCRIPT_FILENAME'];
+		$this->d($temp);
 		*/
 		
 		// Does path exist? (in route table)
@@ -227,33 +231,13 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}
 		
-		/*
-		// separate query
-		list( $path, $query_string ) = explode('?',$request_uri.'?');
-		
-		// create absolute path
-		$absolute_path = $_SERVER['DOCUMENT_ROOT'] . $path;
-		
-		//	get app root (supports apache alias feature)
-		if(!$app_root = $this->GetEnv('Alias_Root')){
-			$app_root = $this->GetEnv('App_Root');
-		}
-		
-		//	absolute from current dir
-		$file_path = preg_replace("|$app_root|",'',$absolute_path);
-		*/
-		
-		$file_path = $full_path;
-		
 		//	search controller
-		$route = $this->_getController( /*$dirs, $args,*/ $file_path /*, $controller*/ );
+		$route = $this->_getController( $full_path );
 		
-		//  build
-		/*
-		$route['path'] = '/'.join('/',$dirs);
-		$route['file'] = $controller;
-		$route['args'] = array_reverse($args);
-		*/
+		//	create app_root.(support apache's alias)
+		$pattern   = rtrim(join('/',$route['args']),'/');
+		$meta_root = rtrim(join('/',$meta),'/');
+		$route['app_root'] = preg_replace("|$pattern$|",'',$meta_root);
 		
 		//  escape
 		$route = $this->Escape($route);
@@ -261,46 +245,32 @@ abstract class NewWorld5 extends OnePiece5
 		return $route;
 	}
 	
-	/**
-	 * The path is relative to the document root.
-	 * 
-	 * Support to the apache alias feature.
-	 * There a way to automate this function?
-	 *
-	 * @param string $path
-	 */
-	function SetAliasRoot($path)
-	{
-		$alias_root = $_SERVER['DOCUMENT_ROOT'] . $path;
-		$this->SetEnv('alias_root',$alias_root);
-	}
-	
-	private function _getController( /*&$dirs, &$args,*/ $file_path /*, &$controller*/ )
+	private function _getController( $file_path )
 	{
 		// controller file name
 		if(!$controller = $this->GetEnv('controller-name')){
-			$m = 'Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");';
-			throw new OpNwException($m);
+			throw new OpNwException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
 		}
 		
 		//	app-root
 		$app_root = $this->GetEnv('App-Root');
 		$app_root = rtrim($app_root,'/').'/';
+		
 		//	remove app-root
-		$file_path = preg_replace("|^$app_root|",'',$file_path);
+		$argument = preg_replace("|^$app_root|",'',$file_path);
+		
 		//	separate
-		$dirs = explode( '/', rtrim($file_path,'/') );
+		$dirs = explode( '/', rtrim($argument,'/') );
 		$args = array();
 		
 		//  Loop
 		while( count($dirs) ){
-			
+			//	Check if file exists.
 			$file_name = $app_root.trim(join('/',$dirs)).'/'.$controller;
-			
-			if( $io = file_exists($file_name) ){
+			if( file_exists($file_name) ){
 				break;
 			}
-			
+			//	Move tail's value.
 			$args[] = array_pop($dirs);
 		}
 		
@@ -309,11 +279,11 @@ abstract class NewWorld5 extends OnePiece5
 			$args[0] = null;
 		}
 		
+		//	build route variable.
 		$route = array();
 		$route['path'] = '/'.join('/',$dirs);
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
-		//$this->D($route);
 		
 		return $route;
 	}

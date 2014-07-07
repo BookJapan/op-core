@@ -2021,7 +2021,8 @@ __EOL__;
 					break;
 					
 				case 'app':
-					$tmp_root = dirname($_SERVER['SCRIPT_NAME']).'/';
+					$route = self::GetEnv('route');
+					$tmp_root = $route['app_root'];
 					break;
 					
 				case 'layout':
@@ -2053,44 +2054,14 @@ __EOL__;
 		//  create relative path from document root.
 		$doc_root = self::GetEnv('doc-root');
 		
-		//	If path is alias.
-//		if( $alias_root = self::GetEnv('alias-root') ){
-			/*
-			//	
-			$base_url = str_replace( $doc_root, '/', $alias_root);
-			
-			//	
-			switch(strtolower($modifier)){
-				case 'app':
-					$url = $base_url . $path;
-					break;
-				case 'layout':
-					$app_root    = self::GetEnv('app-root');
-					$layout_root = self::GetEnv('layout-root');
-					$url = $base_url . str_replace( $app_root, '', $layout_root) . $path;
-					break;
-				default:
-					$this->mark($modifier);
-			}
-			*/
-//		}else{
-			
-			//	replace
-			$patt = array(); 
-			$repl = array();
-			$patt[] = "|^$doc_root|i";
-			$repl[] = "";
-			$patt[] = '|^app:|';
-			$repl[] = dirname($_SERVER['SCRIPT_NAME']);
-			$url = preg_replace($patt,$repl,$absolute);
-			
-			/*
-			print 'doc='.$doc_root . PHP_EOL;
-			print 'abs='.$absolute . PHP_EOL;
-			print 'url='.$url . PHP_EOL;
-			*/
-			
-//		}
+		//	replace
+		$patt = array(); 
+		$repl = array();
+		$patt[] = "|^$doc_root|i";
+		$repl[] = "";
+		$patt[] = '|^app:|';
+		$repl[] = dirname($_SERVER['SCRIPT_NAME']);
+		$url = preg_replace($patt,$repl,$absolute);
 		
 		//	Added domain
 		if( $domain ){
