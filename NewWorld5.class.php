@@ -235,7 +235,7 @@ abstract class NewWorld5 extends OnePiece5
 		$route = $this->_getController( $full_path );
 		
 		//	create app_root.(support apache's alias)
-		$pattern   = $route['path'];
+		$pattern   = $route['path'].'/';
 		$pattern  .= rtrim(join('/',$route['args']),'/');
 		$meta_root = rtrim(join('/',$meta),'/');
 		$route['app_root'] = preg_replace("|$pattern$|",'',$meta_root).'/';

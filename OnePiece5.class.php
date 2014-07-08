@@ -2025,6 +2025,11 @@ __EOL__;
 					$tmp_root = $route['app_root'];
 					break;
 					
+				case 'ctrl':
+					$route = self::GetEnv('route');
+					$tmp_root = rtrim($route['app_root'],'/').$route['path'].'/';
+					break;
+					
 				case 'layout':
 					$tmp_root  = self::GetEnv('layout_dir');
 					$tmp_root .= self::GetEnv('layout').'/';
