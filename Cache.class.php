@@ -164,7 +164,7 @@ class Cache extends OnePiece5
 		return true;
 	}
 	
-	function Set( $key, $value, $expire=0 )
+	function Set( $key, $value, $expire=1200 )
 	{
 		static $skip;
 		if( $skip ){
