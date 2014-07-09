@@ -175,27 +175,12 @@ abstract class NewWorld5 extends OnePiece5
 		$meta = explode('/',$path);
 		$temp = array();
 		for($i=0, $c=count($meta); $i<$c; $i++){
-			$temp[] = isset($real[$i]) ? $real[$i]: $meta[$i];
+			$temp[] = !empty($real[$i]) ? $real[$i]: $meta[$i];
 			if( empty($real[$i]) and empty($meta_root) ){
 				$meta_root = join('/',$temp);
 			}
 		}
 		$full_path = $_SERVER['DOCUMENT_ROOT'].join('/',$temp);
-		
-		/*
-		$temp = array();
-		$temp['real_path']	 = $_SERVER['DOCUMENT_ROOT'].join('/',$real);
-		$temp['meta_path']	 = $_SERVER['DOCUMENT_ROOT'].join('/',$meta);
-		$temp['meta_root']	 = $meta_root;
-		$temp['full_path']	 = $full_path;
-		$temp['app_root']	 = $this->GetEnv('app_root');
-		$temp['app:/']		 = $this->ConvertURL('app:/');
-		$temp['REQUEST_URI']	 = $_SERVER['REQUEST_URI'];
-		$temp['DOCUMENT_ROOT']	 = $_SERVER['DOCUMENT_ROOT'];
-		$temp['SCRIPT_NAME']	 = $_SERVER['SCRIPT_NAME'];
-		$temp['SCRIPT_FILENAME'] = $_SERVER['SCRIPT_FILENAME'];
-		$this->d($temp);
-		*/
 		
 		// Does path exist? (in route table)
 		if( $route = $this->_routeTable[md5($path)] ){
@@ -235,7 +220,7 @@ abstract class NewWorld5 extends OnePiece5
 		$route = $this->_getController( $full_path );
 		
 		//	create app_root.(support apache's alias)
-		$pattern   = $route['path'].'/';
+		$pattern   = rtrim($route['path'],'/').'/?';
 		$pattern  .= rtrim(join('/',$route['args']),'/');
 		$meta_root = rtrim(join('/',$meta),'/');
 		$route['app_root'] = preg_replace("|$pattern$|",'',$meta_root).'/';
