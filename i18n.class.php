@@ -170,8 +170,16 @@ class i18n extends Api
 			return $text;
 		}
 		
-		//	Get translate
+		//	parse json
 		$json = json_decode($json,true);
+		
+		//	check translate
+		if( empty($json['translate']) ){
+			//	Fail
+			return $text;
+		}
+		
+		//	get translate
 		$translate = $json['translate'];
 		
 		//	Save memcache
