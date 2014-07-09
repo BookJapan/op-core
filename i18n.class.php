@@ -6,6 +6,7 @@ class i18n extends Api
 	
 	private $_use_memcache	 = true;
 	private $_use_database	 = true;
+	private $_cache_expire	 = 600; // 10 min
 	
 	private $_db_single		 = false;
 	private $_db_prod		 = 'mysql';
@@ -135,6 +136,7 @@ class i18n extends Api
 	
 	function Get( $text, $from='en', $to=null )
 	{
+		//	
 		if(!$to){
 			if( $this->_lang ){
 				$to = $this->_lang;
@@ -143,6 +145,11 @@ class i18n extends Api
 			}
 		}
 		
+		//	
+		$form = strtolower($from);
+		$to   = strtolower($to);
+		
+		//	
 		$url = self::_API_UQUNIE_COM_;
 		$url .= '?';
 		$url .= 'text='.urlencode($text);
@@ -161,6 +168,10 @@ class i18n extends Api
 		//	Check database
 		if( $this->_use_database and $translate = $this->Select( $text, $from, $to ) ){
 			//	Hit
+			if( $this->_use_memcache ){
+				//	Save memcache
+				$this->Cache()->Set( $key, $translate, $this->_cache_expire );
+			}
 			return $translate;
 		}
 		
@@ -184,7 +195,7 @@ class i18n extends Api
 		
 		//	Save memcache
 		if( $this->_use_memcache and $translate ){
-			$this->Cache()->Set( $key, $translate );
+			$this->Cache()->Set( $key, $translate, $this->_cache_expire );
 		}
 		
 		//	Save database
