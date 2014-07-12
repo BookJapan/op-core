@@ -160,8 +160,7 @@ abstract class NewWorld5 extends OnePiece5
 		//	get request uri
 		if( $request_uri ){
 			if( preg_match( '|^http://|', $request_uri ) ){
-				$this->mark("![ .red [Domain name is not required. 
-						Please specify document root path. ($request_uri)]]");
+				$this->mark("![ .red [Domain name is not required. Please specify document root path. ($request_uri)]]");
 			}
 		}else{
 			$request_uri = $_SERVER['REQUEST_URI'];
@@ -170,21 +169,16 @@ abstract class NewWorld5 extends OnePiece5
 		//	separate query
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
 		
-		//	full path (support the alias path)
-		$real = explode('/',dirname( str_replace($_SERVER['DOCUMENT_ROOT'],'',$_SERVER['SCRIPT_FILENAME']) ));
-		$meta = explode('/',$path);
-		$temp = array();
-		for($i=0, $c=count($meta); $i<$c; $i++){
-			$temp[] = !empty($real[$i]) ? $real[$i]: $meta[$i];
-			if( empty($real[$i]) and empty($meta_root) ){
-				$meta_root = join('/',$temp);
-			}
-		}
-		$full_path = $_SERVER['DOCUMENT_ROOT'].join('/',$temp);
-		
-		// Does path exist? (in route table)
-		if( $route = $this->_routeTable[md5($path)] ){
-			return $route;
+		//	check alias
+		if( preg_match("|^{$_SERVER['DOCUMENT_ROOT']}|",$_SERVER['SCRIPT_FILENAME']) ){
+			//	real path
+		//	$this->mark('![.red[REAL]]');
+			$full_path = $_SERVER['DOCUMENT_ROOT'].$path;
+		}else{
+			//	use alias
+			$this->mark('![.red[alias]]');
+			$full_path = $_SERVER['SCRIPT_FILENAME'];
+			$this->mark('full_path='.$full_path);
 		}
 		
 		//  Real file is pass through.
@@ -219,57 +213,53 @@ abstract class NewWorld5 extends OnePiece5
 		//	search controller
 		$route = $this->_getController( $full_path );
 		
-		//	create app_root.(support apache's alias)
-		$pattern   = rtrim($route['path'],'/').'/?';
-		$pattern  .= rtrim(join('/',$route['args']),'/');
-		$meta_root = rtrim(join('/',$meta),'/');
-		$route['app_root'] = preg_replace("|$pattern$|",'',$meta_root).'/';
-		
 		//  escape
 		$route = $this->Escape($route);
+		
+	//	$this->d($route);
 		
 		return $route;
 	}
 	
-	private function _getController( $file_path )
+	private function _getController( $full_path )
 	{
 		// controller file name
 		if(!$controller = $this->GetEnv('controller-name')){
 			throw new OpNwException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
 		}
 		
-		//	app-root
-		$app_root = $this->GetEnv('App-Root');
-		$app_root = rtrim($app_root,'/').'/';
-		
-		//	remove app-root
-		$argument = preg_replace("|^$app_root|",'',$file_path);
-		
-		//	separate
-		$dirs = explode( '/', rtrim($argument,'/') );
+		//	
+		$arr = explode('/',$full_path);
+		$dirs = array();
 		$args = array();
 		
-		//  Loop
-		while( count($dirs) ){
-			//	Check if file exists.
-			$file_name = $app_root.trim(join('/',$dirs)).'/'.$controller;
-			if( file_exists($file_name) ){
+		//	search controller
+		while(count($arr)){
+			$path = join('/',$arr).'/'.$controller;
+		//	$this->mark($path);
+			if( file_exists($path) ){
 				break;
 			}
-			//	Move tail's value.
-			$args[] = array_pop($dirs);
+			$args[] = array_pop($arr);
 		}
 		
-		// Suppression of notice error.
-		if(!count($args)){
-			$args[0] = null;
+		//	search app.php
+		while(count($arr)){
+			$path = join('/',$arr).'/app.php';
+		//	$this->mark($path);
+			if( file_exists($path) ){
+				break;
+			}
+			$dirs[] = array_pop($arr);
 		}
 		
 		//	build route variable.
 		$route = array();
-		$route['path'] = '/'.join('/',$dirs);
+		$route['app_root'] = join('/',$arr);
+		$route['path'] = '/'.join('/',array_reverse($dirs));
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
+		//$this->d($route);
 		
 		return $route;
 	}

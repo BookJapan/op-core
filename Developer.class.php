@@ -90,7 +90,7 @@ class Developer
 				$join[] = sprintf('<a href="?mark_label=%s&mark_label_value=%s">%s %s info</a>', $key, $var, $str, $key);
 			}
 		}
-	
+		
 		print '<!-- '.__FILE__.' - '.__LINE__.' -->';
 		if( $join ){
 			print '<div class="small">[ '.join(' | ', $join).' ]</div>';
