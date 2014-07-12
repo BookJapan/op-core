@@ -34,6 +34,7 @@ class PDO5 extends OnePiece5
 		if( empty($this->dml) ){
 
 			$path  = $this->GetEnv('op-root');
+			$path  = rtrim($path,'/').'/';
 			$path .= "PDO/$name.class.php";
 			$io = include_once($path);
 			if(!$io){
@@ -59,6 +60,7 @@ class PDO5 extends OnePiece5
 		if( empty($this->ddl) ){
 			
 			$path  = $this->GetEnv('op-root');
+			$path  = rtrim($path,'/').'/';
 			$path .= "PDO/$name.class.php";
 			$io = include_once($path);
 			if(!$io){
@@ -84,6 +86,7 @@ class PDO5 extends OnePiece5
 		if( empty($this->dcl) ){
 
 			$path  = $this->GetEnv('op-root');
+			$path  = rtrim($path,'/').'/';
 			$path .= "PDO/$name.class.php";
 			$io = include_once($path);
 			if(!$io){

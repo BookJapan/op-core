@@ -33,21 +33,6 @@ abstract class NewWorld5 extends OnePiece5
 	private $_content    = null;
 	
 	/**
-	 * use to template. (data pass to template file)
-	 * 
-	 * ex.
-	 * 
-	 * // Controller
-	 * $this->SetData('key',$value);
-	 * 
-	 * // Template
-	 * $value = $this->GetData('key');
-	 * 
-	 * @var string|array|Config
-	 */
-	private $_data		 = array();
-	
-	/**
 	 * use to json.
 	 * 
 	 * save to assoc format.
@@ -77,13 +62,10 @@ abstract class NewWorld5 extends OnePiece5
 	{	
 		//  Called dispatch?
 		if(!$this->_isDispatch){
-		//	$class_name = get_class($this);
-		//	$this->StackError($class_name.' has not dispatched. Please call $app->Dispatch();');
-			Error::Set($class_name.' has not dispatched. Please call $app->Dispatch();');
-			Error::Set($this->_isDispatch);
-			Error::Set($_SERVER['REQUEST_URI']);
-		}else{
-			
+			$class_name = get_class($this);
+			$message = "$class_name has not dispatched. Please call \$app->Dispatch();'";
+		//	$this->StackError($message);
+			Error::Set($message);
 		}
 		
 		//	mime
@@ -132,8 +114,20 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		parent::Init();
 		
+		//	Set default value
 		$this->GetEnv('doctype','html');
 		$this->GetEnv('title','The NewWorld is the new world');
+		
+		//	If empty REWRITE_BASE
+		if( empty($_SERVER['REWRITE_BASE']) ){
+			$path = dirname($_SERVER['SCRIPT_FILENAME']).'/.htaccess';
+			$file = file_get_contents($path);
+			if(!preg_match('|RewriteBase(.+)|',$file,$match)){
+				$this->StackError("There is no RewriteBase value in .htaccess file.");
+			}else{
+				$_SERVER['REWRITE_BASE'] = trim($match[1]);
+			}
+		}
 	}
 	
 	/**
@@ -170,15 +164,15 @@ abstract class NewWorld5 extends OnePiece5
 		list( $path, $query_string ) = explode('?',$request_uri.'?');
 		
 		//	check alias
-		if( preg_match("|^{$_SERVER['DOCUMENT_ROOT']}|",$_SERVER['SCRIPT_FILENAME']) ){
+		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'].$_SERVER['REWRITE_BASE']);
+		if( preg_match("|^{$patt}|",$_SERVER['SCRIPT_FILENAME']) ){
 			//	real path
 		//	$this->mark('![.red[REAL]]');
 			$full_path = $_SERVER['DOCUMENT_ROOT'].$path;
 		}else{
 			//	use alias
-			$this->mark('![.red[alias]]');
-			$full_path = $_SERVER['SCRIPT_FILENAME'];
-			$this->mark('full_path='.$full_path);
+		//	$this->mark('![.red[alias]]');
+			$full_path = dirname($_SERVER['SCRIPT_FILENAME']).preg_replace("|^".preg_quote($_SERVER['REWRITE_BASE'])."|", '', $path);
 		}
 		
 		//  Real file is pass through.
@@ -216,8 +210,6 @@ abstract class NewWorld5 extends OnePiece5
 		//  escape
 		$route = $this->Escape($route);
 		
-	//	$this->d($route);
-		
 		return $route;
 	}
 	
@@ -228,7 +220,7 @@ abstract class NewWorld5 extends OnePiece5
 			throw new OpNwException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
 		}
 		
-		//	
+		//	init
 		$arr = explode('/',$full_path);
 		$dirs = array();
 		$args = array();
@@ -241,6 +233,11 @@ abstract class NewWorld5 extends OnePiece5
 				break;
 			}
 			$args[] = array_pop($arr);
+		}
+		
+		//	anti-notice
+		if(empty($args)){
+			$args[] = null;
 		}
 		
 		//	search app.php
@@ -279,9 +276,9 @@ abstract class NewWorld5 extends OnePiece5
 			$doc_path = $_SERVER['DOCUMENT_ROOT'];
 			
 			//  create app path
-			if( preg_match("|^$app_root(.+)|", $full_path, $match) ){
+			if( preg_match("|^".preg_quote($app_root)."(.+)|", $full_path, $match) ){
 				$app_path = $match[1];
-			}else if( preg_match("|^$doc_path(.+)|", $full_path, $match) ){
+			}else if( preg_match("|^".preg_quote($doc_path)."(.+)|", $full_path, $match) ){
 				$app_path = $match[1];
 			}else{
 				$app_path = $full_path;
@@ -334,6 +331,12 @@ abstract class NewWorld5 extends OnePiece5
 		$this->_isDispatch = $flag;
 	}
 	
+	/**
+	 * Dispatch to the End-Point(End-point is page-controller file) by route arguments.
+	 * 
+	 * @param  array   $route
+	 * @return boolean
+	 */
 	function Dispatch($route=null)
 	{
 		// Deny two time dispatch
@@ -424,7 +427,7 @@ abstract class NewWorld5 extends OnePiece5
 			$this->StackError('Empty route.');
 			return false;
 		}
-
+		
 		// controller root
 		$app_root = rtrim( $this->GetEnv('App-Root'), '/');
 		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
@@ -746,7 +749,8 @@ abstract class NewWorld5 extends OnePiece5
 		//	Convert URL
 		$url = $this->ConvertPath($url);
 		$app_root = rtrim($this->GetEnv('app-root'),'/');
-		$url = preg_replace( "|^$app_root|", '', $url );
+		$patt = preg_quote($app_root);
+		$url = preg_replace( "|^{$patt}|", '', $url );
 		
 		//	Save forward URL
 		$this->SetEnv('forward', $url);
@@ -854,39 +858,6 @@ abstract class NewWorld5 extends OnePiece5
 	function GetJson( $key )
 	{
 		return $this->_json[$key];
-	}
-	
-	/**
-	 *  Save temporary data pass to template inside.
-	 * 
-	 * @param string  $key
-	 * @param mixed   $data
-	 * @param boolean $session Save to session. (Load is once)
-	 */
-	function SetData( $key, $data, $session=false )
-	{
-		$this->_data[$key] = $data;
-		if( $session ){
-			$this->SetSession($key, $data);
-		}
-	}
-	
-	/**
-	 * Get temporary data.
-	 * 
-	 * @param  string $key
-	 * @return mixed
-	 */
-	function GetData( $key )
-	{
-		if( isset($this->_data[$key]) ){
-			$data = $this->_data[$key];
-		}else{
-			$data = $this->GetSession($key);
-			//	Load is once.
-			$this->SetSession($key,null);
-		}
-		return $data;
 	}
 }
 

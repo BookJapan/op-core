@@ -34,9 +34,19 @@ if( ! isset($_SERVER['OnePiece5']) ){
 	// Added op-root to include_path.
 	$op_root = dirname(__FILE__);
 	$include_path = ini_get('include_path');
-	$include_path = trim( $include_path, PATH_SEPARATOR );
+	$include_path = rtrim( $include_path, PATH_SEPARATOR );
 	$include_path .= PATH_SEPARATOR . $op_root;
-	ini_set('include_path',$include_path);		
+	ini_set('include_path',$include_path);
+	
+	//	Added op-root to $_SERVER
+	if(empty($_SERVER['OP_ROOT'])){
+		$_SERVER['OP_ROOT'] = $op_root;
+	}
+
+	//	Added app-root to $_SERVER
+	if(empty($_SERVER['APP_ROOT'])){
+		$_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']);
+	}
 }
 
 /**
@@ -70,8 +80,8 @@ if( function_exists('__autoload') ){
 	{
 		//  init
 		$sub_dir  = null;
-		$op_root  = OnePiece5::GetEnv('OP-Root');
-		$app_root = OnePiece5::GetEnv('App-Root');
+		$op_root  = rtrim(OnePiece5::GetEnv('OP-Root'),'/').'/';
+		$app_root = rtrim(OnePiece5::GetEnv('App-Root'),'/').'/';
 		
 		//	case of model
 		if( preg_match('/(Model|Config)_([a-z0-9]+)/i', $class_name, $match) ){
@@ -109,7 +119,7 @@ if( function_exists('__autoload') ){
 			if( $dir = OnePiece5::GetEnv('model-dir') ){
 				$dirs[] = OnePiece5::ConvertPath($dir);
 			}
-			$dirs[] = $op_root.'Model/';
+			$dirs[] = rtrim($op_root,'/').'/Model/';
 		}
 		$dirs[] = '.';
 		if($app_root){ $dirs[] = $app_root; }
@@ -799,51 +809,6 @@ __EOL__;
 		return true;
 	}
 	
-	/*
-	function StackLog( $string, $tag=null )
-	{
-		$class    = self::GetCallerLine( 1, 1, '$class'); // get_called_class
-		$incident = self::GetCallerLine( 1, 1, 'incident') . ' ';
-		$method   = self::GetCallerLine( 1, 1, '$method');
-		$str = "$incident $method / $string";
-		$log['tag'] = "$class, $tag";
-		$log['str'] = $str;
-		$_SERVER[__CLASS__]['logs'][] = $log;
-	}
-	
-	function PrintLog( $args=null )
-	{
-		if(!self::Admin()){
-			print "<!-- not admin. -->";
-			return;
-		}
-		
-		//	Require OnePiece Style-Sheet. (print from Toolbox.class.php)
-		$this->SetEnv('isRequireStyleSheet',true);
-		
-		// init
-		$br = '<br/>';
-		$nl = self::GetEnv('newline');
-		$tags = explode(',',$args);
-		
-		if( $logs = @$_SERVER[__CLASS__]['logs'] ){
-			print '<div class="OnePiece small" style="">' . $nl;
-			foreach($logs as $log){
-				$tag = $log['tag'];
-				$str = self::wiki2($log['str']);
-				foreach($tags as $temp){
-					$temp = trim($temp);
-					if( preg_match("/$temp/",$tag) ){
-						print $str . $br . $nl;
-						break;
-					}
-				}
-			}
-			print '</div>' . $nl;
-		}
-	}
-	*/
-	
 	/**
 	 * locale setting.
 	 * 
@@ -1020,25 +985,25 @@ __EOL__;
 		}
 		
 		//  any root
-		$op_root   = dirname(__FILE__);
-		$doc_root  = $_SERVER['DOCUMENT_ROOT'];
-		$app_root  = dirname($_SERVER['SCRIPT_FILENAME']);
-		$site_root = realpath($_SERVER['DOCUMENT_ROOT'].'/../');
+	//	$op_root   = dirname(__FILE__);
+	//	$doc_root  = $_SERVER['DOCUMENT_ROOT'];
+	//	$app_root  = dirname($_SERVER['SCRIPT_FILENAME']);
+	//	$site_root = realpath($_SERVER['DOCUMENT_ROOT'].'/../');
 		
 		// Windows
 		if( PHP_OS == 'WINNT' ){
-			$op_root   = str_replace( '\\', '/', $op_root   );
-			$doc_root  = str_replace( '\\', '/', $doc_root  );
-			$app_root  = str_replace( '\\', '/', $app_root  );
-			$site_root = str_replace( '\\', '/', $site_root );
+		//	$op_root   = str_replace( '\\', '/', $op_root   );
+		//	$doc_root  = str_replace( '\\', '/', $doc_root  );
+		//	$app_root  = str_replace( '\\', '/', $app_root  );
+		//	$site_root = str_replace( '\\', '/', $site_root );
 		}
 		
 		$this->SetEnv('new_line',PHP_EOL);
 		$this->SetEnv('class',__CLASS__);
 		
-		$this->SetEnv('doc_root',$doc_root);
-		$this->SetEnv('app_root',$app_root);
-		$this->SetEnv('site_root',$site_root);
+	//	$this->SetEnv('doc_root',$doc_root);
+	//	$this->SetEnv('app_root',$app_root);
+	//	$this->SetEnv('site_root',$site_root);
 		
 		$this->SetEnv('admin-ip',$admin_ip);
 		$this->SetEnv('admin-mail',$admin_mail);
@@ -1403,7 +1368,10 @@ __EOL__;
 		$doc_root	 = $doc_root  ? rtrim($doc_root, '/') : ' ';
 	//	$ctrl_root	 = $ctrl_root ? rtrim($ctrl_root,'/') : ' ';
 		
-		$patt = array("|^$app_root|","|^$doc_root|","|^$op_root|");
+		$patt = array();
+		$patt[] = "|^".preg_quote($app_root)."|";
+		$patt[] = "|^".preg_quote($doc_root)."|";
+		$patt[] = "|^".preg_quote($op_root)."|";
 		$repl = array('App:','Doc:','OP:');
 		$path = preg_replace( $patt, $repl, $path );
 		
@@ -2007,7 +1975,7 @@ __EOL__;
 	static function ConvertURL( $args, $domain=false )
 	{
 		//	Check if abstract path.
-		if( preg_match('|^([a-z][a-z0-9]+):/(.*)|i',$args,$match) ){
+		if( preg_match('|^([a-z][a-z0-9]+):/+(.*)|i',$args,$match) ){
 			$modifier = $match[1];
 			$path = $match[2];
 			switch( $modifier ){
@@ -2021,18 +1989,18 @@ __EOL__;
 					break;
 					
 				case 'app':
-					$route = self::GetEnv('route');
-					$tmp_root = $route['app_root'];
+					$tmp_root = $_SERVER['REWRITE_BASE'];
 					break;
 					
 				case 'ctrl':
 					$route = self::GetEnv('route');
-					$tmp_root = rtrim($route['app_root'],'/').$route['path'].'/';
+					$tmp_root = rtrim($_SERVER['REWRITE_BASE'],'/').$route['path'].'/';
 					break;
 					
 				case 'layout':
 					$tmp_root  = self::GetEnv('layout_dir');
 					$tmp_root .= self::GetEnv('layout').'/';
+					$tmp_root  = self::ConvertURL($tmp_root);
 					break;
 					
 				default:
@@ -2045,37 +2013,31 @@ __EOL__;
 			}
 			
 			//  create absolute path. 
-			$absolute = rtrim($tmp_root,'/').'/' . $path;
+			$tmp_root = rtrim($tmp_root,'/').'/';
+			$absolute = $tmp_root.$path;
 			
 		}else{
 			
 			//	replace document root.
-			$args = preg_replace( '|^'.rtrim(self::GetEnv('doc-root'),'/').'|', '', $args );
+			$patt = preg_quote(rtrim(self::GetEnv('doc-root'),'/'));
+			$args = preg_replace("|^{$patt}|", '', $args );
 			$args = str_replace('\\','/',$args);
 			
 			return $args;
 		}
-		
-		//  create relative path from document root.
-		$doc_root = self::GetEnv('doc-root');
-		
-		//	replace
-		$patt = array(); 
-		$repl = array();
-		$patt[] = "|^$doc_root|i";
-		$repl[] = "";
-		$patt[] = '|^app:|';
-		$repl[] = dirname($_SERVER['SCRIPT_NAME']);
-		$url = preg_replace($patt,$repl,$absolute);
+
+		//	
+		$url = $absolute;
 		
 		//	Added domain
 		if( $domain ){
 			if( is_bool($domain) ){
 				$domain = Toolbox::GetDomain(array('scheme'=>true));
 			}
+			$domain = rtrim($domain,'/').'/';
 		}
 		
-		return rtrim($domain,'/').'/'.ltrim($url,'/');
+		return $domain.$url;
 	}
 	
 	/**
@@ -2086,8 +2048,6 @@ __EOL__;
 	 */
 	static function ConvertPath( $path )
 	{
-		$orig = $path;
-		
 		if( preg_match('|^/|i',$path) ){
 			//	Root directory (Unix)
 		}else
@@ -2098,6 +2058,7 @@ __EOL__;
 			//  Does not relate document-root.
 			$label = $match[1].'-root';
 			if( $root = OnePiece5::GetEnv($label) ){
+				$root = rtrim($root,'/').'/';
 				$path = str_replace( $match[0], $root, $path );
 			}else{
 				self::StackError("$label is not set.");
@@ -2106,6 +2067,7 @@ __EOL__;
 		if( preg_match('|^([-_a-zA-Z0-9]+):/|',$path,$match) ){
 			$label = $match[1].'-root';
 			if( $root = self::GetEnv($label) ){
+				$root = rtrim($root,'/').'/';
 				$path = str_replace( $match[0], $root, $path );
 			}else{
 				self::StackError("$label is not set.");
@@ -2299,6 +2261,7 @@ __EOL__;
 	{
 		if(!$this->_pdo){
 			$op_root = $this->GetEnv('op-root');
+			$op_root = rtrim($op_root,'/').'/';
 			$path = $op_root.'PDO/PDO5.class.php';
 			
 			if(!file_exists($path)){
