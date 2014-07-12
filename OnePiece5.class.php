@@ -1426,7 +1426,7 @@ __EOL__;
 		
 		//	
 		if(!self::GetEnv('mark') === false){
-			return; 
+			return;
 		}
 		
 		//	displayed is Admin-ip and flag.
@@ -2045,7 +2045,7 @@ __EOL__;
 			}
 			
 			//  create absolute path. 
-			$absolute = $tmp_root . $path;
+			$absolute = rtrim($tmp_root,'/').'/' . $path;
 			
 		}else{
 			
