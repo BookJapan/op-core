@@ -2317,9 +2317,10 @@ __EOL__;
 		}
 	
 		if($_SERVER[__CLASS__]['singleton'][$name] = new $name()){
+		//	self::mark("instance new object ($name)");
 			return $_SERVER[__CLASS__]['singleton'][$name];
 		}
-	
+		
 		return new OnePiece5();
 	}
 	

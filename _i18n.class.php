@@ -6,7 +6,7 @@
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2013 (C) Tomoaki Nagahara All right reserved.
  */
-class i18n extends OnePiece5
+class _i18n extends OnePiece5
 {
 	var $table = array();
 	var $lang  = null;

@@ -144,10 +144,10 @@ abstract class NewWorld5 extends OnePiece5
 	}
 	
 	/**
-	 * Determine the route to dispatch.
+	 * Determine the route to dispatch from request-uri.
 	 * 
-	 * @param string $request_uri
-	 * @return multitype:
+	 * @param  string $request_uri
+	 * @return array
 	 */
 	function GetRoute($request_uri=null)
 	{
@@ -213,11 +213,18 @@ abstract class NewWorld5 extends OnePiece5
 		return $route;
 	}
 	
+	/**
+	 * Search of end-point. (end-point is page-controller)
+	 * 
+	 * @param  string $full_path
+	 * @throws OpException
+	 * @return array
+	 */
 	private function _getController( $full_path )
 	{
 		// controller file name
 		if(!$controller = $this->GetEnv('controller-name')){
-			throw new OpNwException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
+			throw new OpException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
 		}
 		
 		//	init
@@ -256,7 +263,6 @@ abstract class NewWorld5 extends OnePiece5
 		$route['path'] = '/'.join('/',array_reverse($dirs));
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
-		//$this->d($route);
 		
 		return $route;
 	}
@@ -326,6 +332,11 @@ abstract class NewWorld5 extends OnePiece5
 		return false;
 	}
 	
+	/**
+	 * Warning is displayed, if has not been the Dispatch.
+	 * 
+	 * @param boolean $flag
+	 */
 	function SetDispatchFlag($flag)
 	{
 		$this->_isDispatch = $flag;
@@ -709,14 +720,6 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}
 		
-		/*
-		$location = $this->GetSession('Location');
-		if( $url === $location['referer'] ){
-			$this->StackError("Redirect is roop. ($url)");
-			return false;
-		}
-		*/
-	
 		$io = $this->Header("Location: " . $url);
 		if( $io ){
 			$location['message'] = 'Do Location!!' . date('Y-m-d H:i:s');
@@ -725,7 +728,6 @@ abstract class NewWorld5 extends OnePiece5
 			$location['referer'] = $_SERVER['REQUEST_URI'];
 			$this->SetSession( 'Location', $location );
 			if($exit){
-			//	$this->Vivre(false);
 				$this->__destruct();
 				exit(0);
 			}
