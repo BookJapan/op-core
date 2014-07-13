@@ -196,7 +196,7 @@ class Wizard extends OnePiece5
 		$this->_result->connect->$host->$user->$db = $io;
 		
 		if(!$io){
-			$this->model('Log')->Set("FAILED: Database connect is failed.(host=$host, user=$user, db=$db)",false);
+			$this->model('Log')->Set("FAILED: Database connect is failed.(dbms=$dbms, host=$host, port=$port, user=$user, db=$db)",false);
 			return false;
 		}
 		
@@ -804,12 +804,12 @@ class Wizard extends OnePiece5
 	private function _CreateUser($config)
 	{
 		//	CREATE USER 'new-user-name'@'permit-host-name' IDENTIFIED BY '***';
-		$config->user->host     = $_SERVER['SERVER_ADDR']==='127.0.0.1' ? 'localhost':$_SERVER['SERVER_ADDR']; // $config->database->host; // This is database host name.
+		$config->user->host     = $config->database->host === 'localhost' ? 'localhost': $_SERVER['SERVER_ADDR'];//$_SERVER['SERVER_ADDR']==='127.0.0.1' ? 'localhost':$_SERVER['SERVER_ADDR']; // $config->database->host; // This is database host name.
 		$config->user->user     = $config->database->user;
 		$config->user->password = $config->database->password;
 		
 		//  Check user exists.
-		$list = $this->pdo()->GetUserList();
+		$list = $this->pdo()->GetUserList($config->user->host);
 		
 		//  Check user exists.
 		$io = array_search( $config->user->user, $list ) !== false ? true: false;
@@ -855,7 +855,7 @@ class Wizard extends OnePiece5
 			
 			//  Create grant
 			$grant = new Config();
-			$grant->host     = $host = $_SERVER['SERVER_ADDR']==='127.0.0.1' ? 'localhost':$_SERVER['SERVER_ADDR']; // $config->database->host; 
+			$grant->host     = $host = $config->database->host === 'localhost' ? 'localhost': $_SERVER['SERVER_ADDR']; // $_SERVER['SERVER_ADDR']==='127.0.0.1' ? 'localhost':$_SERVER['SERVER_ADDR']; // $config->database->host; 
 			$grant->database = $db   = $config->database->database;
 			$grant->user     = $user = $config->database->user;
 			
@@ -864,8 +864,10 @@ class Wizard extends OnePiece5
 			
 			//	If connect is successful case
 			if( $this->_result->connect->$host->$user->$db !== true ){
+				
 				//	get user privilege
-				$user_priv = $this->pdo()->GetUserPrivilege(array('user'=>$user));
+				$user_priv = $this->pdo()->GetUserPrivilege(array('user'=>$user,'host'=>$host));
+				
 				//	
 				if( $user_priv ){					
 					//	Revoke all plivilage
