@@ -2406,6 +2406,7 @@ __EOL__;
 				}else{
 					
 					$host  = $_SERVER['HTTP_HOST']; // SERVER_NAME, SERVER_ADDR
+					$addr  = $_SERVER['SERVER_ADDR'];
 					$xhost = $_SERVER['HTTP_X_FORWARDED_HOST']; // HTTP_X_FORWARDED_SERVER
 					$uri   = $_SERVER['REQUEST_URI'];
 					
@@ -2417,7 +2418,7 @@ __EOL__;
 					$args = array();
 					$args['to']		 = $this->GetEnv('admin-mail');
 					$args['subject'] = '[OnePiece] VIVRE ALERT';
-					$args['body']	.= "HOST = $host \n";
+					$args['body']	.= "HOST = $host ($addr) \n";
 					$args['body']	.= "REQUEST_URI = {$xhost}{$uri} \n";
 					$args['body']	.= "VISITOR = $ip($domain) \n";
 					$args['body']	.= "USER AGENT = $ua \n";
