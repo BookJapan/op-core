@@ -54,14 +54,14 @@ class i18n extends Api
 	{
 		//	translate language
 		if(!$lang){
-			$lang = $this->GetLang();
+			$lang = $this->GetEnv('lang');
 		}
 		
 		//	URL
 		$url = "http://api.uqunie.com/i18n/lang/$lang";
 				
 		//	Do
-		if(!$json = parent::Curl($url)){
+		if(!$json = parent::Curl($url,0)){
 			//	Fail
 			return $text;
 		}
