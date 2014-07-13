@@ -460,7 +460,13 @@ class PDO5 extends OnePiece5
 		return isset($columns) ? $columns: array();
 	}
 	
-	function GetUserList()
+	/**
+	 * Get mysql user list.
+	 * 
+	 * @param  string $host
+	 * @return array
+	 */
+	function GetUserList($host=null)
 	{
 		//  Select database
 		$this->Database('mysql');
@@ -468,17 +474,27 @@ class PDO5 extends OnePiece5
 		//  Get users list
 		$select = new Config();
 		$select->table  = 'user';
-		$select->column = 'User';
+		$select->column = 'User,Host';
+		$select->order  = 'User';
+		if($host){ $select->where->Host = $host; }
 		$record = $this->select($select);
 		
-		//  
+		//  Build result array
 		for( $i=0, $c=count($record); $i<$c; $i++ ){
-			$result[] = $record[$i]['User'];
+			$Host = $record[$i]['Host'];
+			$User = $record[$i]['User'];
+			$result[] = $host ? $User: "{$User}@{$Host}";
 		}
 		
 		return $result;
 	}
 	
+	/**
+	 * Get user's privilege
+	 * 
+	 * @param  array $args
+	 * @return array
+	 */
 	function GetUserPrivilege( $args )
 	{
 		//	check
