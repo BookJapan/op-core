@@ -2339,7 +2339,7 @@ __EOL__;
 	 * 
 	 * @return i18n
 	 */
-	function i18n()
+	static function i18n()
 	{
 		return self::Singleton('i18n');
 	}
