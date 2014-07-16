@@ -2,8 +2,50 @@
 
 class Api extends OnePiece5
 {
+	private $_ch = null;
 	private $_cookie = null;
 	private $_timeout = 10;
+	private $_ckey = null;
+	
+	function Init()
+	{
+		parent::Init();
+		$this->_ch = curl_init();
+	}
+	
+	function Xml( $url, $xml, $expire=-1 )
+	{
+		//	save cache key
+		if( $expire >= 0 ){
+			$this->_ckey = md5($url.','.$xml);
+		}
+		
+		//	init
+		$ch = $this->_ch;
+		curl_setopt( $ch, CURLOPT_POST, true);
+		curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml'));
+		curl_setopt( $ch, CURLOPT_POSTFIELDS, $xml);
+		return $this->Curl( $url, $expire );
+	}
+
+	function Post( $url, $post_data, $expire=-1 )
+	{
+		//	save cache key
+		if( $expire >= 0 ){
+			$this->_ckey = md5($url.','.$xml);
+		}
+
+		//	init
+		$ch = $this->_ch;
+		curl_setopt( $ch, CURLOPT_POST, true );
+	//	curl_setopt( $ch, CURLOPT_POSTFIELDS, http_build_query($post_data) );
+		return $this->Curl( $url, $expire );
+	}
+	
+	function Get( $url, $expire=-1 )
+	{
+		return $this->Curl( $url, $expire );
+	}
 	
 	/**
 	 * Curl
@@ -16,19 +58,36 @@ class Api extends OnePiece5
 	{
 		//	check cache
 		if( $expire >= 0 ){
-			$ckey = md5($url);
+			//	check post data's cache key
+			if( $this->_ckey ){
+				//	use post data's cache key
+				$ckey = $this->_ckey;
+				$this->_ckey = null;
+			}else{
+				//	create cache key
+				$ckey = md5($url);
+			}
+			//	If hit cache
 			if( $body = $this->Cache()->Get($ckey) ){
+				//	return cache
 				return $body;
 			}
 		}
 		
 		//	init
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_HEADER, true );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-		curl_setopt( $ch, CURLOPT_COOKIE, $this->_cookie );
-		curl_setopt( $ch, CURLOPT_TIMEOUT, $this->_timeout );
+		$ch = $this->_ch;
+		curl_setopt( $ch, CURLOPT_URL,            $url );		//	
+		curl_setopt( $ch, CURLOPT_HEADER,         true );		//	
+		curl_setopt( $ch, CURLOPT_TIMEOUT,        $this->_timeout );	//	
+		curl_setopt( $ch, CURLOPT_COOKIE,         $this->_cookie );		//	
+		curl_setopt( $ch, CURLOPT_COOKIEJAR,      'cookie' );	//	
+		curl_setopt( $ch, CURLOPT_COOKIEFILE,     'tmp' );		//	
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );		//	
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );		//	Locationヘッダを追跡
+	//	curl_setopt( $ch, CURLOPT_REFERER,        "" );
+	//	curl_setopt( $ch, CURLOPT_USERAGENT,      "" );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );		//	supports self certificate
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );		//	supports self certificate
 		
 		//	fail
 		if(!$result = curl_exec($ch)){
