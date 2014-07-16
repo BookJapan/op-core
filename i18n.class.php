@@ -44,6 +44,11 @@ class i18n extends Api
 		$this->_lang = $lang;
 	}
 	
+	function GetLang()
+	{
+		return $this->_lang;
+	}
+	
 	/**
 	 * Get support language list
 	 * 
