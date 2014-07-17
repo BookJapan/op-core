@@ -42,11 +42,13 @@ if( ! isset($_SERVER['OnePiece5']) ){
 	if(empty($_SERVER['OP_ROOT'])){
 		$_SERVER['OP_ROOT'] = $op_root;
 	}
-
+	$_SERVER['OP_ROOT'] = rtrim($_SERVER['OP_ROOT'],'/').'/';
+	
 	//	Added app-root to $_SERVER
 	if(empty($_SERVER['APP_ROOT'])){
 		$_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']);
 	}
+	$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
 }
 
 /**
@@ -327,7 +329,6 @@ if(!function_exists('OnePieceExceptionHandler')){
  */
 class OnePiece5
 {
-//	const OP_UNIQ_ID = 'op-uniq-id';
 	const KEY_COOKIE_UNIQ_ID = 'op-uniq-id';
 	
 	private $errors  = array();
@@ -335,7 +336,7 @@ class OnePiece5
 	private $isInit  = null;
 	private $_env;
 	
-	function __construct( /*$args=array()*/ )
+	function __construct()
 	{
 		//  For all
 		$this->InitSession();
@@ -359,14 +360,6 @@ class OnePiece5
 			}
 			$this->Init();
 		}
-		
-		//	For all extends class
-		/*
-		foreach( $args as $key => $value ){
-			//	Overwrite init env value
-			$this->SetEnv( $key, $value );
-		}
-		*/
 		
 		//------------------------------------------------------//
 		

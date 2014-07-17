@@ -128,6 +128,8 @@ abstract class NewWorld5 extends OnePiece5
 				$_SERVER['REWRITE_BASE'] = trim($match[1]);
 			}
 		}
+		//	add slash
+		$_SERVER['REWRITE_BASE'] = rtrim($_SERVER['REWRITE_BASE'],'/').'/';
 	}
 	
 	/**
