@@ -167,6 +167,8 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//	check alias
 		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'].$_SERVER['REWRITE_BASE']);
+		
+		//	Divide the processing in the real-path and alias.
 		if( preg_match("|^{$patt}|",$_SERVER['SCRIPT_FILENAME']) ){
 			//	real path
 		//	$this->mark('![.red[REAL]]');
@@ -174,7 +176,7 @@ abstract class NewWorld5 extends OnePiece5
 		}else{
 			//	use alias
 		//	$this->mark('![.red[alias]]');
-			$full_path = dirname($_SERVER['SCRIPT_FILENAME']).preg_replace("|^".preg_quote($_SERVER['REWRITE_BASE'])."|", '', $path);
+			$full_path = dirname($_SERVER['SCRIPT_FILENAME']).'/'.preg_replace("|^".preg_quote($_SERVER['REWRITE_BASE'])."|", '', $path);
 		}
 		
 		//  Real file is pass through.
