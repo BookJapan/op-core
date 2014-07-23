@@ -13,7 +13,7 @@ class Api extends OnePiece5
 		$this->_ch = curl_init();
 	}
 	
-	function Xml( $url, $xml, $expire=-1 )
+	function PostXml( $url, $xml, $expire=-1 )
 	{
 		//	save cache key
 		if( $expire >= 0 ){
