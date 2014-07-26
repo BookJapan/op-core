@@ -122,14 +122,17 @@ class Toolbox
 	 * 
 	 * @param string $key      
 	 * @param string $method default is $_SERVER['REQUEST_METHOD']. (GET/POST/REQUEST(include cookie)/BOTH(GET&POST))
+	 * @param mixed  $default
 	 * @return boolean|string|array
 	 */
-	static function GetRequest( $key=null, $method=null )
+	static function GetRequest( $key=null, $method=null, $default=null )
 	{
+		//	
 		if(!$method){
 			$method = $_SERVER['REQUEST_METHOD'];
 		}
 		
+		//	
 		switch(strtolower($method)){
 			case 'get':
 				$request = $_GET;
@@ -152,6 +155,21 @@ class Toolbox
 				return false;
 		}
 		
+		//	default feature
+		if(!is_null($default)){
+			if(!is_array($default)){
+				$temp = $default;
+				$default = array();
+				$default[$key] = $temp;
+			}
+			foreach($default as $k => $v ){
+				if(!isset($request[$k])){
+					$request[$k] = $v;
+				}
+			}
+		}
+		
+		//	
 		if( is_null($key) ){
 			//  null
 			$args = $request;
@@ -162,8 +180,10 @@ class Toolbox
 			}else if( is_array($key) ){
 				$keys = $key;
 			}
+			
 			//  get intersect
 			$args = array_intersect_key( $request, array_flip($keys) );
+			
 			//  if want only one
 			if( count($keys) === 1 ){
 				$args = array_shift($args);
