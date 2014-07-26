@@ -13,10 +13,10 @@ class Api extends OnePiece5
 		$this->_ch = curl_init();
 	}
 	
-	function PostXml( $url, $xml, $expire=-1 )
+	function PostXml( $url, $xml, $expire=null )
 	{
 		//	save cache key
-		if( $expire >= 0 ){
+		if( is_numeric($expire) ){
 			$this->_ckey = md5($url.','.$xml);
 		}
 		
@@ -28,10 +28,10 @@ class Api extends OnePiece5
 		return $this->Curl( $url, $expire );
 	}
 
-	function Post( $url, $post_data, $expire=-1 )
+	function Post( $url, $post_data, $expire=null )
 	{
 		//	save cache key
-		if( $expire >= 0 ){
+		if( is_numeric($expire) ){
 			$this->_ckey = md5($url.','.$xml);
 		}
 
@@ -54,10 +54,10 @@ class Api extends OnePiece5
 	 * @param  integer $expire specify of second. 0 is permanently.
 	 * @return string|boolean
 	 */
-	function Curl( $url, $expire=-1 )
+	function Curl( $url, $expire=null )
 	{
 		//	check cache
-		if( $expire >= 0 ){
+		if( is_numeric($expire) ){
 			//	check post data's cache key
 			if( $this->_ckey ){
 				//	use post data's cache key
@@ -70,6 +70,7 @@ class Api extends OnePiece5
 			//	If hit cache
 			if( $body = $this->Cache()->Get($ckey) ){
 				//	return cache
+				$this->mark('Hit cache!!');
 				return $body;
 			}
 		}
@@ -102,8 +103,8 @@ class Api extends OnePiece5
 			$this->_cookie = $match[1];
 		}
 		
-		//	
-		if( $expire >= 0 ){
+		//	save cashe
+		if( isset($ckey) ){
 			$this->Cache()->Set($ckey, $body, $expire);
 		}
 		
