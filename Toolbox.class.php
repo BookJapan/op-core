@@ -413,14 +413,18 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		if( headers_sent($file,$line) ){			
-			foreach( $list = headers_list() as $header ){				
-				list( $key, $var ) = explode(':',$header);
-				if( strtolower($key) === 'content-type' ){					
-					list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
-				}
+		//	Header has already been sent.
+		$_is_send = headers_sent($file,$line);
+		
+		//	Get headers list.
+		foreach( $list = headers_list() as $header ){
+			list( $key, $var ) = explode(':',$header);
+			if( strtolower($key) === 'content-type' ){					
+				list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
 			}
-		}else{			
+		}
+		
+		if( empty($mime) ){
 			$mime = OnePiece5::GetEnv('mime');
 		}
 		
