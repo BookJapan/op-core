@@ -2,15 +2,21 @@
 
 class Api extends OnePiece5
 {
-	private $_ch = null;
-	private $_cookie = null;
-	private $_timeout = 10;
-	private $_ckey = null;
+	private $_ch		 = null;
+	private $_cookie	 = null;
+	private $_timeout	 = 10;
+	private $_ckey		 = null;
+	private $_is_cache	 = null;
 	
 	function Init()
 	{
 		parent::Init();
 		$this->_ch = curl_init();
+	}
+	
+	function isCache()
+	{
+		return $this->_is_cache;
 	}
 	
 	function PostXml( $url, $xml, $expire=null )
@@ -42,7 +48,7 @@ class Api extends OnePiece5
 		return $this->Curl( $url, $expire );
 	}
 	
-	function Get( $url, $expire=-1 )
+	function Get( $url, $expire=null )
 	{
 		return $this->Curl( $url, $expire );
 	}
@@ -70,7 +76,8 @@ class Api extends OnePiece5
 			//	If hit cache
 			if( $body = $this->Cache()->Get($ckey) ){
 				//	return cache
-				$this->mark('Hit cache!!');
+				$this->mark('Hit cache!!',__CLASS__);
+				$this->_is_cache = true;
 				return $body;
 			}
 		}
