@@ -82,7 +82,7 @@ abstract class Model_Base extends OnePiece5
 	}
 }
 
-class Config_Base extends OnePiece5
+abstract class Config_Base extends OnePiece5
 {
 	function database($args=null)
 	{
@@ -115,5 +115,18 @@ class Config_Base extends OnePiece5
 		}
 		
 		return $args;
+	}
+	
+	function insert($config=null)
+	{
+		if(empty($config)){
+			$config = new Config();
+		}
+		
+		$config->table = $this->table_name();
+		$config->set->created	 = gmdate('Y-m-d H:i:s');
+		$config->set->timestamp	 = 'NOW()';
+		
+		return $config;
 	}
 }
