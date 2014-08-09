@@ -184,7 +184,7 @@ if(!function_exists('OnePieceShutdown')){
 		 */
 		$aborted = connection_aborted();
 		$status  = connection_status();
-
+		
 		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
 		if( function_exists('error_get_last') and $error = error_get_last()){
 			switch($error['type']){
@@ -224,9 +224,7 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		$mime = Toolbox::GetMIME(true);
-		
-		switch( $mime ){
+		switch( $mime = Toolbox::GetMIME(true) ){
 			case 'plain':
 			//	print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
 				break;
@@ -1402,8 +1400,13 @@ __EOL__;
 		
 		//	php momory usage 
 		$memory_usage = memory_get_usage(true) /1000;
-		list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
-		$memory = sprintf('![ .gray [(%s.![.smaller[%s]] KB)]]', number_format($mem_int), $mem_dec );
+		if( strpos($memory_usage,'.') ){
+			list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
+		}else{
+			$mem_int = $memory_usage;
+			$mem_dec = 0;
+		}
+		$memory = sprintf('![ .gray [(%s.%s KB)]]', number_format($mem_int), $mem_dec );
 		
 		//	call line
 		$call_line = self::GetCallerLIne(0,1,'mark');
@@ -2677,11 +2680,12 @@ class Error
 			$backtraces = $error['backtrace'];
 			
 			//	Sequence no.
-			$return .= "![tr[ ![th colspan:4 .left [ Error #{$i} {$message} ]] ]]".PHP_EOL;
+			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} {$message} ]] ]]".PHP_EOL;
 			
 			$count = count($backtraces);
 			foreach( $backtraces as $index => $backtrace ){
-				$color = $index === 0 ? '.red':null;
+			//	$color = $index === 0 ? '.red':null;
+				$color = null;
 				$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
 			}
 		}
