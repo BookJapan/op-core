@@ -753,9 +753,9 @@ __EOL__;
 		}else{
 			
 			//	Notify at email.
-			$ua   = $_SERVER['HTTP_USER_AGENT'];
-			$ip   = $_SERVER['REMOTE_ADDR'];
-			$href = $_SERVER['HTTP_REFERER'];
+			$ua   = isset($_SERVER['HTTP_USER_AGENT'])	 ? $_SERVER['HTTP_USER_AGENT']: null;
+			$ip   = isset($_SERVER['REMOTE_ADDR'])		 ? $_SERVER['REMOTE_ADDR']: 	null;
+			$href = isset($_SERVER['HTTP_REFERER'])		 ? $_SERVER['HTTP_REFERER']: 	null;
 			$host = $ip ? gethostbyaddr($ip): null;
 			$date = date('Y-m-d H:i:s');
 			$url  = Toolbox::GetURL();
