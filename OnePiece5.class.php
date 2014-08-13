@@ -331,7 +331,7 @@ class OnePiece5
 	
 	private $errors  = array();
 	private $session = array();
-	private $isInit  = null;
+	private $_is_init  = null;
 	private $_env;
 	
 	function __construct()
@@ -419,7 +419,7 @@ class OnePiece5
 	function __destruct()
 	{
 		//  Called Init?
-		if(!$this->isInit){
+		if(!$this->_is_init){
 			$format  = $this->i18n()->get('%s has not call "parent::init();".');
 			$message = sprintf( $format, get_class($this));
 			$this->StackError( $message );
@@ -553,23 +553,7 @@ class OnePiece5
 	
 	function Init()
 	{
-		$this->isInit = true;
-		
-		//  No use self.
-		if( $this instanceof i18n ){
-			return true;
-		}
-		
-		/*
-		//  Create i18n configuration file path.
-		$path = $this->ConvertPath('op:/i18n/'.get_class($this).'.i18n.php');
-		
-		//  Include configuration file.
-		if( file_exists($path) ){
-			$this->i18n()->SetByFile($path);
-		}
-		*/
-		
+		$this->_is_init = true;
 		return true;
 	}
 	
@@ -2311,7 +2295,7 @@ __EOL__;
 		if(isset($_SERVER[__CLASS__]['singleton'][$name])){
 			return $_SERVER[__CLASS__]['singleton'][$name];
 		}
-	
+		
 		if($_SERVER[__CLASS__]['singleton'][$name] = new $name()){
 		//	self::mark("instance new object ($name)");
 			return $_SERVER[__CLASS__]['singleton'][$name];
