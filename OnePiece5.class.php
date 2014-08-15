@@ -419,7 +419,7 @@ class OnePiece5
 	{
 		//  Called Init?
 		if(!$this->_is_init){
-			$format  = $this->i18n()->get('%s has not call "parent::init();".');
+			$format  = '%s has not call parent::init().';
 			$message = sprintf( $format, get_class($this));
 			$this->StackError( $message );
 		}
