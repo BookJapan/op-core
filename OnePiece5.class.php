@@ -337,18 +337,17 @@ class OnePiece5
 	function __construct()
 	{
 		//  For all
-		$this->InitSession();
+		$this->_InitSession();
 		
 		//	Check CLI
+		/*
 		if( isset($_SERVER['SHELL']) ){
 		//	$this->SetEnv('cli',true);
 			$args['cli'] = true; // BEST!
-			
-			/*
-			$_SERVER['SSH_CLIENT']
-			$_SERVER['SSH_CONNECTION']
-			*/
+		//	$_SERVER['SSH_CLIENT']
+		//	$_SERVER['SSH_CONNECTION']
 		}
+		*/
 		
 		//	Do Initialized in the init-method.(for extends class)
 		if( method_exists($this, 'Init') ){
@@ -1029,7 +1028,7 @@ __EOL__;
 		return self::Escape($result);
 	}
 	
-	function InitSession()
+	private function _InitSession()
 	{
 		//  start to session.
 		if(!session_id()){
@@ -1070,15 +1069,17 @@ __EOL__;
 	 * 
 	 * @param string $key
 	 */
-	function GetSession( $key )
+	function GetSession( $key=null )
 	{
-		if( isset( $this->session[$key] ) ){
+		if( is_null($key)){
+			return $this->session;
+		}else if( isset( $this->session[$key] ) ){
 			return $this->session[$key];
 		}else{
 			return null;
 		}
 	}
-
+	
 	/**
 	 * SetCookie is auto set to $_COOKIE, and value is valid all value! (string, number, array and object!!)
 	 *
