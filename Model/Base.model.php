@@ -117,15 +117,41 @@ abstract class Config_Base extends OnePiece5
 		return $args;
 	}
 	
-	function insert($config=null)
+	function config($config=null)
 	{
+		//	init config
 		if(empty($config)){
 			$config = new Config();
 		}
 		
-		$config->table = $this->table_name();
+		//	table
+		if(!property_exists($config,'table')){
+			if(method_exists($this,'table_name')){
+				$config->table = $this->table_name();
+			}
+		}
+		
+		return $config;
+	}
+	
+	function insert($config=null)
+	{
+		$config = $this->config($config);
+		
+		//	default
 		$config->set->created	 = gmdate('Y-m-d H:i:s');
 		$config->set->timestamp	 = 'NOW()';
+		
+		return $config;
+	}
+	
+	function select($config=null)
+	{
+		$config = $this->config($config);
+		
+		//	default
+		$config->limit = 1;
+		$config->cache = 1;
 		
 		return $config;
 	}

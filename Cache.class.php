@@ -24,7 +24,7 @@ class Cache extends OnePiece5
 	private $_isConnect = null;
 	
 	/**
-	 * String of 'memcache' or 'memcached' or 'redis'.
+	 * String of 'memcache' or 'memcached'.
 	 * 
 	 * @var string
 	 */
