@@ -22,7 +22,7 @@ class Model_Camel
 	static function ConvertSnakeCase($str)
 	{
 		$str = trim($str);
-		if( preg_match('/[^-_a-z0-9\s]/i',$str) ){
+		if( preg_match('/[^-_a-z0-9@\s]/i',$str) ){
 			OnePiece5::StackError('Illigal character code.');
 			return $str;
 		}
