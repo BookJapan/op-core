@@ -4,7 +4,7 @@ class Api extends OnePiece5
 {
 	private $_ch		 = null;
 	private $_cookie	 = null;
-	private $_timeout	 = 10;
+	private $_timeout	 = 180;
 	private $_ckey		 = null;
 	private $_is_cache	 = null;
 	
@@ -99,6 +99,7 @@ class Api extends OnePiece5
 		
 		//	fail
 		if(!$result = curl_exec($ch)){
+			$this->mark("curl fail.",__CLASS__);
 			return false;
 		}
 		
