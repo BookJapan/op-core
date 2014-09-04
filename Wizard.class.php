@@ -461,6 +461,9 @@ class Wizard extends OnePiece5
 				//	Convert index string
 				if( $index ){
 					switch($index){
+						case 'PRI':
+							break;
+						
 						case 'index':
 							$index = 'MUL';
 							break;
@@ -470,7 +473,7 @@ class Wizard extends OnePiece5
 							break;
 							
 						default:
-							$this->mark();
+							$this->mark("index=$index");
 					}
 				}else{
 					if( !empty($config->table->$table_name->column->$column_name->pkey) or
