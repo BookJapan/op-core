@@ -381,7 +381,8 @@ class Wizard extends OnePiece5
 			var_dump($config->table->$table_name->column);
 		}
 		
-		$columns = Toolbox::toArray($config->table->$table_name->column);
+	//	$columns = Toolbox::toArray($config->table->$table_name->column);
+		$columns = $config->table->$table_name->column;
 		$structs = $this->pdo()->GetTableStruct( $table_name );
 		
 		//	use create column, new create column is after where column
@@ -395,9 +396,12 @@ class Wizard extends OnePiece5
 			$fail = false;
 			
 			//	check
+			/**
+			 * Did not use column? only use column name?
 			if(empty($column)){
 				continue;
 			}
+			*/
 			
 			//	init
 			$io = null;
