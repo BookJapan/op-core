@@ -159,14 +159,19 @@ class DDL5 extends OnePiece5
 			$collate = 'COLLATE '.ConfigSQL::QuoteType($args['collate']);
 		}else{
 			//	default
-			$collate = null;
+			$collate = 'COLLATE utf8_general_ci';
 		}
 		
 		//	CHARACTER SET
 		if( isset($args['character']) ){
 			$character = 'CHARACTER SET '.ConfigSQL::QuoteType($args['character']);
 		}else{
-			$character = null;
+			if( preg_match('/ utf8_/i', $collate) ){
+				//	default
+				$character = 'CHARACTER SET utf8';
+			}else{
+				$character = null;
+			}
 		}
 		
 		//	TABLE COMMENT
