@@ -2573,6 +2573,8 @@ class Error
 				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 			}else if( version_compare($v,'5.3.6') >= 0 ){
 				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+			}else if( true ){
+				$backtrace = 'This PHP is an old version (under 5.3.6). Was not possible to remove the argument.';
 			}else if(version_compare($v,'5.2.5') >= 0 ){
 				$backtrace = debug_backtrace(false);
 			}else if(version_compare($v,'5.1.1') >= 0 ){

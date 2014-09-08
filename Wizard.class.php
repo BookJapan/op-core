@@ -118,7 +118,11 @@ class Wizard extends OnePiece5
 					}
 					
 				}catch( Exception $e ){
-					$this->mark($e->getMessage());
+					$version = PHP_VERSION;
+					$file = $e->getFile();
+					$line = $e->getLine();
+					$message = $e->getMessage();
+					$this->mark("$file, $line, $message, PHP $version");
 					$io = false;
 				}
 				
