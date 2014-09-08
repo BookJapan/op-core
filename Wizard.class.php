@@ -385,7 +385,6 @@ class Wizard extends OnePiece5
 			var_dump($config->table->$table_name->column);
 		}
 		
-	//	$columns = Toolbox::toArray($config->table->$table_name->column);
 		$columns = $config->table->$table_name->column;
 		$structs = $this->pdo()->GetTableStruct( $table_name );
 		
@@ -394,18 +393,8 @@ class Wizard extends OnePiece5
 		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
-		//	$this->mark("table=$table_name, column=$column_name",'selftest');
-
 			//	init
 			$fail = false;
-			
-			//	check
-			/**
-			 * Did not use column? only use column name?
-			if(empty($column)){
-				continue;
-			}
-			*/
 			
 			//	init
 			$io = null;
@@ -496,19 +485,7 @@ class Wizard extends OnePiece5
 				
 				//	Convert existing table value
 				if( $type === 'enum' or $type === 'set' ){
-					
 					$length = "'".join("','",array_map('trim',explode(',',$length)))."'";
-					
-					/*
-					if(preg_match( '/^enum\((.+)\)$/', $structs[$column_name]['type'], $match )){
-						$join = array();
-						foreach( explode(',',$match[1]) as $temp ){
-							$join[] = trim($temp,"'");
-						}
-						$structs[$column_name]['length'] = join(',',$join);
-					}
-					$structs[$column_name]['type'] = 'enum';
-					*/
 				}
 				
 				//	Check type
@@ -533,22 +510,9 @@ class Wizard extends OnePiece5
 					$hint = "default=$default not $temp";
 				
 				//	Check index
-				}else if( $index !== $structs[$column_name]['key'] ){
-
-				//	$this->mark("$column_name=$index, {$structs[$column_name]['key']}");
-				//	$config->table->$table_name->column->$column_name->d();
-					
+				}else if( $index !== $structs[$column_name]['key'] ){					
 					$fail = true;
 					$hint = "index=$index not {$structs[$column_name]['key']}";
-					
-					/*
-					$this->mark($hint);
-					$this->mark($index);
-					$this->d($structs[$column_name]);
-					*/
-						
-				}else{
-				//	$fail = false;
 				}
 				
 				//	If false will change this column.
@@ -566,8 +530,6 @@ class Wizard extends OnePiece5
 			if( $fail ){
 				$result = false;
 			}
-			
-		//	$this->mark("fail=$fail");
 		}
 		
 		//  Finish
