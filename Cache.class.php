@@ -1,11 +1,20 @@
 <?php
-
+/**
+ * Cache.class.php
+ * 
+ * @author tomoaki.nagahara <tomoaki.nagahara@gmail.com>
+ */
+/**
+ * Cache
+ * 
+ * @author tomoaki.nagahara <tomoaki.nagahara@gmail.com>
+ */
 class Cache extends OnePiece5
 {
 	/**
-	 * Instance of Memcache or Memcached or Redis.
+	 * Instance of Memcache or Memcached.
 	 * 
-	 * @var Memcache|Memcached|Redis
+	 * @var Memcache|Memcached
 	 */
 	private $_cache = null;
 	
@@ -38,7 +47,18 @@ class Cache extends OnePiece5
 	 */
 	private $_is_force_md5 = null;
 	
+	/**
+	 * Use cas flag. (Memcached library only)
+	 * 
+	 * @var boolean
+	 */
 	private $_use_cas = true;
+	
+	/**
+	 * List of cas. 
+	 * 
+	 * @var array
+	 */
 	private $_cas_list = array();
 	
 	function Test()
@@ -68,11 +88,11 @@ class Cache extends OnePiece5
 		//  Get use flag
 		//	$use_memcache  = $this->GetEnv('OP_USE_MEMCACHE');
 		//	$use_memcached = $this->GetEnv('OP_USE_MEMCACHED');
-	
+		
 		//	get host & port
 		$host = $this->GetEnv('OP_CACHE_HOST');
 		$port = $this->GetEnv('OP_CACHE_PORT');
-	
+		
 		$host = $host ? $host : 'localhost';
 		$port = $port ? $port : '11211';
 	
@@ -84,9 +104,9 @@ class Cache extends OnePiece5
 		}else if( $is_memcache ){
 			$this->InitMemcache( $host, $port );
 		}else{
-			$this->mark("not found",'cache');
+			$this->mark("not found Memcache and Memcached",'cache');
 		}
-	
+		
 		return true;
 	}
 	
@@ -126,15 +146,13 @@ class Cache extends OnePiece5
 	
 	function AddServer( $host='localhost', $port='11211', $weight=10 )
 	{
-		//  Init
-		$persistent = true;
-		
 		switch(get_class($this->_cache)){
 			case 'Memcached':
 				$io = $this->_cache->addServer( $host, $port, $weight );
 				break;
 				
 			case 'Memcache':
+				$persistent = true;
 				$io = $this->_cache->addServer( $host, $port, $persistent, $weight );
 				break;
 	
@@ -181,6 +199,10 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
+		//	Anti Injection.
+		$key = md5($key);
+		
+		/*
 		if( $this->_is_force_md5 ){
 			//	skip security check for key name.
 			$key = md5($key);
@@ -191,10 +213,11 @@ class Cache extends OnePiece5
 				return false;
 			}
 		}
+		*/
 		
 		//	Can not serialize SimpleXMLElement.
 		if( $value instanceof SimpleXMLElement ){
-			$this->mark("Can not serialize SimpleXMLElement. (Serialization of 'SimpleXMLElement' is not allowed )");
+			$this->mark("Can not serialize SimpleXMLElement. (Serialization of 'SimpleXMLElement' is not allowed)");
 			return false;
 		}
 		
@@ -231,17 +254,21 @@ class Cache extends OnePiece5
 		
 		//	key
 		if(!is_string($key)){
-			//	$key = serialize($key);
 			$type = gettype($key);
 			$this->StackError("key is not string. (type=$type)");
 			return false;
 		}
 		
+		//	Anti Injection.
+		$key = md5($key);
+		
+		/*
 		//	check
 		if(!$this->CheckKeyName($key)){
 			$this->StackError("Illegal key name. ($key)");
 			return false;
 		}
+		*/
 		
 		switch( $this->_cache_type ){
 			case 'memcache':
