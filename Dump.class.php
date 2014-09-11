@@ -419,20 +419,22 @@ class Dump
 	static function PrintDumpStyleSheet()
 	{
 		static $_print;
-		if(!$_print){
+		if( $_print ){
 			return;
 		}
 		$_print = true;
 		
 		print <<<__FINISH__
+
 <style type="text/css">
 div.dump{
+  margin: 1px;
   color:            black;
-  _background-color: white;
   font-size:        9pt;
   font-weight:      normal;
   text-decoration:  none;
-  direction: ltr;
+  direction: 		ltr;
+  border: 0px solid black;
 }
 
 div.ridge{
@@ -445,6 +447,7 @@ div.ridge{
 }
 
 .dump .ridge span{
+  margin: 1px;
   font-size: 9pt;
 }
 
@@ -534,7 +537,7 @@ __FINISH__;
 	static function PrintDumpJavaScript()
 	{
 		static $_print;
-		if(!$_print){
+		if( $_print ){
 			return;
 		}
 		$_print = true;
