@@ -398,10 +398,11 @@ class Dump
 	 * @param  string $args
 	 * @return string
 	 */
-	static function Escape($args){
-		if( is_string($args) or is_integer($args)){
-			// OK
-		}else{
+	static function Escape($args)
+	{
+		if( is_integer($args) ){
+			return $args;
+		}else if(!is_string($args)){
 			return 'this is not string.('.gettype($args).')';
 		}
 		
@@ -415,7 +416,14 @@ class Dump
 		}
 	}
 	
-	static function PrintDumpStyleSheet(){
+	static function PrintDumpStyleSheet()
+	{
+		static $_print;
+		if(!$_print){
+			return;
+		}
+		$_print = true;
+		
 		print <<<__FINISH__
 <style type="text/css">
 div.dump{
@@ -429,7 +437,8 @@ div.dump{
 
 div.ridge{
   font-size: 9pt;
-  padding:1px;
+  margin: 0;
+  padding: 1px;
   border-width: 1px;
   border-style: solid;
   border-color: #ddd #aaa #aaa #ddd;
@@ -522,7 +531,14 @@ span.NULL{
 __FINISH__;
 	}
 	
-	static function PrintDumpJavaScript(){
+	static function PrintDumpJavaScript()
+	{
+		static $_print;
+		if(!$_print){
+			return;
+		}
+		$_print = true;
+		
 		print <<<__FINISH__
 <script type="text/javascript">
 if( window.attachEvent ){
