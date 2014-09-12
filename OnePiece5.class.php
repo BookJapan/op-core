@@ -9,25 +9,19 @@
  * @package   op-core
  */
 
-/**
- * Check mbstring installed.
- */
+//	Check mbstring installed.
 if(!function_exists('mb_language') ){
 	print "<p>Does not install php-mbstring. (ex: sudo yum install php-mbstring)</p>".PHP_EOL;
 	print __FILE__.' ('.__LINE__.')<br/>'.PHP_EOL;
 	exit;
 }
 
-/**
- * If time zone is not set, then set to UTC.
- */
+//	If time zone is not set, then set to UTC.
 if(!ini_get('date.timezone')){
 	date_default_timezone_set('UTC');
 }
 
-/**
- * Added "op-root" to include_path.
- */
+//	Added "op-root" to include_path.
 if( ! isset($_SERVER['OnePiece5']) ){
 	$_SERVER['OnePiece5'] = array();
 	
@@ -51,18 +45,14 @@ if( ! isset($_SERVER['OnePiece5']) ){
 	$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
 }
 
-/**
- * check if localhost.
- */
+//	Check if localhost.
 if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
 	$_SERVER['OP_IS_LOCALHOST'] = true;
 }else{
 	$_SERVER['OP_IS_LOCALHOST'] = false;
 }
 
-/**
- * check if administrator.
- */ 
+//	Check if administrator.
 if( isset($_SERVER['ADMIN_IP']) and $_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP']){
 	$_SERVER['OP_IS_ADMIN'] = true;
 	$_SERVER['OP_IS_DEVELOPER'] = null;
