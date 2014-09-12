@@ -288,6 +288,7 @@ class Cache extends OnePiece5
 		}
 	}
 	
+	/*
 	function Increment( $key, $value=1 )
 	{
 		static $skip;
@@ -343,6 +344,7 @@ class Cache extends OnePiece5
 		//	Not decremented, if does not exists value.
 		return $this->_cache->decrement( $key, $value );	
 	}
+	*/
 	
 	function Delete( $key )
 	{
@@ -361,12 +363,16 @@ class Cache extends OnePiece5
 			$this->StackError("key is not string. (type=$type)");
 			return false;
 		}
-
+		
+		/*
 		//	check
 		if(!$this->CheckKeyName($key)){
 			$this->StackError("Illegal key name. ($key)");
 			return false;
 		}
+		*/
+		
+		$key = md5($key);
 		
 		return $this->_cache->delete( $key );
 	}
