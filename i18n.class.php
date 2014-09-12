@@ -68,6 +68,24 @@ class i18n extends Api
 		return $this->_lang;
 	}
 	
+	function FetchJson( $url, $expire )
+	{
+		//	Execute
+		$body = $this->Curl($url,0);
+		
+		if(!$body){
+			$this->StackError("Curl is failed.");
+		}else{
+			$json = json_decode($body,true);
+			if(!$json){
+				$this->StackError("JSON decode is failed.");
+				$this->Cache()->Delete(md5($url));
+			}
+		}
+		
+		return $json;
+	}
+	
 	/**
 	 * Get support language list
 	 * 
@@ -82,24 +100,17 @@ class i18n extends Api
 		}
 		
 		//	URL
-		$url = "http://api.uqunie.com/i18n/lang/$lang";
-				
-		//	Do
-		if(!$json = parent::Curl($url,0)){
-			//	Fail
-			return $text;
-		}
+		$url = $this->Config()->url('lang').$lang;
 		
-		//	Get support language list
-		$temp = json_decode($json,true);
+		//	Execute
+		$json = $this->FetchJson($url, 0);
 		
-		if( $temp['status'] ){
-			$error = $temp['error'];
+		//	Check
+		if( $error = $json['error'] ){
 			$this->StackError("Can not get language list. ($error)");
-			return array();
 		}
 		
-		return $temp['language'];
+		return isset($json['language']) ? $json['language']: array('en'=>'English');
 	}
 	
 	function GetDatabase()
