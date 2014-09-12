@@ -1,12 +1,31 @@
 <?php
-
+/**
+ * i18n.class.php
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
+/**
+ * i18n
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
 class i18n extends Api
 {
-	const _API_UQUNIE_COM_ = 'http://api.uqunie.com/i18n/';
+	/**
+	 * @return Config_i18n
+	 */
+	function Config()
+	{
+		static $config;
+		if(!$config){
+			$config = new Config_i18n();
+		}
+		return $config;
+	}
 	
 	private $_use_memcache	 = true;
 	private $_use_database	 = true;
-	private $_cache_expire	 = 600; // 10 min
+	private $_cache_expire	 = 3600; // 60 min
 	
 	private $_db_single		 = false;
 	private $_db_prod		 = 'mysql';
@@ -155,7 +174,7 @@ class i18n extends Api
 		$to   = strtolower($to);
 		
 		//	
-		$url = self::_API_UQUNIE_COM_;
+		$url = $this->Config()->url('i18n');
 		$url .= '?';
 		$url .= 'text='.urlencode($text);
 		$url .= '&from='.urlencode($from);
@@ -340,5 +359,25 @@ class i18n extends Api
 		$config->table->{$table_name}->column->{$column_name}->comment	 = '';
 		
 		return $config;
+	}
+}
+
+class Config_i18n extends OnePiece5
+{
+	function url($key)
+	{
+		static $domain;
+		if(!$domain){
+			$domain = $this->Admin() ? 'http://api.uqunie.com': 'http://api.uqunie.com';
+		}
+		switch($key){
+			case 'i18n':
+				$url = "$domain/i18n/";
+				break;
+			case 'lang':
+				$url = "$domain/i18n/lang/";
+				break;
+		}
+		return $url;
 	}
 }
