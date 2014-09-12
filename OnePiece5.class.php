@@ -45,7 +45,7 @@ if( ! isset($_SERVER['OnePiece5']) ){
 	$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
 }
 
-//	Check if localhost.
+//	Check if localhost. 
 if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
 	$_SERVER['OP_IS_LOCALHOST'] = true;
 }else{
@@ -53,13 +53,21 @@ if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1')
 }
 
 //	Check if administrator.
-if( isset($_SERVER['ADMIN_IP']) and $_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP']){
+if( $_SERVER['OP_IS_LOCALHOST'] ){
 	$_SERVER['OP_IS_ADMIN'] = true;
-	$_SERVER['OP_IS_DEVELOPER'] = null;
+}else if( empty($_SERVER['ADMIN_IP']) ){
+	$_SERVER['OP_IS_ADMIN'] = null;
+}else if( $_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP'] ){
+	$_SERVER['OP_IS_ADMIN'] = true;
 }else{
 	$_SERVER['OP_IS_ADMIN'] = null;
-	$_SERVER['OP_IS_DEVELOPER'] = null;	
 }
+
+//	Init developer list.
+$_SERVER['OP_IS_DEVELOPER'] = null;
+
+//	Define
+define('_USE_ERROR_CLASS_',$_SERVER['OP_IS_LOCALHOST']);
 
 /**
  * TODO: We (will|should) support to spl_autoload_register
@@ -155,7 +163,7 @@ if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
 		//	Error
-		Error::Report(OnePiece5::Admin());
+		Error::Report();
 		
 		//	Check
 		if(!OnePiece5::Admin()){
@@ -584,11 +592,9 @@ class OnePiece5
 	 */
 	static function StackError( $args )
 	{
-	//	OnePiece5::mark($args);
-		
-		if( $io = OnePiece5::Admin() ){
+		if( _USE_ERROR_CLASS_ ){
 			Error::Set($args);
-		//	return;
+			return;
 		}
 		
 		$encoding = mb_internal_encoding();
@@ -2599,13 +2605,13 @@ class Error
 		return array_shift($_SESSION[self::_NAME_SPACE_]);
 	}
 	
-	static function Report( $admin )
+	static function Report()
 	{
 		if( empty($_SESSION[self::_NAME_SPACE_]) ){
 			return;
 		}
 		
-		if( $admin ){
+		if( OnePiece5::Admin() ){
 			$io = self::_toDisplay();
 		}else{
 			$io = self::_toMail();
