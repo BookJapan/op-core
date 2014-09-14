@@ -2031,23 +2031,26 @@ __EOL__;
 	{
 		if( preg_match('|^/|i',$path) ){
 			//	Root directory (Unix)
-		}else
-		if( preg_match('|^[a-z]:|i',$path) ){
+		}else if( preg_match('|^[a-z]:|i',$path) ){
 			//	Drive letter (Windows)
-		}else
-		if( preg_match('/^(op|site):\//',$path,$match) ){
-			//  Does not relate document-root.
-			$label = $match[1].'-root';
+		}else if( preg_match('|^([-_a-z0-9]+):/|i',$path,$match) ){
+			/**
+			 * Multi support
+			 * Case of 1, op:/
+			 * Case of 2, op-root:/
+			 */
+			
+			//	op:/ -> op
+			$meta = $match[1];
+			
+			//	op-root -> op_root
+			$meta = Model_Camel::ConvertSnakeCase($meta);
+			
+			//	op_root -> op
+			list($meta) = explode('_',$meta);
+			
+			$label = $meta.'-root';
 			if( $root = OnePiece5::GetEnv($label) ){
-				$root = rtrim($root,'/').'/';
-				$path = str_replace( $match[0], $root, $path );
-			}else{
-				self::StackError("$label is not set.");
-			}
-		}else
-		if( preg_match('|^([-_a-zA-Z0-9]+):/|',$path,$match) ){
-			$label = $match[1].'-root';
-			if( $root = self::GetEnv($label) ){
 				$root = rtrim($root,'/').'/';
 				$path = str_replace( $match[0], $root, $path );
 			}else{
