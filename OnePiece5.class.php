@@ -639,7 +639,11 @@ class OnePiece5
 	
 	function FetchError()
 	{
-		return array_shift($_SERVER['OnePiece5']['errors']);
+		if( isset($_SERVER['OnePiece5']['errors']) ){
+			return array_shift($_SERVER['OnePiece5']['errors']);
+		}else{
+			return null;
+		}
 	}
 	
 	/**
