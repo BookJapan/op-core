@@ -1,8 +1,14 @@
 <?php
 /**
- * Dump
+ * Dump.class.php
  * 
  * 2006: dump.inc.php > 2011: OnePiece::dump > 2012: dump.class.php
+ * 
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2006 (C) Tomoaki Nagahara All right reserved.
+ */
+/**
+ * Dump
  * 
  * @version   1.0
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -101,7 +107,8 @@ class Dump
 		$depth--;
 		
 		if(!$depth){
-			return '<div class="dump" style="padding: 1px 0px;">'.$table.'</div>';
+			//	root hierarchy
+			return '<div class="op-dump-root op-dump-ridge">'.$table.'</div>';
 		}else{
 			return $table;
 		}
@@ -284,7 +291,7 @@ class Dump
 		}else{
 			return sprintf('unsupported type: %s (%s)', gettype($tr), __LINE__);
 		}
-		return sprintf('<table class="op">%s</table>', $united );
+		return sprintf('<div class="op-dump-table">%s</div>', $united );
 	}
 	
 	/**
@@ -296,11 +303,10 @@ class Dump
 	 */
 	static function GetTr( $td_of_key, $td_of_value ){
 		if( $td_of_key ){
-			$tr = sprintf('<tr>%s%s</tr>', $td_of_key, $td_of_value);
+			$tr = sprintf('<div class="op-dump-tr">%s%s</div>', $td_of_key, $td_of_value);
 		}else{
-			$tr = sprintf('<tr>%s</tr>', $td_of_value);
+			$tr = sprintf('<div class="op-dump-tr">%s</div>', $td_of_value);
 		}
-		
 		return $tr;
 	}
 	
@@ -313,7 +319,7 @@ class Dump
 	 */
 	static function GetTdOfKey( $args, $did ){
 		$args = self::Escape($args);
-		return sprintf('<td class="key"><div class="dkey ridge" did="%s">%s</div></td>', $did, $args);
+		return sprintf('<div class="op-dump-th"><div class="dkey op-dump-ridge" did="%s"><div class="op-dump-key">%s</div></div></div>', $did, $args);
 	}
 	
 	/**
@@ -325,37 +331,31 @@ class Dump
 	 * @param $history
 	 * @return string $td_of_value
 	 */
-	static function GetTdOfValue( $args, $did, $lifetime, $history, $label_flag=true ){
-		switch($type = gettype($args)){
-			
-			case 'NULL':
-			case 'boolean':
-				$args = self::ConvertArgs( $type, $args );
-				
-			case 'resource':
-			case 'string':
-			case 'integer':
-			case 'double':
-				if( $type == 'string' ){
-					$args = self::Escape($args);
-				}
-				$label = $label_flag ? self::GetLabel( $type, $args ) : '';
-				$html = sprintf('<td class="value"><div id="%s" class="ridge">%s%s</div></td>', $did, $label.' ', $args);
-				break;
-			
-			case 'object':
-			case 'array':
-				if(!count($args)){
-//					$args = 'empty';
-				}
-				$args = self::GetDump( $args, $lifetime-1, $history, $label_flag );
-				$html = sprintf('<td class="ridge"><div id="%s" class="small">%s</div></td>', $did, $args);
-				break;
-				
-			default:
-				$args = sprintf('unsupported type: %s (%s)', $type, __LINE__);
-				$html = sprintf('<td class="value"><div id="%s" class="ridge">[%s] %s</div></td>', $did, $type, $args);
+	static function GetTdOfValue( $args, $did, $lifetime, $history, $label_flag=true )
+	{
+		$type = strtolower(gettype($args));
+		$class = 'op-dump-value';
+		
+		if( $type === 'null' ){
+			$args = '';
+		}else
+		
+		if( $type === 'boolean' ){
+			$args = $args ? '<span class="blue">true</span>': '<span class="red">false</span>';
+		}else
+		
+		if( $type === 'array' or $type === 'object' ){
+			$class = null;
+			$args = self::GetDump( $args, $lifetime-1, $history, $label_flag );
+		}else{
+			if( $type === 'string' ){
+				$args = self::Escape($args);
+			}
 		}
+
+		$label = $label_flag ? self::GetLabel( $type, $args ).' ' : '';
+		$value = "<div class=\"$class\">$label<span class=\"op-dump-value-string\">$args</span></div>";
+		$html = sprintf('<div class="op-dump-td"><div id="%s" class="op-dump-ridge">%s</div></div>', $did, $value);
 		
 		return $html;
 	}
@@ -364,36 +364,18 @@ class Dump
 	{
 		$class  = $type;
 		$length = '';
-		switch($type){
-			case 'string':
-				$length = '('.mb_strlen($args).')';
-				break;
-				
-			case 'object':
-				$type = get_class($args);
-				break;
-				
-			default:
-		}
-		return sprintf('[<span class="%s">%s%s</span>]', $class, $type, $length);
-	}
-	
-	static function ConvertArgs( $type, $args ){
-		switch($type){
-			case 'boolean':
-				$temp = $args ? 'true': 'false';
-				break;
-			case 'NULL':
-				$temp = 'null';
-				break;
-			default:
-				$temp = $args;
+		
+		if( $type === 'string' ){
+			$length = '('.mb_strlen($args).')';
+		}else if( $type === 'array' or $type === 'object' ){
+			return '';
 		}
 		
-		return sprintf('<span class="%s">%s</span>', $temp, $temp);
+		return sprintf('<span class="op-dump-label">[<span class="%s">%s%s</span>]</span>', $class, $type, $length);
 	}
 	
 	/**
+	 * Escape string.
 	 * 
 	 * @param  string $args
 	 * @return string
@@ -424,114 +406,16 @@ class Dump
 		}
 		$_print = true;
 		
-		print <<<__FINISH__
-
-<style type="text/css">
-div.dump{
-  margin: 1px;
-  color:            black;
-  font-size:        9pt;
-  font-weight:      normal;
-  text-decoration:  none;
-  direction: 		ltr;
-  border: 0px solid black;
-}
-
-div.ridge{
-  font-size: 9pt;
-  margin: 0;
-  padding: 1px;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #ddd #aaa #aaa #ddd;
-}
-
-.dump .ridge span{
-  margin: 1px;
-  font-size: 9pt;
-}
-
-.dump table{
-  margin-top:    0px;
-  margin-bottom: 0px;
-  border-collapse:collapse;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #ddd #aaa #aaa #ddd;
-}
-
-.dump tr{
-  background-color: white;
-}
-
-.dump th{
-  background-color: white;
-}
-
-.dump td{
-  margin:  0px;
-  padding: 1px;
-  background-color: white;
-}
-
-td.key{
-  vertical-align: top;
-}
-
-td.value{
-
-}
-
-.dkey{
-  cursor:pointer;
-}
-
-span.string{
-  color: #909090;
-}
-
-span.integer{
-  color: #8f8fff;
-}
-
-span.double{
-  color: #3030ff;
-}
-
-span.boolean{
-  color: green;
-}
-
-span.object{
-  color: orange;
-}
-
-span.resource{
-  color: orange;
-}
-
-span.hidden{
-  display: none;
-}
-
-span.true{
-  color: blue;
-}
-
-span.false{
-  color: red;
-}
-
-span.null{
-  color: red;
-}
-
-span.NULL{
-  color: red;
-}
-
-</style>
-__FINISH__;
+		$meta = "op-root:/template/dump.css";
+		$path = OnePiece5::ConvertPath($meta);
+		if(file_exists($path)){
+			$file = file_get_contents($path);
+			print '<style type="text/css">';
+			print $file;
+			print '</style>';
+		}else{
+			print "Does not exists $meta.";
+		}
 	}
 	
 	static function PrintDumpJavaScript()
@@ -541,77 +425,16 @@ __FINISH__;
 			return;
 		}
 		$_print = true;
-		
-		print <<<__FINISH__
-<script type="text/javascript">
-if( window.attachEvent ){
-	window.attachEvent('onload', dump);
-}else{
-	window.addEventListener('load', dump, false);
-}
 
-function dump(){
-	
-	//	console	
-	var div = document.createElement('div');
-	div.id = 'console';
-	div.style.margin             = '0px';
-	div.style.padding            = '0px';
-	div.style.color				 = 'black';
-	div.style.fontSize			 = '9pt';
-	div.style.backgroundColor	 = 'white';
-	var tags = document.getElementsByTagName('body');
-	var ref = tags[0].insertBefore( div, tags[0].firstChild );
-
-	//	Web Strage	
-	var length = sessionStorage.length;
-	for( var i=0; i<length; i++ ){
-		var dump_id = sessionStorage.key(i);
-		var io = sessionStorage.getItem(dump_id);
-		if( io == 0 ){
-			var tmp = document.getElementById(dump_id);
-			if(tmp){
-				tmp.style.display = 'none';
-			}
+		$meta = "op-root:/template/dump.js";
+		$path = OnePiece5::ConvertPath($meta);
+		if(file_exists($path)){
+			$file = file_get_contents($path);
+			print '<script type="text/javascript">';
+			print $file;
+			print '</script>';
+		}else{
+			print "Does not exists $meta.";
 		}
-	}
-	
-	//	addEventListener
-	var tags = document.getElementsByClassName('dkey');
-	for( var i=0; i<tags.length; i++){
-		var did = tags[i].getAttribute('did');
-		tags[i].addEventListener('click',d2,true);
-	}
-	
-//	oplog('Dump.class.php');
-};
-
-function d2(e){
-	var dump_id = e.target.getAttribute('did');
-	var div = document.getElementById(dump_id);
-	if( div.style.display == 'none' ){
-		var io = 1;
-		div.style.display = 'block';
-	}else{
-		var io = 0;
-		div.style.display = 'none';
-	}
-	sessionStorage.setItem( dump_id, io );
-
-	e.stopPropagation();
-};
-
-function oplog(str){
-	var p = document.createElement('p');
-	p.style.margin  = '0px';
-	p.style.padding = '0px';
-	p.innerHTML     = str;
-	if(document.getElementById('console')){
-		document.getElementById('console').appendChild(p);
-	}
-};
-
-</script>
-__FINISH__;
 	}
 }

@@ -1,0 +1,105 @@
+@CHARSET "utf-8";
+
+div.op-dump-root{
+	color: black;
+	background-color: white;
+	font-size: 9pt;
+	display: table;
+}
+
+div.op-dump-table{
+	margin: 0;
+	margin-bottom: 1px;
+	
+	border-width: 0px;
+	border-style: solid;
+	border-color: #ddd #aaa #aaa #ddd;
+	
+	display: table;
+}
+
+div.op-dump-tr{
+	display: table-row;
+}
+
+div.op-dump-th{
+	padding: 1px 1px 0px 1px;
+	
+	vertical-align: top;
+	display: table-cell;
+}
+
+div.op-dump-td{
+	padding: 1px 1px 0px 0px;
+	
+	vertical-align: top;
+	display: table-cell;
+}
+
+div.op-dump-ridge{
+	border-width: 1px;
+	border-style: solid;
+	border-color: #ddd #aaa #aaa #ddd;
+}
+
+div.op-dump-key{
+	margin:  3px 3px 2px 3px;
+	padding: 0;
+}
+
+div.op-dump-value{
+	margin:  2px 3px 2px 3px;
+	padding: 0;
+}
+
+span.op-dump-value-string{
+	vertical-align: -1px;
+}
+
+.op-dump-th .dkey{
+  cursor:pointer;
+}
+
+span.hidden{
+  display: none;
+}
+
+span.string{
+  color: #909090;
+}
+
+span.integer{
+  color: #8f8fff;
+}
+
+span.double{
+  color: #3030ff;
+}
+
+span.boolean{
+  color: green;
+}
+
+span.object{
+  color: orange;
+}
+
+span.resource{
+  color: orange;
+}
+
+span.true{
+  color: blue;
+}
+
+span.false{
+  color: red;
+}
+
+span.null{
+  color: red;
+}
+
+span.NULL{
+  color: red;
+}
