@@ -45,8 +45,23 @@ if( ! isset($_SERVER['OnePiece5']) ){
 	$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
 }
 
-//	Check if localhost. 
-if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
+//	Init Env
+Env::Init();
+
+//	Check if CLI.
+if( isset($_SERVER['SHELL']) ){
+	Env::Set('cli',true);
+	Env::Set('mime','text/plain');
+}
+
+//	Check if localhost.
+if( isset($_SERVER['REMOTE_ADDR']) ){
+	if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
+		$_SERVER['OP_IS_LOCALHOST'] = true;
+	}else{
+		$_SERVER['OP_IS_LOCALHOST'] = false;
+	}
+}else if( isset($_SERVER['SSH_CLIENT']) ){
 	$_SERVER['OP_IS_LOCALHOST'] = true;
 }else{
 	$_SERVER['OP_IS_LOCALHOST'] = false;
@@ -170,12 +185,14 @@ if(!function_exists('OnePieceShutdown')){
 			return;
 		}
 		
+		/*
 		//	check duplicate
 		static $init;
 		if(!is_null($init)){
 			return;
 		}
 		$init = true;
+		*/
 		
 		/**
 		 * @see http://jp.php.net/manual/ja/features.connection-handling.php
@@ -222,9 +239,14 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		switch( $mime = Toolbox::GetMIME(true) ){
+		//switch( $mime = Toolbox::GetMIME(true) ){
+		$mime = Env::Get('mime');
+		list( $main, $sub ) = explode('/',$mime);
+		switch( $sub ){
 			case 'plain':
-			//	print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
+				if( Env::Get('cli') ){
+					print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
+				}
 				break;
 				
 			case 'css':
@@ -336,16 +358,6 @@ class OnePiece5
 	{
 		//  For all
 		$this->_InitSession();
-		
-		//	Check CLI
-		/*
-		if( isset($_SERVER['SHELL']) ){
-		//	$this->SetEnv('cli',true);
-			$args['cli'] = true; // BEST!
-		//	$_SERVER['SSH_CLIENT']
-		//	$_SERVER['SSH_CONNECTION']
-		}
-		*/
 		
 		//	Do Initialized in the init-method.(for extends class)
 		if( method_exists($this, 'Init') ){
@@ -982,8 +994,8 @@ __EOL__;
 		$this->SetEnv('admin-ip',$admin_ip);
 		$this->SetEnv('admin-mail',$admin_mail);
 		
-		$this->SetEnv('mime','text/html');
-		$this->SetEnv('charset','utf-8');
+	//	$this->SetEnv('mime','text/html');
+	//	$this->SetEnv('charset','utf-8');
 	}
 	
 	/**
@@ -994,6 +1006,9 @@ __EOL__;
 	 */
 	static function SetEnv( $key, $var )
 	{
+		if( $key === 'mime' ){
+			OnePiece5::mark( OnePiece5::getcallerline() );
+		}
 		if( $_SERVER['OP_IS_LOCALHOST'] ){
 			return Env::Set($key, $var);
 		}
@@ -1008,6 +1023,8 @@ __EOL__;
 	 */
 	static function GetEnv( $key )
 	{
+		return Env::Get($key);
+		
 		if( isset($_SERVER) and $_SERVER['OP_IS_LOCALHOST']){
 			return Env::Get($key);
 		}
@@ -1033,7 +1050,9 @@ __EOL__;
 		//  start to session.
 		if(!session_id()){
 			if( headers_sent($file,$line) ){
-				$this->StackError("Header has already been sent. Check $file, line no. $line.");
+				if( Env::Get('mime') === 'text/html' ){
+					$this->StackError("Header has already been sent. Check $file, line no. $line.");
+				}
 			}else{
 				session_start();
 			}
@@ -1413,7 +1432,11 @@ __EOL__;
 		$attr['style'] = array('font-size'=>'9pt','background-color'=>'white');
 		$string = self::Html("$nl$call_line - $str $memory$nl",'div',$attr);
 		
-		if(!Toolbox::isHtml()){
+		//	mime
+		$mime = Env::Get('mime');
+		
+		//	Case of plain text.
+		if( $mime !== 'text/html' ){
 			$string = strip_tags($string);
 			if( self::GetEnv('css') ){
 				$string = "/* ". trim($string) ." */$nl";
@@ -2447,7 +2470,7 @@ class OpException extends Exception
 
 /**
  * Env controller
- *
+ * 
  * 2014-01-22
  */
 class Env
@@ -2505,6 +2528,12 @@ class Env
 		}
 		
 		return array( $key, $var );
+	}
+	
+	static function Init()
+	{
+		self::Set('mime','text/html');
+		self::Set('charset','utf-8');
 	}
 	
 	static function Get( $key )
@@ -2577,7 +2606,8 @@ class Error
 			}else if( version_compare($v,'5.3.6') >= 0 ){
 				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 			}else if( true ){
-				$backtrace = 'This PHP is an old version (under 5.3.6). Was not possible to remove the argument.';
+				OnePiece5::Mark('This PHP is an old version (under 5.3.6). Was not possible to remove the argument.');
+				$backtrace = null;
 			}else if(version_compare($v,'5.2.5') >= 0 ){
 				$backtrace = debug_backtrace(false);
 			}else if(version_compare($v,'5.1.1') >= 0 ){
@@ -2672,11 +2702,22 @@ class Error
 			//	Sequence no.
 			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} {$message} ]] ]]".PHP_EOL;
 			
-			$count = count($backtraces);
-			foreach( $backtraces as $index => $backtrace ){
-			//	$color = $index === 0 ? '.red':null;
-				$color = null;
-				$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
+			if( $count = count($backtraces) ){
+
+				print "\n\n";
+				print "\n\n";
+				
+				var_dump($count);
+				var_dump($backtraces);
+				
+				print "\n\n";
+				print "\n\n";
+				
+				foreach( $backtraces as $index => $backtrace ){
+				//	$color = $index === 0 ? '.red':null;
+					$color = null;
+					$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
+				}
 			}
 		}
 		$return .= ']]'.PHP_EOL;
