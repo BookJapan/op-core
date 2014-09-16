@@ -44,7 +44,7 @@ class Api extends OnePiece5
 		//	init
 		$ch = $this->_ch;
 		curl_setopt( $ch, CURLOPT_POST, true );
-	//	curl_setopt( $ch, CURLOPT_POSTFIELDS, http_build_query($post_data) );
+		curl_setopt( $ch, CURLOPT_POSTFIELDS, http_build_query($post_data) );
 		return $this->Curl( $url, $expire );
 	}
 	
