@@ -2705,17 +2705,7 @@ class Error
 			//	Sequence no.
 			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} {$message} ]] ]]".PHP_EOL;
 			
-			if( $count = count($backtraces) ){
-
-				print "\n\n";
-				print "\n\n";
-				
-				var_dump($count);
-				var_dump($backtraces);
-				
-				print "\n\n";
-				print "\n\n";
-				
+			if( $count = count($backtraces) ){				
 				foreach( $backtraces as $index => $backtrace ){
 				//	$color = $index === 0 ? '.red':null;
 					$color = null;
