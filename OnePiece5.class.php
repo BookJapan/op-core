@@ -1006,9 +1006,10 @@ __EOL__;
 	 */
 	static function SetEnv( $key, $var )
 	{
-		if( $key === 'mime' ){
-			OnePiece5::mark( OnePiece5::getcallerline() );
-		}
+		return Env::Set($key, $var);
+		
+		/**************************/
+		
 		if( $_SERVER['OP_IS_LOCALHOST'] ){
 			return Env::Set($key, $var);
 		}
@@ -1024,6 +1025,8 @@ __EOL__;
 	static function GetEnv( $key )
 	{
 		return Env::Get($key);
+
+		/**************************/
 		
 		if( isset($_SERVER) and $_SERVER['OP_IS_LOCALHOST']){
 			return Env::Get($key);
@@ -2080,7 +2083,7 @@ __EOL__;
 				self::StackError("$label is not set.");
 			}
 		}
-				
+		
 		return $path;
 	}
 	
