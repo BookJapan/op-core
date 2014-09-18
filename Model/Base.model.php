@@ -72,7 +72,7 @@ abstract class Model_Base extends OnePiece5
 				if( method_exists( $this->config(), 'selftest') ){
 					$e = new OpException();
 					throw $e;
-				}else{
+				}else if($this->Admin()){
 					$this->mark('![.red[Connect was denied.]]');
 					$this->d($config);
 				}
@@ -86,32 +86,51 @@ abstract class Config_Base extends OnePiece5
 {
 	function database($args=null)
 	{
+		//	check type
+		$type = gettype($args);
+		if( $type === 'object' ){
+			$args = Toolbox::toArray($args);
+		}
+		
+		//	driver
 		if(empty($args['driver'])){
 			$args['driver'] = 'mysql';
 		}
 		
+		//	host
 		if(empty($args['host'])){
 			$args['host'] = 'localhost';
 		}
 		
+		//	user
 		if(empty($args['user'])){
-			$args['user'] = 'op_mdl_base';
+			//	Config_Name -> Name -> name -> op_mdl_name
+			$temp = explode('_',get_class($this));
+			$args['user'] = 'op_mdl_'.strtolower($temp[1]);
 		}else if($args['driver']==='mysql' and strlen($args['user']) > 16){
 			$this->StackError("user name is over 16 character.");
 		}
 		
-		if(empty($args['password'])){
+		//	password
+		if(!isset($args['password'])){
 			$key = $_SERVER['HTTP_HOST'].', '.$args['user'].', '.$this->GetEnv('admin-mail');
 			$password = md5($key);
 			$args['password'] = $password;
 		}
 		
+		//	database
 		if(empty($args['database'])){
 			$args['database'] = 'onepiece';
 		}
 		
+		//	charset
 		if(empty($args['charset'])){
 			$args['charset'] = 'utf8';
+		}
+		
+		//	to be converted, if necessary.
+		if( $type === 'object' ){
+			$args = Toolbox::toObject($args);
 		}
 		
 		return $args;
@@ -145,6 +164,10 @@ abstract class Config_Base extends OnePiece5
 		return $config;
 	}
 	
+	/**
+	 * @param  Config $config
+	 * @return Config
+	 */
 	function select($config=null)
 	{
 		$config = $this->config($config);
