@@ -239,10 +239,12 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		//switch( $mime = Toolbox::GetMIME(true) ){
+		/*
 		$mime = Env::Get('mime');
 		list( $main, $sub ) = explode('/',$mime);
 		switch( $sub ){
+		*/
+		switch( $mime = Toolbox::GetMIME(true) ){
 			case 'plain':
 				if( Env::Get('cli') ){
 					print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
@@ -2472,9 +2474,10 @@ class OpException extends Exception
 }
 
 /**
- * Env controller
+ * Env
  * 
- * 2014-01-22
+ * Creation: 2014-01-22
+ * Release:  2014-09-17
  */
 class Env
 {
@@ -2580,9 +2583,9 @@ class Env
 }
 
 /**
- * Error controller
+ * Error
  * 
- * 2014-02-18
+ * Creation: 2014-02-18
  */
 class Error
 {
