@@ -1,10 +1,16 @@
 <?php
 /**
- * デベロッパークラスは、デベロッパーのだけ呼び出されるクラス
- * メモリやロードを節約するのが目的
+ * Developer.class.php
  * 
+ * Set the only features that developers use.
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  */
-
+/**
+ * Developer
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
 class Developer
 {
 	function __call( $func, $args )
@@ -107,13 +113,14 @@ class Developer
 		}
 		
 		//	CLI
-		if( OnePiece5::GetEnv('cli') ){
+		$mime = Toolbox::GetMIME();
+		if( $mime !== 'text/html' ){
 			return;
 		}
-		
-		print <<< __EOF__
+		$file = __FILE__.'('.__LINE__.')';
+		print <<< "__EOF__"
 <style>
-	
+/* $file */
 .OnePiece {
   direction: ltr;
 }
@@ -179,7 +186,6 @@ class Developer
 .purple{
   color: #cf00fc;
 }
-	
 </style>
 __EOF__;
 	}
