@@ -1150,22 +1150,42 @@ class PDO5 extends OnePiece5
 		$this->pdo->commit();
 	}
 	
-	/*
-	function Quote($args)
-	{
-		$return = array();
-		foreach( $args as $key => $var ){
-			$key = $this->pdo->quote($key);
-			if( is_array($var) or is_object($var) ){
-				$return[$key] = $this->Quote($var);
-			}else{
-				$var = $this->pdo->quote($var);
-				$return[$key] = $var;
+	function Lock( $args )
+	{	
+		//	tables
+		foreach( $args as $table => $value ){
+
+			//	table
+			$table = ConfigSQL::Quote($table, $this->driver);
+			
+			//	value
+			switch( $value = strtoupper($value) ){
+				case 'READ':
+				case 'WRITE':
+					break;
+				default:
+					$value = null;
 			}
+			$tables[] = "$table $value";
 		}
-		return $return;
+		
+		$tables = join(', ',$tables);
+		
+		//	query
+		$qu = "LOCK TABLES ".$tables;
+		
+		//  execute
+		$io = $this->query($qu,'lock');
 	}
-	*/
+	
+	function Unlock()
+	{
+		//	query
+		$qu = "UNLOCK TABLES";
+		
+		//  execute
+		$io = $this->query($qu,'unlock');
+	}
 }
 
 class ConfigSQL extends OnePiece5
@@ -1194,7 +1214,7 @@ class ConfigSQL extends OnePiece5
 		if( is_array($var) ){
 			$safe = null;
 			foreach( $var as $key => $tmp ){
-				$safe[$key] = self::Quote($tmp);
+				$safe[$key] = self::Quote( $tmp, $driver );
 			}
 		}else if( is_string($var) and strlen($var) ){
 			
