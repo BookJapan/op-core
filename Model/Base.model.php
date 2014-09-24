@@ -159,7 +159,7 @@ abstract class Config_Base extends OnePiece5
 		
 		//	default
 		$config->set->created	 = gmdate('Y-m-d H:i:s');
-		$config->set->timestamp	 = 'NOW()';
+	//	$config->set->timestamp	 = 'NOW()';
 		
 		return $config;
 	}
@@ -175,6 +175,34 @@ abstract class Config_Base extends OnePiece5
 		//	default
 		$config->limit = 1;
 		$config->cache = 1;
+		
+		return $config;
+	}
+	
+	/**
+	 * @param  Config $config
+	 * @return Config
+	 */
+	function update($config=null)
+	{
+		$config = $this->config($config);
+		
+		$config->set->updated = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
+		
+		return $config;
+	}
+	
+	/**
+	 * @param  Config $config
+	 * @return Config
+	 */
+	function delete($config=null)
+	{
+		$config = $this->config($config);
+		
+		$config->set->deleted = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
 		
 		return $config;
 	}
