@@ -1196,6 +1196,10 @@ class DML5 extends OnePiece5
 	
 	protected function ConvertLimit( $conf )
 	{
-		return "LIMIT ".(int)$conf['limit'];
+		if( $limit = $conf['limit'] ){
+			return "LIMIT ".(int)$limit;
+		}else{
+			return null;
+		}
 	}
 }
