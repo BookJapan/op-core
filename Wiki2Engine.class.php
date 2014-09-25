@@ -34,7 +34,7 @@ class Wiki2Engine extends OnePiece5
 		$string  = parent::Escape($string);
 		$elements = array();
 		
-		// 最右最短マッチ
+		// Rightmost shortest match
 		$pattern = '/!\[('.self::$pattAttr.')\[((?:(?!\!\['.self::$pattAttr.'\[.+?\]{2}).)*?)\]{2}/s';
 		
 		$i = null;
