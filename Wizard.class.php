@@ -1,11 +1,16 @@
 <?php
 /**
- * 
- * 
- * 
+ * Wizard is build database automatic.
+ * Wizard has self test feature.
+ * If the database schema has been changed, Wizard will report to the administrator.
  * 
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
+
+/**
+ * Wizard
  * 
+ * @author tomoaki.nagahara@gmail.com
  */
 class Wizard extends OnePiece5
 {
@@ -68,6 +73,13 @@ class Wizard extends OnePiece5
 			return false;
 		}
 		
+		//	Check table
+		if( empty($config->table) ){
+			$this->mark('$config->table is empty.');
+			return false;
+		}
+		
+		//	Check port
 		if( empty($config->database->port) ){
 			if(is_array($config->database)){
 				$config->database['port'] = '3306';
@@ -91,12 +103,29 @@ class Wizard extends OnePiece5
 		//	init
 		$this->_result = new Config();
 		$this->_wizard = new Config();
+
+		//  init form config.
+		$this->form()->AddForm( $this->config()->WizardForm() );
 		
+		//	
+		$this->_selftest_loop();
+		
+		//	check
+		$this->d($this->_result,'selftest');
+		$this->d($this->_wizard,'selftest');
+		
+		//	status
+		if( $this->_status ){
+			$this->mark($this->_status,'selftest');
+		}
+		
+		return isset($io) ? $io: true;
+	}
+	
+	private function _selftest_loop()
+	{
 		if( $selftest = $this->GetSession('selftest') ){
 			
-			//  Init form config.
-			$this->form()->AddForm( $this->config()->MagicForm() );
-						
 			//	Check each class
 			foreach( $selftest as $class_name => $config ){
 				
@@ -116,7 +145,6 @@ class Wizard extends OnePiece5
 					}else{
 						$this->mark("![.red [$class_name is selftest failed]]",'selftest');
 					}
-					
 				}catch( Exception $e ){
 					$version = PHP_VERSION;
 					$file = $e->getFile();
@@ -125,16 +153,16 @@ class Wizard extends OnePiece5
 					$this->mark("$file, $line, $message, PHP $version");
 					$io = false;
 				}
-				
+		
 				//	Set Cache
 				$this->Cache()->Set($key,$io);
-				
+		
 				if(!$io){
 					$do_wizard = true;
 					$config_list[] = $config;
 				}
 			}
-
+			
 			if(!empty($do_wizard)){
 				//	Execute the Wizard.
 				if( $this->_Wizard($config_list) ){
@@ -150,24 +178,12 @@ class Wizard extends OnePiece5
 			}else{
 				$this->_PrintForm($config->form);
 			}
-		}else{
-		//	$this->form()->Debug($this->config()->GetFormName());
 		}
-		
-		//	check
-		//$this->mark('wizard is successful.');
-		$this->d($this->_result,'selftest');
-		$this->d($this->_wizard,'selftest');
 		
 		//	re save
 		$this->SetSession('selftest', $selftest);
 		
-		//	status
-		if( $this->_status ){
-			$this->mark($this->_status,'selftest');
-		}
-		
-		return isset($io) ? $io: true;
+		return empty($do_wizard) ? false: true;
 	}
 	
 	/**
@@ -179,17 +195,31 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
-		$dbms  = $config->database->driver;
-		$host  = $config->database->host;
-		$port  = $config->database->port;
-		$user  = $config->database->user;
-		$db    = $config->database->database;
+		//	clone
+		$database = clone $config->database;
+		
+		//	If case of wizard.
+		$form_name = $this->Config()->GetFormName();
+		if( $this->Form()->Secure( $form_name ) ){
+			$user = $this->Form()->GetInputValue(WizardConfig::_INPUT_USERNAME_,$form_name);
+			$pass = $this->Form()->GetInputValue(WizardConfig::_INPUT_PASSWORD_,$form_name);
+			$database->user = $user;
+			$database->password = $pass;
+		}
+		
+		//	init
+		$dbms  = $database->driver;
+		$host  = $database->host;
+		$port  = $database->port;
+		$user  = $database->user;
+		$db    = $database->database;
+		
 		if( $port and $port !== '3306' ){
 			$host .=  ':'.$port;
 		}
 		
 		//	Database connection test
-		$io = $this->pdo()->Connect($config->database);
+		$io = $this->pdo()->Connect( $database );
 		if(!$io){
 			$this->d($this->FetchError(),'debug');
 			$this->d(Error::Get(),'debug');
@@ -324,18 +354,17 @@ class Wizard extends OnePiece5
 	
 	private function _CheckTable( Config $config )
 	{
+		$database = clone $config->database;
+		
 		//  Get table-name list.
-		if(!$table_list = $this->pdo()->GetTableList($config->database) ){
-			
+		$table_list = $this->pdo()->GetTableList($database);
+		if( $table_list === false ){
 			//	result
-			$host = $config->database->host;
-			$user = $config->database->user;
-			$db   = $config->database->database;
 			$this->_result->connect->$host->$user->$db = false;
-
-			//	Logger
+			
+			//	Log
+			$info = "(host={$database->host}, user={$database->user}, db={$database->database})";
 			$this->model('Log')->Set('FAILED: '.$this->pdo()->qu(),false);
-			$this->model('Log')->Set("FAILED: Does not access database.(host=$host, user=$user, db=$db)",false);
 			return false;
 		}
 		
@@ -555,8 +584,9 @@ class Wizard extends OnePiece5
 		$select->where->User = $user;
 		$select->limit		 = 1;
 		$record = $this->pdo()->select($select);
-		$this->mark( $this->pdo()->qu() );
-		$this->d($record);
+		
+	//	$this->mark( $this->pdo()->qu() );
+	//	$this->d($record);
 		
 		if( is_string($config->privilege) ){
 			foreach( explode(',',$config->privilege) as $label ){
@@ -568,7 +598,10 @@ class Wizard extends OnePiece5
 			}
 		}
 		
-		foreach( $privilege as $priv ){
+	//	$this->mark($config->privilege);
+	//	$this->d($privilege);
+		
+		foreach( $privilege as $priv => $var ){
 			$key = ucfirst($priv).'_priv';
 			$var = $record[$key];
 			if( $var == 'N' ){
@@ -900,7 +933,12 @@ class Wizard extends OnePiece5
 	}
 }
 
-class WizardConfig extends ConfigMgr
+/**
+ * WizardConfig
+ *
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
+class WizardConfig extends OnePiece5
 {
 	const _FORM_NAME_ = 'op_magic_form';
 	const _INPUT_USERNAME_ = 'username';
@@ -912,7 +950,7 @@ class WizardConfig extends ConfigMgr
 		return self::_FORM_NAME_;
 	}
 	
-	function MagicForm()
+	function WizardForm()
 	{
 		$config = new Config();
 		
@@ -945,6 +983,11 @@ class WizardConfig extends ConfigMgr
 	}
 }
 
+/**
+ * WizardHelper
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
 class WizardHelper extends OnePiece5
 {
 	/**
