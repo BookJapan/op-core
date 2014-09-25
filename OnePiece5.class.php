@@ -2542,9 +2542,10 @@ class Env
 		}
 		
 		//	Check if admin.
-		if( isset($_SERVER['PS1']) ){
-			$_SERVER[self::_SERVER_IS_ADMIN_] = true;
-		}
+		$_SERVER[self::_SERVER_IS_ADMIN_] = isset($_SERVER['PS1']) ? true: false;
+		
+		//	Check if localhost.
+		$_SERVER[self::_SERVER_IS_LOCALHOST_] = $_SERVER[self::_SERVER_IS_ADMIN_];
 	}
 	
 	private static function _init_admin()
