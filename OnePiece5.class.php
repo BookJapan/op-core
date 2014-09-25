@@ -698,7 +698,6 @@ __EOL__;
 			}
 			
 		}else{
-			
 			//	Notify at email.
 			$ua   = isset($_SERVER['HTTP_USER_AGENT'])	 ? $_SERVER['HTTP_USER_AGENT']: null;
 			$ip   = isset($_SERVER['REMOTE_ADDR'])		 ? $_SERVER['REMOTE_ADDR']: 	null;
@@ -2590,12 +2589,8 @@ class Env
 	
 	static function Set( $key, $var )
 	{
-
-	//	print __METHOD__ .', '. $key .'='. $var . PHP_EOL;
-		
 		if( $key == 'admin-ip' ){
-		//	print __METHOD__ .', '. $key .'='. $var . PHP_EOL;
-		//	var_dump($_SERVER);
+			$_SERVER['OP_IS_ADMIN'] = null;
 		}
 		
 		$key = strtoupper($key);
