@@ -21,68 +21,8 @@ if(!ini_get('date.timezone')){
 	date_default_timezone_set('UTC');
 }
 
-//	Added "op-root" to include_path.
-if( ! isset($_SERVER['OnePiece5']) ){
-	$_SERVER['OnePiece5'] = array();
-	
-	// Added op-root to include_path.
-	$op_root = dirname(__FILE__);
-	$include_path = ini_get('include_path');
-	$include_path = rtrim( $include_path, PATH_SEPARATOR );
-	$include_path .= PATH_SEPARATOR . $op_root;
-	ini_set('include_path',$include_path);
-	
-	//	Added op-root to $_SERVER
-	if(empty($_SERVER['OP_ROOT'])){
-		$_SERVER['OP_ROOT'] = $op_root;
-	}
-	$_SERVER['OP_ROOT'] = rtrim($_SERVER['OP_ROOT'],'/').'/';
-	
-	//	Added app-root to $_SERVER
-	if(empty($_SERVER['APP_ROOT'])){
-		$_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']);
-	}
-	$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
-}
-
 //	Init Env
 Env::Init();
-
-//	Check if CLI.
-if( isset($_SERVER['SHELL']) ){
-	Env::Set('cli',true);
-	Env::Set('mime','text/plain');
-}
-
-//	Check if localhost.
-if( isset($_SERVER['REMOTE_ADDR']) ){
-	if($_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1'){
-		$_SERVER['OP_IS_LOCALHOST'] = true;
-	}else{
-		$_SERVER['OP_IS_LOCALHOST'] = false;
-	}
-}else if( isset($_SERVER['SSH_CLIENT']) ){
-	$_SERVER['OP_IS_LOCALHOST'] = true;
-}else{
-	$_SERVER['OP_IS_LOCALHOST'] = false;
-}
-
-//	Check if administrator.
-if( $_SERVER['OP_IS_LOCALHOST'] ){
-	$_SERVER['OP_IS_ADMIN'] = true;
-}else if( empty($_SERVER['ADMIN_IP']) ){
-	$_SERVER['OP_IS_ADMIN'] = null;
-}else if( $_SERVER['REMOTE_ADDR'] === $_SERVER['ADMIN_IP'] ){
-	$_SERVER['OP_IS_ADMIN'] = true;
-}else{
-	$_SERVER['OP_IS_ADMIN'] = null;
-}
-
-//	Init developer list.
-$_SERVER['OP_IS_DEVELOPER'] = null;
-
-//	Define
-define('_USE_ERROR_CLASS_',$_SERVER['OP_IS_LOCALHOST']);
 
 /**
  * TODO: We (will|should) support to spl_autoload_register
@@ -483,15 +423,25 @@ class OnePiece5
 		self::StackError($message);
 	}
 	
-	public static function __callStatic( $name , $arguments )
+	static function __callStatic( $name , $arguments )
 	{
-		//  PHP 5.3.0 later
-		$func    = __FUNCTION__;
-		$caller  = $this->GetCallerLine();
-		$message = "MAGIC METHOD ($func): $name, ".serialize($arguments);
-		
-		$this->StackError( __FUNCTION__ );
-		$this->mark(PHP_VERSION);
+		if( isset($this) ){
+			//  PHP 5.3.0 later
+			$func    = __FUNCTION__;
+			$caller  = $this->GetCallerLine();
+			$message = "MAGIC METHOD ($func): $name, ".serialize($arguments);
+			
+			$this->StackError( __FUNCTION__ );
+			$this->mark(PHP_VERSION);
+		}else{
+			OnePiece5::StackError(__FUNCTION__);
+			/*
+			OnePiece5::Mark("$name");
+			if(!empty($arguments)){
+				OnePiece5::D($arguments);
+			}
+			*/
+		}
 	}
 	
 	function __set( $name, $value )
@@ -582,12 +532,12 @@ class OnePiece5
 		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
 		
 		//	Identity
-		if( $server_addr == $remote_addr ){
+		if( $server_addr === $remote_addr ){
 			$io = true;
 		}else
 		
 		//	External access
-		if( self::GetEnv('admin-ip') == $remote_addr ){
+		if( self::GetEnv('admin-ip') === $remote_addr ){
 			$io = true;
 		}else{
 			$io = false;
@@ -606,7 +556,7 @@ class OnePiece5
 	 */
 	static function StackError( $args )
 	{
-		if( _USE_ERROR_CLASS_ ){
+		if( $_SERVER[Env::_SERVER_IS_LOCALHOST_] ){
 			Error::Set($args);
 			return;
 		}
@@ -2482,8 +2432,16 @@ class OpException extends Exception
 class Env
 {
 	const _NAME_SPACE_		 = 'ONEPIECE_5';
+	
 	const _ADMIN_IP_ADDR_	 = 'admin_ip';
 	const _ADMIN_EMAIL_ADDR_ = 'admin_mail';
+	
+	const _ROOT_OP_		 = 'OP_ROOT';
+	const _ROOT_APP_	 = 'APP_ROOT';
+	const _ROOT_DOC_	 = 'DOCUMENT_ROOT';
+	
+	const _SERVER_IS_LOCALHOST_	 = 'OP_IS_LOCALHOST';
+	const _SERVER_IS_ADMIN_		 = 'OP_IS_ADMIN';
 	
 	static private function _Convert( $key, $var=null )
 	{
@@ -2540,6 +2498,69 @@ class Env
 	{
 		self::Set('mime','text/html');
 		self::Set('charset','utf-8');
+		
+		self::_init_include_path();
+		self::_init_cli();
+		self::_init_admin();
+	}
+	
+	private static function _init_include_path()
+	{
+		//	init op_root
+		$op_root = dirname(__FILE__);
+		
+		//	Added "op-root" to include_path.
+		$include_path = ini_get('include_path');
+		if(!strpos( $include_path, PATH_SEPARATOR.$op_root ) ){
+			$include_path = rtrim( $include_path, PATH_SEPARATOR );
+			$include_path .= PATH_SEPARATOR . $op_root;
+			ini_set('include_path',$include_path);
+		}
+		
+		//	Added "op-root" to $_SERVER
+		if(empty($_SERVER['OP_ROOT'])){
+			$_SERVER['OP_ROOT'] = $op_root;
+		}
+		$_SERVER['OP_ROOT'] = rtrim($_SERVER['OP_ROOT'],'/').'/';
+	
+		//	Added "app-root" to $_SERVER
+		if(empty($_SERVER['APP_ROOT'])){
+			$_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']);
+		}
+		$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
+	}
+	
+	private static function _init_cli()
+	{
+		//	Check if CLI.
+		if( isset($_SERVER['SHELL']) ){
+			Env::Set('cli',true);
+			Env::Set('mime','text/plain');
+		}
+		
+		//	Check if admin.
+		if( isset($_SERVER['PS1']) ){
+			$_SERVER[self::_SERVER_IS_ADMIN_] = true;
+		}
+	}
+	
+	private static function _init_admin()
+	{
+		if( Env::Get('cli') ){
+			return;
+		}
+		
+		//	Check if localhost.
+		$remote_addr = $_SERVER['REMOTE_ADDR'];
+		if( $remote_addr === '127.0.0.1' or $remote_addr === '::1'){
+			$is_localhost = true;
+		}else{
+			$is_localhost = false;
+		}
+		
+		//	Set to $_SERVER
+		$_SERVER[self::_SERVER_IS_LOCALHOST_]	 = $is_localhost;
+		$_SERVER[self::_SERVER_IS_ADMIN_]		 = $is_localhost ? true: false;
 	}
 	
 	static function Get( $key )
@@ -2561,25 +2582,18 @@ class Env
 	
 	static function Set( $key, $var )
 	{
-		$key = strtoupper($key);
-		/*
-		if( $key === 'DEVELOPER' ){
-			return self::SetDeveloper($var);
+
+	//	print __METHOD__ .', '. $key .'='. $var . PHP_EOL;
+		
+		if( $key == 'admin-ip' ){
+		//	print __METHOD__ .', '. $key .'='. $var . PHP_EOL;
+		//	var_dump($_SERVER);
 		}
-		*/
+		
+		$key = strtoupper($key);
 		list( $key, $var ) = self::_Convert( $key, $var );
 		$_SERVER[self::_NAME_SPACE_][$key] = $var;
-	//	$_SERVER[self::_NAME_SPACE_][$key] = OnePiece5::Escape($var);
 	}
-	
-	/*
-	static function SetDeveloper( $var )
-	{
-		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
-		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
-		$_SERVER['OP_IS_ADMIN'] = $remote_addr === $var ? true: false;
-	}
-	*/
 }
 
 /**
