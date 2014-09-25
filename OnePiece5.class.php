@@ -523,6 +523,12 @@ class OnePiece5
 	 */
 	static function Admin()
 	{
+		if( Env::Get('cli') ){
+			if( Env::Get('admin-user') === $_SERVER['USER'] ){
+				return true;
+			}
+		}
+		
 		if(!is_null($_SERVER['OP_IS_ADMIN'])){
 			return  $_SERVER['OP_IS_ADMIN'];
 		}
@@ -2534,6 +2540,9 @@ class Env
 		
 		//	Check if localhost.
 		$_SERVER[self::_SERVER_IS_LOCALHOST_] = $_SERVER[self::_SERVER_IS_ADMIN_];
+		
+	//	$temp = explode(' ',$_SERVER['SSH_CLIENT']);
+	//	$remote_addr = $temp[0];
 	}
 	
 	private static function _init_root()
