@@ -373,7 +373,11 @@ class Toolbox
 		 * Difference between HTTP_X_FORWARDED_HOST and HTTP_X_FORWARDED_SERVER unclear.
 		 */
 		if( $domain ){
-			$domain = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: $_SERVER['HTTP_HOST'];
+			foreach( array('HTTP_X_FORWARDED_HOST','HTTP_HOST','HOSTNAME') as $key ){
+				if( isset($_SERVER[$key]) ){
+					$domain = $_SERVER[$key];
+				}
+			}
 		}else{
 			$domain = null;
 		}
