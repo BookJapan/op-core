@@ -3,7 +3,6 @@
  * The Toolbox for present OnePiece-Framework.
  *
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- *
  */
 class Toolbox
 {
@@ -359,6 +358,13 @@ class Toolbox
 	
 	static function GetURL( $conf=array() )
 	{
+		//	cache feature
+		$ckey = md5(serialize($conf));
+		static $cache;
+		if( isset($cache[$ckey]) ){
+			return $cache[$ckey];
+		}
+		
 		//	init
 		$scheme	 = isset($conf['scheme']) ? $conf['scheme']: true;
 		$domain	 = isset($conf['domain']) ? $conf['domain']: true;
@@ -399,8 +405,8 @@ class Toolbox
 		}else{
 			$query = null;
 		}
-	
-		return $scheme.$domain.$path.$query;
+		
+		return $cache[$ckey] = $scheme.$domain.$path.$query;
 	}
 	
 	static function GetDomain( $conf=array() )
