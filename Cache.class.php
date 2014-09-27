@@ -61,13 +61,20 @@ class Cache extends OnePiece5
 	 */
 	private $_cas_list = array();
 	
+	/**
+	 * Cache is separate to each domain.
+	 * 
+	 * @var string
+	 */
+	private $_domain = null;
+	
 	function Test()
 	{
 		$key = 'count';
 		$var = $this->Get($key);
 		$var = $var +1;
 		$this->Set($key,$var);
-		$this->mark($var);
+		$this->mark('Count: '.$var);
 	}
 	
 	function Debug()
@@ -106,6 +113,9 @@ class Cache extends OnePiece5
 		}else{
 			$this->mark("not found Memcache and Memcached",'cache');
 		}
+		
+		//	Cache is separate to each domain.
+		$this->_domain = Toolbox::GetDomain();
 		
 		return true;
 	}
@@ -173,6 +183,7 @@ class Cache extends OnePiece5
 		}
 	}
 	
+	/*
 	function CheckKeyName($key)
 	{
 		if( preg_match("|^([^-_a-z])$|i",$key,$match) ){
@@ -181,6 +192,7 @@ class Cache extends OnePiece5
 		}
 		return true;
 	}
+	*/
 	
 	function Set( $key, $value, $expire=1200 )
 	{
@@ -199,8 +211,8 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
-		//	Anti Injection.
-		$key = md5($key);
+		//	Anti Injection, and separate each domain.
+		$key = md5( $key . $this->_domain );
 		
 		/*
 		if( $this->_is_force_md5 ){
@@ -223,8 +235,8 @@ class Cache extends OnePiece5
 		
 		switch( $name = get_class($this->_cache) ){
 			case 'Memcached':
-				if( isset( $this->_cas_list[md5($key)] ) ){
-					$cas = $this->_cas_list[md5($key)];
+				if( isset( $this->_cas_list[$key] ) ){
+					$cas = $this->_cas_list[$key];
 					return $this->_cache->cas( $cas, $key, $value, $expire );
 				}else{
 					return $this->_cache->Set( $key, $value, $expire );
@@ -259,8 +271,8 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
-		//	Anti Injection.
-		$key = md5($key);
+		//	Anti Injection, and separate each domain.
+		$key = md5( $key . $this->_domain );
 		
 		/*
 		//	check
@@ -276,10 +288,10 @@ class Cache extends OnePiece5
 				
 			case 'memcached':
 				if( $use_cas ){
-					$cas = &$this->_cas_list[md5($key)];
+					$cas = &$this->_cas_list[$key];
 				}else{
 					$cas = null;
-					unset(  $this->_cas_list[md5($key)]);
+					unset(  $this->_cas_list[$key]);
 				}
 				return $this->_cache->Get( $key, null, $cas );
 				
@@ -372,7 +384,8 @@ class Cache extends OnePiece5
 		}
 		*/
 		
-		$key = md5($key);
+		//	Anti Injection, and separate each domain.
+		$key = md5( $key . $this->_domain );
 		
 		return $this->_cache->delete( $key );
 	}
