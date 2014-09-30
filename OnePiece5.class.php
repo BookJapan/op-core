@@ -2345,6 +2345,8 @@ __EOL__;
 		//  Check
 		if(is_null($string)){
 			return '';
+		}else if(is_numeric($string)){
+			return $string;
 		}else if(!is_string($string)){
 			self::mark( 'Does not string - '.self::GetCallerLine() );
 			self::StackError("Does not string.");
