@@ -2651,7 +2651,13 @@ class Error
 			}
 			
 			//	serialize backtrace
-			$traceStr  = serialize($backtrace);
+			if( $traceStr ){
+				$traceStr = serialize($backtrace);
+			}else{
+				$traceStr = serialize($backtrace[0]);
+				$traceStr.= serialize($backtrace[1]);
+				$traceStr.= serialize($backtrace[2]);
+			}
 		}
 		
 		//	creat check key (duplicate check)
