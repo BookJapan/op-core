@@ -2673,7 +2673,11 @@ class Error
 	
 	static function Get()
 	{
-		return array_shift($_SESSION[self::_NAME_SPACE_]);
+		if( isset($_SESSION[self::_NAME_SPACE_]) ){
+			return array_shift($_SESSION[self::_NAME_SPACE_]);
+		}else{
+			return null;
+		}
 	}
 	
 	static function Report()
