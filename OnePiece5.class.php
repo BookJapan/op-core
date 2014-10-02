@@ -1008,17 +1008,6 @@ __EOL__;
 	
 	private function _InitSession()
 	{
-		//  start to session.
-		if(!session_id()){
-			if( headers_sent($file,$line) ){
-				if( Env::Get('mime') === 'text/html' ){
-					$this->StackError("Header has already been sent. Check $file, line no. $line.");
-				}
-			}else{
-				session_start();
-			}
-		}
-		
 		/**
 		 * @see http://www.glamenv-septzen.net/view/29
 		 */
@@ -2513,6 +2502,7 @@ class Env
 		self::_init_include_path();
 		self::_init_cli();
 		self::_init_admin();
+		self::_init_session();
 	}
 	
 	private static function _init_include_path()
@@ -2572,6 +2562,20 @@ class Env
 		//	Set to $_SERVER
 		$_SERVER[self::_SERVER_IS_LOCALHOST_]	 = $is_localhost;
 		$_SERVER[self::_SERVER_IS_ADMIN_]		 = $is_localhost ? true: false;
+	}
+	
+	private static function _init_session()
+	{
+		//  start to session.
+		if(!session_id()){
+			if( headers_sent($file,$line) ){
+			//	if( Env::Get('mime') === 'text/html' ){
+				$this->StackError("Header has already been sent. Check $file, line no. $line.");
+			//	}
+			}else{
+				session_start();
+			}
+		}
 	}
 	
 	static function Get( $key )
