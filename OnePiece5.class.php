@@ -1393,9 +1393,6 @@ __EOL__;
 		//	Case of plain text.
 		if( $mime !== 'text/html' ){
 			$string = strip_tags($string);
-			if( Env::Get('cli') ){
-				$string = html_entity_decode($string,ENT_QUOTES);
-			}
 			if( self::GetEnv('css') ){
 				$string = "/* ". trim($string) ." */$nl";
 			}
