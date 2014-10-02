@@ -2584,7 +2584,8 @@ class Env
 	
 	static function Set( $key, $var )
 	{
-		if( $key == 'admin-ip' ){
+		//	Reset admin flag. 
+		if( $key === 'admin-ip' ){
 			$_SERVER['OP_IS_ADMIN'] = null;
 		}
 		
@@ -2635,6 +2636,8 @@ class Error
 			}
 			
 			//	serialize backtrace
+			$traceStr = serialize($backtrace);
+			/*
 			if( $traceStr ){
 				$traceStr = serialize($backtrace);
 			}else{
@@ -2642,6 +2645,7 @@ class Error
 				$traceStr.= serialize($backtrace[1]);
 				$traceStr.= serialize($backtrace[2]);
 			}
+			*/
 		}
 		
 		//	creat check key (duplicate check)
