@@ -523,12 +523,6 @@ class OnePiece5
 	 */
 	static function Admin()
 	{
-		if( Env::Get('cli') ){
-			if( Env::Get('admin-user') === $_SERVER['USER'] ){
-				return true;
-			}
-		}
-		
 		if(!is_null($_SERVER['OP_IS_ADMIN'])){
 			return  $_SERVER['OP_IS_ADMIN'];
 		}
@@ -704,6 +698,7 @@ __EOL__;
 			}
 			
 		}else{
+			
 			//	Notify at email.
 			$ua   = isset($_SERVER['HTTP_USER_AGENT'])	 ? $_SERVER['HTTP_USER_AGENT']: null;
 			$ip   = isset($_SERVER['REMOTE_ADDR'])		 ? $_SERVER['REMOTE_ADDR']: 	null;
@@ -1598,7 +1593,7 @@ __EOL__;
 			$args = html_entity_decode( $args, ENT_QUOTES, $charset );
 			$args = htmlentities( $args, ENT_QUOTES, $charset );
 		}
-
+		
 		return $args;
 	}
 	
@@ -2511,7 +2506,6 @@ class Env
 		
 		self::_init_include_path();
 		self::_init_cli();
-		self::_init_root();
 		self::_init_admin();
 	}
 	
@@ -2527,6 +2521,18 @@ class Env
 			$include_path .= PATH_SEPARATOR . $op_root;
 			ini_set('include_path',$include_path);
 		}
+		
+		//	Added "op-root" to $_SERVER
+		if(empty($_SERVER['OP_ROOT'])){
+			$_SERVER['OP_ROOT'] = $op_root;
+		}
+		$_SERVER['OP_ROOT'] = rtrim($_SERVER['OP_ROOT'],'/').'/';
+	
+		//	Added "app-root" to $_SERVER
+		if(empty($_SERVER['APP_ROOT'])){
+			$_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']);
+		}
+		$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
 	}
 	
 	private static function _init_cli()
@@ -2538,28 +2544,9 @@ class Env
 		}
 		
 		//	Check if admin.
-		$_SERVER[self::_SERVER_IS_ADMIN_] = isset($_SERVER['PS1']) ? true: false;
-		
-		//	Check if localhost.
-		$_SERVER[self::_SERVER_IS_LOCALHOST_] = $_SERVER[self::_SERVER_IS_ADMIN_];
-		
-	//	$temp = explode(' ',$_SERVER['SSH_CLIENT']);
-	//	$remote_addr = $temp[0];
-	}
-	
-	private static function _init_root()
-	{
-		//	Added "op-root" to $_SERVER
-		$op_root = dirname(__FILE__);
-		$_SERVER['OP_ROOT'] = rtrim($op_root,'/').'/';
-		
-		//	Added "app-root" to $_SERVER
-		if( Env::Get('cli') ){
-			$app_root = dirname($_SERVER['PWD'] .DIRECTORY_SEPARATOR. $_SERVER['SCRIPT_FILENAME']);
-		}else{
-			$app_root = dirname($_SERVER['SCRIPT_FILENAME']);
+		if( isset($_SERVER['PS1']) ){
+			$_SERVER[self::_SERVER_IS_ADMIN_] = true;
 		}
-		$_SERVER['APP_ROOT'] = rtrim($app_root,'/').'/';
 	}
 	
 	private static function _init_admin()
