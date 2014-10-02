@@ -24,6 +24,9 @@ if(!ini_get('date.timezone')){
 //	Init Env
 Env::Init();
 
+//	Handling vivre
+Vivre::Handling();
+
 /**
  * TODO: We (will|should) support to spl_autoload_register
  * @see http://www.php.net/manual/ja/function.spl-autoload-register.php
@@ -211,6 +214,9 @@ if(!function_exists('OnePieceShutdown')){
 				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
 				break;
 		}
+		
+		//	Release vivre
+		Vivre::Relaese();
 	}
 	register_shutdown_function('OnePieceShutdown');
 }
@@ -2358,6 +2364,9 @@ __EOL__;
 	 */
 	function Vivre( $register )
 	{
+		OnePiece5::Mark("This method is deprecated.",'vivre');
+		return true;
+		
 		if( $register ){
 			//	register
 			if($this->GetEnv('vivre')){
@@ -2877,5 +2886,64 @@ class Error
 		$serial = trim($serial,', ');
 		$serial .= ')'; 
 		return $serial;
+	}
+}
+
+/**
+ * Checked dead or alive.
+ * 
+ * @author tomoaki.nagahara@gmail.com
+ */
+class Vivre
+{
+	const _NAMESPACE_	 = Env::_NAME_SPACE_;
+	const _KEY_NAME_	 = 'VIVRE';
+	
+	static function Handling()
+	{
+		if(!session_id()){
+			OnePiece5::Mark("This system not working php's session.");
+		}
+		
+		if(isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
+			self::Warning();
+		}
+		
+	}
+	
+	static function Relaese()
+	{
+		unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_]);
+	}
+	
+	static function Warning()
+	{
+		//	local info
+		$uri	 = Toolbox::GetURL();
+		
+		$host  = isset($_SERVER['HTTP_HOST'])   ? $_SERVER['HTTP_HOST']: null; // SERVER_NAME, SERVER_ADDR
+		$addr  = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: null;
+		$xhost = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: null; // HTTP_X_FORWARDED_SERVER
+		$gmdate	 = gmdate('Y-m-d H:i:s');
+		$date	 = date('Y-m-d H:i:s');
+		
+		//	visitors info
+		$ip		 = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['REMOTE_ADDR'];
+		$domain	 = gethostbyaddr($ip);
+		$ua		 = $_SERVER['HTTP_USER_AGENT'];
+		
+		//	build mail info
+		$to = Env::Get(Env::_ADMIN_EMAIL_ADDR_);
+		$subject = '[ONEPIECE] VIVRE ALERT';
+		$message = "";
+		$message .= "Host: $host ($addr)";
+		$message .= "Request URI: $uri";
+		$message .= "Visitor: $ip ($domain)";
+		$message .= "User Agent: $ua";
+		$message .= "Date: $date";
+		$message .= "GMT: $gmdate";
+		
+		//	send mail
+		mail($to, $subject, $message);
 	}
 }
