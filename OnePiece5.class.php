@@ -128,15 +128,6 @@ if(!function_exists('OnePieceShutdown')){
 			return;
 		}
 		
-		/*
-		//	check duplicate
-		static $init;
-		if(!is_null($init)){
-			return;
-		}
-		$init = true;
-		*/
-		
 		/**
 		 * @see http://jp.php.net/manual/ja/features.connection-handling.php
 		 */
@@ -182,11 +173,6 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		//	mime
-		/*
-		$mime = Env::Get('mime');
-		list( $main, $sub ) = explode('/',$mime);
-		switch( $sub ){
-		*/
 		switch( $mime = Toolbox::GetMIME(true) ){
 			case 'plain':
 				if( Env::Get('cli') ){
