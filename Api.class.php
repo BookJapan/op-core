@@ -63,7 +63,8 @@ class Api extends OnePiece5
 	function Curl( $url, $expire=null )
 	{
 		//	check cache
-		if( is_numeric($expire) ){
+	//	if( is_numeric($expire) ){
+		if(!is_null($expire)){
 			//	check post data's cache key
 			if( $this->_ckey ){
 				//	use post data's cache key
@@ -73,12 +74,20 @@ class Api extends OnePiece5
 				//	create cache key
 				$ckey = md5($url);
 			}
-			//	If hit cache
-			if( $body = $this->Cache()->Get($ckey) ){
-				//	return cache
-				$this->mark('Hit cache!!',__CLASS__);
-				$this->_is_cache = true;
-				return $body;
+			
+			if( $expire === false ){
+				//	Delete cache if value is false.
+				$this->Cache()->Delete($ckey);
+			}else if( is_numeric($expire) ){
+				//	If hit cache
+				if( $body = $this->Cache()->Get($ckey) ){
+					//	return cache
+					$this->mark('Hit cache!!',__CLASS__);
+					$this->_is_cache = true;
+					return $body;
+				}
+			}else{
+				$expire = 1;
 			}
 		}
 		
