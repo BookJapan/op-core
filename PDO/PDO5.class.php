@@ -938,6 +938,11 @@ class PDO5 extends OnePiece5
 		//  execute
 		$count = $this->query($qu,'count');
 		
+		//	check
+		if( is_numeric($count) ){
+			$count = (int)$count;
+		}
+		
 		return $count;
 	}
 	
