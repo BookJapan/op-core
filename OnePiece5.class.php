@@ -1368,11 +1368,8 @@ __EOL__;
 		$attr['style'] = array('font-size'=>'9pt','background-color'=>'white');
 		$string = self::Html("$nl$call_line - $str $memory$nl",'div',$attr);
 		
-		//	mime
-		$mime = Env::Get('mime');
-		
 		//	Case of plain text.
-		if( $mime !== 'text/html' ){
+		if(!Toolbox::isHtml()){
 			$string = strip_tags($string);
 			if( self::GetEnv('css') ){
 				$string = "/* ". trim($string) ." */$nl";
