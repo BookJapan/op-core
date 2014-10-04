@@ -164,11 +164,14 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		// Session reset
-		if( getenv('REMOTE_ADDR') == '127.0.0.1' ){
+		if( getenv('REMOTE_ADDR') == '127.0.0.1' and Toolbox::isHtml() ){
 			$rand = rand( 0, 1000);
 			if( 1 == $rand ){
 				$_SESSION = array();
-				print OnePiece5::Wiki2('![.red[Session is clear]]');
+				$i18n = new i18n();
+				$text = 'OnePiece did clear the session.';
+				$message = $text.' ('.$i18n->En($text).')';
+				print "<script>alert('$message');</script>";
 			}
 		}
 		
