@@ -69,14 +69,15 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	mime
-		$mime = strtolower($this->GetEnv('mime'));
+		$mime = strtolower(Toolbox::GetMIME(true));
 		switch( $mime ){
 			case 'csv':
-			case 'text':
+			case 'plain':
 				//	CLI mode
 				break;
-					
+				
 			case 'json':
+			case 'javascript':
 				if( $this->admin() ){
 					if( $this->_content ){
 						$this->SetJson('Error',$this->_content);
@@ -846,17 +847,15 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function doJson()
 	{
-	//	header('Content-type: application/json');
-		header('Content-type: text/html');
 		print json_encode($this->_json);
 	}
 	
 	function SetJson( $key, $var )
 	{
-		static $init = null;
-		if( !$init ){
-			$this->SetEnv('cli',true);
-			$this->SetEnv('mime','json');
+		static $init;
+		if(!$init){
+			$init = true;
+			Toolbox::SetMIME('text/javascript');
 		}
 		$this->_json[$key] = $var;
 	}
