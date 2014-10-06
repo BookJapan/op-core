@@ -418,7 +418,14 @@ class Toolbox
 	
 	static function SetMIME($mime)
 	{
-		OnePiece5::SetEnv('mime',$mime);
+		//	
+		Env::Set('mime',$mime);
+		
+		//	
+		$charset = Env::Get('charset');
+		
+		//	
+		header("Content-type: $mime; charset=$charset");
 	}
 	
 	static function GetMIME($only_sub_type=null)
@@ -429,7 +436,7 @@ class Toolbox
 		//	Get headers list.
 		foreach( $list = headers_list() as $header ){
 			list( $key, $var ) = explode(':',$header);
-			if( strtolower($key) === 'content-type' ){					
+			if( strtolower($key) === 'content-type' ){
 				list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
 			}
 		}
