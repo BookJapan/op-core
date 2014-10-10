@@ -337,10 +337,6 @@ class OnePiece5
 			}
 		}
 		
-		//  init
-		$this->_InitEnv();
-		$this->_InitLocale($this->GetEnv('locale'));
-		
 		//  mark_label
 		if( isset($_GET['mark_label']) ){
 			$mark_label = $_GET['mark_label'];
@@ -743,81 +739,6 @@ __EOL__;
 	}
 	
 	/**
-	 * locale setting.
-	 * 
-	 * @see http://jp.php.net/manual/ja/class.locale.php
-	 * @param string $locale lang_territory.codeset@modifier
-	 * @return void
-	 */
-	private function _InitLocale( $locale=null )
-	{
-		/**
-		 * Windows 
-		 * 	Japanese_Japan.932 = sjis
-		 * 	Japanese_Japan.20932 = euc-jp
-		 * 
-		 * PostgreSQL for Windows
-		 * 	Japanese_Japan.932 = utf-8 // auto convert
-		 * 	
-		 * http://lets.postgresql.jp/documents/technical/text-processing/2/
-		 * 
-		 */
-		
-		if(!$locale){
-			if(!$locale = $this->GetCookie('locale') ){
-				$locale = 'ja_JP.utf-8';
-			}
-		}
-		
-		if( preg_match('|([a-z]+)[-_]?([a-z]+)?\.?([-_a-z0-9]+)?|i', $locale, $match) or true){
-			$lang = isset($match[1]) ? $match[1]: 'ja';
-			$area = isset($match[2]) ? $match[2]: 'JP';
-			$code = isset($match[3]) ? $match[3]: 'utf-8';
-		}
-		
-		// Windows is unsupport utf-8
-		if( PHP_OS == 'WINNT' and $lang == 'ja' ){
-			// Shift_JIS
-			setlocale( LC_ALL, 'Japanese_Japan.932');
-		}else if(!setlocale( LC_ALL, $locale )){
-			/* @see http://jp.php.net/manual/ja/function.setlocale.php */
-			$this->StackError("Illigal locale: $locale");
-			return false;
-		}
-		
-		if( $lang == 'ja'){
-			$codes[] = 'eucjp-win';
-			$codes[] = 'sjis-win';
-			$codes[] = 'UTF-8';
-			$codes[] = 'ASCII';
-			$codes[] = 'JIS';
-		}
-		
-		/**
-		 * timezone list
-		 * @see http://jp2.php.net/manual/ja/timezones.php 
-		 */
-		switch( $area ){
-			case 'JP':
-				$timezone = 'Asia/Tokyo';
-				break;
-		}
-		
-		mb_language($lang);
-		mb_internal_encoding($code);
-		mb_detect_order($codes);
-		//mb_http_input();
-		//mb_http_output()
-		ini_set('date.timezone',$timezone);
-		//date_default_timezone_set($timezone);
-		
-		$this->SetEnv('locale', $locale);
-		$this->SetEnv('lang',   $lang);
-		$this->SetEnv('area',   $area);
-		$this->SetEnv('charset',$code);
-	}
-	
-	/**
 	 * Getter and Setter uses.
 	 * 
 	 * @param string $key
@@ -897,52 +818,6 @@ __EOL__;
 		}
 		
 		return $var;
-	}
-	
-	private function _InitEnv()
-	{
-		/* Added to .htaccess or httpd.conf the sample below.
-		 * SetEnv ADMIN_IP 192.168.1.1
-		 */
-		if( isset($_SERVER['ADMIN_ADDR']) ){
-			$_SERVER['ADMIN_IP'] = $_SERVER['ADMIN_ADDR']; 
-		}
-		$admin_ip = isset($_SERVER['ADMIN_IP']) ? $_SERVER['ADMIN_IP']: '127.0.0.1';
-		
-		// server admin(mail address)
-		if( isset($_SERVER['SERVER_ADMIN']) and
-			preg_match('|[-_a-z0-9\.\+]+@[-_a-z0-9\.]+|i', $_SERVER['SERVER_ADMIN']) ){
-			$admin_mail = $_SERVER['SERVER_ADMIN'];
-		}else{
-			$admin_mail = 'noreply@onepiece-framework.com';
-		}
-		
-		//  any root
-	//	$op_root   = dirname(__FILE__);
-	//	$doc_root  = $_SERVER['DOCUMENT_ROOT'];
-	//	$app_root  = dirname($_SERVER['SCRIPT_FILENAME']);
-	//	$site_root = realpath($_SERVER['DOCUMENT_ROOT'].'/../');
-		
-		// Windows
-		if( PHP_OS == 'WINNT' ){
-		//	$op_root   = str_replace( '\\', '/', $op_root   );
-		//	$doc_root  = str_replace( '\\', '/', $doc_root  );
-		//	$app_root  = str_replace( '\\', '/', $app_root  );
-		//	$site_root = str_replace( '\\', '/', $site_root );
-		}
-		
-		$this->SetEnv('new_line',PHP_EOL);
-		$this->SetEnv('class',__CLASS__);
-		
-	//	$this->SetEnv('doc_root',$doc_root);
-	//	$this->SetEnv('app_root',$app_root);
-	//	$this->SetEnv('site_root',$site_root);
-		
-		$this->SetEnv('admin-ip',$admin_ip);
-		$this->SetEnv('admin-mail',$admin_mail);
-		
-	//	$this->SetEnv('mime','text/html');
-	//	$this->SetEnv('charset','utf-8');
 	}
 	
 	/**
@@ -2562,6 +2437,108 @@ class Env
 				session_start();
 			}
 		}
+	}
+
+	/**
+	 * locale setting.
+	 *
+	 * @see http://jp.php.net/manual/ja/class.locale.php
+	 * @param string $locale ja_JP.UTF-8
+	 */
+	private static function _init_locale()
+	{
+		/**
+		 * Windows
+		 * 	Japanese_Japan.932 = sjis
+		 * 	Japanese_Japan.20932 = euc-jp
+		 *
+		 * PostgreSQL for Windows
+		 * 	Japanese_Japan.932 = utf-8 // auto convert
+		 *
+		 * http://lets.postgresql.jp/documents/technical/text-processing/2/
+		 */
+		
+		//	Get last time locale.
+		if(!$locale = OnePiece5::GetCookie('locale') ){
+			$locale = 'ja_JP.utf-8';
+		}
+		
+		//	Set locale
+		Env::SetLocale($locale);
+	}
+	
+	static function GetLocale()
+	{
+		return Env::Get('locale');
+	}
+	
+	static function SetLocale( $locale )
+	{
+		//	Save to cookie.
+		OnePiece5::SetCookie('locale', $locale);
+		
+		//	parse
+		if( preg_match('|([a-z]+)[-_]?([a-z]+)?\.?([-_a-z0-9]+)?|i', $locale, $match) or true){
+			$lang = strtolower($match[1]);
+			$area = strtoupper($match[2]);
+			$code = strtoupper($match[3]);
+		}else{
+			OnePiece5::StackError("Did not match locale format. ($locale, Ex. ja_JP.utf-8) ");
+		}
+		
+		// Windows is unsupport utf-8
+		if( PHP_OS == 'WINNT' and $lang == 'ja' ){
+			// Shift_JIS
+			setlocale( LC_ALL, 'Japanese_Japan.932');
+		}else if(!setlocale( LC_ALL, $locale )){
+			/* @see http://jp.php.net/manual/ja/function.setlocale.php */
+			$this->StackError("Illigal locale: $locale");
+			return false;
+		}
+		
+		//	Set each value
+		Env::Set('locale', $locale);
+		Env::Set('lang',   $lang);
+		Env::Set('area',   $area);
+		Env::Set('charset',$code);
+		
+		//	Get locale relation value.
+		list( $codes, $timezone ) = Env::GetLocaleValue();
+		
+		//	Set PHP's environment value
+		mb_language($lang);
+		mb_internal_encoding($code);
+		mb_detect_order($codes);
+		//mb_http_input();
+		//mb_http_output()
+		ini_set('date.timezone',$timezone);
+	}
+	
+	static function GetLocaleValue()
+	{
+		$lang = Env::Get('lang');
+		$area = Env::Get('area');
+		
+		//	detect order value
+		if( $lang == 'ja'){
+			$codes[] = 'eucjp-win';
+			$codes[] = 'sjis-win';
+			$codes[] = 'UTF-8';
+			$codes[] = 'ASCII';
+			$codes[] = 'JIS';
+		}
+		
+		/**
+		 * timezone list
+		 * @see http://jp2.php.net/manual/ja/timezones.php
+		 */
+		switch( $area ){
+			case 'JP':
+				$timezone = 'Asia/Tokyo';
+				break;
+		}
+		
+		return array( $codes, $timezone );
 	}
 	
 	static function Get( $key )
