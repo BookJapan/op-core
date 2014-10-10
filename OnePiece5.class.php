@@ -1050,17 +1050,17 @@ __EOL__;
 	 * @param string $httponly
 	 * @return boolean
 	 */
-	function SetCookie( $key, $value, $expire=0, $path='/', $domain='', $secure=0, $httponly=true )
+	static function SetCookie( $key, $value, $expire=0, $path='/', $domain='', $secure=0, $httponly=true )
 	{
-		$key   = $this->Escape($key);
-		$value = $this->Escape($value);
+		$key   = OnePiece5::Escape($key);
+		$value = OnePiece5::Escape($value);
 		
 		if( is_null($expire) ){
-			$this->StackError("expire does not set. (ex. 0 is 365days, -1 is out of valid expire.)");
+			OnePiece5::StackError("expire does not set. (ex. 0 is 365days, -1 is out of valid expire.)");
 		}
 		
 		if( headers_sent() ){
-			$this->StackError("already header sent.");
+			OnePiece5::StackError("already header sent.");
 			return false;
 		}
 		
@@ -1073,7 +1073,7 @@ __EOL__;
 		}
 		
 		$_key   = $key;
-		//$_key   = md5($key);
+	//	$_key   = md5($key);
 		$_value = serialize($value);
 		
 		if (version_compare(PHP_VERSION, '5.2.0') >= 0) {
@@ -1089,19 +1089,19 @@ __EOL__;
 		}else if( $io ){
 			$_COOKIE[$_key] = $_value;
 		}else{
-			$this->mark('set cookie is error');
-			$this->StackError('SetCookie is fail: key$key'.$value);
+			OnePiece5::mark('SetCookie is failed.');
+			OnePiece5::StackError("SetCookie is fail: {$key}={$value}");
 		}
 		
 		return $io;
 	}
 	
-	function GetCookie($key)
+	static function GetCookie($key)
 	{
 		if( isset($_COOKIE[$key]) ){
 			$value = $_COOKIE[$key];
 			$value = unserialize($value);
-			$value = $this->Escape($value);
+			$value = OnePiece5::Escape($value);
 		}else{
 			$value = null;
 		}
