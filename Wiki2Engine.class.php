@@ -79,6 +79,7 @@ class Wiki2Engine extends OnePiece5
 		switch( strtolower($tag) ){
 			case 'a':
 				list( $href, $label ) = explode('|',$body.'|');
+				$href  = OnePiece5::ConvertURL($href);
 				$body  = $label ? trim($label): trim($href);
 				$added = sprintf('href="%s"',trim($href));
 				break;
