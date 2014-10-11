@@ -121,19 +121,24 @@ class Developer
 		print <<< "__EOF__"
 <style>
 /* $file */
-.OnePiece {
+.OnePiece{
   direction: ltr;
 }
-	
-.mark span{
-	font-size: 9pt;
+
+.OnePiece.mark{
+	font-size: smaller;
 }
-	
+
+.OnePiece.mark.memory{
+	color: gray;
+	font-size: smaller;
+}
+
 .trace{
   _color: gray;
   _font-size: smaller;
 }
-	
+
 .trace .line{
   margin-left: 1em;
 }

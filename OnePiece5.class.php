@@ -1198,15 +1198,15 @@ __EOL__;
 	 */
 	static function Mark( $str='', $mark_labels=false )
 	{
-		//	displayed is only Admin-ip.
+		//	display is Admin-ip only.
 		if(!self::admin()){ return; }
 		
-		//	
+		//	disable mark
 		if(!self::GetEnv('mark') === false){
 			return;
 		}
 		
-		//	displayed is Admin-ip and flag.
+		//	check display label.
 		if( $mark_labels ){
 			foreach( explode(',',$mark_labels) as $mark_label ){
 				Developer::SetMarkLabel( $mark_label );
@@ -1217,14 +1217,14 @@ __EOL__;
 		}
 		
 		//	php momory usage 
-		$memory_usage = memory_get_usage(true) /1000;
+		$memory_usage = memory_get_usage(true) /1000 /1000;
 		if( strpos($memory_usage,'.') ){
 			list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
 		}else{
 			$mem_int = $memory_usage;
 			$mem_dec = 0;
 		}
-		$memory = sprintf('![ .gray [(%s.%s KB)]]', number_format($mem_int), $mem_dec );
+		$memory = sprintf('(%s.%s MB)', number_format($mem_int), $mem_dec );
 		
 		//	call line
 		$call_line = self::GetCallerLIne(0,1,'mark');
@@ -1241,15 +1241,14 @@ __EOL__;
 			$str = str_replace( array("\r","\n"), array('',''), $str);
 		}
 		
-		$nl   = self::GetEnv('nl');
-		$attr['class'] = array('OnePiece','mark');
-		$attr['style'] = array('font-size'=>'9pt','background-color'=>'white');
-		$string = self::Html("$nl$call_line - $str $memory$nl",'div',$attr);
-		
+		//	build
+		$nl = PHP_EOL;
+		$string = "{$nl}<div class=\"OnePiece mark\">{$call_line}- {$str} <span class=\"OnePiece mark memory\">{$memory}</span></div>{$nl}";
+				
 		//	Case of plain text.
 		if(!Toolbox::isHtml()){
 			$string = strip_tags($string);
-			if( self::GetEnv('css') ){
+			if( Toolbox::GetMIME() === 'text/css' ){
 				$string = "/* ". trim($string) ." */$nl";
 			}
 		}
