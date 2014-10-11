@@ -39,7 +39,7 @@ class i18n extends Api
 	private $_table_prefix	 = 'op';
 	private $_table_name	 = 'i18n';
 	
-	private $_lang = null;
+	private $_lang;
 	
 	/**
 	 * PDO interface object.
@@ -61,11 +61,15 @@ class i18n extends Api
 	function SetLang( $lang )
 	{
 		$this->_lang = $lang;
+		$this->SetCookie('lang',$lang);
 	}
 	
 	function GetLang()
 	{
-		return $this->_lang;
+		if(!$lang = $this->_lang){
+			$lang = $this->GetCookie('lang');
+		}
+		return $lang;
 	}
 	
 	function FetchJson( $url, $expire )
@@ -173,11 +177,16 @@ class i18n extends Api
 	{
 		//	
 		if(!$to){
+			if(!$to = $this->GetLang()){
+				$to = $this->GetEnv('lang');
+			}
+			/*
 			if( $this->_lang ){
 				$to = $this->_lang;
 			}else{
 				$to = $this->GetEnv('lang');
 			}
+			*/
 		}
 		
 		//	
