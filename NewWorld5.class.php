@@ -534,21 +534,7 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function doLayout()
 	{
-		//	get charset
-		$charset = $this->GetEnv('charset');
-		
-		//	get mime
-		$mime = $this->GetEnv('mime');
-		
-		//	not do layout.
-		if( $mime != 'text/html' ){
-			return true;
-		}
-		
-		//	set header
-		header("Content-type: $mime; charset=$charset");
-		
-		//  check the layout is set. 
+		//  Check layout value.
 		if(!$layout = $this->GetEnv('layout') ){
 			if(is_null($layout)){
 				//  Does not set layout.
@@ -564,6 +550,20 @@ abstract class NewWorld5 extends OnePiece5
 			}
 			return $io;
 		}
+		
+		//	get charset
+		$charset = $this->GetEnv('charset');
+		
+		//	get mime
+		$mime = $this->GetEnv('mime');
+
+		//	not do layout.
+		if( $mime != 'text/html' ){
+			return true;
+		}
+		
+		//	set header
+		header("Content-type: $mime; charset=$charset");
 		
 		//  get controller name (layout controller)
 		$controller = $this->GetEnv('controller-name');
