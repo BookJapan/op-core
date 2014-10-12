@@ -100,17 +100,23 @@ class Wiki2Engine extends OnePiece5
 		foreach(explode(' ',trim($attribute)) as $temp){
 			
 			if(preg_match('/^([a-z]+)$/i',$temp,$m)){
-				$tag = $m[1];
+				//	![p[this is paragraph.]]
+				$tag[] = $m[1];
 			}else if(preg_match('/^\.([-_a-z0-9]+)/',$temp,$m)){
+				//	![p .class-name [this is paragraph.]]
 				$class[] = $m[1];
 			}else if(preg_match('/^\#([-_a-z0-9]+)/',$temp,$m)){
+				//	![p #id-name [this is paragraph.]]
 				$id[] = $m[1];
 			}else if(preg_match('/^0x([0-0a-f]{3,6})/i',$temp,$m)){
+				//	![p 0xc0f0a0 [this is paragraph.]]
 				$color[] = 'color:#'.$m[1];
 			}else if(preg_match('/^([-_a-z0-9]+):([-_a-z0-9]+)/',$temp,$m)){
 				if( $m[1] === 'colspan' or $m[1] === 'rowspan' ){
-					$tag .= " {$m[1]}={$m[2]}"; 
+					//	![td colspan:2 [cell data]]
+					$tag[0] .= " {$m[1]}={$m[2]}"; 
 				}else{
+					//	![p color:red [cell data]]
 					$style[] = $m[1].':'.$m[2];
 				}
 			}else{
@@ -137,11 +143,12 @@ class Wiki2Engine extends OnePiece5
 				$style = $color;
 			}
 		}
-				
-		$attr['id']     = isset($id)    ? $id: '';
-		$attr['tag']    = isset($save_tag )   ? $save_tag : 'span';
-		$attr['class']  = isset($class) ? implode(' ',  $class): '';
-		$attr['style']  = isset($style) ? implode('; ', $style): '';
+		
+		//	
+		$attr['tag']    = isset($tag)   ? implode(', ', $tag)   : 'span';
+		$attr['id']     = isset($id)    ? implode(', ', $id)    : '';
+		$attr['class']  = isset($class) ? implode(' ',  $class) : '';
+		$attr['style']  = isset($style) ? implode('; ', $style) : '';
 		
 		return $attr;
 	}
