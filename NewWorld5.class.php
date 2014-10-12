@@ -68,38 +68,15 @@ abstract class NewWorld5 extends OnePiece5
 			Error::Set($message);
 		}
 		
-		//	mime
-		$mime = strtolower(Toolbox::GetMIME(true));
-		switch( $mime ){
-			case 'csv':
-			case 'plain':
-				//	CLI mode
-				break;
-				
-			case 'json':
-			case 'javascript':
-				if( $this->admin() ){
-					if( $this->_content ){
-						$this->SetJson('Error',$this->_content);
-					}
-				}
-				$this->doJson();
-				break;
-					
-			case 'html':
-			default:
-				
-				//  flush buffer
-				ob_end_flush();
-				
-				//  Check content
-				if( $this->_content ){
-					//	HTML mode
-					$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
-					$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
-					$this->content();
-				}
-				break;
+		//  flush buffer
+		ob_end_flush();
+		
+		//  Check content
+		if( $this->_content ){
+			//	HTML mode
+			$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
+			$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
+			$this->content();
 		}
 		
 		//  Vivre
@@ -801,6 +778,23 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function Content()
 	{
+		switch( $mime = strtolower(Toolbox::GetMIME(true)) ){
+			case 'csv':
+			case 'plain':
+				
+			case 'json':
+			case 'javascript':
+				$this->doJson();
+				break;
+				
+			case 'html':
+			default:
+				//
+				if( $this->_json ){
+					Dump::D($this->doJson(true));
+				}
+		}
+		
 		print $this->_content;
 		$this->_content = '';
 	}
