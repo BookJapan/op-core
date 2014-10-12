@@ -24,8 +24,8 @@ class Wiki2Engine extends OnePiece5
 	static function Wiki2( $string, $options = null ){
 		
 		if( is_null($options) and true ){
-			$options['id']     = false;
-			$options['tag']    = false;
+			$options['tag']    = true;
+			$options['id']     = true;
 			$options['class']  = true;
 			$options['style']  = false;
 			$options['script'] = false;
@@ -116,11 +116,6 @@ class Wiki2Engine extends OnePiece5
 			}else{
 			//	var_dump($temp);
 			}
-		}
-		
-		// TODO: $tagがunsetされる、、、なぜ？！
-		if(isset($tag)){
-			$save_tag = $tag;
 		}
 		
 		//  delete deny attribute
