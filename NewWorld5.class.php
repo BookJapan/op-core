@@ -30,7 +30,7 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var string
 	 */
-	private $_content    = null;
+	private $_content = null;
 	
 	/**
 	 * use to json.
@@ -839,9 +839,18 @@ abstract class NewWorld5 extends OnePiece5
 		}
 	}
 	
-	function doJson()
+	function doJson($is_get=null)
 	{
-		print json_encode($this->_json);
+		if( $this->admin() ){
+			if( $this->_content ){
+				$this->_json['_LEAKED_CONTENT_'] = $this->_content;
+			}
+		}
+		if( $is_get ){
+			return $this->_json;
+		}else if($this->_json){
+			print json_encode($this->_json);
+		}
 	}
 	
 	function SetJson( $key, $var )
@@ -849,7 +858,10 @@ abstract class NewWorld5 extends OnePiece5
 		static $init;
 		if(!$init){
 			$init = true;
-			Toolbox::SetMIME('text/javascript');
+			if(!$html = Toolbox::GetRequest('html')){
+				Toolbox::SetMIME('text/plain');
+			}
+			Env::Set('layout',false);
 		}
 		$this->_json[$key] = $var;
 	}
