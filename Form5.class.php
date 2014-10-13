@@ -1471,6 +1471,7 @@ class Form5 extends OnePiece5
 		$form_name = $form->name;
 		$method	 = $form->method === 'get' ? 'GET' : 'POST';
 		$charset = isset($form->charset)   ? $form->charset: $this->GetEnv('charset');
+		$id		 = empty($form->id)        ? null: sprintf('id="%s"',    $form->id);
 		$class	 = empty($form->class)     ? null: sprintf('class="%s"', $form->class);
 		$style	 = empty($form->style)     ? null: sprintf('style="%s"', $form->style);
 		$enctype = empty($form->multipart) ? null: sprintf('enctype="multipart/form-data"');
@@ -1484,7 +1485,7 @@ class Form5 extends OnePiece5
 		}
 		
 		//  print form tag.
-		printf('<form name="%s" action="%s" method="%s" %s Accept-Charset="%s" %s %s>'.$nl, $form_name, $action, $method, $enctype, $charset, $class, $style);
+		printf('<form name="%s" action="%s" method="%s" %s Accept-Charset="%s" %s %s %s>'.$nl, $form_name, $action, $method, $enctype, $charset, $id, $class, $style);
 		
 		if( $method == 'GET' ){
 			$this->SetCookie( $token_key_name, $token_key, 0 );
