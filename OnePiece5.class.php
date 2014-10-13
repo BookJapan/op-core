@@ -1243,6 +1243,7 @@ __EOL__;
 		
 		//	build
 		$nl = PHP_EOL;
+		$str = Wiki2Engine::Wiki2($str);
 		$string = "{$nl}<div class=\"OnePiece mark\">{$call_line}- {$str} <span class=\"OnePiece mark memory\">{$memory}</span></div>{$nl}";
 				
 		//	Case of plain text.
@@ -1749,7 +1750,7 @@ __EOL__;
 			$path = $file;
 		}else if( file_exists($path = self::ConvertPath($file)) ){
 			//  abstract
-		}else if( $dir = $this->GetEnv('template-dir') ){
+		}else if( $dir = Env::Get('template-dir') ){
 			// the path is converted.
 			$dir  = self::ConvertPath($dir);
 			$path = rtrim($dir,'/').'/'.$file;
