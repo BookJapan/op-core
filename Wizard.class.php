@@ -483,10 +483,7 @@ class Wizard extends OnePiece5
 				//	Convert index string
 				if( $index ){
 					switch($index){
-						case 'PRI':
-							break;
-						
-						case 'index':
+						case 'index':					
 							$index = 'MUL';
 							break;
 							
@@ -494,7 +491,7 @@ class Wizard extends OnePiece5
 							$index = 'UNI';
 							break;
 							
-						default:
+						default:							
 							$this->mark("index=$index");
 					}
 				}else{
@@ -539,7 +536,7 @@ class Wizard extends OnePiece5
 					$hint = "default=$default not $temp";
 				
 				//	Check index
-				}else if( $index !== $structs[$column_name]['key'] ){					
+				}else if( $index !== $structs[$column_name]['key'] ){
 					$fail = true;
 					$hint = "index=$index not {$structs[$column_name]['key']}";
 				}
