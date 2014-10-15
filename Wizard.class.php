@@ -103,7 +103,7 @@ class Wizard extends OnePiece5
 		//	init
 		$this->_result = new Config();
 		$this->_wizard = new Config();
-
+		
 		//  init form config.
 		$this->form()->AddForm( $this->config()->WizardForm() );
 		
@@ -195,50 +195,40 @@ class Wizard extends OnePiece5
 	 */
 	private function _Selftest( Config $config )
 	{
-		//	clone
-		$database = clone $config->database;
+		//	user connection test
+		$io = $this->_check_connection($config->database);
 		
-		//	If case of wizard.
+		//	If case of wizard. (connect root)
 		$form_name = $this->Config()->GetFormName();
 		if( $this->Form()->Secure( $form_name ) ){
+			
+			//	clone database config
+			$database = clone $config->database;
+			
+			//	root account and password
 			$user = $this->Form()->GetInputValue(WizardConfig::_INPUT_USERNAME_,$form_name);
 			$pass = $this->Form()->GetInputValue(WizardConfig::_INPUT_PASSWORD_,$form_name);
-			$database->user = $user;
-			$database->password = $pass;
+			
+			//	replace user and password
+			$database->user		 = $user;
+			$database->password	 = $pass;
+
+			//	root connection test
+			$io = $this->_check_connection($database);
 		}
 		
-		//	init
-		$dbms  = $database->driver;
-		$host  = $database->host;
-		$port  = $database->port;
-		$user  = $database->user;
-		$db    = $database->database;
-		
-		if( $port and $port !== '3306' ){
-			$host .=  ':'.$port;
-		}
-		
-		//	Database connection test
-		$io = $this->pdo()->Connect( $database );
+		//	return connection result.
 		if(!$io){
-			$this->d($this->FetchError(),'debug');
-			$this->d(Error::Get(),'debug');
-			$this->d($config,'debug');
-		}
-		
-		//	Save result of connection
-		$this->_result->connect->$host->$user->$db = $io;
-		
-		if(!$io){
-			$this->model('Log')->Set("FAILED: Database connect is failed.(dbms=$dbms, host=$host, port=$port, user=$user, db=$db)",false);
 			return false;
 		}
 		
+		//	check database
 		if(!$this->_CheckDatabase($config)){
 			$this->model('Log')->Set("FAILED: Database check. (host=$host, user=$user, db=$db)",false);
 			return false;
 		}
 		
+		//	check table (check column are here)
 		if(!$this->_CheckTable($config)){
 			return false;
 		}
@@ -326,6 +316,30 @@ class Wizard extends OnePiece5
 		$args['input_password'] = WizardConfig::_INPUT_PASSWORD_;
 		$args['input_submit']   = WizardConfig::_INPUT_SUBMIT_;
 		$this->Template('op:/Template/wizard-form.phtml',$args);
+	}
+	
+	private function _check_connection( $database )
+	{
+		//	init
+		$dbms  = $database->driver;
+		$host  = $database->host;
+		$port  = $database->port;
+		$user  = $database->user;
+		$db    = $database->database;
+	
+		if( $port and $port !== '3306' ){
+			$host .=  ':'.$port;
+		}
+	
+		//	Database connection test
+		if(!$io = $this->pdo()->Connect( $database )){
+			$this->model('Log')->Set("FAILED: Database connect is failed.(dbms=$dbms, host=$host, port=$port, user=$user, db=$db)",false);
+		}
+	
+		//	Save result of connection
+		$this->_result->connect->$host->$user->$db = $io;
+	
+		return $io;
 	}
 	
 	private function _CheckDatabase( Config $config )
