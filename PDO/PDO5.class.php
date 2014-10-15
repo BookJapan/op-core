@@ -946,6 +946,26 @@ class PDO5 extends OnePiece5
 		return $count;
 	}
 	
+	/**
+	 * Save cache key.
+	 * 
+	 * @var string
+	 */
+	private $_cache_key;
+	
+	function CacheDelete($args)
+	{
+		$key = ConfigSQL::CacheKey($args);
+		$io = $this->Cache()->Delete($key);
+		return $io;
+	}
+	
+	/**
+	 * Select
+	 * 
+	 * @param  array $args
+	 * @return boolean|array
+	 */
 	function Select( $args )
 	{
 		if(!$this->isConnect){
@@ -964,7 +984,10 @@ class PDO5 extends OnePiece5
 			$this->StackError("Does not set config. (empty)");
 			return false;
 		}
-
+		
+		//	init saved cache key
+		$this->_cache_key = null;
+		
 		//  object to array
 		if(!is_array($args)){
 			$config = Toolbox::toArray($args);
@@ -974,7 +997,7 @@ class PDO5 extends OnePiece5
 		
 		//  Check cache setting.
 		if(!empty($config['cache'])){
-
+			
 			//	Get cache key
 			if( isset( $config['cache_key'] ) ){
 				$key = $config['cache_key'];
@@ -982,6 +1005,9 @@ class PDO5 extends OnePiece5
 			//	$key = md5(serialize($config));
 				$key = ConfigSQL::CacheKey($args);
 			}
+			
+			//	save cache key
+			$this->_cache_key = $key;
 			
 			//	If find cache
 			if( $records = $this->Cache()->Get($key) ){
@@ -1252,5 +1278,5 @@ class ConfigSQL extends OnePiece5
 	static function CacheKey( $args )
 	{
 		return md5(serialize(toolbox::toarray($args)));
-	}	
+	}
 }
