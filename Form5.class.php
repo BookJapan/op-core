@@ -2521,7 +2521,7 @@ class Form5 extends OnePiece5
 				//  Check character
 				if( $io = preg_match('/([^-_a-z0-9\s\/\\\!\?\(\)\[\]\{\}\.,:;\'"`@#$%&*+^~|]+)/i',$value,$match)){					
 					//$this->d($match);
-					$this->SetInputError( $input->name, $form_name, 'permit-english', $match[1] );
+					$this->SetInputError( $input->name, $form_name, 'permit', $match[1] );
 					//  Permit is failed
 					$io = false;
 				}else{
@@ -2538,7 +2538,7 @@ class Form5 extends OnePiece5
 				//  Check character
 				if( $io = preg_match('/([^-_a-z0-9\/\\\!\?\(\)\[\]\{\}:;\'"`@#$%&*+^~|]+)/i',$value,$match)){
 					//$this->d($match);
-					$this->SetInputError( $input->name, $form_name, 'permit-password', $match[1] );
+					$this->SetInputError( $input->name, $form_name, 'permit', $match[1] );
 					//  Permit is failed
 					$io = false;
 				}else{
@@ -2553,7 +2553,7 @@ class Form5 extends OnePiece5
 					$value = implode('',$value);
 				}
 				if(!$io = is_numeric($value)){
-					$this->SetInputError( $input->name, $form_name, 'permit-numeric', $value );
+					$this->SetInputError( $input->name, $form_name, 'permit', $value );
 				}
 				break;
 				
@@ -2565,13 +2565,13 @@ class Form5 extends OnePiece5
 				
 				//  Check numeric
 				if(!$io = is_numeric($value)){
-					$this->SetInputError( $input->name, $form_name, 'permit-integer', $value );
+					$this->SetInputError( $input->name, $form_name, 'permit', $value );
 					break;
 				}
 				
 				//  Check integer
 				if( $io = preg_match('/([^-0-9])/', $value, $match) ){
-					$this->SetInputError( $input->name, $form_name, 'permit-integer', $value );
+					$this->SetInputError( $input->name, $form_name, 'permit', $value );
 				}else{
 					$io = true;
 				}
@@ -2621,19 +2621,19 @@ class Form5 extends OnePiece5
 				
 				if(!preg_match('/^[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}$/',$date)){
 					$io = false;
-					$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
+					$this->SetInputError( $input->name, $form_name, 'permit', join('-',$value) );
 					break;
 				}else{
 					$time = strtotime($date);
 					if(!$io = checkdate( date('m',$time), date('d',$time), date('Y',$time))){
-						$this->SetInputError( $input->name, $form_name, 'permit-date', join('-',$value) );
+						$this->SetInputError( $input->name, $form_name, 'permit', join('-',$value) );
 					}
 				}
 				break;
 
 			case 'datetime':
 				if(!$io = preg_match('/^[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2} [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]$/',$value)){
-					$this->SetInputError( $input->name, $form_name, 'permit-datetime', $value );
+					$this->SetInputError( $input->name, $form_name, 'permit', $value );
 				}
 				break;
 				
@@ -2662,7 +2662,7 @@ class Form5 extends OnePiece5
 	function ValidatePermitUrl( $input, $form_name, $value )
 	{
 		if(!preg_match('|^https?://|',$value)){
-			$this->SetInputError( $input->name, $form_name, 'permit-url', 'Start to http://' );
+			$this->SetInputError( $input->name, $form_name, 'permit', $value );
 			return false;
 		}
 		
@@ -2670,7 +2670,7 @@ class Form5 extends OnePiece5
 		if( preg_match( $patt, $value, $match )){
 			$host = $match[1];
 		}else{
-			$this->SetInputError( $input->name, $form_name, 'permit-url', $value );
+			$this->SetInputError( $input->name, $form_name, 'permit', $value );
 			return false;
 		}
 		
@@ -2682,7 +2682,7 @@ class Form5 extends OnePiece5
 		}
 		
 		if(!checkdnsrr($host,'A')){
-			$this->SetInputError( $input->name, $form_name, 'permit-host', $host );
+			$this->SetInputError( $input->name, $form_name, 'permit', $host );
 			return false;
 		}
 		
@@ -2694,7 +2694,7 @@ class Form5 extends OnePiece5
 		//	check part of address
 		$patt = '/^([a-z0-9][-_a-z0-9\.\+]+)@[-_a-z0-9]+/i';
 		if(!preg_match( $patt, $value, $match ) ){
-			$this->SetInputError( $input->name, $form_name, 'permit-email', $value );
+			$this->SetInputError( $input->name, $form_name, 'permit', $value );
 			return false;
 		}
 		
@@ -2709,7 +2709,7 @@ class Form5 extends OnePiece5
 		// check exists host
 		list( $addr, $host ) = explode('@',$value);
 		if(!checkdnsrr($host,'MX')){
-			$this->SetInputError( $input->name, $form_name, 'permit-host', '@'.$host );
+			$this->SetInputError( $input->name, $form_name, 'permit', '@'.$host );
 			return false;
 		}
 		
@@ -2721,7 +2721,7 @@ class Form5 extends OnePiece5
 		//	Japanese pattern
 		$patt = '/^([0-9]{2,4})-?([0-9]{2,4})-?([0-9]{2,4})$/';
 		if(!preg_match( $patt, $value, $match ) ){
-			$this->SetInputError( $input->name, $form_name, 'permit-phone', $value );
+			$this->SetInputError( $input->name, $form_name, 'permit', $value );
 			return false;
 		}
 		
