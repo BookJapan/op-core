@@ -2870,10 +2870,12 @@ class Vivre
 			OnePiece5::Mark("This system not working php's session.");
 		}
 		
-		if(isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
+		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
+			unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_]);
 			self::Warning();
 		}
 		
+		$_SESSION[self::_NAMESPACE_][self::_KEY_NAME_] = true;
 	}
 	
 	static function Relaese()
@@ -2884,31 +2886,54 @@ class Vivre
 	static function Warning()
 	{
 		//	local info
-		$uri	 = Toolbox::GetURL();
+		$nl		 = "\r\n";
 		
-		$host  = isset($_SERVER['HTTP_HOST'])   ? $_SERVER['HTTP_HOST']: null; // SERVER_NAME, SERVER_ADDR
-		$addr  = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: null;
-		$xhost = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: null; // HTTP_X_FORWARDED_SERVER
+		$name	 = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME']: null;
+		$addr	 = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: null;
+		
+		$host	 = isset($_SERVER['HTTP_HOST'])   ? $_SERVER['HTTP_HOST']:   null;
+		$port	 = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT']: null;
+		$xhost	 = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: null; // HTTP_X_FORWARDED_SERVER
+		$scheme	 = $port !== '443' ? 'http': 'https';
+		
+		$uri	 = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI']: null;
+		$doc	 = isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT']: null;
+		$app	 = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME']: null;
 		$gmdate	 = gmdate('Y-m-d H:i:s');
 		$date	 = date('Y-m-d H:i:s');
 		
 		//	visitors info
 		$ip		 = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['REMOTE_ADDR'];
 		$domain	 = gethostbyaddr($ip);
-		$ua		 = $_SERVER['HTTP_USER_AGENT'];
+		$ua		 = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT']: null;
+		$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER']: null;
 		
 		//	build mail info
 		$to = Env::Get(Env::_ADMIN_EMAIL_ADDR_);
-		$subject = '[ONEPIECE] VIVRE ALERT';
-		$message = "";
-		$message .= "Host: $host ($addr)";
-		$message .= "Request URI: $uri";
-		$message .= "Visitor: $ip ($domain)";
-		$message .= "User Agent: $ua";
-		$message .= "Date: $date";
-		$message .= "GMT: $gmdate";
+		$subject  = '[ONEPIECE] VIVRE ALERT';
+		$message  = "";
+		$message .= "Server: $name $nl";
+		$message .= "Host: $host ($addr) $nl";
+		$message .= "Request URI: {$scheme}://{$host}:{$port}{$uri} $nl";
+		$message .= "Referer: $referer $nl";
+		$message .= "$nl";
+		$message .= "App: $app $nl";
+		$message .= "Doc: $doc $nl";
+		$message .= "Date: $date $nl";
+		$message .= "GMT: $gmdate $nl";
+		$message .= "$nl";
+		$message .= "Visitor: $domain $ip $nl";
+		$message .= "User Agent: $ua $nl";
+		
+		$add_header = null; //implode("\n", $headers);
+		$add_params = null;
+		
+		// SMTP server response: 503 5.0.0 Need RCPT (recipient)
+		$add_params = '-f '.$to;
 		
 		//	send mail
-		mail($to, $subject, $message);
+		$io = mail($to, $subject, $message, $add_header, $add_params) ? 'succsessful': 'failed';
+	//	print "<p>Sendmail is $io.</p>";
+	//	print "<p>$to</p>";
 	}
 }
