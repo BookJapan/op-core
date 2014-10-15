@@ -196,7 +196,7 @@ class Wizard extends OnePiece5
 	private function _Selftest( Config $config )
 	{
 		//	user connection test
-		$io = $this->_check_connection($config->database);
+		$io = $_is_user_connection = $this->_check_connection($config->database);
 		
 		//	If case of wizard. (connect root)
 		$form_name = $this->Config()->GetFormName();
@@ -214,7 +214,7 @@ class Wizard extends OnePiece5
 			$database->password	 = $pass;
 
 			//	root connection test
-			$io = $this->_check_connection($database);
+			$io = $_is_root_connection = $this->_check_connection($database);
 		}
 		
 		//	return connection result.
@@ -233,7 +233,7 @@ class Wizard extends OnePiece5
 			return false;
 		}
 		
-		return true;
+		return $_is_user_connection;
 	}
 	
 	/**
