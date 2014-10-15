@@ -269,8 +269,8 @@ class Wizard extends OnePiece5
 					$this->d(Error::Get(),'debug');
 					
 					//	Information
-					$this->p("Does not access from {$database->user} user.");
-					dump::d(Toolbox::toArray($database));
+					$this->p("![.red[Does not access from {$database->user} user.]]");
+					$this->d(Toolbox::toArray($database));
 					
 					//	Discard
 					$this->form()->Flash($form_name);
@@ -497,7 +497,7 @@ class Wizard extends OnePiece5
 				//	Convert index string
 				if( $index ){
 					switch($index){
-						case 'index':					
+						case 'index':
 							$index = 'MUL';
 							break;
 							
