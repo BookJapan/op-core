@@ -522,20 +522,17 @@ class OnePiece5
 		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
 		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
 		
-		//	Identity
+		//	
 		if( $server_addr === $remote_addr ){
 			$io = true;
-		}else
-		
-		//	External access
-		if( self::GetEnv('admin-ip') === $remote_addr ){
-			$io = true;
 		}else{
-			$io = false;
+			$io = Env::Get(Env::_ADMIN_IP_ADDR_) === $remote_addr ? true: false;
 		}
 		
+		//	
 		$_SERVER['OP_IS_ADMIN'] = $io;
 		
+		//	
 		return $io;
 	}
 	
@@ -2214,7 +2211,8 @@ __EOL__;
 	 */
 	function Vivre( $register )
 	{
-		OnePiece5::Mark("This method is deprecated.",'vivre');
+		$line = OnePiece5::GetCallerLine();
+		OnePiece5::Mark("This method is deprecated. ($line)",'vivre');
 		return true;
 		
 		if( $register ){
@@ -2294,8 +2292,8 @@ class Env
 {
 	const _NAME_SPACE_		 = 'ONEPIECE_5';
 	
-	const _ADMIN_IP_ADDR_	 = 'admin_ip';
-	const _ADMIN_EMAIL_ADDR_ = 'admin_mail';
+	const _ADMIN_IP_ADDR_	 = 'ADMIN_ADDR';
+	const _ADMIN_EMAIL_ADDR_ = 'ADMIN_MAIL';
 	
 	const _ROOT_OP_		 = 'OP_ROOT';
 	const _ROOT_APP_	 = 'APP_ROOT';
@@ -2422,7 +2420,7 @@ class Env
 		
 		//	Set to $_SERVER
 		$_SERVER[self::_SERVER_IS_LOCALHOST_]	 = $is_localhost;
-		$_SERVER[self::_SERVER_IS_ADMIN_]		 = $is_localhost ? true: false;
+		$_SERVER[self::_SERVER_IS_ADMIN_]		 = $is_localhost ? true: null;
 	}
 	
 	private static function _init_session()
