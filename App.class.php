@@ -245,4 +245,14 @@ class App extends NewWorld5
 	{
 		print '<meta name="description" content="'.$this->GetDescription().'">';
 	}
+	
+	function SetDatabase( $database_name )
+	{
+		Env::Set('database_name',$database_name);
+	}
+	
+	function SetTablePrefix( $prefix )
+	{
+		Env::Set('table_prefix',$prefix);
+	}
 }
