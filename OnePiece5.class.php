@@ -1847,6 +1847,7 @@ __EOL__;
 				$domain = Toolbox::GetDomain(array('scheme'=>true));
 			}
 			$domain = rtrim($domain,'/').'/';
+			$url = ltrim($url,'/');
 		}
 		
 		return $domain.$url;
