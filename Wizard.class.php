@@ -384,7 +384,6 @@ class Wizard extends OnePiece5
 		
 		//  Loop
 		foreach( $config->table as $table_name => $table ){
-		//	$this->mark("Check $table_name table",'selftest');
 			
 			//  Check table exists.
 			if( array_search( $table_name, $table_list) === false ){
@@ -405,8 +404,23 @@ class Wizard extends OnePiece5
 			//	Good!	
 			$this->_result->table->$table_name = true;
 			
+			//	Check column config exists
+			if( $config->table->$table_name->column ){
+				//	OK
+			}else if( $config->table->$table_name->column === false){
+				return true;
+			}else{
+				$this->StackError("Illigal error.");
+				continue;
+			}
+			
 			//  Check column.
 			if(!$this->_CheckColumn( $config, $table_name )){
+				$fail = true;
+			}
+			
+			//	Check index
+			if(!$this->_check_index( $config, $table_name )){
 				$fail = true;
 			}
 		}
@@ -418,15 +432,6 @@ class Wizard extends OnePiece5
 	{	
 		//	return value
 		$result = true;
-		
-		if( $config->table->$table_name->column ){
-			//	OK
-		}else if( $config->table->$table_name->column === false){
-			return true;
-		}else{
-			$this->mark();
-			var_dump($config->table->$table_name->column);
-		}
 		
 		$columns = $config->table->$table_name->column;
 		$structs = $this->pdo()->GetTableStruct( $table_name );
@@ -490,34 +495,6 @@ class Wizard extends OnePiece5
 					$null = 'NO';
 				}
 				
-				//	Get index type
-				$index = isset( $config->table->$table_name->column->$column_name->index) ? 
-								$config->table->$table_name->column->$column_name->index: '';
-				
-				//	Convert index string
-				if( $index ){
-					switch($index){
-						case 'index':
-							$index = 'MUL';
-							break;
-							
-						case 'unique':
-							$index = 'UNI';
-							break;
-							
-						default:							
-							$this->mark("index=$index");
-					}
-				}else{
-					if( !empty($config->table->$table_name->column->$column_name->pkey) or
-						!empty($config->table->$table_name->column->$column_name->ai)
-						){
-						$index = 'PRI';
-					}else if(!empty($config->table->$table_name->column->$column_name->unique)){
-						$index = 'UNI';
-					}
-				}
-				
 				//	Convert config value
 				if( $type == 'boolean' ){
 					$type =  'tinyint';
@@ -548,11 +525,9 @@ class Wizard extends OnePiece5
 					$fail = true;
 					$temp = is_null($structs[$column_name]['default']) ? 'null': $structs[$column_name]['default'];
 					$hint = "default=$default not $temp";
-				
-				//	Check index
-				}else if( $index !== $structs[$column_name]['key'] ){
-					$fail = true;
-					$hint = "index=$index not {$structs[$column_name]['key']}";
+					
+				}else{
+					//	
 				}
 				
 				//	If false will change this column.
@@ -573,6 +548,68 @@ class Wizard extends OnePiece5
 		}
 		
 		//  Finish
+		return $result;
+	}
+	
+	private function _check_index( Config $config, $table_name )
+	{
+		//	return value
+		$result = true;
+		
+		$columns = $config->table->$table_name->column;
+		$structs = $this->pdo()->GetTableStruct( $table_name );
+
+		//  Check detail
+		foreach( $columns as $column_name => $column ){
+			
+			//	Get each index type
+			$ai     = isset($column->ai)     ? $column->ai     : null;
+			$pkey   = isset($column->pkey)   ? $column->pkey   : null;
+			$index  = isset($column->index)  ? $column->index  : null;
+			$unique = isset($column->unique) ? $column->unique : null;
+			
+			$temp['ai'] = $ai;
+			$temp['pkey'] = $pkey;
+			$temp['index'] = $index;
+			$temp['unique'] = $unique;
+			
+			//	Convert to string from boolean 
+			$index  = $index === true ? 'true': $index;
+			
+			//	Convert type
+			if( $ai or $pkey){
+				$type = 'PRI';
+			}else if( $unique ){
+				$type = 'UNI';
+			}else if( $index == 'true' ){
+				$type = 'MUL';
+			}else if( $index === 'unique' ){
+				$type = 'UNI';
+			}else{
+				$type = 'null';
+			}
+			
+			//	Check index
+			$key = empty($structs[$column_name]['key']) ? 'null': $structs[$column_name]['key'];
+			if( $type != $key ){
+				$result = false;
+				$hint = "index=$type, Not $key";
+				$this->model('Log')->Set("ERROR: table=$table_name, column=$column_name, hint=$hint",false);
+				
+				//	selftest result flag
+				$this->_result->column->$table_name->$column_name = 'change,';
+				
+				$this->mark($column_name);
+			//	$this->mark($key);
+			//	$this->mark($type);
+				$this->mark($hint);
+				$this->d($temp);
+				$this->d($column);
+				$this->d($structs[$column_name]);
+				
+			}
+		}
+		
 		return $result;
 	}
 	
