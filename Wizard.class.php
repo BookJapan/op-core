@@ -105,7 +105,11 @@ class Wizard extends OnePiece5
 		$this->_wizard = new Config();
 		
 		//  init form config.
-		$this->form()->AddForm( $this->config()->WizardForm() );
+		static $_init_form = null;
+		if(!$_init_form){
+			$_init_form = true;
+			$this->form()->AddForm( $this->config()->WizardForm() );
+		}
 		
 		//	
 		$this->_selftest_loop();
