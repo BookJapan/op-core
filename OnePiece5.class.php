@@ -945,7 +945,7 @@ __EOL__;
 		}
 		
 		$_key   = $key;
-	//	$_key   = md5($key);
+		$_key   = md5($key);
 		$_value = serialize($value);
 		
 		if (version_compare(PHP_VERSION, '5.2.0') >= 0) {
@@ -970,6 +970,7 @@ __EOL__;
 	
 	static function GetCookie($key)
 	{
+		$key = md5($key);
 		if( isset($_COOKIE[$key]) ){
 			$value = $_COOKIE[$key];
 			$value = unserialize($value);
