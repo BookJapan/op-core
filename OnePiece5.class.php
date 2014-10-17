@@ -123,6 +123,9 @@ if(!function_exists('OnePieceShutdown')){
 		//	Error
 		Error::Report();
 		
+		//	Release vivre
+		Vivre::Relaese();
+		
 		//	Check
 		if(!OnePiece5::Admin()){
 			return;
@@ -2207,7 +2210,7 @@ __EOL__;
 	}
 	
 	/**
-	 * 
+	 * Checked dead or alive.
 	 * 
 	 * @param boolen $args
 	 */
@@ -2230,7 +2233,7 @@ __EOL__;
 					
 					$host  = $_SERVER['HTTP_HOST']; // SERVER_NAME, SERVER_ADDR
 					$addr  = $_SERVER['SERVER_ADDR'];
-					$xhost = $_SERVER['HTTP_X_FORWARDED_HOST']; // HTTP_X_FORWARDED_SERVER
+					$xhost = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: $host; // HTTP_X_FORWARDED_SERVER
 					$uri   = $_SERVER['REQUEST_URI'];
 					
 					$ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['REMOTE_ADDR'];
