@@ -456,6 +456,19 @@ class Toolbox
 		return strtolower(trim($mime));
 	}
 	
+	static function isLocalhost()
+	{
+		if(!isset($_SERVER['REMOTE_ADDR'])){
+			return false;
+		}
+		
+		if( $_SERVER['REMOTE_ADDR'] === '127.0.0.1' or $_SERVER['REMOTE_ADDR'] === '::1' ){
+			return true;
+		}
+		
+		return false;
+	}
+	
 	static function isHtml()
 	{
 		$mime = self::GetMIME();

@@ -122,7 +122,7 @@ if(!function_exists('OnePieceShutdown')){
 	{
 		//	Error
 		Error::Report();
-		
+
 		//	Release vivre
 		Vivre::Relaese();
 		
@@ -206,9 +206,6 @@ if(!function_exists('OnePieceShutdown')){
 				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
 				break;
 		}
-		
-		//	Release vivre
-		Vivre::Relaese();
 	}
 	register_shutdown_function('OnePieceShutdown');
 }
