@@ -2367,6 +2367,7 @@ class Env
 		self::_init_cli();
 		self::_init_admin();
 		self::_init_session();
+		self::_init_locale();
 	}
 	
 	private static function _init_include_path()
