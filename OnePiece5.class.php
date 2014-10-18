@@ -167,13 +167,16 @@ if(!function_exists('OnePieceShutdown')){
 		}
 		
 		// Session reset
-		if( getenv('REMOTE_ADDR') == '127.0.0.1' and Toolbox::isHtml() ){
+		if( Toolbox::isLocalhost() and Toolbox::isHtml() ){
 			$rand = rand( 0, 1000);
 			if( 1 == $rand ){
 				$_SESSION = array();
-				$i18n = new i18n();
-				$text = 'OnePiece did clear the session.';
-				$message = $text.' ('.$i18n->En($text).')';
+				$i18n = OnePiece5::i18n();
+				$text = '\OnePiece5\ did clear the session.';
+				if( $i18n->GetLang() !== 'en' ){
+					$translation = ' ('.$i18n->En($text).')';
+				}
+				$message = $text.$translation;
 				print "<script>alert('$message');</script>";
 			}
 		}
