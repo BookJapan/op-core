@@ -2876,6 +2876,14 @@ class Vivre
 			OnePiece5::Mark("This system not working php's session.");
 		}
 		
+		//	1st check
+		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
+			if(!Toolbox::isHtml()){
+				sleep(1);
+			}
+		}
+		
+		//	2nd check
 		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
 			unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_]);
 			self::Warning();
@@ -2938,8 +2946,7 @@ class Vivre
 		$add_params = '-f '.$to;
 		
 		//	send mail
-		$io = mail($to, $subject, $message, $add_header, $add_params) ? 'succsessful': 'failed';
-	//	print "<p>Sendmail is $io.</p>";
-	//	print "<p>$to</p>";
+		$result = mail($to, $subject, $message, $add_header, $add_params) ? 'succsessful': 'failed';
+		$this->mark("Sendmail is $result by vivre.");
 	}
 }
