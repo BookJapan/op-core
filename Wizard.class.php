@@ -14,22 +14,29 @@
  */
 class Wizard extends OnePiece5
 {
-	private $config = null;  // what is this?
+	private $_config = null; // WizardConfig
 	private $_result = null; // check's result
 	private $_wizard = null; // do wizard's result
 	private $_status = null; //	Wizard status
+
+	/**
+	 * Execution flag of Selftest.
+	 *
+	 * @var boolean
+	 */
+	private $_is_selftest = null;
 	
 	/**
 	 * Execution flag of Wizard.
 	 * 
 	 * @var boolean
 	 */
-	private $_isWizard = null;
+	private $_is_wizard = null;
 	
 	function __destruct()
 	{
 		if( $this->Admin() ){
-			if(!$this->_isWizard){
+			if(!$this->_is_wizard){
 				/*
 				if( Toolbox::GetMIME(true) === 'html' ){
 					$this->Selftest();
@@ -46,18 +53,30 @@ class Wizard extends OnePiece5
 	 */
 	function Config()
 	{
-		if(!$this->config){
-			$this->config = new WizardConfig();
+		if(!$this->_config){
+			$this->_config = new WizardConfig();
 		}
-		return $this->config;
+		return $this->_config;
 	}
 	
-	function isWizard( $io=null )
+	/**
+	 * Get execution flag of selftest.
+	 *
+	 * @return boolean
+	 */
+	function isSelftest()
 	{
-		if( $io ){
-			$this->_isWizard = $io;
-		}
-		return $this->_isWizard;
+		return $this->_is_selftest;
+	}
+	
+	/**
+	 * Get execution flag of wizard.
+	 * 
+	 * @return boolean
+	 */
+	function isWizard()
+	{
+		return $this->_is_wizard;
 	}
 	
 	/**
@@ -93,6 +112,9 @@ class Wizard extends OnePiece5
 		$this->SetSession('selftest',$selftest);
 	}
 	
+	const _DO_SELFTEST_ = 'do_selftest';
+	const _IS_SELFTEST_ = 'is_selftest';
+	
 	public function Selftest()
 	{
 		//	Check admin
@@ -100,18 +122,21 @@ class Wizard extends OnePiece5
 			return null;
 		}
 		
+		//	Check
+		if( Env::Get(self::_DO_SELFTEST_) ){
+			$this->mark('Selftest is already execute.','selftest');
+			return Env::Get(self::_IS_SELFTEST_);
+		}
+		Env::Set(self::_DO_SELFTEST_,true);
+		
 		//	init
 		$this->_result = new Config();
 		$this->_wizard = new Config();
 		
-		//  init form config.
-		static $_init_form = null;
-		if(!$_init_form){
-			$_init_form = true;
-			$this->form()->AddForm( $this->config()->WizardForm() );
-		}
+		//	init form
+		$this->form()->AddForm( $this->config()->WizardForm() );
 		
-		//	
+		//	selftest of each config
 		$this->_selftest_loop();
 		
 		//	check
@@ -123,11 +148,15 @@ class Wizard extends OnePiece5
 			$this->mark($this->_status,'selftest');
 		}
 		
-		return isset($io) ? $io: true;
+		return Env::Get(self::_IS_SELFTEST_);
 	}
 	
 	private function _selftest_loop()
 	{
+		//	init
+		$_is_selftest = true;
+		
+		//	get selftest config
 		if( $selftest = $this->GetSession('selftest') ){
 			
 			//	Check each class
@@ -162,10 +191,14 @@ class Wizard extends OnePiece5
 				$this->Cache()->Set($key,$io);
 		
 				if(!$io){
+					$_is_selftest = false;
 					$do_wizard = true;
 					$config_list[] = $config;
 				}
 			}
+			
+			//	save selftest result
+			Env::Set(self::_IS_SELFTEST_, $_is_selftest);
 			
 			if(!empty($do_wizard)){
 				//	Execute the Wizard.
@@ -445,6 +478,7 @@ class Wizard extends OnePiece5
 		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
+			
 			//	init
 			$fail = false;
 			
@@ -540,7 +574,7 @@ class Wizard extends OnePiece5
 			
 			//	use create column
 			$after = $column_name;
-
+			
 			//	Logger
 			if( $fail ){
 				$this->model('Log')->Set("ERROR: table=$table_name, column=$column_name, hint=$hint",false);
