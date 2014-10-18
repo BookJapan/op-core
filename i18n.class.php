@@ -178,15 +178,8 @@ class i18n extends Api
 		//	
 		if(!$to){
 			if(!$to = $this->GetLang()){
-				$to = $this->GetEnv('lang');
+				$to = Env::Get('lang');
 			}
-			/*
-			if( $this->_lang ){
-				$to = $this->_lang;
-			}else{
-				$to = $this->GetEnv('lang');
-			}
-			*/
 		}
 		
 		//	
