@@ -1,46 +1,21 @@
 <?php
 /**
- * Inherit the NewWorld.
+ * App.class.php
  * 
- * Don't edit NewWorld
- * Please create your original App class. 
- * 
- * @author Tomoaki Nagahara
- *
+ * @author tomoaki.nagahara@gmail.com
  */
 
 if(!include_once('NewWorld5.class.php')){
 	exit(0);
 }
 
+/**
+ * App
+ * 
+ * @author tomoaki.nagahara@gmail.com
+ */
 class App extends NewWorld5
 {
-	/**
-	 * @var ConfigMgr
-	 */
-	private $_mgr = null;
-	
-	/**
-	 * 
-	 * @param  ConfigMgr $var
-	 * @return ConfigMgr
-	 */
-	function Config( $mgr=null )
-	{
-		if( $mgr ){
-			if( $mgr instanceof ConfigMgr ){
-				$this->_mgr = $mgr;
-			}else{
-				throw new OpException("This variable is not ConfigMgr.");
-			}
-		}else if( empty($_mgr) ){
-			if(empty($this->_mgr)){
-				throw new OpException("Not been instance yet.");
-			}
-		}
-		return $this->_mgr;
-	}
-	
 	function GetAction()
 	{
 		if(!$action = $this->GetEnv('action') ){
