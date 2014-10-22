@@ -116,18 +116,28 @@ class Api extends OnePiece5
 		
 		//	init
 		$ch = $this->_ch;
-		curl_setopt( $ch, CURLOPT_URL,            $url );		//	
-		curl_setopt( $ch, CURLOPT_HEADER,         true );		//	
+		curl_setopt( $ch, CURLOPT_URL,            $url );		//	Get url
+		curl_setopt( $ch, CURLOPT_HEADER,         false );		//	Get http header with body
 		curl_setopt( $ch, CURLOPT_TIMEOUT,        $this->_timeout );	//	
-		curl_setopt( $ch, CURLOPT_COOKIE,         $this->_cookie );		//	
-		curl_setopt( $ch, CURLOPT_COOKIEJAR,      'cookie' );	//	
-		curl_setopt( $ch, CURLOPT_COOKIEFILE,     'tmp' );		//	
+		curl_setopt( $ch, CURLOPT_COOKIE,         $this->_cookie );		//	Set header's cookie data. (Cookie: fruit=apple; color=red)
+		curl_setopt( $ch, CURLOPT_COOKIEJAR,      $this->_cookie );		//	Save cookie data after curl_close.
+		curl_setopt( $ch, CURLOPT_COOKIEFILE,     $this->_cookie );		//	File name that holds cookie data.
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );		//	
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );		//	Locationヘッダを追跡
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );		//	Track the location header
+		curl_setopt( $ch, CURLOPT_MAXREDIRS,      10 );			//	Max redirect
 	//	curl_setopt( $ch, CURLOPT_REFERER,        "" );
 	//	curl_setopt( $ch, CURLOPT_USERAGENT,      "" );
-		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );		//	supports self certificate
-		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );		//	supports self certificate
+		
+		//	SSL Setting
+		if( isset($certificate) ){
+			//	Use the certificate.
+			curl_setopt( $ch, CURLOPT_CAINFO, $certificate );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
+		//	curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
+		}else{
+			//	Does not validation of the certificate.
+		//	curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+		}
 		
 		//	fail
 		if(!$result = curl_exec($ch)){
