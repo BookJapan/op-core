@@ -896,7 +896,7 @@ class DML5 extends OnePiece5
 			$to   = $this->pdo->quote(trim($match[4]));
 			$var = "$from AND $to";
 		}else{
-			$this->StackError("Does not match between's value is this '$var'. (ex.: \$var = 'From 1 to 10')");
+			$this->StackError("Does not match between's value is this '$var'. (ex.: \$var = 'FROM 1 TO 10')");
 			$var = null;
 		}
 		return $var;
@@ -1056,7 +1056,7 @@ class DML5 extends OnePiece5
 								$grat   = (int)$match[3];
 							}else{
 								//	NG
-								$this->StackError("Does not match between format.");
+								$this->StackError("Does not match between format. ($value)");
 							}
 							$join[] = "$column BETWEEN $less AND $grat";
 						}
@@ -1081,14 +1081,10 @@ class DML5 extends OnePiece5
 						}
 						break;
 					default:
-						//var_dump($key);
-						//var_dump($var);
 						$tmp = $this->_convertWhereAtColumn(array($key=>$var));
-						//var_dump($tmp);
 						if( $tmp ){
 							$join[] = $tmp;
 						}
-						//$this->mark("Does not support this. ($key)");
 				}
 				
 				continue;
