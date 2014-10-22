@@ -18,7 +18,15 @@ class Api extends OnePiece5
 	{
 		return $this->_is_cache;
 	}
-	
+
+	/**
+	 * Post at xml
+	 *
+	 * @param  string $url
+	 * @param  array  $post_data
+	 * @param  string $expire
+	 * @return string|boolean
+	 */
 	function PostXml( $url, $xml, $expire=null )
 	{
 		//	save cache key
@@ -34,6 +42,14 @@ class Api extends OnePiece5
 		return $this->Curl( $url, $expire );
 	}
 	
+	/**
+	 * Post
+	 * 
+	 * @param  string $url
+	 * @param  array  $post_data
+	 * @param  string $expire
+	 * @return string|boolean
+	 */
 	function Post( $url, $post_data, $expire=null )
 	{
 		//	save cache key
@@ -48,6 +64,13 @@ class Api extends OnePiece5
 		return $this->Curl( $url, $expire );
 	}
 	
+	/**
+	 * Get
+	 * 
+	 * @param  string $url
+	 * @param  string $expire
+	 * @return string|boolean
+	 */
 	function Get( $url, $expire=null )
 	{
 		return $this->Curl( $url, $expire );
