@@ -2297,7 +2297,7 @@ class Env
 {
 	const _NAME_SPACE_		 = 'ONEPIECE_5';
 	
-	const _ADMIN_IP_ADDR_	 = 'ADMIN_ADDR';
+	const _ADMIN_IP_ADDR_	 = 'ADMIN_IP';
 	const _ADMIN_EMAIL_ADDR_ = 'ADMIN_MAIL';
 	
 	const _ROOT_OP_		 = 'OP_ROOT';
