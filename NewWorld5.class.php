@@ -843,7 +843,12 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		if( $this->admin() ){
 			if( $this->_content ){
-				$this->_json['_LEAKED_CONTENT_'] = $this->_content;
+				if( Toolbox::GetRequest('html') ){
+					print $this->_content;
+				}else{
+					$this->_json['_LEAKED_CONTENT_'] = strip_tags($this->_content);
+				}
+				$this->_content = '';
 			}
 		}
 		if( $is_get ){
