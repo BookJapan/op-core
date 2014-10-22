@@ -145,6 +145,15 @@ class Api extends OnePiece5
 			return false;
 		}
 		
+		$body = $result;
+		if( Toolbox::GetRequest('html') and $this->admin() ){
+			print __FILE__.', '.__LINE__.'<br/>';
+			print '<textarea>';
+			print $result;
+			print '</textarea>';
+			print "<br/>\r\n";
+		}
+		
 		/*
 		//	Separate header
 		list($header,$body) = explode("\r\n\r\n",$result);
