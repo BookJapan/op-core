@@ -255,4 +255,9 @@ class App extends NewWorld5
 	{
 		Env::Set('table_prefix',$prefix);
 	}
+	
+	function Selftest()
+	{
+		return $this->Wizard()->isSelftest();
+	}
 }
