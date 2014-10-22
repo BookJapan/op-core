@@ -145,6 +145,7 @@ class Api extends OnePiece5
 			return false;
 		}
 		
+		/*
 		//	Separate header
 		list($header,$body) = explode("\r\n\r\n",$result);
 		
@@ -152,6 +153,7 @@ class Api extends OnePiece5
 		if( preg_match('|Set-Cookie: ([^;]+)|', $header, $match) ){
 			$this->_cookie = $match[1];
 		}
+		*/
 		
 		//	save cashe
 		if( isset($ckey) ){
