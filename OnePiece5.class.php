@@ -2295,7 +2295,7 @@ class OpException extends Exception
  */
 class Env
 {
-	const _NAME_SPACE_		 = 'ONEPIECE_5';
+	const _NAME_SPACE_		 = 'ONEPIECE_5_ENV';
 	
 	const _ADMIN_IP_ADDR_	 = 'ADMIN_IP';
 	const _ADMIN_EMAIL_ADDR_ = 'ADMIN_MAIL';
