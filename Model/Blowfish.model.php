@@ -1,33 +1,42 @@
 <?php
-
-class Model_Blowfish /* extends Model_Model */
+/**
+ * Blowfish.model.php
+ * 
+ * @author tomoaki.nagahara@gmail.com
+ */
+/**
+ * Model_Blowfish
+ * 
+ * @author tomoaki.nagahara@gmail.com
+ */
+class Model_Blowfish extends OnePiece5
 {
 	/**
 	 * @var Blowfish
 	 */
 	private $_blowfish = null;
 	
+	function Init()
+	{
+		parent::Init();
+		$this->_blowfish = new Blowfish();
+	}
+	
 	function Encrypt( $data, $password=null )
 	{
-		if(!$this->_blowfish){
-			$this->_blowfish = new Blowfish();
+		if(!$password){
+			$password = $this->GetEncryptKeyword();
 		}
 		return $this->_blowfish->Encrypt( $data, $password );
 	}
 	
 	function Decrypt( $string, $password=null )
 	{
-		if(!$this->_blowfish){
-			$this->_blowfish = new Blowfish();
-		}
 		return $this->_blowfish->Decrypt( $string, $password );
 	}
 	
 	function GetEncryptKeyword()
 	{
-		if(!$this->_blowfish){
-			$this->_blowfish = new Blowfish();
-		}
 		return $this->_blowfish->GetEncryptKeyword();
 	}
 }

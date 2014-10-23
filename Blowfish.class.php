@@ -15,7 +15,7 @@ if(!defined('MCRYPT_BLOWFISH')){
 	return;
 }
 
-class Blowfish
+class Blowfish extends OnePiece5
 {	
 	private $_cipher = null;
 	private $_mode   = null;
@@ -24,6 +24,8 @@ class Blowfish
 	
 	function Init()
 	{
+		parent::Init();
+		
 		if( empty($this->_cipher) ){
 			$this->SetCipher();
 		}
@@ -78,8 +80,8 @@ class Blowfish
 	
 	function GetEncryptKeyword()
 	{
-		if(!$keyword = OnePiece5::GetEnv('encrypt-keyword')){
-			$keyword = OnePiece5::GetEnv('admin-mail');
+		if(!$keyword = Env::Get('encrypt-keyword')){
+			$keyword = Env::GetAdminMailAddress();
 		}
 		return $keyword;
 	}
@@ -94,9 +96,9 @@ class Blowfish
 	
 	function SetKeyFromHex( $hex='04B915BA43FEB5B6' )
 	{
-		//if( preg_match('/[^0-9a-f]+/i', $hex, $match) ){
-		if(!ctype_xdigit($hex) ){ // Check the hexadecimal
-			$this->StackError("Is this hex string? ({$match[0]}). Use ConvertHex($hex) method.");
+		// Check the hexadecimal
+		if(!ctype_xdigit($hex) ){
+			$this->StackError("Is this hex string? ($hex). Use ConvertHex($hex) method.");
 			return false;
 		}
 		$this->_key = pack('H*', $hex);
@@ -141,7 +143,7 @@ class Blowfish
 		}
 		
 		if( !$key ){
-			print __FILE__ . __LINE__;
+			$this->mark("Empty encrypt keyword.");
 			return false;
 		}
 		
@@ -192,9 +194,8 @@ class Blowfish
 		
 		//	check
 		if( !$hex or !$ivt or !$key ){
-			print __FILE__ . __LINE__;
-			print "empty each.(hex=$hex, ivt=$ivt, key=$key)";
-			return '';
+			$this->mark("empty each.(hex=$hex, ivt=$ivt, key=$key)");
+			return null;
 		}
 		
 		//  unpack
