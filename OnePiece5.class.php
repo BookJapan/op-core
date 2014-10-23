@@ -1867,7 +1867,8 @@ __EOL__;
 			$meta = $match[1];
 			
 			//	op-root -> op_root
-			$meta = Model_Camel::ConvertSnakeCase($meta);
+		//	$meta = Model_Camel::ConvertSnakeCase($meta);
+			$meta = str_replace('-', '_', $meta);
 			
 			//	op_root -> op
 			list($meta) = explode('_',$meta);
