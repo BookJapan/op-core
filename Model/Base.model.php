@@ -67,7 +67,6 @@ abstract class Model_Base extends OnePiece5
 			
 			//  database connection
 			if(!$io = $pdo->Connect($config)){
-				
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
 					$e = new OpException();
@@ -160,6 +159,7 @@ abstract class Config_Base extends OnePiece5
 		//	default
 		$config->set->created	 = gmdate('Y-m-d H:i:s');
 	//	$config->set->timestamp	 = 'NOW()';
+	//	$config->update->update  = true;
 		
 		return $config;
 	}
@@ -175,6 +175,7 @@ abstract class Config_Base extends OnePiece5
 		//	default
 		$config->limit = 1;
 		$config->cache = 1;
+		$config->where->deleted = null;
 		
 		return $config;
 	}
