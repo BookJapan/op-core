@@ -48,10 +48,6 @@ if( function_exists('__autoload') ){
 		}else{
 			//  file name
 			switch($class_name){
-				/*
-				case isset($is_model):
-					break;
-				*/
 				case 'Memcache':
 				case 'Memcached':
 					return;
@@ -65,7 +61,7 @@ if( function_exists('__autoload') ){
 					$sub_dir = 'PDO';
 					
 				default:
-					$file_name = $class_name . '.class.php';
+					$file_name = "$class_name.class.php";
 			}
 		}
 		
@@ -1006,7 +1002,6 @@ __EOL__;
 		}else{
 			$back = debug_backtrace();
 		}
-		//dump::d($back);
 		
 		//	num
 		if( $num >= count($back) or $num <= 0 ){
@@ -1028,14 +1023,6 @@ __EOL__;
 			$type   = isset($back[$depth]['type'])     ? $back[$depth]['type']:     null;
 			$class  = isset($back[$depth]['class'])    ? $back[$depth]['class']:    null;
 			$line1m = isset($back[$depth-1]['line'])   ? $back[$depth-1]['line']:   null;
-			
-			/*
-			if(!$line){
-				$count = count($back);
-				dump::d("depth=$depth, count=$count");
-				dump::d($back[$depth]);
-			}
-			*/
 			
 			$filefull = $file;
 			$function = $func;
@@ -2132,12 +2119,11 @@ __EOL__;
 	 */
 	static function Singleton($name)
 	{
-		if(isset($_SERVER[__CLASS__]['singleton'][$name])){
+		if( isset( $_SERVER[__CLASS__]['singleton'][$name] ) ){
 			return $_SERVER[__CLASS__]['singleton'][$name];
 		}
 		
-		if($_SERVER[__CLASS__]['singleton'][$name] = new $name()){
-		//	self::mark("instance new object ($name)");
+		if( $_SERVER[__CLASS__]['singleton'][$name] = new $name() ){
 			return $_SERVER[__CLASS__]['singleton'][$name];
 		}
 		
