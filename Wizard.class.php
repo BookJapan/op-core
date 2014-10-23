@@ -81,14 +81,41 @@ class Wizard extends OnePiece5
 				$config->database->port = '3306';
 			}
 		}
-		
+
+		//	Get registerd selftest config
 		$selftest = $this->GetSession('selftest');
-		$selftest[$class_name] = Toolbox::toArray($config); // anti of __php_incomplete_class
+		
+		//	Check duplicate registory.
+		if( isset($selftest[$class_name]) ){
+		//	$this->mark("This class was already registration. (Duplicate class name. ($class_name))",'selftest');
+			return false;
+		}
+		
+		//	Convert to array.
+		$args = Toolbox::toArray($config);
+		
+		//	Generate finger print
+		$finger_print = md5( serialize($args) );
+		
+		//	Check duplicate finger print
+		if( $selftest ){
+			foreach( $selftest as $key => $var ){
+				if( $var['finger_print'] === $finger_print ){
+					$this->StackError("This config was already registration. (Duplicate finger print. ($key))",'selftest');
+					return false;
+				}
+			}
+		}
+		
+		//	Set finger print.
+		$args['finger_print'] = $finger_print;
+		
+		//	Merge
+		$selftest[$class_name] = $args; // anti of __php_incomplete_class
+		
+		//	Save to session.
 		$this->SetSession('selftest',$selftest);
 	}
-	
-	const _DO_SELFTEST_ = 'do_selftest';
-	const _IS_SELFTEST_ = 'is_selftest';
 	
 	public function Selftest()
 	{
