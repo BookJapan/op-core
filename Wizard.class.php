@@ -63,7 +63,7 @@ class Wizard extends OnePiece5
 	function SetSelftest( $class_name, Config $config )
 	{
 		if( ! $config instanceof Config ){
-			$this->StackError("argument is not config-object");
+			$this->StackError('Argument is not Config-object.');
 			return false;
 		}
 		
@@ -468,7 +468,7 @@ class Wizard extends OnePiece5
 	}
 	
 	private function _CheckColumn( Config $config, $table_name )
-	{	
+	{
 		//	return value
 		$result = true;
 		
@@ -552,6 +552,7 @@ class Wizard extends OnePiece5
 				
 				//	Check length
 				}else if( $length and $length != $structs[$column_name]['length'] ){
+					
 					$fail = true;
 					$hint = "length=$length not {$structs[$column_name]['length']}";
 					
@@ -638,15 +639,6 @@ class Wizard extends OnePiece5
 				
 				//	selftest result flag
 				$this->_result->column->$table_name->$column_name = 'change,';
-				
-				$this->mark($column_name);
-			//	$this->mark($key);
-			//	$this->mark($type);
-				$this->mark($hint);
-				$this->d($temp);
-				$this->d($column);
-				$this->d($structs[$column_name]);
-				
 			}
 		}
 		
