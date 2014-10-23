@@ -20,33 +20,18 @@ class Wizard extends OnePiece5
 	private $_status = null; //	Wizard status
 
 	/**
-	 * Execution flag of Selftest.
+	 * Execute selftest
 	 *
 	 * @var boolean
 	 */
-	private $_is_selftest = null;
+	const _DO_SELFTEST_ = 'do_selftest';
 	
 	/**
-	 * Execution flag of Wizard.
-	 * 
+	 * Selftest result.
+	 *
 	 * @var boolean
 	 */
-	private $_is_wizard = null;
-	
-	function __destruct()
-	{
-		if( $this->Admin() ){
-			if(!$this->_is_wizard){
-				/*
-				if( Toolbox::GetMIME(true) === 'html' ){
-					$this->Selftest();
-				}
-				*/
-			//	$this->StackError('Please Execute Selftest at Wizard.');
-			}
-		}
-		parent::__destruct();
-	}
+	const _IS_SELFTEST_ = 'is_selftest';
 	
 	/**
 	 * @return WizardConfig
