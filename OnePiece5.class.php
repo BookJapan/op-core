@@ -2545,6 +2545,23 @@ class Env
 		return array( $codes, $timezone );
 	}
 	
+	static function GetAdminMailAddress()
+	{
+		if( isset($_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_]) ){
+			$mail_addr = $_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_];
+		}else if( isset($_SERVER['SERVER_ADMIN']) ){
+			$mail_addr = $_SERVER['SERVER_ADMIN'];
+		}else{
+			$mail_addr = null;
+		}
+		return $mail_addr;
+	}
+	
+	static function SetAdminMailAddress($mail_addr)
+	{
+		$_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_] = $mail_addr;
+	}
+	
 	static function Get( $key )
 	{
 		$key = strtoupper($key);
