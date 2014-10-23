@@ -51,17 +51,7 @@ class Wizard extends OnePiece5
 	 */
 	function isSelftest()
 	{
-		return $this->_is_selftest;
-	}
-	
-	/**
-	 * Get execution flag of wizard.
-	 * 
-	 * @return boolean
-	 */
-	function isWizard()
-	{
-		return $this->_is_wizard;
+		return Env::Get(self::_IS_SELFTEST_);
 	}
 	
 	/**
