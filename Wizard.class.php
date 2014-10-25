@@ -20,7 +20,7 @@ class Wizard extends OnePiece5
 	private $_status = null; //	Wizard status
 
 	/**
-	 * Execute selftest
+	 * Execute selftest flag.
 	 *
 	 * @var boolean
 	 */
@@ -32,6 +32,20 @@ class Wizard extends OnePiece5
 	 * @var boolean
 	 */
 	const _IS_SELFTEST_ = 'is_selftest';
+	
+	/**
+	 * Execute wizard flag.
+	 * 
+	 * @var boolean
+	 */
+	const _DO_WIZARD_ = 'do_wizard';
+	
+	/**
+	 * Wizard result.
+	 * 
+	 * @var boolean
+	 */
+	const _IS_WIZARD_ = 'is_wizard';
 	
 	/**
 	 * @return WizardConfig
@@ -54,6 +68,11 @@ class Wizard extends OnePiece5
 		return Env::Get(self::_IS_SELFTEST_);
 	}
 	
+	function isWizard()
+	{
+		return Env::Get(self::_IS_WIZARD_);
+	}
+	
 	/**
 	 * Save selftest to wizard.
 	 * 
@@ -62,7 +81,21 @@ class Wizard extends OnePiece5
 	 */
 	function SetSelftest( $class_name, Config $config )
 	{
-		if( ! $config instanceof Config ){
+		//	Check class name.
+		if( empty($class_name) ){
+			$this->StackError('Does not passed class name. ($class_name is empty.)');
+			return false;
+		}else if(!is_string($class_name) ){
+			$type = gettype($class_name);
+			$this->StackError("Passed class name type is not string. (Passed variable type is $type.)");
+			return false;
+		}
+		
+		//	Check config type.
+		if( empty($class_name) ){
+			$this->StackError('Empty config.');
+			return false;
+		}else if( ! $config instanceof Config ){
 			$this->StackError('Argument is not Config-object.');
 			return false;
 		}
@@ -156,7 +189,8 @@ class Wizard extends OnePiece5
 	private function _selftest_loop()
 	{
 		//	init
-		$_is_selftest = true;
+		$is_selftest = true;
+		$to_wizard = false;
 		
 		//	get selftest config
 		if( $selftest = $this->GetSession('selftest') ){
@@ -193,29 +227,34 @@ class Wizard extends OnePiece5
 				$this->Cache()->Set($key,$io);
 		
 				if(!$io){
-					$_is_selftest = false;
-					$do_wizard = true;
+					$is_selftest = false;
+					$to_wizard   = true;
 					$config_list[] = $config;
 				}
-			}
+			} // end of selftest loop.
 			
-			//	save selftest result
-			Env::Set(self::_IS_SELFTEST_, $_is_selftest);
+			//	Save selftest result.
+			Env::Set(self::_IS_SELFTEST_, $is_selftest);
 			
-			if(!empty($do_wizard)){
+			//	
+			if( $to_wizard ){
 				//	Execute the Wizard.
-				if( $this->_Wizard($config_list) ){
+				if( $io_wizard = $this->_Wizard($config_list) ){
 					//	case of success, do delete config from session.
 					unset($selftest[$class_name]);
 				}else{
 					$fail = true;
 				}
-			}
-			
-			if( empty($fail) ){
-				$this->form()->Clear($this->config()->GetFormName());
-			}else{
-				$this->_PrintForm($config->form);
+				
+				//	Save wizard result.
+				Env::Set(self::_IS_WIZARD_, $io_wizard);
+					
+				//	Wizard form
+				if( $io_wizard ){
+					$this->form()->Clear($this->config()->GetFormName());
+				}else{
+					$this->_PrintForm($config->form);
+				}
 			}
 		}
 		
@@ -323,11 +362,27 @@ class Wizard extends OnePiece5
 					$this->_CheckTable($config);
 					
 					$this->D($this->_result,'selftest');
-					$this->_CreateDatabase($config);
-					$this->_CreateTable($config);
-					$this->_CreateColumn($config);
-					$this->_CreateUser($config);
-					$this->_CreateGrant($config);
+					
+					if(!$io = $this->_CreateDatabase($config) ){
+						$this->mark();
+						break;
+					}
+					if(!$io = $this->_CreateTable($config) ){
+						$this->mark();
+						break;
+					}
+					if(!$io = $this->_CreateColumn($config) ){
+						$this->mark();
+						break;
+					}
+					if(!$io = $this->_CreateUser($config) ){
+						$this->mark();
+						break;
+					}
+					if(!$io = $this->_CreateGrant($config) ){
+						$this->mark();
+						break;
+					}
 				}
 			}
 		}
@@ -721,6 +776,7 @@ class Wizard extends OnePiece5
 		}
 		
 		//	Init
+		$is_execution = true;
 		$host = $config->database->host;
 		$user = $config->database->user;
 		$db   = $config->database->database;
@@ -761,18 +817,21 @@ class Wizard extends OnePiece5
 				$fail = true;
 			}
 			
-			$io = $io ? 'true': 'false';
+			$is_execution = $io ? 'true': 'false';
 			$table_name = $table->table;
 		//	$this->mark("host=$host, user=$user, database=$db, table=$table_name, io=$io");
-			$this->_wizard->$host->$user->$db->table->$table_name = $io ? true: false;
-			$this->model('Log')->Set( $this->pdo()->qu(), $io ? 'green':'red');
+			$this->_wizard->$host->$user->$db->table->$table_name = $is_execution ? true: false;
+			$this->model('Log')->Set( $this->pdo()->qu(), $is_execution ? 'green':'red');
 		}
 		
-		return empty($fail) ? true: false;
+		return $is_execution;
 	}
 	
 	private function _CreateColumn( Config $config )
 	{
+		//	init
+		$is_execution = true;
+		
 		//  Select database
 		$this->pdo()->SetDatabase($config->database->database);
 		
@@ -869,8 +928,10 @@ class Wizard extends OnePiece5
 				
 				//	execute to each table.
 				$create->d();
-				$io = $this->pdo()->AddColumn($create);
-				$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+				if(!$io = $this->pdo()->AddColumn($create) ){
+					$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+					return $io;
+				}
 			}
 			
 			//	change
@@ -879,12 +940,14 @@ class Wizard extends OnePiece5
 				$change->table    = $table_name;
 				
 				//	execute to each table.
-				$io = $this->pdo()->ChangeColumn($change);
-				$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+				if(!$io = $this->pdo()->ChangeColumn($change)){
+					$this->model('Log')->Set( $this->pdo()->qu(), $io?'green':'red');
+					return $io;
+				}
 			}
 		}
 		
-		return true;
+		return $is_execution;
 	}
 	
 	private function _CreateUser($config)
