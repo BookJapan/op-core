@@ -693,7 +693,7 @@ class Wizard extends OnePiece5
 				$this->model('Log')->Set("ERROR: table=$table_name, column=$column_name, hint=$hint",false);
 				
 				//	selftest result flag
-				$this->_result->column->$table_name->$column_name = 'change,';
+				$this->_result->index->$table_name->$column_name = 'change,';
 			}
 		}
 		
@@ -905,6 +905,7 @@ class Wizard extends OnePiece5
 					case 'change':
 						//	join
 						$change->column->$column_name = $config->table->$table_name->column->$column_name;
+						unset($change->column->$column_name->pkey);
 						break;
 						
 					default:
