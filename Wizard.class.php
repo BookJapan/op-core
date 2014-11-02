@@ -73,6 +73,32 @@ class Wizard extends OnePiece5
 		return Env::Get(self::_IS_WIZARD_);
 	}
 	
+	private $_model_name_list;
+	
+	/**
+	 * Set selftest config by model name.
+	 * 
+	 * @param string  $model_name Generic model name.
+	 * @param boolean $execute execute flag.
+	 */
+	function SetSelftestName( $model_name, $execute=true )
+	{
+		//	
+		$this->_model_name_list[$model_name] = $execute;
+		
+		//	
+		$selftest = $this->GetSession('selftest');
+		
+		//	
+		$class_name = get_class($this->Model($model_name));
+		
+		//	
+		unset($selftest[$class_name]);
+		
+		//	
+		$this->SetSession('selftest', $selftest);
+	}
+	
 	/**
 	 * Save selftest to wizard.
 	 * 
@@ -119,8 +145,8 @@ class Wizard extends OnePiece5
 		$selftest = $this->GetSession('selftest');
 		
 		//	Check duplicate registory.
-		if( isset($selftest[$class_name]) ){
-		//	$this->mark("This class was already registration. (Duplicate class name. ($class_name))",'selftest');
+		if(!empty($selftest[$class_name]) ){
+			$this->mark("This class was already registration. (Duplicate class name. ($class_name))",'selftest');
 			return false;
 		}
 		
@@ -159,17 +185,38 @@ class Wizard extends OnePiece5
 		
 		//	Check
 		if( Env::Get(self::_DO_SELFTEST_) ){
-			$this->mark('Selftest is already execute.','selftest');
+			$line = $this->GetCallerLine();
+			$this->mark("Selftest is already execute. ($line)",'selftest');
 			return Env::Get(self::_IS_SELFTEST_);
 		}
 		Env::Set(self::_DO_SELFTEST_,true);
 		
-		//	init
-		$this->_result = new Config();
-		$this->_wizard = new Config();
+		//	Set selftest config by model name list.
+		foreach( $this->_model_name_list as $model_name => $execute_flag ){
+			
+			//	
+			$model = $this->model($model_name);
+			$class = get_class($model);
+			if(!method_exists( $model->Config(), 'selftest') ){
+				continue;
+			}
+			
+			//	Remove selftest config.
+			if(!$execute_flag){
+				$this->SetSelftest($class_name, null);
+			}
+			
+			//	Set selftest config.
+			$config = $model->Config()->selftest();
+			$this->SetSelftest($class, $config);
+		}
 		
 		//	init form
 		$this->form()->AddForm( $this->config()->WizardForm() );
+
+		//	init config
+		$this->_result = new Config();
+		$this->_wizard = new Config();
 		
 		//	selftest of each config
 		$this->_selftest_loop();
@@ -322,11 +369,14 @@ class Wizard extends OnePiece5
 	 */
 	private function _Wizard( $config_list )
 	{
+		$result_flag = true;
+			
 		//  Get form name.
 		$form_name = $this->config()->GetFormName();
 		
 		//  Check secure
 		if(!$this->form()->Secure($form_name) ){
+			$result_flag = false;
 			$this->_status = $this->form()->GetStatus($form_name);
 		}else{
 			$this->_status = 'Is secure.';
@@ -342,6 +392,8 @@ class Wizard extends OnePiece5
 				
 				//  Connect to administrator account.
 				if(!$io = $this->pdo()->Connect( $database ) ){
+					$result_flag = false;
+					
 					//	remove error information
 					$this->d($this->FetchError(),'debug');
 					$this->d(Error::Get(),'debug');
@@ -361,26 +413,32 @@ class Wizard extends OnePiece5
 					//	re:check table's column
 					$this->_CheckTable($config);
 					
-					$this->D($this->_result,'selftest');
-					
 					if(!$io = $this->_CreateDatabase($config) ){
-						$this->mark();
+						$result_flag = true;
 						break;
 					}
 					if(!$io = $this->_CreateTable($config) ){
-						$this->mark();
+						$result_flag = true;
 						break;
 					}
 					if(!$io = $this->_CreateColumn($config) ){
-						$this->mark();
+						$result_flag = true;
+						break;
+					}
+					if(!$io = $this->_CreatePkey($config) ){
+						$result_flag = true;
+						break;
+					}
+					if(!$io = $this->_CreateIndex($config) ){
+						$result_flag = true;
 						break;
 					}
 					if(!$io = $this->_CreateUser($config) ){
-						$this->mark();
+						$result_flag = true;
 						break;
 					}
 					if(!$io = $this->_CreateGrant($config) ){
-						$this->mark();
+						$result_flag = true;
 						break;
 					}
 				}
@@ -390,7 +448,7 @@ class Wizard extends OnePiece5
 		//	Logger
 		$this->model('Log')->Out();
 		
-		return empty($io) ? false: true;
+		return $result_flag;
 	}
 	
 	private function _PrintForm( $config )
@@ -514,7 +572,7 @@ class Wizard extends OnePiece5
 			}
 			
 			//	Check index
-			if(!$this->_check_index( $config, $table_name )){
+			if(!$this->_CheckIndex( $config, $table_name )){
 				$fail = true;
 			}
 		}
@@ -647,14 +705,14 @@ class Wizard extends OnePiece5
 		return $result;
 	}
 	
-	private function _check_index( Config $config, $table_name )
+	private function _CheckIndex( Config $config, $table_name )
 	{
 		//	return value
 		$result = true;
 		
 		$columns = $config->table->$table_name->column;
 		$structs = $this->pdo()->GetTableStruct( $table_name );
-
+		
 		//  Check detail
 		foreach( $columns as $column_name => $column ){
 			
@@ -663,11 +721,12 @@ class Wizard extends OnePiece5
 			$pkey   = isset($column->pkey)   ? $column->pkey   : null;
 			$index  = isset($column->index)  ? $column->index  : null;
 			$unique = isset($column->unique) ? $column->unique : null;
-			
+
 			$temp['ai'] = $ai;
 			$temp['pkey'] = $pkey;
 			$temp['index'] = $index;
 			$temp['unique'] = $unique;
+			//	$this->d($temp);
 			
 			//	Convert to string from boolean 
 			$index  = $index === true ? 'true': $index;
@@ -692,9 +751,21 @@ class Wizard extends OnePiece5
 				$hint = "index=$type, Not $key";
 				$this->model('Log')->Set("ERROR: table=$table_name, column=$column_name, hint=$hint",false);
 				
-				//	selftest result flag
-				$this->_result->index->$table_name->$column_name = 'change,';
+				//	Drop pkey
+				if( $key === 'PRI' ){
+					$drop = true;
+				}
+				
+				//	Add pkey by column name
+				if( $type === 'PRI' ){
+					$this->_result->pkey->$table_name->add->$column_name = $pkey;
+				}
 			}
+		}
+		
+		//	Drop pkey flag.
+		if(!empty($drop)){
+			$this->_result->pkey->$table_name->drop = true;
 		}
 		
 		return $result;
@@ -948,6 +1019,70 @@ class Wizard extends OnePiece5
 			}
 		}
 		
+		return $is_execution;
+	}
+	
+	/**
+	 * Create primary key.
+	 * 
+	 * @param  Config
+	 * @return boolean
+	 */
+	private function _CreatePkey($config)
+	{
+		$is_execution = true;
+		
+		//	Work by selftest result base.
+		foreach( $this->_result->pkey as $table_name => $direction_list ){
+			foreach( $direction_list as $direction => $value ){
+				if( $direction === 'add' ){
+					$column_list = Toolbox::toArray($value);
+					$keys = array_keys( $column_list, true );
+					if( $keys ){
+						$io = $this->pdo()->AddPrimaryKey($table_name, $keys);
+					}
+				}
+				
+				if( $direction === 'drop' and $value ){
+					$io = $this->PDO()->DropPrimarykey($table_name);
+				}
+				
+				//	execution flag
+				if(empty($io)){
+					$is_execution = false;
+				}
+				
+				//  Log
+				$this->model('Log')->Set( $this->pdo()->qu(), $io);
+			}
+		}
+		
+		$this->mark($is_execution);
+		
+		return $is_execution;
+	}
+	
+	/**
+	 * Create primary key.
+	 * 
+	 * @param  Config
+	 * @return boolean
+	 */
+	private function _CreateIndex($config)
+	{
+		$is_execution = true;
+		/*
+		foreach( $this->_result->index as $table_name => $column_list ){
+			foreach( $column_list as $column_name => $value ){
+				$config_column = $config->table->$table_name->column->$column_name;
+				$this->d($config_column);
+				
+				if(!$config_column->pkey){
+					$this->_DeletePkey();
+				}
+			}
+		}
+		*/
 		return $is_execution;
 	}
 	
