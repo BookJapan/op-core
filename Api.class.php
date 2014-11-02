@@ -136,7 +136,7 @@ class Api extends OnePiece5
 		//	curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
 		}else{
 			//	Does not validation of the certificate.
-		//	curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
 		}
 		
 		//	fail
@@ -146,13 +146,6 @@ class Api extends OnePiece5
 		}
 		
 		$body = $result;
-		if( Toolbox::GetRequest('html') and $this->admin() ){
-			print __FILE__.', '.__LINE__.'<br/>';
-			print '<textarea>';
-			print $result;
-			print '</textarea>';
-			print "<br/>\r\n";
-		}
 		
 		/*
 		//	Separate header
@@ -170,5 +163,15 @@ class Api extends OnePiece5
 		}
 		
 		return $body;
+	}
+	
+	function Preview($str)
+	{
+		if(!$this->admin()){
+			return;
+		}
+		print '<textarea style="width:100%; height: 5em;">';
+		print $str;
+		print '</textarea>';
 	}
 }
