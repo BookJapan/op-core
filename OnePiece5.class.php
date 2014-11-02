@@ -21,6 +21,9 @@ if(!ini_get('date.timezone')){
 	date_default_timezone_set('UTC');
 }
 
+//	Toolbox
+include('Toolbox.class.php');
+
 //	Init Env
 Env::Init();
 
@@ -1423,7 +1426,9 @@ __EOL__;
 		$args = str_replace("\0", '\0', $args);
 		
 		//  Anti ASCII Control code.
-		//  $args = trim( $args, "\x00..\x1F");
+		if( Toolbox::isLocalhost() ){
+			$args = trim( $args, "\x00..\x1F");
+		}
 		
 		/**
 		 * htmlentities's double_encoding off funciton is PHP Version 5.2.3 latter.
