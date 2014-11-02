@@ -897,15 +897,55 @@ class PDO5 extends OnePiece5
 		return $this->query( $qu, 'alter' );
 	}
 	
-	function AddIndex($args)
+	
+	function AddIndex( $table_name, $column_name )
 	{
-	//	ALTER TABLE `t_table` ADD INDEX `column_name` ( `column_name` );
+		$table_name  = $this->Escape($table_name);
+		$column_name = $this->Escape($column_name);
+		
+		$table_name  = ConfigSQL::Quote( $table_name,  $this->driver );
+		$column_name = ConfigSQL::Quote( $column_name, $this->driver );
+		
+		//     ALTER TABLE `t_table`   ADD INDEX `column_name` (`column_name`);
+		$qu = "ALTER TABLE $table_name ADD INDEX $column_name  ($column_name)";
+		return $this->query( $qu, 'alter' );
+	}
+	
+	function AddPrimaryKey( $table_name, $column_name )
+	{
+		$table_name  = $this->Escape($table_name);
+		$column_name = $this->Escape($column_name);
+		
+		$table_name  = ConfigSQL::Quote( $table_name, $this->driver );
+		
+		if( is_string($column_name) ){
+			$column_name = ConfigSQL::Quote( $column_name, $this->driver );
+		}else{
+			if( is_object($column_name) ){
+				$column_name = Toolbox::toArray($column_name);
+			}
+			if( is_array($column_name) ){
+				foreach( $column_name as $key => $var ){
+					$join[] = ConfigSQL::Quote( $var, $this->driver );
+				}
+				$column_name = join(', ',$join);
+			}else{
+				$type = gettype($column_name);
+				$this->StackError("Does not support type to \$column_name. ($type)");
+			}
+		}
+		
+		//	   ALTER TABLE `t_table`   ADD PRIMARY KEY(`column_name`);
+		$qu = "ALTER TABLE $table_name ADD PRIMARY KEY($column_name)";
+		return $this->query( $qu, 'alter' );
 	}
 	
 	function DropPrimarykey( $table_name )
 	{
-	//	ALTER TABLE op_account DROP PRIMARY KEY
+		$table_name = $this->Escape($table_name);
 		$table_name = ConfigSQL::Quote( $table_name, $this->driver );
+		
+		//	   ALTER TABLE `t_table`   DROP PRIMARY KEY
 		$qu = "ALTER TABLE $table_name DROP PRIMARY KEY";
 		return $this->query( $qu, 'alter' );
 	}
