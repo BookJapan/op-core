@@ -821,8 +821,6 @@ class PDO5 extends OnePiece5
 			return false;
 		}
 		
-		//	ALTER TABLE `t_table` CHANGE `column_name` `column_name` VARCHAR( 11 ) NOT NULL DEFAULT '0'
-		
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
@@ -897,8 +895,7 @@ class PDO5 extends OnePiece5
 		return $this->query( $qu, 'alter' );
 	}
 	
-	
-	function AddIndex( $table_name, $column_name )
+	private function _index( $table_name, $column_name, $acd, $type='INDEX' )
 	{
 		$table_name  = $this->Escape($table_name);
 		$column_name = $this->Escape($column_name);
@@ -906,9 +903,51 @@ class PDO5 extends OnePiece5
 		$table_name  = ConfigSQL::Quote( $table_name,  $this->driver );
 		$column_name = ConfigSQL::Quote( $column_name, $this->driver );
 		
-		//     ALTER TABLE `t_table`   ADD INDEX `column_name` (`column_name`);
-		$qu = "ALTER TABLE $table_name ADD INDEX $column_name  ($column_name)";
+		//	Check index type
+		switch( strtoupper($type) ){
+			case 'INDEX':
+			case 'UNIQUE':
+			case 'SPATIAL':
+			case 'FULLTEXT':
+			case 'PRIMARY KEY':
+				$acd  = strtoupper($acd);
+				$type = strtoupper($type);
+				break;
+			default:
+				$this->StackError("Does not define this definition. ($type)");
+				return false;
+		}
+		
+		//	Check Add or Drop
+		if( 'ADD' === strtoupper($acd) ){
+			if( $type === 'INDEX' ){
+				$target = "$column_name ($column_name)";
+			}else{
+				$target = "($column_name)";
+			}
+		}else if( 'DROP' === strtoupper($acd) ){
+			$target = "$column_name";
+		}else{
+			$this->StackError("Does not define this definition. ($acd)");
+			return false;
+		}
+		
+		//	ALTER TABLE `t_table` ADD INDEX `column_name` (`column_name`);
+		//	ALTER TABLE `t_table` ADD UNIQUE (`column_name`);
+		//	ALTER TABLE `t_table` DROP INDEX `column_name`;
+		
+		$qu = "ALTER TABLE $table_name $acd $type $target";
 		return $this->query( $qu, 'alter' );
+	}
+	
+	function AddIndex( $table_name, $column_name, $modifier='INDEX' )
+	{
+		return $this->_index($table_name, $column_name, 'ADD', $modifier);
+	}
+	
+	function DropIndex( $table_name, $column_name )
+	{
+		return $this->_index($table_name, $column_name, 'DROP');
 	}
 	
 	function AddPrimaryKey( $table_name, $column_name )
@@ -935,7 +974,6 @@ class PDO5 extends OnePiece5
 			}
 		}
 		
-		//	   ALTER TABLE `t_table`   ADD PRIMARY KEY(`column_name`);
 		$qu = "ALTER TABLE $table_name ADD PRIMARY KEY($column_name)";
 		return $this->query( $qu, 'alter' );
 	}
@@ -945,7 +983,6 @@ class PDO5 extends OnePiece5
 		$table_name = $this->Escape($table_name);
 		$table_name = ConfigSQL::Quote( $table_name, $this->driver );
 		
-		//	   ALTER TABLE `t_table`   DROP PRIMARY KEY
 		$qu = "ALTER TABLE $table_name DROP PRIMARY KEY";
 		return $this->query( $qu, 'alter' );
 	}
