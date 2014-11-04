@@ -477,13 +477,15 @@ class Toolbox
 	
 	static function Curl( $url, $args=null, $method='get')
 	{
+		OnePiece5::StackError("This method is deprecated.");
+		
 		if( $args ){
 			foreach( $args as $key => $var ){
 				$join[] = urlencode($key).'='.urlencode($var);
 			}
 			$url .= '?'.join('&',$join);
 		}
-	
+		
 		//	CURL
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -493,5 +495,17 @@ class Toolbox
 		curl_close($ch);
 	
 		return json_decode($json,true);
+	}
+	
+	static function Textarea($text)
+	{
+		if(!OnePiece5::Admin()){
+			return;
+		}
+		
+		print '<div style="font-size:small; margin-top:0.3em; margin-left:0.2em;">'.OnePiece5::GetCallerLine().'</div>';
+		print '<textarea style="margin:2px; width:99%; height:5em;">';
+		print OnePiece5::Escape($text);
+		print '</textarea>'.PHP_EOL;
 	}
 }
