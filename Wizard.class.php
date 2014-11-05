@@ -280,9 +280,6 @@ class Wizard extends OnePiece5
 				}
 			} // end of selftest loop.
 			
-			//	Save selftest result.
-			Env::Set(self::_IS_SELFTEST_, $is_selftest);
-			
 			//	Execute the Wizard
 			if( $to_wizard ){
 				//  Get form name.
@@ -312,7 +309,10 @@ class Wizard extends OnePiece5
 				}
 			}
 		}
-
+		
+		//	Save selftest result.
+		Env::Set(self::_IS_SELFTEST_, $is_selftest);
+		
 		//	Logger
 		$this->model('Log')->Out();
 		
