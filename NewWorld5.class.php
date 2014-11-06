@@ -873,7 +873,7 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function GetJson( $key )
 	{
-		return $this->_json[$key];
+		return isset($this->_json[$key]) ? $this->_json[$key]: null;
 	}
 }
 
@@ -881,5 +881,3 @@ class OpNwException extends OpException
 {
 	
 }
-
-
