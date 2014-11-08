@@ -1792,8 +1792,10 @@ __EOL__;
 					return $args;
 					
 				case 'dot':
-					$route = self::GetEnv('route');
-					$tmp_root = rtrim( $route['path'], '/' ) . '/'; 
+					$file = self::GetCallerLine( 0, 1, '$filefull');
+					$file = dirname($file);
+					$file = preg_replace("|^{$_SERVER['DOCUMENT_ROOT']}|", '', $file);
+					$tmp_root = $file;
 					break;
 					
 				case 'app':
