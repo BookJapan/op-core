@@ -1703,7 +1703,6 @@ class Form5 extends OnePiece5
 					$join[] = sprintf('class="op-input op-input-%s"',$type);
 			}	
 		}
-	//	$this->mark($class);
 		
 		//  Other attributes
 		$attr = join(' ',$join);
@@ -1733,12 +1732,6 @@ class Form5 extends OnePiece5
 			$value = $this->GetSaveValue($input_name, $form_name);
 		}else{
 			$value = $this->GetInputValueRaw($input_name, $form_name);
-		}
-		
-		if( 0 ){
-			$this->mark($value_default);
-			$this->mark($value_of_input);
-			$this->mark($value);
 		}
 		
 		// case of save to cookie 
@@ -1912,6 +1905,11 @@ class Form5 extends OnePiece5
 					//  checked
 					if(!empty($checked)){
 						$attr .= ' checked="checked"';
+					}
+					
+					//	If case of submit
+					if( $type === 'submit'){
+						$name = null;
 					}
 					
 					//  create tag
