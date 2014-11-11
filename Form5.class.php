@@ -2664,7 +2664,7 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-		$patt = '|https?://([-_a-z\.]+)/?|';
+		$patt = '|https?://([-_a-z0-9\.]+)/?|';
 		if( preg_match( $patt, $value, $match )){
 			$host = $match[1];
 		}else{
