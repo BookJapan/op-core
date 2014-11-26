@@ -22,7 +22,9 @@ if(!ini_get('date.timezone')){
 }
 
 //	Toolbox
-include('Toolbox.class.php');
+if(!class_exists('Toolbox')){
+	include_once('Toolbox.class.php');
+}
 
 //	Init Env
 Env::Init();
