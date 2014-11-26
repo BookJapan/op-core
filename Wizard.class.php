@@ -83,14 +83,19 @@ class Wizard extends OnePiece5
 	 */
 	function SetSelftestName( $model_name, $execute=true )
 	{
+		//	check model name
+		if( strpos($model_name,'_') !== false ){
+			list($prefix,$model_name) = explode('_',$model_name);
+		}
+
+		//	class name
+		$class_name = "Model_{$model_name}";
+		
 		//	
 		$this->_model_name_list[$model_name] = $execute;
 		
 		//	
 		$selftest = $this->GetSession('selftest');
-		
-		//	
-		$class_name = get_class($this->Model($model_name));
 		
 		//	
 		unset($selftest[$class_name]);
