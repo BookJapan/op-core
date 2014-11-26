@@ -1931,8 +1931,11 @@ __EOL__;
 			$name = ucfirst($name);		//	$name = ucfirst(strtolower($name));
 			
 			//  Notice
-			if( strpos( $name, '_') ){
-				$this->mark('Underscore(_) is reserved. For the feature functions. (maybe, namespace)');
+			if( strpos( $name, '_') !== false ){
+				$message = 'Underscore(_) is reserved. For the feature functions. (maybe, namespace)';
+				$english = $this->i18n()->En($message,'En');
+				$translate = $this->i18n()->En($message);
+				$this->mark("$translate ($english)");
 			}
 			
 			//  already instanced?
