@@ -1,23 +1,19 @@
 <?php
 /**
+ * Sample.model.php
+ * 
  * Sample of how to make the model.
  *
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- *
  */
-class Test_Model extends Model_Model
-{
-	function Init()
-	{
-		$this->Config('TestConfig');
-	}
-	
-	function Test()
-	{
-		$this->mark(__METHOD__);
-		return true;
-	}
 
+/**
+ * Model_Sample
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
+class Model_Sample extends Model_Model
+{
 	function Insert($config)
 	{
 		return $this->pdo()->insert($config);
@@ -29,7 +25,12 @@ class Test_Model extends Model_Model
 	}
 }
 
-class TestConfig extends ConfigMgr
+/**
+ * Config_Sample
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
+class Config_Sample extends Config_Model
 {
 	private $table_name = 't_test';
 	
