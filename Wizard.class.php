@@ -725,11 +725,15 @@ class Wizard extends OnePiece5
 			$index  = isset($column->index)  ? $column->index  : null;
 			$unique = isset($column->unique) ? $column->unique : null;
 			
+			/*
+			$temp['column_name'] = $column_name;
+			$temp['column'] =  Toolbox::toArray($column);
 			$temp['ai'] = $ai;
 			$temp['pkey'] = $pkey;
 			$temp['index'] = $index;
 			$temp['unique'] = $unique;
-			//	$this->d($temp);
+			$this->d($temp);
+			*/
 			
 			//	Convert to string from boolean 
 			$index  = $index === true ? 'true': $index;
@@ -743,6 +747,8 @@ class Wizard extends OnePiece5
 				$type = 'MUL';
 			}else if( $index === 'unique' ){
 				$type = 'UNI';
+			}else if( $index === 'PRI' ){
+				$type = 'PRI';
 			}else{
 				$type = 'null';
 			}
