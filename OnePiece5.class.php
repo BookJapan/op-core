@@ -2960,6 +2960,6 @@ class Vivre
 		
 		//	send mail
 		$result = mail($to, $subject, $message, $add_header, $add_params) ? 'succsessful': 'failed';
-		$this->mark("Sendmail is $result by vivre.");
+		OnePiece5::Mark("Sendmail is $result by vivre.");
 	}
 }
