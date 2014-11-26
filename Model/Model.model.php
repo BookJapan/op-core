@@ -1,5 +1,15 @@
 <?php
+/**
+ * Model.model.php
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
 
+/**
+ * Model_Model
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ */
 abstract class Model_Model extends OnePiece5
 {
 	//  Config Manager
@@ -139,7 +149,9 @@ abstract class Model_Model extends OnePiece5
 }
 
 /**
- * Separated from the ConfigMgr.
+ * Config_Model
+ * 
+ * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  */
 class Config_Model extends OnePiece5
 {
@@ -436,85 +448,5 @@ class Config_Model extends OnePiece5
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
 		return $config;
 	}
-	/*
-	function _selftest( $table_name=null )
-	{
-		$config = new Config();
-	
-		//	Form
-		$config->form->title   = 'Wizard Magic';
-		$config->form->message = 'Please enter root(or alter) password.';
-		
-		//	Database
-		$config->database = $this->Database();
-	
-		//	Column
-		if( $table_name ){
-			$name = 'created';
-			$config->table->$table_name->column->$name->type = 'datetime';
-				
-			$name = 'updated';
-			$config->table->$table_name->column->$name->type = 'datetime';
-				
-			$name = 'deleted';
-			$config->table->$table_name->column->$name->type = 'datetime';
-				
-			$name = 'timestamp';
-			$config->table->$table_name->column->$name->type = 'timestamp';
-		}
-	
-		return $config;
-	}
-	*/
 }
-
-/**
- * Old style.
- */
-class ConfigModel extends ConfigMgr
-{
-	//	table prefix
-	private $_table_prefix = 'op';
-
-	//	secret key
-	private $_secret_key = null;
-	
-	function SetSecretKey( $var )
-	{
-		$this->_secret_key = md5($var);
-	}
-	
-	function GetSecretKey()
-	{
-		return $this->_secret_key;
-	}
-	
-	static function Database()
-	{
-		$password  = OnePiece5::GetEnv('admin-mail');
-		$password .= isset($this) ? get_class($this): null;
-		
-		$config = parent::database();
-		$config->user     = 'op_model';
-		$config->password = md5( $password );
-		
-		return $config;
-	}
-	
-	function GetDatabaseConfig()
-	{
-		$config = parent::GetDatabaseConfig();
-		$config->user = 'op_model';
-		return $config;
-	}
-	
-	function GetTablePrefix()
-	{
-		return $this->_table_prefix;
-	}
-	
-	function SetTablePrefix($prefix)
-	{
-		$this->_table_prefix = $prefix;
-	}
-}
+ 
