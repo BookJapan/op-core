@@ -146,7 +146,11 @@ class Wizard extends OnePiece5
 		
 		//	Check duplicate registory.
 		if(!empty($selftest[$class_name]) ){
-			$this->mark("This class was already registration. (Duplicate class name. ($class_name))",'selftest');
+			$message = "This class was already registration. \($class_name)\ ";
+			$english = $this->i18n()->En($message,'En');
+			$translate = $this->i18n()->En($message);
+			$this->Mark("$translate ($english)",'selftest');
+			$this->Mark($this->GetCallerLine());
 			return false;
 		}
 		
