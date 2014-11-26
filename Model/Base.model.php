@@ -10,7 +10,8 @@ abstract class Model_Base extends OnePiece5
 		if( $this->Admin() ){
 			//	Config
 			if( method_exists( $this->Config(), 'Selftest') ){
-				$this->Wizard()->SetSelftest( get_class($this), $this->Config()->Selftest() );
+				$class_name = get_class($this);
+				$this->Wizard()->SetSelftestName($class_name);
 			}
 		}
 	}
