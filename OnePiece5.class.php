@@ -1234,6 +1234,11 @@ __EOL__;
 			$str = str_replace( array("\r","\n"), array('',''), $str);
 		}
 		
+		//	Check Wiki2Engine
+		if(!class_exists('Wiki2Engine')){
+			include_once( dirname(__FILE__) .DIRECTORY_SEPARATOR. 'Wiki2Engine.class.php');
+		}
+		
 		//	build
 		$nl = PHP_EOL;
 		$str = Wiki2Engine::Wiki2($str);
