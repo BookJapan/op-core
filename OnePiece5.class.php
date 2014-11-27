@@ -1299,11 +1299,12 @@ __EOL__;
 	 */
 	static function P( $str='OnePiece!', $tag='p', $attr=null)
 	{
-		if( self::GetEnv('cli') ){
-			print trim(strip_tags(self::Html( $str, $tag, $attr ))).PHP_EOL;
-		}else{
+		if( Toolbox::isHtml() ){
 			print self::Html( $str, $tag, $attr );
+		}else{
+			print trim(strip_tags(self::Html( $str, $tag, $attr )));
 		}
+		print PHP_EOL;
 	}
 	
 	/**
