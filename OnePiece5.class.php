@@ -2678,16 +2678,19 @@ class Error
 	
 	static function Report()
 	{
+		//	Check exists error.
 		if( empty($_SESSION[self::_NAME_SPACE_]) ){
 			return;
 		}
 		
-		if( OnePiece5::Admin() ){
+		//	Check admin and mime.
+		if( OnePiece5::Admin() and Toolbox::isHTML() ){
 			$io = self::_toDisplay();
 		}else{
 			$io = self::_toMail();
 		}
 		
+		//	Remove error report.
 		if($io){
 			unset($_SESSION[self::_NAME_SPACE_]);
 		}
@@ -2696,7 +2699,10 @@ class Error
 	static private function _getMailSubject()
 	{
 		foreach($_SESSION[self::_NAME_SPACE_] as $key => $backtraces){
-			return  strip_tags(self::_formatBacktrace( 0, $backtraces['backtrace'][0] ));
+			$subject = self::_formatBacktrace(0,$backtraces['backtrace'][0]);
+			$subject = Wiki2Engine::Wiki2($subject);
+			$subject = strip_tags($subject);
+			return $subject;
 		}
 	}
 	
@@ -2764,7 +2770,7 @@ class Error
 		$from = $_SERVER['SERVER_ADMIN'];
 		$from_name = 'OnePiece-Framework/Error';
 		
-		$to = Env::Get(Env::_ADMIN_EMAIL_ADDR_);
+		$to = Env::GetAdminMailAddress();
 		$subject = '[Error] '.self::_getMailSubject();
 		$message = '';
 		$headers = '';
@@ -2799,10 +2805,9 @@ class Error
 		$message .= "--$boundary\r\n";
 		
 		if(!$io = mail($to, $subject, $message, $headers, $parameters)){
-			print '<p style="color:white;background-color:black;">failed to send the error mail.</p>';
-		}else{
-			print "<p>Sendmail is successful.</p>";
+			OnePiece5::P('Failed to send the error mail.');
 		}
+		
 		return $io;
 	}
 	
