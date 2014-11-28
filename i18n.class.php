@@ -75,7 +75,7 @@ class i18n extends Api
 	function FetchJson( $url, $expire )
 	{
 		//	Execute
-		$body = $this->Curl($url,60*60);
+		$body = $this->Curl($url,60*60*24*7);
 		
 		if(!$body){
 			$this->StackError("Curl is failed.");
