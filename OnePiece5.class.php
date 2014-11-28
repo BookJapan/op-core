@@ -173,7 +173,7 @@ if(!function_exists('OnePieceShutdown')){
 			if( 1 == $rand ){
 				$_SESSION = array();
 				$i18n = OnePiece5::i18n();
-				$text = '\OnePiece5\ did clear the session.';
+				$text = '\OnePiece5\ did initialize the \SESSION\.';
 				if( $i18n->GetLang() !== 'en' ){
 					$translation = ' ('.$i18n->En($text).')';
 				}
