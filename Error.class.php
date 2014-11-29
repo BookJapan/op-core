@@ -103,7 +103,7 @@ class Error
 		}
 		
 		//	Check admin and mime.
-		if( OnePiece5::Admin() and Toolbox::isHTML() and false ){
+		if( OnePiece5::Admin() and Toolbox::isHTML() ){
 			$io = self::_toDisplay();
 		}else{
 			$io = self::_toMail();
