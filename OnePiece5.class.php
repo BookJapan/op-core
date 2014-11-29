@@ -20,9 +20,15 @@ if(!ini_get('date.timezone')){
 	date_default_timezone_set('UTC');
 }
 
-//	Toolbox
-if(!class_exists('Toolbox')){
-	include_once('Toolbox.class.php');
+//	OP_ROOT
+$op_root = $_SERVER['OP_ROOT'] = dirname(__FILE__);
+
+//	include
+foreach( array('Toolbox','Autoloader') as $class ){
+	$path = "{$op_root}/{$class}.class.php";
+	if(!class_exists($path)){
+		include_once($path);
+	}
 }
 
 //	Init Env
@@ -31,88 +37,8 @@ Env::Init();
 //	Handling vivre
 Vivre::Handling();
 
-/**
- * TODO: We (will|should) support to spl_autoload_register
- * @see http://www.php.net/manual/ja/function.spl-autoload-register.php
- */
-if( function_exists('__autoload') ){
-//	print "<p>__autoload is already exists.</p>";
-}else{
-	function __autoload($class_name)
-	{
-		//  init
-		$sub_dir  = null;
-		$op_root  = rtrim(OnePiece5::GetEnv('OP-Root'),'/').'/';
-		$app_root = rtrim(OnePiece5::GetEnv('App-Root'),'/').'/';
-		
-		//	case of model
-		if( preg_match('/(Model|Config)_([a-z0-9]+)/i', $class_name, $match) ){
-			$is_model = true;
-			$file_name = $match[2].'.model.php';
-		}else{
-			//  file name
-			switch($class_name){
-				case 'Memcache':
-				case 'Memcached':
-					return;
-					
-				case 'DML':
-				case 'DML5':
-				case 'DDL':
-				case 'DDL5':
-				case 'DCL':
-				case 'DCL5':
-					$sub_dir = 'PDO';
-					
-				default:
-					$file_name = "$class_name.class.php";
-			}
-		}
-		
-		/**
-		 *  Setup of the file reading directory.
-		 */
-		$dirs = array();
-		if( isset($is_model) ){
-			if( $dir = OnePiece5::GetEnv('model-dir') ){
-				$dirs[] = OnePiece5::ConvertPath($dir);
-			}
-			$dirs[] = rtrim($op_root,'/').'/Model/';
-		}
-		$dirs[] = '.';
-		if($app_root){ $dirs[] = $app_root; }
-		if($op_root){  $dirs[] = $op_root;  }
-		
-		//	PDO or Model
-		if( $sub_dir ){
-			$dirs[] = $op_root.$sub_dir;
-		}
-		
-		//	default
-		$dirs = array_merge($dirs,explode( PATH_SEPARATOR, ini_get('include_path') ));
-		
-		//	Delete duplicate directory
-		$dirs = array_unique($dirs);
-		
-		// check
-		foreach( $dirs as $dir ){
-			$file_path = rtrim($dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file_name;
-			
-		//	print $file_path . '<br/>' . PHP_EOL;
-		//	$_SERVER['hoge'][] = $file_path;
-			
-			if( file_exists($file_path) ){
-				include_once($file_path);
-				break;
-			}
-		}
-		
-		// check
-		if (!class_exists($class_name, false)) {
-			trigger_error("Unable to auto load class: $class_name", E_USER_NOTICE);
-		}
-	}
-}
+//	Register autoloader.
+spl_autoload_register('Autoloader::Autoload');
 
 /**
  * @see http://jp.php.net/manual/ja/function.register-shutdown-function.php
