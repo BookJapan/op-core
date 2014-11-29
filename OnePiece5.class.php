@@ -1524,6 +1524,7 @@ __EOL__;
 		
 		//  init
 		$headers = array();
+		$mime	 = isset($args['mime'])    ? $args['mime']    : 'text/plain';
 		$from	 = isset($args['from'])    ? $args['from']    : self::GetEnv('admin-mail');
 		$to      = isset($args['to'])      ? $args['to']      : null;
 		$title   = isset($args['title'])   ? $args['title']   : 'No subject';
@@ -1585,7 +1586,7 @@ __EOL__;
 		
 		//	encording format
 		if( $char ){
-			$headers[] = "Content-Type: text/plain; charset=$char";
+			$headers[] = "Content-Type: $mime; charset=$char";
 		}else{
 			//	$headers[] = "Content-Transfer-Encoding: base64";
 		}
