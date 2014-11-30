@@ -46,7 +46,7 @@ class Autoloader
 		if( isset($_is_model) ){
 			$file_name = self::_model($class);
 			//	Added sub direcotry.
-			$include_path[] = OnePiece5::GetEnv('model-dir');
+			$include_path[] = OnePiece5::ConvertPath(OnePiece5::GetEnv('model-dir'));
 			$include_path[] = rtrim($_SERVER['OP_ROOT'],DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'Model';
 		}else if( isset($_is_app) ){
 			$file_name = self::_app($class);
