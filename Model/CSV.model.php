@@ -67,11 +67,6 @@ class Model_CSV extends Model_Model
 	
 	function SetFile( $file_path )
 	{
-		if(!$this->_locale_of_csv){
-			$this->_error = "Does not init locale. Please call \SetLocaleOfCSV\ method.";
-			return false;
-		}
-		
 		if(!file_exists($file_path)){
 			$this->_error = "Does not exists this file. \($file_path)\ ";
 			return false;
@@ -88,6 +83,12 @@ class Model_CSV extends Model_Model
 	
 	function GetLine( $type='array' )
 	{
+		//	locale check
+		if(!$this->_locale_of_csv){
+			$this->_error = "Does not init locale. Please call SetLocaleOfCSV method.";
+			return false;
+		}
+		
 		//	encoding
 		$encoding_to = Env::Get('charset');
 		list($lang_country, $encoding_from) = explode('.',$this->_locale_of_csv);
@@ -127,6 +128,7 @@ class Model_CSV extends Model_Model
 			//	Build assoc.
 			for( $i=0,$c=count($array); $i<$c; $i++ ){
 				$column_name = $this->_column_names[$i];
+				$column_name = trim($column_name);
 				$assoc[$column_name] = $array[$i];
 			}
 			
