@@ -242,7 +242,7 @@ abstract class NewWorld5 extends OnePiece5
 		//	build route variable.
 		$route = array();
 		$route['app_root'] = join('/',$arr);
-		$route['path'] = '/'.join('/',array_reverse($dirs));
+		$route['path'] = '/'.join('/',array_reverse($dirs)).'/';
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
 		
