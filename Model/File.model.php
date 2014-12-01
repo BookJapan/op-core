@@ -1,9 +1,20 @@
-<?php
+<?php /* vim: ts=4:sw=4:tw=80 */
 /**
+ * File.model.php
  * 
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
+ */
+
+/**
+ * Model_File
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
  */
 class Model_File extends Model_Model
 {
