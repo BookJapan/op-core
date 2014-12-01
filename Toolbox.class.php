@@ -514,7 +514,6 @@ class Toolbox
 	{
 		//	Checking meta modifier.
 		if(!preg_match('|^([a-z]+):/|i',$meta,$match)){
-			OnePiece5::mark('unmatch');
 			return $meta;
 		}
 		
@@ -551,9 +550,7 @@ class Toolbox
 				break;
 				 
 			case 'layout':
-				$layout_dir  = Env::Get('layout_dir');
-				$layout_name = Env::Get('layout');
-				$real = self::ConvertMeta($layout_dir).$layout_name;
+				$real = Env::Get('layout-root');
 				break;
 		}
 		
@@ -570,7 +567,7 @@ class Toolbox
 		return $path;
 	}
 	
-	static function ConvertURL( $meta, $domain=false )
+	static function ConvertURL($meta)
 	{
 		$path = self::ConvertPath($meta);
 		$app_root = $_SERVER['APP_ROOT'];
@@ -580,7 +577,9 @@ class Toolbox
 			return false;
 		}
 		
-		$url = $_SERVER['REWRITE_BASE'].preg_replace($pattern,'',$path);
+		//	Join rewrite base.
+		$rewrite_base = isset($_SERVER['REWRITE_BASE']) ? $_SERVER['REWRITE_BASE']: null;
+		$url = $rewrite_base . preg_replace($pattern,'',$path);
 		
 		return $url;
 	}
