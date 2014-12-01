@@ -21,11 +21,17 @@ if(!ini_get('date.timezone')){
 }
 
 //	OP_ROOT
-$op_root = $_SERVER['OP_ROOT'] = dirname(__FILE__);
+$op_root = $_SERVER['OP_ROOT'] = dirname(__FILE__).'/';
+
+//	APP_ROOT
+$app_root = $_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']).'/';
+
+//	DOC_ROOT
+$doc_root = $_SERVER['DOC_ROOT'] = $_SERVER['DOCUMENT_ROOT'].'/';
 
 //	include
 foreach( array('Toolbox','Autoloader') as $class ){
-	$path = "{$op_root}/{$class}.class.php";
+	$path = "{$op_root}{$class}.class.php";
 	if(!class_exists($path)){
 		include_once($path);
 	}
