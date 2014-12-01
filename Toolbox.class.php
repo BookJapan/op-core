@@ -509,4 +509,79 @@ class Toolbox
 		print OnePiece5::Escape($text);
 		print '</textarea>'.PHP_EOL;
 	}
+	
+	static function ConvertMeta($meta)
+	{
+		//	Checking meta modifier.
+		if(!preg_match('|^([a-z]+):/|i',$meta,$match)){
+			OnePiece5::mark('unmatch');
+			return $meta;
+		}
+		
+		//	Which are modifier.
+		switch( $modifier = $match[1] ){
+			case 'op':
+				$real = $_SERVER['OP_ROOT'];
+				break;
+				
+			case 'app':
+				$real = $_SERVER['APP_ROOT'];
+				break;
+				
+			case 'doc':
+				$real = $_SERVER['DOC_ROOT'];
+				break;
+				
+			case 'dot':
+				foreach( debug_backtrace() as $temp ){
+					$func = $temp['function'];
+					if( $func==='include' or $func==='include_once' or $func==='require' or $func==='require_once' or $func==='Template' or $func==='GetTemplate' ){
+						$file = $temp['args'][0];
+					}else{
+						continue;
+					}
+					$real = dirname($file).'/';
+					break;
+				}
+				break;
+				
+			case 'ctrl':
+				$route = Env::Get('route');
+				$real = rtrim($_SERVER['APP_ROOT'],'/').$route['path'];
+				break;
+				 
+			case 'layout':
+				$layout_dir  = Env::Get('layout_dir');
+				$layout_name = Env::Get('layout');
+				$real = self::ConvertMeta($layout_dir).$layout_name;
+				break;
+		}
+		
+		//	Generate full path.
+		$modifier = preg_quote($modifier,'|');
+		$path = preg_replace("|^$modifier:/|", $real, $meta);
+		
+		return $path;
+	}
+	
+	static function ConvertPath($meta)
+	{
+		$path = self::ConvertMeta($meta);
+		return $path;
+	}
+	
+	static function ConvertURL( $meta, $domain=false )
+	{
+		$path = self::ConvertPath($meta);
+		$app_root = $_SERVER['APP_ROOT'];
+		$app_root = preg_quote($app_root,'|');
+		$pattern  = "|^$app_root|";
+		if(!preg_match($pattern,$path)){
+			return false;
+		}
+		
+		$url = $_SERVER['REWRITE_BASE'].preg_replace($pattern,'',$path);
+		
+		return $url;
+	}
 }
