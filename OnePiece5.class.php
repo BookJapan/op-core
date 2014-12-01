@@ -1717,121 +1717,28 @@ __EOL__;
 	}
 	
 	/**
-	 * Convert browser url. (base is document root.)
+	 * Convert to browser url from meta-path. (base is document root.)
 	 * 
 	 * @param string $path
 	 * @return string
 	 */
-	static function ConvertURL( $args, $domain=false )
+	static function ConvertURL( $meta, $domain=false )
 	{
-		//	Check if abstract path.
-		if( preg_match('|^([a-z][a-z0-9]+):/+(.*)|i',$args,$match) ){
-			$modifier = $match[1];
-			$path = $match[2];
-			switch( $modifier ){
-				case 'http':
-				case 'https':
-					return $args;
-					
-				case 'dot':
-					$file = self::GetCallerLine( 0, 1, '$filefull');
-					$file = dirname($file);
-					$file = preg_replace("|^{$_SERVER['DOCUMENT_ROOT']}|", '', $file);
-					$tmp_root = $file;
-					break;
-					
-				case 'app':
-					$tmp_root = $_SERVER['REWRITE_BASE'];
-					break;
-					
-				case 'ctrl':
-					$route = self::GetEnv('route');
-					$tmp_root = rtrim($_SERVER['REWRITE_BASE'],'/').$route['path'].'/';
-					break;
-					
-				case 'layout':
-					$tmp_root  = self::GetEnv('layout_dir');
-					$tmp_root .= self::GetEnv('layout').'/';
-					$tmp_root  = self::ConvertURL($tmp_root);
-					break;
-					
-				default:
-					$tmp_root = self::GetEnv( $modifier . '_root' );
-			}
-			
-			//  Windows
-			if( PHP_OS == 'WINNT' ){
-				$tmp_root = str_replace( '\\', '/', $tmp_root );
-			}
-			
-			//  create absolute path. 
-			$tmp_root = rtrim($tmp_root,'/').'/';
-			$absolute = $tmp_root.$path;
-			
-		}else{
-			
-			//	replace document root.
-			$patt = preg_quote(rtrim(self::GetEnv('doc-root'),'/'));
-			$args = preg_replace("|^{$patt}|", '', $args );
-			$args = str_replace('\\','/',$args);
-			
-			return $args;
-		}
-
-		//	
-		$url = $absolute;
-		
-		//	Added domain
 		if( $domain ){
-			if( is_bool($domain) ){
-				$domain = Toolbox::GetDomain(array('scheme'=>true));
-			}
-			$domain = rtrim($domain,'/').'/';
-			$url = ltrim($url,'/');
+			OnePiece5::StackError("\domain\ option is obsolete. Please use \Toolbox::GetDomain\ method.");
 		}
-		
-		return $domain.$url;
+		return Toolbox::ConvertURL($meta);
 	}
 	
 	/**
-	 * Convert server-side full-path.
+	 * Convert server-side full-path from meta-path.
 	 * 
 	 * @param  string $path
 	 * @return string
 	 */
-	static function ConvertPath( $path )
+	static function ConvertPath( $meta )
 	{
-		if( preg_match('|^/|i',$path) ){
-			//	Root directory (Unix)
-		}else if( preg_match('|^[a-z]:|i',$path) ){
-			//	Drive letter (Windows)
-		}else if( preg_match('|^([-_a-z0-9]+):/|i',$path,$match) ){
-			/**
-			 * Multi support
-			 * Case of 1, op:/
-			 * Case of 2, op-root:/
-			 */
-			
-			//	op:/ -> op
-			$meta = $match[1];
-			
-			//	op-root -> op_root
-		//	$meta = Model_Camel::ConvertSnakeCase($meta);
-			$meta = str_replace('-', '_', $meta);
-			
-			//	op_root -> op
-			list($meta) = explode('_',$meta);
-			
-			$label = $meta.'-root';
-			if( $root = OnePiece5::GetEnv($label) ){
-				$root = rtrim($root,'/').'/';
-				$path = str_replace( $match[0], $root, $path );
-			}else{
-				self::StackError("$label is not set.");
-			}
-		}
-		
-		return $path;
+		return Toolbox::ConvertPath($meta);
 	}
 	
 	function _setDeveloper( $name, $ip )
