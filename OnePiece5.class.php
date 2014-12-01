@@ -1,5 +1,4 @@
-<?php
-# vim: tabstop=4
+<?php /* vim: ts=4:sw=4:tw=80 */
 /**
  *  OnePiece5.class.php
  *
