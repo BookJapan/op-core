@@ -362,13 +362,12 @@ class DDL5 extends OnePiece5
 				case 'ENUM':
 					if(!$values){
 						$values = $length;
-						$length = '';
+						$length = null;
 					}
-					$join = array();
-					foreach(explode(',',$values) as $value){
-						$join[] = trim($value);
+					if( is_string($values) ){
+						$values = explode(',',$values);
 					}
-					$values = "'".join("','",$join)."'";
+					$values = "'".join("','",array_map('trim',$values))."'";
 					
 				default:
 					if( $length or $values){
