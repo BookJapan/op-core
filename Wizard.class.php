@@ -658,7 +658,12 @@ class Wizard extends OnePiece5
 				
 				//	Convert existing table value
 				if( $type === 'enum' or $type === 'set' ){
-					$length = "'".join("','",array_map('trim',explode(',',$length)))."'";
+					if( is_string($length) ){
+						$length = array_map('trim',explode(',',$length));
+					}else{
+						$length = Toolbox::toArray($length);
+					}
+					$length = "'".join("','",$length)."'";
 				}
 				
 				//	Check type
