@@ -163,6 +163,18 @@ class i18n extends Api
 		return $this->_pdo;
 	}
 	
+	function Bulk( $english, $from='en' )
+	{
+		$to = $this->GetLang();
+		$en = $this->Get($english, $from, 'en');
+		$tr = $this->Get($english, $from, $to);
+		if( $to === $from ){
+			return $en;
+		}else{
+			return "$tr ($en)";
+		}
+	}
+	
 	function En($text,$to=null)
 	{
 		return $this->Get($text,'en',$to);
