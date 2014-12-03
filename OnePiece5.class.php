@@ -517,8 +517,10 @@ class OnePiece5
 	 */
 	static function Admin()
 	{
-		if(!is_null($_SERVER['OP_IS_ADMIN'])){
-			return  $_SERVER['OP_IS_ADMIN'];
+		if( isset($_SERVER['OP_IS_ADMIN']) ){
+			if(!is_null($_SERVER['OP_IS_ADMIN'])){
+				return  $_SERVER['OP_IS_ADMIN'];
+			}
 		}
 		
 		$server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: '127.0.0.1';
@@ -677,7 +679,7 @@ __EOL__;
 		//	print strip_tags( html_entity_decode( $print, ENT_QUOTES, $charset ) );
 		//}else
 		 
-		if( self::Admin() ){
+		if( self::Admin() and Toolbox::isHtml() ){
 
 			//	Notify
 			if( Toolbox::isHtml() ){
@@ -1923,7 +1925,7 @@ __EOL__;
 	 * @throws OpWzException
 	 * @return Model_Model
 	 */
-	function Model($name)
+	static function Model($name)
 	{
 		try{
 			//  name check
@@ -1938,8 +1940,8 @@ __EOL__;
 			//  Notice
 			if( strpos( $name, '_') !== false ){
 				$message = 'Underscore(_) is reserved. For the feature functions. (maybe, namespace)';
-				$english = $this->i18n()->En($message,'En');
-				$translate = $this->i18n()->En($message);
+				$english = self::i18n()->En($message,'En');
+				$translate = self::i18n()->En($message);
 				$this->mark("$translate ($english)");
 			}
 			
@@ -1959,7 +1961,7 @@ __EOL__;
 			}
 			
 			//  include from app's model dir
-			$model_dir = $this->GetEnv('model-dir');
+			$model_dir = self::GetEnv('model-dir');
 			$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
 			if( $io = file_exists($path) ){
 				$io = include_once($path);
@@ -1992,7 +1994,7 @@ __EOL__;
 		}catch( Exception $e ){
 			$file = $e->getFile();
 			$line = $e->getLine();
-			$this->StackError( $e->getMessage() . "($file, $line)" );
+			self::StackError( $e->getMessage() . "($file, $line)" );
 			return new OnePiece5();
 		}
 	}
