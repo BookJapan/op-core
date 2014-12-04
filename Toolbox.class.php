@@ -53,6 +53,7 @@ class Toolbox
 	{
 		$type = gettype($args);
 		switch($type){
+			case 'array':
 			case 'object':
 				return self::toArrayFromObject($args);
 		}
@@ -64,7 +65,7 @@ class Toolbox
 	{
 		$arr = array();
 		foreach( (array)$obj as $key => $var ){
-			if( is_object($var) ){
+			if( is_object($var) or is_array($var) ){
 				$var = self::toArrayFromObject($var);
 			}
 			$arr[$key] = $var;
