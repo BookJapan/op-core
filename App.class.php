@@ -52,6 +52,11 @@ class App extends NewWorld5
 		return true;
 	}
 	
+	function GetLayoutName()
+	{
+		return $this->GetEnv('layout');
+	}
+	
 	function SetLayoutName( $var )
 	{
 		//	Set layout root. (full path)
