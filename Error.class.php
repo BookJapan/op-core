@@ -127,10 +127,11 @@ class Error
 			
 			//	Generate error message.
 			$message = $backtraces['message'];
-			$translate = OnePiece5::i18n()->En($message);
-			$english = OnePiece5::i18n()->En($message,'En');
+		//	$translate = OnePiece5::i18n()->En($message);
+		//	$english = OnePiece5::i18n()->En($message,'En');
+			$message = "$translate ($english)";
 			
-			return "$translate ($english)";
+			return $message;
 		}
 	}
 	
@@ -169,11 +170,12 @@ class Error
 			$backtraces = $error['backtrace'];
 			
 			//	i18n
-			$translate = OnePiece5::i18n()->En($message);
-			$english   = OnePiece5::i18n()->En($message,'En');
+		//	$translate = OnePiece5::i18n()->En($message);
+		//	$english   = OnePiece5::i18n()->En($message,'En');
+			$message = "$translate ($english)";
 			
 			//	Sequence no.
-			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} $translate ($english) ]] ]]".PHP_EOL;
+			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} $message ]] ]]".PHP_EOL;
 			
 			if( $count = count($backtraces) ){				
 				foreach( $backtraces as $index => $backtrace ){
