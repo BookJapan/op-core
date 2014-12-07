@@ -309,10 +309,12 @@ class PDO5 extends OnePiece5
 			return false;
 		}
 		
+		//	
 		if( $charset ){
 			$this->SetCharset($charset);
 		}
 		
+		//	
 		if( $locale ){
 			$this->SetLocale($locale);
 		}
@@ -360,9 +362,9 @@ class PDO5 extends OnePiece5
 		return $result;
 	}
 	
-	function GetTableList( $config=null/*, $like=null*/ )
+	function GetTableList( $config=null /*, $like=null*/ )
 	{
-		if(is_string($config)){
+		if( is_string($config) ){
 			//  set database
 			$database = $config;
 		}else{
@@ -384,13 +386,22 @@ class PDO5 extends OnePiece5
 			}
 		}
 		
-		//	Convert LIKE
-		if( $like ){
-			$like = 'LIKE ' . ConfigSQL::Quote( $like, $htis->driver);
+		//	escape
+		$database = ConfigSQL::Quote($database, $this->driver);
+		
+		//	like
+		$like = null;
+		if( isset($like) ){
+			if( $this->driver === 'mysql' ){
+				$like = str_replace("'",'',$like);
+				$like = "LIKE '$like'"; // ConfigSQL::Quote($like, $this->driver);
+			}else{
+				$like = null;
+			}
 		}
 		
 		//  create qu
-		$qu = "SHOW TABLES FROM `$database` $like ";
+		$qu = "SHOW TABLES FROM $database $like ";
 		
 		//  get table list
 		if( $record = $this->query($qu) ){
