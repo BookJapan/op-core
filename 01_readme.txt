@@ -1,4 +1,4 @@
-(You can read in 20 seconds this document.) 
+(You can read in 1 minutes this document.) 
 
 Welcome to OnePiece-Framework!!
 
@@ -32,29 +32,29 @@ Welcome to OnePiece-Framework!!
 	
 	1. OnePiece
 		
-		* Present debug-method.
+		* Provides the debug-method.
 			- Mark
 			- D
 		
-		* Present security.
+		* Provides a safe operation.
 			- StackError
 			- Vivre
 	
 	2. NewWorld
 	
-		* Present layout system.
+		* Provides layout system.
 		
-		* Present SmartURI system. (Dispatched to end-point-controller By NewWorld)
+		* Provides SmartURI system. (Dispatched to end-point-controller By NewWorld)
 	
 	3. Form
 	
-		* Present form feature.
+		* Provides form feature.
 		
 		* Anti XSS / CSRF.
 		
 	4. PDO
 		
-		* Present database control feature.
+		* Provides database control feature.
 		
 		* Anti SQL injection.
 	
