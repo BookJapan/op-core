@@ -41,7 +41,7 @@ foreach( array('Toolbox','Autoloader') as $class ){
 Env::Init();
 
 //	Handling vivre
-Vivre::Handling();
+//Vivre::Handling();
 
 //	Register autoloader.
 spl_autoload_register('Autoloader::Autoload');
@@ -54,9 +54,9 @@ if(!function_exists('OnePieceShutdown')){
 	{
 		//	Error
 		Error::Report();
-
+		
 		//	Release vivre
-		Vivre::Relaese();
+	//	Vivre::Relaese();
 		
 		//	Check
 		if(!OnePiece5::Admin()){
@@ -72,29 +72,39 @@ if(!function_exists('OnePieceShutdown')){
 		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
 		if( function_exists('error_get_last') and $error = error_get_last()){
 			switch($error['type']){
+				case E_ERROR:	// 1
+					$type = 'E_FATAL';
+					break;
+					
 				case E_WARNING: // 2
-					$er = 'E_WARNING';
+					$type = 'E_WARNING';
+					break;
+					
+				case E_PARSE:	// 4
+					$type = 'E_PARSE';
 					break;
 					
 				case E_NOTICE:  // 8
-					$er = 'E_NOTICE';
+					$type = 'E_NOTICE';
 					break;
 					
 				case E_STRICT:  // 2048
-					$er = 'E_STRICT';
+					$type = 'E_STRICT';
 					break;
 					
 				case E_USER_NOTICE: // 1024
-					$er = 'E_USER_NOTICE';
+					$type = 'E_USER_NOTICE';
 					break;
 					
 				default:
-					$er = $error['type'];
+					$type = $error['type'];
 			}
 			
-			if( $er !== 'E_STRICT' ){
-				print __FUNCTION__ . ': ' . __LINE__ . '<br>' . PHP_EOL;
-				printf('%s [%s] Error(%s): %s', $error['file'], $error['line'], $er, $error['message']);
+			$message = "{$error['file']} (#{$error['line']}) {$type}: {$error['message']}";
+			if( OnePiece5::Admin() and false ){
+				OnePiece5::mark("![.red[$message]]");
+			}else{
+				Vivre::Warning($message);
 			}
 		}
 		
@@ -105,10 +115,13 @@ if(!function_exists('OnePieceShutdown')){
 				$_SESSION = array();
 				$i18n = OnePiece5::i18n();
 				$text = '\OnePiece5\ did initialize the \SESSION\.';
+				/*
 				if( $i18n->GetLang() !== 'en' ){
 					$translation = ' ('.$i18n->En($text).')';
 				}
 				$message = $text.$translation;
+				*/
+				$message = $i18n->Bulk($text);
 				print "<script>alert('$message');</script>";
 			}
 		}
@@ -219,7 +232,8 @@ if(!function_exists('OnePieceExceptionHandler')){
  */
 class OnePiece5
 {
-	const KEY_COOKIE_UNIQ_ID = 'op-uniq-id';
+	const  KEY_COOKIE_UNIQ_ID	 = 'op-uniq-id';
+	const _KEY_COOKIE_UNIQ_ID_	 = self::KEY_COOKIE_UNIQ_ID;
 	
 	private $errors  = array();
 	private $session = array();
@@ -266,9 +280,8 @@ class OnePiece5
 		
 		if(!$this->GetEnv('cli') ){
 			//  unique id
-		//	if(!$this->GetCookie( self::KEY_COOKIE_UNIQ_ID )){
-			if(empty($_COOKIE[self::KEY_COOKIE_UNIQ_ID])){
-				$this->SetCookie( self::KEY_COOKIE_UNIQ_ID, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
+			if(empty($_COOKIE[self::_KEY_COOKIE_UNIQ_ID_])){
+				$this->SetCookie( self::_KEY_COOKIE_UNIQ_ID_, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
 			}
 		}
 		
@@ -280,9 +293,7 @@ class OnePiece5
 		}
 		
 		//  recovery (display_errors)
-		if( $this->admin() ){
-		//	ini_set('display_errors',1); // call is duplicate 
-		}else{
+		if(!$this->admin()){
 			ini_set('display_errors',0);
 		}
 		
@@ -1661,12 +1672,15 @@ __EOL__;
 	 * @param  array|Config $args
 	 * @return string|boolean Success is empty string return.
 	 */
-	function Template( $file, $data=null )
+	function Template( $file_path, $data=null )
 	{
-		if(!is_string($file)){
-			$this->StackError("Passed arguments is not string. (".gettype($file).")");
+		if(!is_string($file_path)){
+			$this->StackError("Passed arguments is not string. (".gettype($file_path).")");
 			return false;
 		}
+		
+		//	Convert meta modifier.
+		$file = $this->ConvertPath($file_path);
 		
 		//  for developper's debug
 		$this->mark($file,'template');
@@ -1674,7 +1688,7 @@ __EOL__;
 		//  access is deny, above current directory
 		if( $this->GetEnv('allowDoubleDot') ){
 			//  OK
-		}else if( preg_match('|^\.\./|',$file) ){ 
+		}else if( preg_match('|\.\./|',$file) ){ 
 			$this->StackError("Does not allow parent directory.($file)");
 			return false;
 		}
@@ -2450,24 +2464,21 @@ class Vivre
 	
 	static function Handling()
 	{
+		//	Check session
 		if(!session_id()){
 			OnePiece5::Mark("This system not working php's session.");
 		}
 		
-		//	1st check
-		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
-			if(!Toolbox::isHtml()){
-				sleep(1);
-			}
-		}
+		//	Generate key
+		$key = $_SERVER['REQUEST_URI'];
+		$key = md5($key);
 		
-		//	2nd check
-		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_])){
-			unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_]);
+		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_][$key])){
+			unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_][$key]);
 			self::Warning();
 		}
 		
-		$_SESSION[self::_NAMESPACE_][self::_KEY_NAME_] = true;
+		$_SESSION[self::_NAMESPACE_][self::_KEY_NAME_][$key] = true;
 	}
 	
 	static function Relaese()
@@ -2475,7 +2486,7 @@ class Vivre
 		unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_]);
 	}
 	
-	static function Warning()
+	static function Warning($message=null)
 	{
 		//	local info
 		$nl		 = "\r\n";
@@ -2501,9 +2512,9 @@ class Vivre
 		$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER']: null;
 		
 		//	build mail info
-		$to = Env::Get(Env::_ADMIN_EMAIL_ADDR_);
+		$to = Env::GetAdminMailAddress();
 		$subject  = '[ONEPIECE] VIVRE ALERT';
-		$message  = "";
+		$message .= $message ? $nl.$nl: null;
 		$message .= "Server: $name $nl";
 		$message .= "Host: $host ($addr) $nl";
 		$message .= "Request URI: {$scheme}://{$host}:{$port}{$uri} $nl";
@@ -2514,8 +2525,9 @@ class Vivre
 		$message .= "Date: $date $nl";
 		$message .= "GMT: $gmdate $nl";
 		$message .= "$nl";
-		$message .= "Visitor: $domain $ip $nl";
+		$message .= "Visitor: $domain ($ip) $nl";
 		$message .= "User Agent: $ua $nl";
+		$message .= "OP_UNIQ_ID: ". $this->GetCookie(OnePiece5::KEY_COOKIE_UNIQ_ID);
 		
 		$add_header = null; //implode("\n", $headers);
 		$add_params = null;
@@ -2524,7 +2536,16 @@ class Vivre
 		$add_params = '-f '.$to;
 		
 		//	send mail
-		$result = mail($to, $subject, $message, $add_header, $add_params) ? 'succsessful': 'failed';
+		$io = mail( $to, $subject, $message, $add_header, $add_params );
+		$result = $io ? 'succsessful': 'failed';
 		OnePiece5::Mark("Sendmail is $result by vivre.");
+		if(!$io){
+			$temp['to'] = $to;
+			$temp['subject'] = $subject;
+			$temp['message'] = $message;
+			$temp['headers'] = $add_header;
+			$temp['params']  = $add_params;
+			OnePiece5::d($temp);
+		}
 	}
 }
