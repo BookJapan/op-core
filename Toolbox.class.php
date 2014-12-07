@@ -532,16 +532,23 @@ class Toolbox
 				break;
 				
 			case 'dot':
-				foreach( debug_backtrace() as $temp ){
+				static $debug_backtrace;
+				if(!$debug_backtrace){
+					$debug_backtrace = debug_backtrace();
+				}
+				while( $temp = array_shift($debug_backtrace) ){
 					$func = $temp['function'];
 					if( $func==='include' or $func==='include_once' or $func==='require' or $func==='require_once' or $func==='Template' or $func==='GetTemplate' ){
 						$file = $temp['args'][0];
+						$file = self::ConvertMeta($file);
 					}else{
 						continue;
 					}
 					$real = dirname($file).'/';
 					break;
 				}
+				
+				$debug_backtrace = null;
 				break;
 				
 			case 'ctrl':
@@ -569,6 +576,16 @@ class Toolbox
 	
 	static function ConvertURL($meta)
 	{
+		//	Current directory
+		if( $meta{0} === '.' and $meta{1} === '/' ){
+			return $meta;
+		}
+		
+		//	parent directory
+		if( $meta{0} === '.' and $meta{1} === '.' ){
+			return $meta;
+		}
+		
 		$path = self::ConvertPath($meta);
 		$app_root = $_SERVER['APP_ROOT'];
 		$app_root = preg_quote($app_root,'|');
