@@ -477,18 +477,27 @@ class PDO5 extends OnePiece5
 	 * @param  string $host
 	 * @return array
 	 */
-	function GetUserList($host=null)
+	function GetUserList( $host=null )
 	{
+		switch($this->driver){
+			case 'mysql':
+				$database = 'mysql';
+				break;
+			default:
+				return false;
+		}
+		
 		//  Select database
-		$this->Database('mysql');
+		$this->Database($database);
 		
 		//  Get users list
 		$select = new Config();
+		$select->database = $database;
 		$select->table  = 'user';
 		$select->column = 'User,Host';
 		$select->order  = 'User';
 		if($host){ $select->where->Host = $host; }
-		$record = $this->select($select);
+		$record = $this->Select($select);
 		
 		//  Build result array
 		for( $i=0, $c=count($record); $i<$c; $i++ ){
