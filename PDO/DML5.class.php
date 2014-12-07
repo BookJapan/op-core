@@ -43,7 +43,7 @@ class DML5 extends OnePiece5
 	{
 		//  database
 		if(isset($conf['database'])){
-			$database = $this->ql.$conf['database'].$this->qr;
+			$database = $this->ql.$conf['database'].$this->qr.'.';
 		}else{
 			$database = null;
 		}
@@ -232,7 +232,7 @@ class DML5 extends OnePiece5
 		//	WHERE modifire
 		$is_where = $where ? 'WHERE': null;
 		
-		return "SELECT $option $column FROM $table $is_where $where $group $having $order $limit $offset ";
+		return "SELECT $option $column FROM $database $table $is_where $where $group $having $order $limit $offset ";
 	}
 	
 	function GetInsert( $conf )
