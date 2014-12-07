@@ -86,7 +86,6 @@ class Api extends OnePiece5
 	function Curl( $url, $expire=null )
 	{
 		//	check cache
-	//	if( is_numeric($expire) ){
 		if(!is_null($expire)){
 			//	check post data's cache key
 			if( $this->_ckey ){

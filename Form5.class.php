@@ -1455,8 +1455,9 @@ class Form5 extends OnePiece5
 		}
 
 		//  Check
-		if( $action and !is_string($action) ){
-			$this->mark('$action is not string');
+		if( !is_null($action) and !is_string($action) ){
+			$type = gettype($action);
+			$this->StackError("\$action is not string. ($type)");
 			$action = null;
 		}
 		
@@ -1480,6 +1481,8 @@ class Form5 extends OnePiece5
 		if( is_null($action) ){
 			$action = isset($form->action) ? $form->action: '';
 		}
+
+		//	Convert action url.
 		if( $action ){
 			$action	 = $this->ConvertUrl($action);
 		}

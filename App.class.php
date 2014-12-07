@@ -238,7 +238,7 @@ class App extends NewWorld5
 	
 	function Selftest()
 	{
-		$this->Wizard()->Selftest();
+		$io = $this->Wizard()->Selftest();
 		$io = $this->Wizard()->isSelftest();
 		return $io;
 	}
