@@ -565,6 +565,24 @@ class Toolbox
 		$modifier = preg_quote($modifier,'|');
 		$path = preg_replace("|^$modifier:/|", $real, $meta);
 		
+		/*
+		if( $modifier == 'dot' ){
+			if( false ){
+				OnePiece5::Mark();
+				
+				$temp = array();
+				$temp['modifier'] = $modifier;
+				$temp['meta'] = $meta;
+				$temp['real'] = $real;
+				$temp['path'] = $path;
+				$temp['file'] = $file;
+				$temp['debug_backtrace'] = debug_backtrace();
+				OnePiece5::D($temp);
+				
+			}
+		}
+		*/
+		
 		return $path;
 	}
 	
