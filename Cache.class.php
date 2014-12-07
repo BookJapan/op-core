@@ -23,7 +23,7 @@ class Cache extends OnePiece5
 	 * 
 	 * @var boolean
 	 */
-	private $_compress = false;
+	private $_compress = true;
 	
 	/**
 	 * Connection flag.
@@ -67,6 +67,16 @@ class Cache extends OnePiece5
 	 * @var string
 	 */
 	private $_domain = null;
+
+	/**
+	 * Default expire time.
+	 * 
+	 * Defult is 30 days.
+	 * Initialization do in the init method.
+	 *
+	 * @var integer
+	 */
+	private $_expire = null;
 	
 	function Test()
 	{
@@ -91,10 +101,6 @@ class Cache extends OnePiece5
 	function Init()
 	{
 		parent::Init();
-	
-		//  Get use flag
-		//	$use_memcache  = $this->GetEnv('OP_USE_MEMCACHE');
-		//	$use_memcached = $this->GetEnv('OP_USE_MEMCACHED');
 		
 		//	get host & port
 		$host = $this->GetEnv('OP_CACHE_HOST');
@@ -108,6 +114,7 @@ class Cache extends OnePiece5
 	
 		if( $is_memcached ){
 			$this->InitMemcached( $host, $port );
+		//	$this->SetCompress(true); // memcached instance's defualt is true?
 		}else if( $is_memcache ){
 			$this->InitMemcache( $host, $port );
 		}else{
@@ -116,6 +123,9 @@ class Cache extends OnePiece5
 		
 		//	Cache is separate to each domain.
 		$this->_domain = Toolbox::GetDomain();
+		
+		//	Default expire time.
+		$this->_expire = 60*60*24*30;
 		
 		return true;
 	}
@@ -173,7 +183,7 @@ class Cache extends OnePiece5
 		return $io;
 	}
 	
-	function SetCompress( $var=true )
+	function SetCompress( $var )
 	{
 		if( $this->_cache_type === 'memcached' ){
 			//	Memcached instance's default is true.
@@ -183,18 +193,29 @@ class Cache extends OnePiece5
 		}
 	}
 	
-	/*
-	function CheckKeyName($key)
+	/**
+	 * Replace value by key
+	 * 
+	 * @param  string  $key
+	 * @param  integer|string|array $value
+	 * @param  integer $expire
+	 * @return NULL|boolean
+	 */
+	function Replace( $key, $value, $expire=null )
 	{
-		if( preg_match("|^([^-_a-z])$|i",$key,$match) ){
-			$this->mark($match[1]);
-			return false;
-		}
-		return true;
+		return $this->Set($key, $value, $expire, true );
 	}
-	*/
 	
-	function Set( $key, $value, $expire=1200 )
+	/**
+	 * Set value to memcache.
+	 * 
+	 * @param  string  $key
+	 * @param  integer|string|array $value
+	 * @param  integer $expire
+	 * @param  boolean $replace
+	 * @return NULL|boolean
+	 */
+	function Set( $key, $value, $expire=null, $replace=false )
 	{
 		static $skip;
 		if( $skip ){
@@ -202,6 +223,12 @@ class Cache extends OnePiece5
 		}else if(!$this->_isConnect){
 			$skip = true;
 			return null;
+		}
+		
+		//	check value
+		if( is_resource($value) ){
+			$this->StackError("This key's value is resource. ($key)");
+			return false;
 		}
 		
 		//	key
@@ -214,44 +241,49 @@ class Cache extends OnePiece5
 		//	Anti Injection, and separate each domain.
 		$key = md5( $key . $this->_domain );
 		
-		/*
-		if( $this->_is_force_md5 ){
-			//	skip security check for key name.
-			$key = md5($key);
-		}else{
-			//	security check
-			if(!$this->CheckKeyName($key)){
-				$this->StackError("Illegal key name. ($key)");
-				return false;
-			}
-		}
-		*/
-		
 		//	Can not serialize SimpleXMLElement.
 		if( $value instanceof SimpleXMLElement ){
 			$this->mark("Can not serialize SimpleXMLElement. (Serialization of 'SimpleXMLElement' is not allowed)");
 			return false;
 		}
 		
+		//	expire
+		if( is_null($expire) ){
+			$expire = $this->_expire;
+		}
+		
+		//	
 		switch( $name = get_class($this->_cache) ){
 			case 'Memcached':
-				if( isset( $this->_cas_list[$key] ) ){
-					$cas = $this->_cas_list[$key];
-					return $this->_cache->cas( $cas, $key, $value, $expire );
-				}else{
-					return $this->_cache->Set( $key, $value, $expire );
+				$io = null;
+				//	Replace
+				if( $replace ){
+					$io = $this->_cache->replace( $key, $value, $expire );
 				}
-		
+				//	Set
+				if(!$io ){
+					$io = $this->_cache->set( $key, $value, $expire );
+				}
+				break;
+				
 			case 'Memcache':
 				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
-				if(!$io = $this->_cache->replace($key, $value, $compress, $expire) ){
-					$io = $this->_cache->Set( $key, $value, $compress, $expire );
+				$io = null;
+				//	replace
+				if( $replace ){
+					$io = $this->_cache->replace( $key, $value, $compress, $expire );
 				}
-				return $io;
-		
+				//	set
+				if(!$io ){
+					$io = $this->_cache->set( $key, $value, $compress, $expire );
+				}
+				break;
+				
 			default:
 				$this->StackError("undefine $name.");
 		}
+		
+		return $io;
 	}
 	
 	function Get( $key, $use_cas=true )
@@ -274,14 +306,6 @@ class Cache extends OnePiece5
 		//	Anti Injection, and separate each domain.
 		$key = md5( $key . $this->_domain );
 		
-		/*
-		//	check
-		if(!$this->CheckKeyName($key)){
-			$this->StackError("Illegal key name. ($key)");
-			return false;
-		}
-		*/
-		
 		switch( $this->_cache_type ){
 			case 'memcache':
 				return $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
@@ -291,7 +315,7 @@ class Cache extends OnePiece5
 					$cas = &$this->_cas_list[$key];
 				}else{
 					$cas = null;
-					unset(  $this->_cas_list[$key]);
+					unset($this->_cas_list[$key]);
 				}
 				return $this->_cache->Get( $key, null, $cas );
 				
@@ -300,64 +324,12 @@ class Cache extends OnePiece5
 		}
 	}
 	
-	/*
-	function Increment( $key, $value=1 )
-	{
-		static $skip;
-		if( $skip ){
-			return null;
-		}else if(!$this->_isConnect){
-			$skip = true;
-			return null;
-		}
-		
-		//	key
-		if(!is_string($key)){
-			//	$key = serialize($key);
-			$type = gettype($key);
-			$this->StackError("key is not string. (type=$type)");
-			return false;
-		}
-
-		//	check
-		if(!$this->CheckKeyName($key)){
-			$this->StackError("Illegal key name. ($key)");
-			return false;
-		}
-		
-		//	Not incremented, if does not exists value.
-		return $this->_cache->increment( $key, $value );
-	}
-	
-	function Decrement( $key, $value=1 )
-	{
-		static $skip;
-		if( $skip ){
-			return null;
-		}else if(!$this->_isConnect){
-			$skip = true;
-			return null;
-		}
-		
-		//	key
-		if(!is_string($key)){
-			//	$key = serialize($key);
-			$type = gettype($key);
-			$this->StackError("key is not string. (type=$key)");
-			return false;
-		}
-
-		//	check
-		if(!$this->CheckKeyName($key)){
-			$this->StackError("Illegal key name. ($key)");
-			return false;
-		}
-		
-		//	Not decremented, if does not exists value.
-		return $this->_cache->decrement( $key, $value );	
-	}
-	*/
-	
+	/**
+	 * Delete data by key.
+	 * 
+	 * @param  string $key
+	 * @return NULL|boolean
+	 */
 	function Delete( $key )
 	{
 		static $skip;
@@ -375,14 +347,6 @@ class Cache extends OnePiece5
 			$this->StackError("key is not string. (type=$type)");
 			return false;
 		}
-		
-		/*
-		//	check
-		if(!$this->CheckKeyName($key)){
-			$this->StackError("Illegal key name. ($key)");
-			return false;
-		}
-		*/
 		
 		//	Anti Injection, and separate each domain.
 		$key = md5( $key . $this->_domain );
