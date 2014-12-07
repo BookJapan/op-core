@@ -517,6 +517,14 @@ class PDO5 extends OnePiece5
 	 */
 	function GetUserPrivilege( $args )
 	{
+		switch( $this->driver ){
+			case 'mysql':
+				$this->SetDatabase('mysql');
+				break;
+			default:
+				return false;
+		}
+		
 		//	check
 		if(!is_array($args)){
 			$args = Toolbox::toArray($args);
@@ -1133,7 +1141,7 @@ class PDO5 extends OnePiece5
 		}
 		
 		//	Change database
-		if(isset($config['database'])){
+		if( isset($config['database']) ){
 			$this->SetDatabase($config['database']);
 		}
 		
