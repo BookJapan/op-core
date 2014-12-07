@@ -369,11 +369,11 @@ abstract class NewWorld5 extends OnePiece5
 			
 			//	Display to case of html.
 			list($uri) = explode('?',$_SERVER['REQUEST_URI']);			
-			if(!preg_match('/\.([-_a-z0-9]{2,5})$/i',$uri,$match) ){
+			if( preg_match('/\.(js|css|html)$/i',$uri,$match) ){
 				//	This file did not exist. (Warning to developer)
 				if( $_file_does_not_exists_ = $this->GetSession('file_does_not_exists') ){
 					if( $this->admin() ){
-						$this->p("![.red .bold[This file is not exists.]]",'div');
+						$this->p("![.red .bold[This file does not exists.]]",'div');
 						$this->d($_file_does_not_exists_);
 					}
 				}
@@ -390,7 +390,7 @@ abstract class NewWorld5 extends OnePiece5
 					$this->_content .= ob_get_contents();
 					ob_end_clean();
 				}else{
-					$this->StackError("ob_start is failed. Does not execute selftest.");
+					$this->StackError("\ob_start\ was failed. Does not run selftest.");
 				}
 			}
 			
@@ -842,7 +842,7 @@ abstract class NewWorld5 extends OnePiece5
 	function doJson($is_get=null)
 	{
 		if( $this->admin() ){
-			if( $this->_content ){
+			if( strlen($this->_content) ){
 				if( Toolbox::GetRequest('html') ){
 					print $this->_content;
 				}else{
