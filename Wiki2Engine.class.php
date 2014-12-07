@@ -21,8 +21,14 @@ class Wiki2Engine extends OnePiece5
 {
 	static $pattAttr = '[-_a-z0-9:#\.\s]+';
 	
-	static function Wiki2( $string, $options = null ){
-		
+	static function GetWiki2Pattern()
+	{
+		return '/!\[('.self::$pattAttr.')\[((?:(?!\!\['.self::$pattAttr.'\[.+?\]{2}).)*?)\]{2}/s';
+	}
+	
+	static function Wiki2( $string, $options = null )
+	{
+		//	Default option
 		if( is_null($options) and true ){
 			$options['tag']    = true;
 			$options['id']     = true;
@@ -31,11 +37,17 @@ class Wiki2Engine extends OnePiece5
 			$options['script'] = false;
 		}
 		
+		//	Debug option
+		if(!empty($options['debug']) ){
+			Dump::d($options);
+		}
+		
 		$string  = parent::Escape($string);
 		$elements = array();
 		
 		// Rightmost shortest match
-		$pattern = '/!\[('.self::$pattAttr.')\[((?:(?!\!\['.self::$pattAttr.'\[.+?\]{2}).)*?)\]{2}/s';
+	//	$pattern = '/!\[('.self::$pattAttr.')\[((?:(?!\!\['.self::$pattAttr.'\[.+?\]{2}).)*?)\]{2}/s';
+		$pattern = self::GetWiki2Pattern();
 		
 		$i = null;
 		while(preg_match($pattern, $string, $match)){
@@ -99,7 +111,7 @@ class Wiki2Engine extends OnePiece5
 	{
 		foreach(explode(' ',trim($attribute)) as $temp){
 			
-			if(preg_match('/^([a-z]+)$/i',$temp,$m)){
+			if(preg_match('/^([a-z0-9]+)$/i',$temp,$m)){
 				//	![p[this is paragraph.]]
 				$tag[] = $m[1];
 			}else if(preg_match('/^\.([-_a-z0-9]+)/',$temp,$m)){
