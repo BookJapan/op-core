@@ -40,28 +40,6 @@ class Cache extends OnePiece5
 	private $_cache_type = null;
 	
 	/**
-	 * If this flag is true case, skip security check for key name.
-	 * (be a little faster.)
-	 * 
-	 * @var boolean
-	 */
-	private $_is_force_md5 = null;
-	
-	/**
-	 * Use cas flag. (Memcached library only)
-	 * 
-	 * @var boolean
-	 */
-	private $_use_cas = true;
-	
-	/**
-	 * List of cas. 
-	 * 
-	 * @var array
-	 */
-	private $_cas_list = array();
-	
-	/**
 	 * Cache is separate to each domain.
 	 * 
 	 * @var string
@@ -90,10 +68,12 @@ class Cache extends OnePiece5
 	function Debug()
 	{
 		$args = array();
+		$args['memcache']	 = class_exists('Memcache', false);
+		$args['memcached']	 = class_exists('Memcached',false);
 		$args['type']		 = $this->_cache_type;
+		$args['type(real)']	 = get_class($this->_cache);
 		$args['connect']	 = $this->_isConnect;
 		$args['compress']	 = $this->_compress;
-		$args['use cas']	 = $this->_use_cas;
 		$args['cache']		 = $this->_cache;
 		$this->d($args);
 	}
@@ -111,7 +91,7 @@ class Cache extends OnePiece5
 	
 		$is_memcache  = class_exists('Memcache',false);
 		$is_memcached = class_exists('Memcached',false);
-	
+		
 		if( $is_memcached ){
 			$this->InitMemcached( $host, $port );
 		//	$this->SetCompress(true); // memcached instance's defualt is true?
@@ -197,7 +177,7 @@ class Cache extends OnePiece5
 	 * Replace value by key
 	 * 
 	 * @param  string  $key
-	 * @param  integer|string|array $value
+	 * @param  mixed   $value
 	 * @param  integer $expire
 	 * @return NULL|boolean
 	 */
@@ -306,22 +286,57 @@ class Cache extends OnePiece5
 		//	Anti Injection, and separate each domain.
 		$key = md5( $key . $this->_domain );
 		
+		//	
 		switch( $this->_cache_type ){
 			case 'memcache':
-				return $this->_cache->Get( $key /* ,MEMCACHE_COMPRESSED */ );
+				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
+				return $this->_cache->Get( $key, $compress );
 				
 			case 'memcached':
-				if( $use_cas ){
-					$cas = &$this->_cas_list[$key];
-				}else{
-					$cas = null;
-					unset($this->_cas_list[$key]);
-				}
-				return $this->_cache->Get( $key, null, $cas );
+				return $this->_cache->Get( $key );
 				
 			default:
 				$this->StackError("undefined {$this->_cache_type}.");
 		}
+	}
+	
+	function Cas( $key, &$value, $expire=null )
+	{
+		static $cas_list;
+		
+		//	expire
+		$expire = $expire ? $expire: $this->_expire;
+		
+		//	Anti Injection, and separate each domain.
+		$key = md5( $key . $this->_domain );
+		
+		//	Case of Memcache
+		if( get_class($this->_cache) === 'Memcache' ){
+			if(!isset($cas_list[$key])){
+				$cas_list[$key] = true;
+				$value = $this->Get($key);
+				return false;
+			}else{
+				$cas_list[$key] = false;
+				return $this->Set($key, $value, $expire);
+			}
+		}
+		
+		//	Check cas value
+		if(!isset($cas_list[$key])){
+			$value = $this->_cache->get($key, null, $cas_list[$key]);
+			if(!$cas_list[$key]){
+				$io = $this->_cache->set($key, $value, $expire);
+			}
+			return isset($io) ? $io: false;
+		}
+		
+		//	Check as set
+		if(!$io = $this->_cache->cas($cas_list[$key], $key, $value, $expire)){
+			$value = $this->_cache->get($key, null, $cas_list[$key]);
+		}
+		
+		return $io;
 	}
 	
 	/**
