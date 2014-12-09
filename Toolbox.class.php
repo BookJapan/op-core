@@ -594,6 +594,11 @@ class Toolbox
 	
 	static function ConvertURL($meta)
 	{
+		//	Document root
+		if( $meta{0} === '/' ){
+			return $meta;
+		}
+		
 		//	Current directory
 		if( $meta{0} === '.' and $meta{1} === '/' ){
 			return $meta;
