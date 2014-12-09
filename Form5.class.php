@@ -513,10 +513,10 @@ class Form5 extends OnePiece5
 	/**
 	 * Get value
 	 * 
-	 * @param string $input_name
-	 * @param string $form_name
-	 * @param string $joint
-	 * @return Ambigous <boolean, NULL, string, mixed, Ambigous, multitype:, string|array, number>
+	 * @param  string $input_name
+	 * @param  string $form_name
+	 * @param  string $joint
+	 * @return string
 	 */
 	public function GetValue( $input_name, $form_name=null, $joint=null )
 	{
