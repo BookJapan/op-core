@@ -280,6 +280,7 @@ class i18n extends Api
 		$config = array();
 		$config['table'] = $this->GetTableName();
 		$config['limit'] = 1;
+		$config['cache'] = 1;
 		$config['where'][self::_COLUMN_ID_] = md5("$text, $from, $to");
 		
 		$record = $pdo->Select($config);
