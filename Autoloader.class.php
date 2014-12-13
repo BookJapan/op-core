@@ -70,7 +70,8 @@ class Autoloader
 		
 		// Checking autoload successful.
 		if(!class_exists($class_name, false)){
-			trigger_error("Unable to auto load class: $class_name", E_USER_NOTICE);
+		//	trigger_error("Unable to auto load class: $class_name", E_USER_NOTICE);
+			OnePiece5::Mark("Unable to auto load class: $class_name");
 		}
 	}
 	
