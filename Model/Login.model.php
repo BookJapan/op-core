@@ -49,6 +49,17 @@ class Model_Login extends Model_Model
 	}
 	
 	/**
+	 * This is old method. Wrap of GetLoginID method.
+	 * This is method of deprecated.
+	 * 
+	 * @return string|integer
+	 */
+	function ID()
+	{
+		return $this->GetLoginID();
+	}
+	
+	/**
 	 * Set login-ID
 	 * 
 	 * @param  string|number $id
@@ -58,7 +69,7 @@ class Model_Login extends Model_Model
 	{
 		//	Check
 		if(!$id){
-			$this->StackError('ID is empty. logout use $this->Logout()');
+			$this->StackError('Arguments $id is empty. If logout, use $this->Logout()');
 			return false;
 		}
 		
@@ -75,11 +86,6 @@ class Model_Login extends Model_Model
 		$io = $this->SetSession( self::SESSION_LOGIN_ID, $id );
 		
 		return $io ? true: false;
-	}
-	
-	function ID()
-	{
-		return $this->GetLoginID();
 	}
 	
 	/**
