@@ -131,10 +131,19 @@ class Wizard extends OnePiece5
 			return false;
 		}
 		
-		//	Check table
-		if( empty($config->table) ){
-			$this->mark('$config->table is empty.');
-			return false;
+		//	check
+		foreach(array('host','user','database') as $key){
+			if( !isset($config->database->$key) ){
+				$message = $this->i18n()->En("\ $class_name \ config, This value is not set. \(\$config->database->{$key})\ ");
+				$this->mark("![.red[$message]]");
+				$this->StackError("[Wizard] $message");
+				return false;
+			}
+		}
+		
+		//	check driver
+		if( empty($config->database->driver) and isset($config->database->dbms) ){
+			$config->database->driver = $config->database->dbms; 
 		}
 		
 		//	Check port
@@ -145,17 +154,20 @@ class Wizard extends OnePiece5
 				$config->database->port = '3306';
 			}
 		}
-
+		
+		//	Check table
+		if( empty($config->table) ){
+			$this->mark('$config->table is empty.');
+			return false;
+		}
+		
 		//	Get registerd selftest config
 		$selftest = $this->GetSession('selftest');
 		
 		//	Check duplicate registory.
 		if(!empty($selftest[$class_name]) ){
-			$message = "This class was already registration. \($class_name)\ ";
-			$english = $this->i18n()->En($message,'En');
-			$translate = $this->i18n()->En($message);
-			$this->Mark("$translate ($english)",'selftest');
-			$this->Mark($this->GetCallerLine());
+			$message = $this->i18n()->Bulk("This class was already registration. \($class_name)\ ");
+			$this->Mark("$message",'selftest');
 			return false;
 		}
 		
@@ -264,8 +276,9 @@ class Wizard extends OnePiece5
 				try{
 					//	anti of __php_incomplete_class
 					$config = Toolbox::toObject($config);
+					$config->database->class = $class_name;
 					
-					if( $io = $this->_Selftest($config) ){
+					if( $io = $this->_Selftest( $config ) ){
 						$this->mark("![.blue[$class_name is selftest passed]]",'selftest');
 					}else{
 						$this->mark("![.red [$class_name is selftest failed]]",'selftest');
@@ -341,7 +354,7 @@ class Wizard extends OnePiece5
 	private function _Selftest( Config $config )
 	{
 		//	user connection test
-		$io = $_is_user_connection = $this->_check_connection($config->database);
+		$io = $_is_user_connection = $this->_check_connection( $config->database );
 		
 		//	If case of wizard. (connect root)
 		$form_name = $this->Config()->GetFormName();
@@ -475,25 +488,14 @@ class Wizard extends OnePiece5
 	
 	private function _check_connection( $database )
 	{
-		//	init
-		$dbms  = $database->driver;
-		$host  = $database->host;
-		$port  = $database->port;
-		$user  = $database->user;
-		$db    = $database->database;
-	
-		if( $port and $port !== '3306' ){
-			$host .=  ':'.$port;
-		}
-	
 		//	Database connection test
 		if(!$io = $this->pdo()->Connect( $database )){
-			$this->model('Log')->Set("FAILED: Database connect is failed.(dbms=$dbms, host=$host, port=$port, user=$user, db=$db)",false);
+			$this->model('Log')->Set("FAILED: Database connect is failed.(class={$database->class}, dbms={$database->driver}, host={$database->host}, port={$database->port}, user={$database->user}, database={$database->database})",false);
 		}
-	
+		
 		//	Save result of connection
-		$this->_result->connect->$host->$user->$db = $io;
-	
+		$this->_result->connect->{$database->host}->{$database->user}->{$database->database} = $io;
+		
 		return $io;
 	}
 	
