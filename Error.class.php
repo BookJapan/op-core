@@ -25,7 +25,7 @@ class Error
 {
 	const _NAME_SPACE_ = '_STACK_ERROR_';
 	
-	static function Set( $e )
+	static function Set( $e, $translation=null )
 	{
 		if( $e instanceof Exception ){
 			$message   = $e->getMessage();
@@ -58,15 +58,6 @@ class Error
 			
 			//	serialize backtrace
 			$traceStr = serialize($backtrace);
-			/*
-			if( $traceStr ){
-				$traceStr = serialize($backtrace);
-			}else{
-				$traceStr = serialize($backtrace[0]);
-				$traceStr.= serialize($backtrace[1]);
-				$traceStr.= serialize($backtrace[2]);
-			}
-			*/
 		}
 		
 		//	creat check key (duplicate check)
@@ -81,6 +72,7 @@ class Error
 		$error['message'] = $message;
 		$error['backtrace'] = $backtrace;
 		$error['timestamp'] = date('Y-m-d H:i:s');
+		$error['translation'] = $translation;
 		
 		//	save to session
 		$_SESSION[self::_NAME_SPACE_][$key] = $error;
@@ -118,19 +110,8 @@ class Error
 	static private function _getMailSubject()
 	{
 		foreach($_SESSION[self::_NAME_SPACE_] as $key => $backtraces){
-			//	Get error detail.
-			/*
-			$subject = self::_formatBacktrace(0,$backtraces['backtrace'][0]);
-			$subject = Wiki2Engine::Wiki2($subject);
-			$subject = strip_tags($subject);
-			*/
-			
 			//	Generate error message.
 			$message = $backtraces['message'];
-		//	$translate = OnePiece5::i18n()->En($message);
-		//	$english = OnePiece5::i18n()->En($message,'En');
-			$message = "$translate ($english)";
-			
 			return $message;
 		}
 	}
@@ -166,13 +147,14 @@ class Error
 		$return = '![table .small [';
 		foreach( $_SESSION[self::_NAME_SPACE_] as $error ){
 			$i++;
+			$from = $error['translation'];
 			$message = $error['message'];
 			$backtraces = $error['backtrace'];
 			
 			//	i18n
-		//	$translate = OnePiece5::i18n()->En($message);
-		//	$english   = OnePiece5::i18n()->En($message,'En');
-			$message = "$translate ($english)";
+			if( $from ){
+				$message = OnePiece5::i18n()->Bulk( $message, $from );
+			}
 			
 			//	Sequence no.
 			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} $message ]] ]]".PHP_EOL;

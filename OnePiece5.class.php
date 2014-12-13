@@ -488,15 +488,17 @@ class OnePiece5
 	 * Error stacking
 	 * 
 	 * @param string $message is message.
+	 * @param string $translation is language code (En, Ja, Fr).
 	 * @param string $class is label use to print.
 	 */
-	static function StackError( $args )
+	static function StackError( $args, $translation=null )
 	{
 		if( $_SERVER[Env::_SERVER_IS_LOCALHOST_] ){
-			Error::Set($args);
+			Error::Set( $args, $translation );
 			return;
 		}
 		
+		/*
 		$encoding = mb_internal_encoding();
 		
 		//  TODO: To model
@@ -535,6 +537,7 @@ class OnePiece5
 		$error['trace']	   = $trace;
 		
 		$_SERVER['OnePiece5']['errors'][] = $error;
+		*/
 	}
 	
 	function FetchError()
