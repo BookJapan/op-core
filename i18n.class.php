@@ -163,15 +163,14 @@ class i18n extends Api
 		return $this->_pdo;
 	}
 	
-	function Bulk( $english, $from='en' )
+	function Bulk( $message, $from='en' )
 	{
 		$to = $this->GetLang();
-		$en = $this->Get($english, $from, 'en');
-		$tr = $this->Get($english, $from, $to);
+		$tr = $this->Get($message, $from, $to);
 		if( $to === $from ){
-			return $en;
+			return $tr;
 		}else{
-			return "$tr ($en)";
+			return "$tr ($message)";
 		}
 	}
 	
@@ -405,5 +404,10 @@ class Config_i18n extends OnePiece5
 				break;
 		}
 		return $url;
+	}
+	
+	function ConvertLanguageCode( $code )
+	{
+		//	http://msdn.microsoft.com/ja-jp/library/cc392381.aspx
 	}
 }
