@@ -252,15 +252,18 @@ class DML5 extends OnePiece5
 			return false;
 		}
 		
-		//  set or values
+		//  set
 		if(isset($conf['set'])){
-			$set = 'SET '.$this->ConvertSet($conf);
-			$values = null;
-		}else if(isset($conf['values'])){
-			list($set, $values) = $this->ConvertValues($conf);
+			$set = $this->ConvertSet($conf);
 		}else{
-			$this->StackError("Does not 'set' or 'values'.");
-			return false;
+			$set = null;
+		}
+		
+		//	values
+		if(isset($conf['values'])){
+			$values = $this->ConvertValues($conf);
+		}else{
+			$values = null;
 		}
 		
 		//  update
@@ -419,6 +422,7 @@ class DML5 extends OnePiece5
 	
 	protected function EscapeColumn( $column )
 	{
+	//	$this->StackError("This method is deprecated.");
 		return $this->_QuoteColumn($column);
 	}
 	
@@ -657,31 +661,59 @@ class DML5 extends OnePiece5
 			$join[] = "{$key}={$var}";
 		}
 		
-		return join(', ',$join);
+		return 'SET '.join(', ',$join);
 	}
 	
 	protected function ConvertValues( $conf )
 	{
 		foreach( $conf['values'] as $key => $var ){
-			//  value
-			switch($var){
-				case 'NULL':
-				case 'NOW()':
-					//  not escape
-					$vars[] = $var;
-					break;
-				default:
-					//  escape
-					$var = $this->pdo->quote($var);
-			}
 			//  column
-			$cols[] = $key;
-			$vars[] = $var;
+			$keys[] = $key;
+			$cols[] = $this->EscapeColumn($key);
+			
+			//  single value
+			if(!is_array($var)){
+				$value[] = $this->pdo->quote($var);
+				continue;
+			}
+			
+			//	multi value
+			foreach( $var as $v ){
+				switch($v){
+					case 'NULL':
+					case 'NOW()':
+						//  not escape
+						break;
+					default:
+						//  escape
+						$v = $this->pdo->quote($v);
+				}
+				$bulk[$key][] = $v;
+			}
 		}
 		
-		$set = '('.join(',',$cols).')';
-		$values = 'VALUES ('.join(',',$vars).')';
-		return array($set,$values);	
+		if( isset($value) ){
+			//	single value
+			$values = '('.join(', ',$value).')';
+		}else if( isset($bulk) ){
+			//	multi value
+			$join = array();
+			$count_of_bulk = count($bulk[$key]);
+			$count_of_cols = count($keys);
+			for( $i=0; $i<$count_of_bulk; $i++ ){
+				$temp = array();
+				foreach( $keys as $key ){
+					$temp[] = $bulk[$key][$i];
+				}
+				$join[] = '('.join(',',$temp).')';
+			}
+			$values = join(', ',$join);
+		}else{
+			$this->StackError("Does not set value from in values.");
+			return false;
+		}
+		
+		return '('.join(', ',$cols).') VALUES '.$values;	
 	}
 	
 	protected function ConvertSelectColumn($conf)
