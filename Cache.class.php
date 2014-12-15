@@ -183,7 +183,22 @@ class Cache extends OnePiece5
 	 */
 	function Replace( $key, $value, $expire=null )
 	{
-		return $this->Set($key, $value, $expire, true );
+		switch( $name = get_class($this->_cache) ){
+			case 'Memcached':
+				//	Set
+				$io = $this->_cache->replace( $key, $value, $expire );
+				break;
+		
+			case 'Memcache':
+				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
+				//	set
+				$io = $this->_cache->replace( $key, $value, $compress, $expire );
+				break;
+		
+			default:
+				$this->StackError("undefine $name.");
+		}
+		return $io;
 	}
 	
 	/**
@@ -195,7 +210,7 @@ class Cache extends OnePiece5
 	 * @param  boolean $replace
 	 * @return NULL|boolean
 	 */
-	function Set( $key, $value, $expire=null, $replace=false )
+	function Set( $key, $value, $expire=null )
 	{
 		static $skip;
 		if( $skip ){
@@ -235,28 +250,14 @@ class Cache extends OnePiece5
 		//	
 		switch( $name = get_class($this->_cache) ){
 			case 'Memcached':
-				$io = null;
-				//	Replace
-				if( $replace ){
-					$io = $this->_cache->replace( $key, $value, $expire );
-				}
 				//	Set
-				if(!$io ){
-					$io = $this->_cache->set( $key, $value, $expire );
-				}
+				$io = $this->_cache->set( $key, $value, $expire );
 				break;
 				
 			case 'Memcache':
 				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
-				$io = null;
-				//	replace
-				if( $replace ){
-					$io = $this->_cache->replace( $key, $value, $compress, $expire );
-				}
 				//	set
-				if(!$io ){
-					$io = $this->_cache->set( $key, $value, $compress, $expire );
-				}
+				$io = $this->_cache->set( $key, $value, $compress, $expire );
 				break;
 				
 			default:
