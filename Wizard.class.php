@@ -279,6 +279,7 @@ class Wizard extends OnePiece5
 					$config->database->class = $class_name;
 					
 					if( $io = $this->_Selftest( $config ) ){
+						unset($selftest[$class_name]);
 						$this->mark("![.blue[$class_name is selftest passed]]",'selftest');
 					}else{
 						$this->mark("![.red [$class_name is selftest failed]]",'selftest');
