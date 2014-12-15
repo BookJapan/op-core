@@ -29,13 +29,12 @@ class Config extends stdClass
 		if(!isset($this->{$name})){
 			
 			if( empty($name) ){
-			//	var_dump($name);
-			//	var_dump($value);
 				return null;
 			}
 			
 			$this->{$name} = new Config();
 			$this->{$name} = $value;
+			
 			return $this->{$name};
 		}else{
 			printf('<p>%s, %s</p>',__METHOD__, $name);
@@ -47,7 +46,6 @@ class Config extends stdClass
 		if(!isset($this->{$name})){
 			
 			if( empty($name) ){
-			//	var_dump($name);
 				return null;
 			}
 			
