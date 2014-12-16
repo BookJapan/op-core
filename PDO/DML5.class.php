@@ -267,7 +267,7 @@ class DML5 extends OnePiece5
 		}
 		
 		//  update
-		if( isset($conf['update']) and $conf['update'] ){
+		if(!empty($conf['update'])){
 			$ignore  = 'IGNORE';
 			$update  = 'ON DUPLICATE KEY UPDATE ';
 			
@@ -277,7 +277,7 @@ class DML5 extends OnePiece5
 			if( is_array($conf['update']) ){
 				$temp = $conf;
 				$temp['set'] = $conf['update'];
-				$update .= $this->ConvertSet($temp);
+				$update .= $this->ConvertSet($temp,true);
 			}
 		}else{
 			$update = null;
@@ -357,7 +357,7 @@ class DML5 extends OnePiece5
 			$offset = null;
 		}
 		
-		return "UPDATE $table SET $set $where $order $limit $offset";
+		return "UPDATE $table $set $where $order $limit $offset";
 	}
 	
 	function GetDelete( $conf )
@@ -600,7 +600,7 @@ class DML5 extends OnePiece5
 		return $using;
 	}
 	
-	protected function ConvertSet( $conf )
+	protected function ConvertSet( $conf, $update=null )
 	{
 		foreach( $conf['set'] as $key => $var ){
 			
@@ -661,7 +661,11 @@ class DML5 extends OnePiece5
 			$join[] = "{$key}={$var}";
 		}
 		
-		return 'SET '.join(', ',$join);
+		//	If on duplicate update
+		$set = $update ? null: 'SET ';
+		
+		//	return
+		return $set.join(', ',$join);
 	}
 	
 	protected function ConvertValues( $conf )
