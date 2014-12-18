@@ -2345,7 +2345,7 @@ class Env
 		OnePiece5::SetCookie('locale', $locale);
 		
 		//	parse
-		if( preg_match('|([a-z]+)[-_]?([a-z]+)?\.?([-_a-z0-9]+)?|i', $locale, $match) or true){
+		if( preg_match('|([a-z]+)[-_]([a-z]+)\.([-_a-z0-9]+)|i', $locale, $match) or true){
 			$lang = strtolower($match[1]);
 			$area = strtoupper($match[2]);
 			$code = strtoupper($match[3]);
