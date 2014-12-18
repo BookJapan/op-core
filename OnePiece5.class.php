@@ -2359,7 +2359,7 @@ class Env
 			setlocale( LC_ALL, 'Japanese_Japan.932');
 		}else if(!setlocale( LC_ALL, $locale )){
 			/* @see http://jp.php.net/manual/ja/function.setlocale.php */
-			$this->StackError("Illigal locale: $locale");
+			OnePiece5::StackError("Illigal locale: $locale");
 			return false;
 		}
 		
