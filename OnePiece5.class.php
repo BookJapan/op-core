@@ -1,6 +1,8 @@
 <?php /* vim: ts=4:sw=4:tw=80 */
 /**
  *  OnePiece5.class.php
+ *  
+ *  By using this program, you agree to our Privacy Policy, Terms of Use and End User License Agreement.
  *
  * @version   1.0
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -101,7 +103,7 @@ if(!function_exists('OnePieceShutdown')){
 			}
 			
 			$message = "{$error['file']} (#{$error['line']}) {$type}: {$error['message']}";
-			if( OnePiece5::Admin() and false ){
+			if( OnePiece5::Admin() ){
 				OnePiece5::mark("![.red[$message]]");
 			}else{
 				Vivre::Warning($message);
@@ -2532,7 +2534,7 @@ class Vivre
 		$message .= "$nl";
 		$message .= "Visitor: $domain ($ip) $nl";
 		$message .= "User Agent: $ua $nl";
-		$message .= "OP_UNIQ_ID: ". $this->GetCookie(OnePiece5::KEY_COOKIE_UNIQ_ID);
+		$message .= "OP_UNIQ_ID: ". OnePiece5::GetCookie(OnePiece5::KEY_COOKIE_UNIQ_ID);
 		
 		$add_header = null; //implode("\n", $headers);
 		$add_params = null;
