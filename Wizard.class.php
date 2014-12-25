@@ -73,26 +73,59 @@ class Wizard extends OnePiece5
 		return Env::Get(self::_IS_WIZARD_);
 	}
 	
-	private $_model_name_list = array();
+	private $_selftest_name_list = array();
 	
 	/**
 	 * Set selftest config by model name.
 	 * 
-	 * @param string  $model_name Generic model name.
+	 * @param string  $model_name Model_MyName or MyName
 	 * @param boolean $execute execute flag.
 	 */
-	function SetSelftestName( $model_name, $execute=true )
+	function SetNameByModel( $model_name, $execute=true )
 	{
 		//	check model name
 		if( strpos($model_name,'_') !== false ){
 			list($prefix,$model_name) = explode('_',$model_name);
 		}
-
+		
 		//	class name
 		$class_name = "Model_{$model_name}";
 		
+		//	set class name
+		return $this->SetSelftestName($class_name,$execute);
+	}
+	
+	/**
+	 * Set selftest config by class name.
+	 *
+	 * @param string  $model_name Generic model name.
+	 * @param boolean $execute execute flag.
+	 */
+	function SetNameByClass( $class_name, $execute=true )
+	{
+		return $this->SetSelftestName($class_name,$execute);
+	}
+	
+	/**
+	 * Set selftest config by name.
+	 * 
+	 * @param string  $model_name Generic model name.
+	 * @param boolean $execute execute flag.
+	 */
+	function SetSelftestName( $class_name, $execute=true )
+	{
+		/*
+		//	check model name
+		if( strpos($model_name,'_') !== false ){
+			list($prefix,$model_name) = explode('_',$model_name);
+		}
+		
+		//	class name
+		$class_name = "Model_{$model_name}";
+		*/
+		
 		//	
-		$this->_model_name_list[$model_name] = $execute;
+		$this->_selftest_name_list[$class_name] = $execute;
 		
 		//	
 		$selftest = $this->GetSession('selftest');
@@ -166,8 +199,9 @@ class Wizard extends OnePiece5
 		
 		//	Check duplicate registory.
 		if(!empty($selftest[$class_name]) ){
-			$message = $this->i18n()->Bulk("This class was already registration. \($class_name)\ ");
-			$this->Mark("$message",'selftest');
+			$message = "This class was already registration. \($class_name)\ ";
+			$message = $this->i18n()->Bulk($message);
+			$this->Mark($message,'selftest');
 			return false;
 		}
 		
@@ -213,13 +247,34 @@ class Wizard extends OnePiece5
 		Env::Set(self::_DO_SELFTEST_,true);
 		
 		//	Set selftest config by model name list.
-		foreach( $this->_model_name_list as $model_name => $execute_flag ){
+		foreach( $this->_selftest_name_list as $class_name => $execute_flag ){
 			
 			//	
+			/*
 			$model = $this->model($model_name);
 			$class = get_class($model);
 			if(!method_exists( $model->Config(), 'selftest') ){
 				continue;
+			}
+			*/
+			
+			//	Generate instance
+			if( class_exists($class_name) ){
+				$class = new $class_name();
+			}else{
+				$this->mark("![.red .bold .i18n[This class does not exists. ($class_name)]]");
+				continue;
+			}
+			
+			//	Check selftest method
+			if(!method_exists($class,'Config')){
+				$this->mark("![.red .bold .i18n[This class is not has \Config\ method. ($class_name)]]");
+				continue;
+			}else{
+				if(!method_exists( $class->Config(), 'selftest') ){
+					$this->mark("![.red .bold .i18n[This \Config\ class is not has \selftest\ method. ($class_name)]]");
+					continue;
+				}
 			}
 			
 			//	Remove selftest config.
@@ -228,8 +283,8 @@ class Wizard extends OnePiece5
 			}
 			
 			//	Set selftest config.
-			$config = $model->Config()->selftest();
-			$this->SetSelftest($class, $config);
+			$config = $class->Config()->selftest();
+			$this->SetSelftest($class_name, $config);
 		}
 		
 		//	init form
@@ -489,13 +544,29 @@ class Wizard extends OnePiece5
 	
 	private function _check_connection( $database )
 	{
+		//	init
+		$dbms  = $database->driver;
+		$host  = $database->host;
+		$port  = $database->port;
+		$user  = $database->user;
+		$db    = $database->database;
+		
+		//	if set name as database name.
+		if( isset($database->name) ){
+			$db = $database->name;
+		}
+		
+		if( $port and $port !== '3306' ){
+			$host .=  ':'.$port;
+		}
+		
 		//	Database connection test
 		if(!$io = $this->pdo()->Connect( $database )){
 			$this->model('Log')->Set("FAILED: Database connect is failed.(class={$database->class}, dbms={$database->driver}, host={$database->host}, port={$database->port}, user={$database->user}, database={$database->database})",false);
 		}
 		
 		//	Save result of connection
-		$this->_result->connect->{$database->host}->{$database->user}->{$database->database} = $io;
+		$this->_result->connect->$host->$user->$db = $io;
 		
 		return $io;
 	}
@@ -805,7 +876,7 @@ class Wizard extends OnePiece5
 		$select = new Config();
 		$select->database	 = $db;
 		$select->table		 = $table; 
-		$select->where->Host = $host; // 'localhost'; // TODO
+		$select->where->Host = $host;
 		$select->where->User = $user;
 		$select->limit		 = 1;
 		$record = $this->pdo()->select($select);
