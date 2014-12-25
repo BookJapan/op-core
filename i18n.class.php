@@ -2,14 +2,21 @@
 /**
  * i18n.class.php
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2013 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
  */
+
 /**
  * i18n
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2013 (C) Tomoaki Nagahara All right reserved.
+ * @package   op-core
  */
-class i18n extends Api
+class i18n extends OnePiece5
 {
 	/**
 	 * @return Config_i18n
@@ -22,24 +29,21 @@ class i18n extends Api
 		}
 		return $config;
 	}
-	
+
+	private $_lang;
 	private $_use_memcache	 = true;
 	private $_use_database	 = true;
 	private $_cache_expire	 = 3600; // 60 min
 	
-	private $_db_single		 = false;
-	private $_db_prod		 = 'mysql';
-	private $_db_host		 = 'localhost';
-	private $_db_port		 = '3306';
-	private $_db_user		 = 'i18n';
-	private $_db_password	 = '';
-	private $_db_name		 = 'onepiece';
-	private $_db_charset	 = 'utf8';
-	
-	private $_table_prefix	 = 'op';
-	private $_table_name	 = 'i18n';
-	
-	private $_lang;
+	function init()
+	{
+		parent::init();
+		if( $config = $this->GetEnv('memcache') ){
+			if( isset($memcache->use) ){
+				$this->_use_memcache = $memcache->use;
+			}
+		}
+	}
 	
 	/**
 	 * PDO interface object.
@@ -75,10 +79,10 @@ class i18n extends Api
 	function FetchJson( $url, $expire )
 	{
 		//	Execute
-		$body = $this->Curl($url,60*60*24*7);
+		$body = file_get_contents($url);
 		
 		if(!$body){
-			$this->StackError("Curl is failed.");
+			$this->StackError("file_get_contents is failed.");
 		}else{
 			$json = json_decode($body,true);
 			if(!$json){
@@ -117,23 +121,6 @@ class i18n extends Api
 		return isset($json['language']) ? $json['language']: array('en'=>'English');
 	}
 	
-	function GetDatabase()
-	{
-		if( $this->_db_single ){
-			$config = $this->GetEnv('database');
-		}else{
-			$config  = new Config();
-			$config->driver		 = $this->_db_prod;
-			$config->host		 = $this->_db_host;
-			$config->port		 = $this->_db_port;
-			$config->user		 = $this->_db_user;
-			$config->password	 = $this->_db_password;
-			$config->database	 = $this->_db_name;
-			$config->charset	 = $this->_db_charset;
-		}
-		return $config;
-	}
-	
 	/**
 	 * Return PDO5 object.
 	 * 
@@ -143,7 +130,7 @@ class i18n extends Api
 	function pdo($name=null)
 	{
 		static $_is_connect = null;
-		if($_is_connect === false){
+		if( $_is_connect === false ){
 			return false;
 		}
 		
@@ -151,15 +138,16 @@ class i18n extends Api
 			$this->_pdo = parent::PDO($name);
 		}
 		
-		if(!$this->_pdo->isConnect()){
-			$config = $this->GetDatabase();
-			if(!$_is_connect = $this->_pdo->Connect($config)){
-				$config = $this->GetSelftestConfig();
-				$this->Wizard()->SetSelftest(__CLASS__, $config);
+		if(!$io = $this->_pdo->isConnect()){
+			if(!$_is_connect = $this->_pdo->Connect($this->Config()->database())){
+				if( $this->Admin() ){
+					$this->Wizard()->SetNameByClass(__CLASS__);
+				}else{
+					$this->StackError("Does not connect to i18n database.");
+				}
 				return false;
 			}
 		}
-		
 		return $this->_pdo;
 	}
 	
@@ -186,6 +174,9 @@ class i18n extends Api
 	
 	function Get( $text, $from='en', $to=null )
 	{
+		//	Connection to cloud.
+		static $_connection = true;
+		
 		//	
 		if(!$to){
 			if(!$to = $this->GetLang()){
@@ -207,15 +198,24 @@ class i18n extends Api
 		//	Cache key.
 		$key = md5($url);
 		
+		$this->mark("![.blue .bold[URL: $url ($key)]]",__CLASS__);
+		
 		//	Check memcache
 		if( $this->_use_memcache and $translate = $this->Cache()->Get($key) ){
 			//	Hit
+			$this->mark("![.green .bold[Hit cache. ($translate, $text)]]",__CLASS__);
 			return $translate;
+		}
+				
+		//	Check database connect.
+		if(!$this->pdo()){
+			return $text;
 		}
 		
 		//	Check database
 		if( $this->_use_database and $translate = $this->Select( $text, $from, $to ) ){
 			//	Hit
+			$this->mark("![.green .bold[Hit database. ($translate, $text)]]",__CLASS__);
 			if( $this->_use_memcache ){
 				//	Save memcache
 				$this->Cache()->Set( $key, $translate, $this->_cache_expire );
@@ -223,9 +223,16 @@ class i18n extends Api
 			return $translate;
 		}
 		
+		//	Cloud connection.
+		if(!$_connection){
+			return $text;
+		}
+		
 		//	Get translate from API
-		if(!$json = parent::Curl($url)){
+		if(!$json = file_get_contents($url)){
 			//	Fail
+			$_connection = false;
+			$this->mark("![.red .bold[file_get_contents is failed. ($url)]]",__CLASS__);
 			return $text;
 		}
 		
@@ -243,7 +250,7 @@ class i18n extends Api
 		
 		//	Save memcache
 		if( $this->_use_memcache and $translate ){
-			$this->Cache()->Set( $key, $translate, $this->_cache_expire );
+	//		$this->Cache()->Set( $key, $translate, $this->_cache_expire );
 		}
 		
 		//	Save database
@@ -260,31 +267,17 @@ class i18n extends Api
 		return $translate;
 	}
 	
-	function GetTableName()
-	{
-		if( $this->_table_prefix ){
-			$table_name = $this->_table_prefix.'_'.$this->_table_name;
-		}else{
-			$table_name = $this->_table_name;
-		}
-		return $table_name;
-	}
-	
 	function Select( $text, $from, $to )
 	{
 		if(!$pdo = $this->pdo()){
 			return false;
 		}
 		
-		$config = array();
-		$config['table'] = $this->GetTableName();
-		$config['limit'] = 1;
-		$config['cache'] = 1;
-		$config['where'][self::_COLUMN_ID_] = md5("$text, $from, $to");
+		$select = $this->Config()->select($text, $from, $to);
+		$record = $pdo->Select($select);
+		$text = isset($record[Config_i18n::_COLUMN_TEXT_TO_]) ? $record[Config_i18n::_COLUMN_TEXT_TO_]: null;
 		
-		$record = $pdo->Select($config);
-		
-		return isset($record[self::_COLUMN_TEXT_TO_]) ? $record[self::_COLUMN_TEXT_TO_]: null;
+		return $text;
 	}
 	
 	function Insert( $text, $from, $to, $translate )
@@ -297,16 +290,105 @@ class i18n extends Api
 			return false;
 		}
 		
+		$config = $this->Config()->insert($text, $from, $to, $translate);
+		$result = $pdo->Insert($config);
+		
+		return $result;
+	}
+}
+
+class Config_i18n extends OnePiece5
+{
+	private $_database;
+	
+	function url($key)
+	{
+		static $domain;
+		if(!$domain){
+			$domain = $this->Admin() ? 'http://api.uqunie.com': 'http://api.uqunie.com';
+		}
+		switch($key){
+			case 'i18n':
+				$url = "$domain/i18n/";
+				break;
+			case 'lang':
+				$url = "$domain/i18n/lang/";
+				break;
+		}
+		return $url;
+	}
+	
+	function insert( $text, $from, $to, $translate )
+	{
 		$config = array();
-		$config['table'] = $this->GetTableName();
+		$config['table'] = $this->table_name();
 		$config['set'][self::_COLUMN_ID_]		 = md5("$text, $from, $to");
 		$config['set'][self::_COLUMN_LANG_FROM_] = $from;
 		$config['set'][self::_COLUMN_LANG_TO_]	 = $to;
 		$config['set'][self::_COLUMN_TEXT_FROM_] = $text;
 		$config['set'][self::_COLUMN_TEXT_TO_]	 = $translate;
 		$config['set']['created'] = gmdate('Y-m-d H:i:s');
+		return $config;
+	}
+	
+	function select( $text, $from, $to )
+	{
+		$database = $this->database();
 		
-		return $pdo->Insert($config);
+		$config = array();
+		$config['database'] = $database->name;
+		$config['table'] = $this->table_name();
+		$config['limit'] = 1;
+	//	$config['cache'] = false; // 60*60*24*1; // 1 day
+		$config['where'][self::_COLUMN_ID_] = md5("$text, $from, $to");
+		return $config;
+	}
+	
+	function init()
+	{
+		parent::Init();
+		$this->_init_database();
+	}
+	
+	private function _init_database()
+	{
+		$this->_database = new Config();
+		$this->_database->driver = 'mysql';
+		$this->_database->host	 = 'localhost';
+		$this->_database->port	 = '3306';
+		$this->_database->user	 = 'i18n';
+		$this->_database->password	 = '';
+		$this->_database->database	 = 'onepiece';
+		$this->_database->charset	 = 'utf8';
+		$this->_database->table_prefix = 'op';
+		$this->_database->table_name = 'i18n';
+	}
+	
+	function database()
+	{
+		static $config;
+		if(!$config){
+			$config = $this->GetEnv('database');
+			foreach(array('driver','host','port','user','password','database','charset','name') as $key){
+				if(!isset($config->{$key})){
+					$config->{$key} = $this->_database->$key;
+				}
+			}
+			//	use name property
+			if( isset($config->name) ){
+				$config->database = $config->name;
+			}else{
+				$config->name = $config->database;
+			}
+		}
+		return $config;
+	}
+	
+	function table_name()
+	{
+		$database = $this->database();
+		$prefix = isset($this->_database->table_prefix) ? $this->_database->table_prefix.'_': null;
+		return $prefix.$this->_database->table_name;
 	}
 	
 	const _COLUMN_ID_		 = 'id';
@@ -315,7 +397,7 @@ class i18n extends Api
 	const _COLUMN_TEXT_FROM_ = 'text';
 	const _COLUMN_TEXT_TO_	 = 'translation';
 	
-	function GetSelftestConfig()
+	function selftest()
 	{
 		//  Create config
 		$config = new Config();
@@ -325,10 +407,10 @@ class i18n extends Api
 		$config->form->message = 'Please enter the root password.';
 	
 		//	Database
-		$config->database = $this->GetDatabase();
+		$config->database = $this->database();
 		
 		//  Tables (op_user)
-		$table_name = $this->GetTableName();
+		$table_name = $this->table_name();
 		$config->table->{$table_name}->table   = $table_name;
 		$config->table->{$table_name}->comment = 'Translation table.';
 		
@@ -337,7 +419,7 @@ class i18n extends Api
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'char';
 		$config->table->{$table_name}->column->{$column_name}->length	 = '32';
-	//	$config->table->{$table_name}->column->{$column_name}->index	 = true;
+		//	$config->table->{$table_name}->column->{$column_name}->index	 = true;
 		$config->table->{$table_name}->column->{$column_name}->pkey		 = true;
 		$config->table->{$table_name}->column->{$column_name}->comment	 = '';
 		
