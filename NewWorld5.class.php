@@ -580,10 +580,7 @@ abstract class NewWorld5 extends OnePiece5
 		}else{
 			//  NG
 			print $this->_content;
-			$msg = "Does not exists layout controller.($path)";
-			throw new OpNwException($msg);
-		//	$this->StackError($msg);
-		//	return;
+			throw new OpNwException("Does not exists layout controller.($path)");
 		}
 		
 		//  layout directory
@@ -592,19 +589,21 @@ abstract class NewWorld5 extends OnePiece5
 		//  do layout
 		foreach($_layout as $var_name => $file_name){
 			$path = $layout_dir . $file_name;
+			
 			if( file_exists($path) ){
 				ob_start();
 				$this->mark($path,'layout');
+				
+				
 				include($path);
+				
+				
 				${$file_name} = ob_get_contents();
 				${$var_name}  = & ${$file_name};
 				ob_end_clean();
 			}else{
-				$msg = "Does not exists layout file.($path)";
-				throw new OpNwException($msg);
-			//	$this->StackError($msg);
-			//	return;
-			} 
+				$this->StackError("Does not exists layout file.($path)");
+			}
 		}
 		
 		if( isset(${$file_name}) ){
