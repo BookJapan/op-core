@@ -226,14 +226,35 @@ class App extends NewWorld5
 		print '<meta name="description" content="'.$this->GetDescription().'">';
 	}
 	
-	function SetDatabase( $database_name )
+	function SetMemcache($memcache)
 	{
-		Env::Set('database_name',$database_name);
+		$this->SetEnv('memcache',$memcache);
+	}
+	
+	function GetMemcache()
+	{
+		if(!$memcache = $this->GetEnv('memcache') ){
+			$memcache = new Config();
+		}
+		return $memcache;
+	}
+	
+	function SetDatabase( $database )
+	{
+		$this->SetEnv('database',$database);
+	}
+	
+	function GetDatabase()
+	{
+		if(!$database = $this->GetEnv('database') ){
+			$database = new Config();
+		}
+		return $database;
 	}
 	
 	function SetTablePrefix( $prefix )
 	{
-		Env::Set('table_prefix',$prefix);
+		$this->SetEnv('table_prefix',$prefix);
 	}
 	
 	function Selftest()
@@ -241,5 +262,15 @@ class App extends NewWorld5
 		$io = $this->Wizard()->Selftest();
 		$io = $this->Wizard()->isSelftest();
 		return $io;
+	}
+	
+	function En($english)
+	{
+		return $this->i18n()->En($english);
+	}
+	
+	function Ja($japanese)
+	{
+		return $this->i18n()->Ja($japanese);
 	}
 }
