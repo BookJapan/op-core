@@ -1788,7 +1788,7 @@ __EOL__;
 			//  name check
 			if(!$name){
 				$msg = "Model name is empty.";
-				throw new OpModelException($msg);
+				throw new OpException($msg);
 			}
 			
 			//	hogeHoge -> HogeHoge	//	hogeHoge -> Hogehoge
@@ -2354,14 +2354,16 @@ class Env
 		}
 		
 		// Windows is unsupport utf-8
+		/*
 		if( PHP_OS == 'WINNT' and $lang == 'ja' ){
 			// Shift_JIS
 			setlocale( LC_ALL, 'Japanese_Japan.932');
 		}else if(!setlocale( LC_ALL, $locale )){
-			/* @see http://jp.php.net/manual/ja/function.setlocale.php */
+			// @see http://jp.php.net/manual/ja/function.setlocale.php
 			OnePiece5::StackError("Illigal locale: $locale");
 			return false;
 		}
+		*/
 		
 		//	Set each value
 		Env::Set('locale', $locale);
