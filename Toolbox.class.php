@@ -82,12 +82,10 @@ class Toolbox
 	static function toObject($args)
 	{
 		switch( $type = gettype($args) ){
-			case 'object':
-				return $args;
-				
+			case 'object': // Convert child property.
 			case 'array':
 				return Toolbox::toObjectFromArray($args);
-
+				
 			case 'null':
 			case 'NULL':
 				return null;
