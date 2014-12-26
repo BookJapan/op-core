@@ -513,7 +513,7 @@ class Toolbox
 	static function ConvertMeta($meta)
 	{
 		//	Checking meta modifier.
-		if(!preg_match('|^([a-z]+):/|i',$meta,$match)){
+		if(!preg_match('|^([a-z]+):/[^/]|i',$meta,$match)){
 			return $meta;
 		}
 		
@@ -565,55 +565,49 @@ class Toolbox
 		$modifier = preg_quote($modifier,'|');
 		$path = preg_replace("|^$modifier:/|", $real, $meta);
 		
-		/*
-		if( $modifier == 'dot' ){
-			if( false ){
-				OnePiece5::Mark();
-				
-				$temp = array();
-				$temp['modifier'] = $modifier;
-				$temp['meta'] = $meta;
-				$temp['real'] = $real;
-				$temp['path'] = $path;
-				$temp['file'] = $file;
-				$temp['debug_backtrace'] = debug_backtrace();
-				OnePiece5::D($temp);
-				
-			}
-		}
-		*/
-		
 		return $path;
 	}
 	
-	static function ConvertPath($meta)
+	static function ConvertPath($path)
 	{
-		$path = self::ConvertMeta($meta);
+		$path = self::ConvertMeta($path);
 		return $path;
 	}
 	
-	static function ConvertURL($meta)
+	static function ConvertURL($url)
 	{
 		//	Document root
-		if( $meta{0} === '/' ){
-			return $meta;
+		if( $url{0} === '/' ){
+			return $url;
+		}
+		
+		//	Scheme less
+		if( $url{0} === '/' and $url{1} === '/' ){
+			return $url;
 		}
 		
 		//	Current directory
-		if( $meta{0} === '.' and $meta{1} === '/' ){
-			return $meta;
+		if( $url{0} === '.' and $url{1} === '/' ){
+			return $url;
 		}
 		
-		//	parent directory
-		if( $meta{0} === '.' and $meta{1} === '.' ){
-			return $meta;
+		//	Parent directory
+		if( $url{0} === '.' and $url{1} === '.' ){
+			return $url;
 		}
 		
-		$path = self::ConvertPath($meta);
+		//	Protocol schema
+		if( preg_match('|^[a-z0-9]+?://|i',$url) ){
+			return $url;
+		}
+		
+		//	Convert
+		$path = self::ConvertPath($url);
 		$app_root = $_SERVER['APP_ROOT'];
 		$app_root = preg_quote($app_root,'|');
 		$pattern  = "|^$app_root|";
 		if(!preg_match($pattern,$path)){
+			//	unmatch metaphor word
 			return false;
 		}
 		
