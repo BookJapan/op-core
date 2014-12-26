@@ -272,7 +272,7 @@ class DML5 extends OnePiece5
 			$update  = 'ON DUPLICATE KEY UPDATE ';
 			
 			if( is_bool($conf['update']) ){
-				$update .= $this->ConvertSet($conf);
+				$update .= $this->ConvertSet($conf,true);
 			}else
 			if( is_array($conf['update']) ){
 				$temp = $conf;
@@ -645,7 +645,7 @@ class DML5 extends OnePiece5
 				case '--':
 					$var = "$key - 1";
 					break;
-						
+					
 			//	case 'INCREMENT(1)':
 				case strncmp( $var, 'INCREMENT(', 10) === 0 ? true: false;
 				case strncmp( $var, 'DECREMENT(', 10) === 0 ? true: false;
