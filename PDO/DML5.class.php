@@ -655,6 +655,13 @@ class DML5 extends OnePiece5
 					}						
 					break;
 					
+				case $var{0} === '+' ? true: false;
+				case $var{0} === '-' ? true: false;
+					if( preg_match('/^([-\+])([0-9]+)$/i',$var,$match) ){
+						$var = "$key + {$match[1]}{$match[2]}";
+					}					
+					break;
+					
 				default:
 					$var = $this->pdo->quote($var);
 			}
