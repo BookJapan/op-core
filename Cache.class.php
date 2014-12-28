@@ -207,7 +207,6 @@ class Cache extends OnePiece5
 	 * @param  string  $key
 	 * @param  integer|string|array $value
 	 * @param  integer $expire
-	 * @param  boolean $replace
 	 * @return NULL|boolean
 	 */
 	function Set( $key, $value, $expire=null )
@@ -267,7 +266,7 @@ class Cache extends OnePiece5
 		return $io;
 	}
 	
-	function Get( $key, $use_cas=true )
+	function Get( $key )
 	{
 		static $skip;
 		if( $skip ){
@@ -313,11 +312,14 @@ class Cache extends OnePiece5
 		
 		//	Case of Memcache
 		if( get_class($this->_cache) === 'Memcache' ){
+			//	toggle
 			if(!isset($cas_list[$key])){
+				//	get
 				$cas_list[$key] = true;
 				$value = $this->Get($key);
 				return false;
 			}else{
+				//	set
 				$cas_list[$key] = false;
 				return $this->Set($key, $value, $expire);
 			}

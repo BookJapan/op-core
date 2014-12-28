@@ -110,7 +110,7 @@ abstract class Config_Base extends OnePiece5
 		}else if($args['driver']==='mysql' and strlen($args['user']) > 16){
 			$this->StackError("user name is over 16 character.");
 		}
-		
+				
 		//	password
 		if(!isset($args['password'])){
 			$key = $_SERVER['HTTP_HOST'].', '.$args['user'].', '.$this->GetEnv('admin-mail');
