@@ -921,7 +921,7 @@ __EOL__;
 		return $io;
 	}
 	
-	static function GetCookie($key)
+	static function GetCookie( $key, $default=null )
 	{
 		$key = md5($key);
 		if( isset($_COOKIE[$key]) ){
@@ -929,7 +929,7 @@ __EOL__;
 			$value = unserialize($value);
 			$value = OnePiece5::Escape($value);
 		}else{
-			$value = null;
+			$value = $default;
 		}
 		return $value;
 	}
