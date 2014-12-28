@@ -71,7 +71,7 @@ class i18n extends OnePiece5
 	function GetLang()
 	{
 		if(!$lang = $this->_lang){
-			$lang = $this->GetCookie('lang');
+			$lang = $this->GetCookie('lang','en'); // default is 'en'
 		}
 		return $lang;
 	}
@@ -273,8 +273,11 @@ class i18n extends OnePiece5
 			return false;
 		}
 		
+		//	get record
 		$select = $this->Config()->select($text, $from, $to);
 		$record = $pdo->Select($select);
+		
+		//	if exists
 		$text = isset($record[Config_i18n::_COLUMN_TEXT_TO_]) ? $record[Config_i18n::_COLUMN_TEXT_TO_]: null;
 		
 		return $text;
@@ -341,6 +344,7 @@ class Config_i18n extends OnePiece5
 		$config['limit'] = 1;
 	//	$config['cache'] = false; // 60*60*24*1; // 1 day
 		$config['where'][self::_COLUMN_ID_] = md5("$text, $from, $to");
+		
 		return $config;
 	}
 	
@@ -366,21 +370,36 @@ class Config_i18n extends OnePiece5
 	
 	function database()
 	{
-		static $config;
+		static $config = null;
 		if(!$config){
-			$config = $this->GetEnv('database');
+			//	get single database config
+			if(!$config = $this->GetEnv('database')){
+				$config = new Config();
+			}
+			
+			//	old define
+			if( is_string($config) ){
+				$database_name = $config;
+				$config = new Config();
+				$config->database = (string)$database_name;
+			}
+			
+			//	loop to each value
 			foreach(array('driver','host','port','user','password','database','charset','name') as $key){
-				if(!isset($config->{$key})){
+				if( $key === 'name'){ continue; }
+				if( $config->$key->isEmpty() ){
 					$config->{$key} = $this->_database->$key;
 				}
 			}
+			
 			//	use name property
-			if( isset($config->name) ){
-				$config->database = $config->name;
-			}else{
+			if( $config->name->isEmpty() ){
 				$config->name = $config->database;
+			}else{
+				$config->database = $config->name;
 			}
 		}
+		
 		return $config;
 	}
 	
@@ -468,29 +487,3 @@ class Config_i18n extends OnePiece5
 		return $config;
 	}
 }
-
-class Config_i18n extends OnePiece5
-{
-	function url($key)
-	{
-		static $domain;
-		if(!$domain){
-			$domain = $this->Admin() ? 'http://api.uqunie.com': 'http://api.uqunie.com';
-		}
-		switch($key){
-			case 'i18n':
-				$url = "$domain/i18n/";
-				break;
-			case 'lang':
-				$url = "$domain/i18n/lang/";
-				break;
-		}
-		return $url;
-	}
-	
-	function ConvertLanguageCode( $code )
-	{
-		//	http://msdn.microsoft.com/ja-jp/library/cc392381.aspx
-	}
-}
-
