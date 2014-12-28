@@ -1344,7 +1344,7 @@ class ConfigSQL extends OnePiece5
 	}
 	
 	static function Quote( $var, $driver )
-	{	
+	{
 		list( $ql, $qr ) = self::GetQuote($driver);
 		
 		if( is_array($var) ){
@@ -1362,12 +1362,16 @@ class ConfigSQL extends OnePiece5
 			}
 			
 			//	Case of table
+			/*
 			if( strpos($var,'.') ){
 				$temp = explode('.',$var);
 				$safe = $ql.trim($temp[0]).$qr.'.'.$ql.trim($temp[1]).$qr;
 			}else{
 				$safe = $ql.trim($var).$qr;
 			}
+			*/
+			
+			$safe = $ql.trim($var).$qr;
 		}else{
 			$safe = $var;
 		}

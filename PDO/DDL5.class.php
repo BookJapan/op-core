@@ -232,6 +232,11 @@ class DDL5 extends OnePiece5
 		return $query;
 	}
 	
+	function GetAddIndex($args)
+	{
+		//	ALTER TABLE `t_count` ADD UNIQUE (`date`);
+	}
+	
 	function GetDropDatabase( $args )
 	{
 		if( empty($args['database']) ){
@@ -468,6 +473,7 @@ class DDL5 extends OnePiece5
 					
 				case 'ADD':
 				//	ALTER TABLE `op_message` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
+				//	ALTER TABLE `op_sandbox`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
 					$definition = "$ACD $index $rename $name $type $attributes $null $default $comment $first $after";
 					break;
 	
