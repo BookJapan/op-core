@@ -28,6 +28,10 @@ class Wiki2Engine extends OnePiece5
 	
 	static function Wiki2( $string, $options = null )
 	{
+		if(!$string){
+			return '';
+		}
+		
 		//	Default option
 		if( is_null($options) and true ){
 			$options['tag']    = true;
@@ -89,7 +93,7 @@ class Wiki2Engine extends OnePiece5
 		
 		//  touch body.(tag's inner content)
 		switch( strtolower($tag) ){
-			case 'a':
+			case 'a': // anchor
 				list( $href, $label ) = explode('|',$body.'|');
 				$href  = OnePiece5::ConvertURL($href);
 				$body  = $label ? trim($label): trim($href);
