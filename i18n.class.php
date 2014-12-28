@@ -493,3 +493,4 @@ class Config_i18n extends OnePiece5
 		//	http://msdn.microsoft.com/ja-jp/library/cc392381.aspx
 	}
 }
+
