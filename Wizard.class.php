@@ -145,21 +145,20 @@ class Wizard extends OnePiece5
 			return false;
 		}
 		
-		//	Check config type.
-		if( empty($class_name) ){
-			$this->StackError('Empty config.');
-			return false;
-		}else if( ! $config instanceof Config ){
-			$this->StackError('Argument is not Config-object.');
-			return false;
+		//	force convert
+		$config = Toolbox::toConfig($config);
+		
+		//	name to database
+		if( isset($config->database->name) ){
+			$config->database->database = (string)$config->database->name;
 		}
 		
-		//	check
-		foreach(array('host','user','database') as $key){
+		//	check key
+		foreach( array('host','user','database') as $key ){
 			if( !isset($config->database->$key) ){
-				$message = $this->i18n()->En("\ $class_name \ config, This value is not set. \(\$config->database->{$key})\ ");
+				$message = "\ $class_name \ config, This value is not set. \(\$config->database->{$key})\ ";
+				$message = $this->i18n()->Bulk($message,'en');
 				$this->mark("![.red[$message]]");
-				$this->StackError("[Wizard] $message");
 				return false;
 			}
 		}
@@ -239,15 +238,6 @@ class Wizard extends OnePiece5
 		//	Set selftest config by model name list.
 		foreach( $this->_selftest_name_list as $class_name => $execute_flag ){
 			
-			//	
-			/*
-			$model = $this->model($model_name);
-			$class = get_class($model);
-			if(!method_exists( $model->Config(), 'selftest') ){
-				continue;
-			}
-			*/
-			
 			//	Generate instance
 			if( class_exists($class_name) ){
 				$class = new $class_name();
@@ -297,6 +287,11 @@ class Wizard extends OnePiece5
 		}
 		
 		return Env::Get(self::_IS_SELFTEST_);
+	}
+	
+	function Reset()
+	{
+		$this->SetSession('selftest',null);
 	}
 	
 	private function _selftest_loop()
