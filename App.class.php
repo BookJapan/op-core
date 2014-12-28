@@ -18,8 +18,8 @@ class App extends NewWorld5
 {
 	function GetAction()
 	{
-		if(!$action = $this->GetEnv('action') ){
-			//  Does not undefine.
+		static $action;
+		if(!$action){
 			$args = $this->GetArgs();
 			$action = $args[0] ? $args[0]: 'index';
 		}
