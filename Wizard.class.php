@@ -81,7 +81,7 @@ class Wizard extends OnePiece5
 	 * @param string  $model_name Model_MyName or MyName
 	 * @param boolean $execute execute flag.
 	 */
-	function SetNameByModel( $model_name, $execute=true )
+	function SetConfigByModelName( $model_name, $execute=true )
 	{
 		//	check model name
 		if( strpos($model_name,'_') !== false ){
@@ -96,14 +96,36 @@ class Wizard extends OnePiece5
 	}
 	
 	/**
+	 * Wrapper method.
+	 * 
+	 * @param string  $model_name Model_MyName or MyName
+	 * @param boolean $execute execute flag.
+	 */
+	function SetNameByModel( $model_name, $execute=true )
+	{
+		return $this->SetConfigByModelName( $model_name, $execute=true );
+	}
+	
+	/**
 	 * Set selftest config by class name.
 	 *
-	 * @param string  $model_name Generic model name.
-	 * @param boolean $execute execute flag.
+	 * @param string  $class_name
+	 * @param boolean $execute is execute flag.
+	 */
+	function SetConfigByClassName( $class_name, $execute=true )
+	{
+		return $this->SetSelftestName($class_name,$execute);
+	}
+	
+	/**
+	 * Wrapper method.
+	 * 
+	 * @param string  $class_name
+	 * @param boolean $execute is execute flag.
 	 */
 	function SetNameByClass( $class_name, $execute=true )
 	{
-		return $this->SetSelftestName($class_name,$execute);
+		return $this->SetConfigByClassName($class_name,$execute);
 	}
 	
 	/**
