@@ -67,6 +67,9 @@ class Model_CSV extends Model_Model
 	
 	function SetFile( $file_path )
 	{
+		//	Convert meta path.
+		$file_path = $this->ConvertPath($file_path);
+		
 		if(!file_exists($file_path)){
 			$this->_error = "Does not exists this file. \($file_path)\ ";
 			return false;
