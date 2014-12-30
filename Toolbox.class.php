@@ -511,7 +511,7 @@ class Toolbox
 	static function ConvertMeta($meta)
 	{
 		//	Checking meta modifier.
-		if(!preg_match('|^([a-z]+):/[^/]|i',$meta,$match)){
+		if(!preg_match('|^([a-z]+):/[^/]?|i',$meta,$match)){
 			return $meta;
 		}
 		
