@@ -217,7 +217,6 @@ abstract class NewWorld5 extends OnePiece5
 		//	search controller
 		while(count($arr)){
 			$path = join('/',$arr).'/'.$controller;
-		//	$this->mark($path);
 			if( file_exists($path) ){
 				break;
 			}
@@ -232,7 +231,6 @@ abstract class NewWorld5 extends OnePiece5
 		//	search app.php
 		while(count($arr)){
 			$path = join('/',$arr).'/app.php';
-		//	$this->mark($path);
 			if( file_exists($path) ){
 				break;
 			}
