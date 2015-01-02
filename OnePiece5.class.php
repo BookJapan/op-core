@@ -39,14 +39,14 @@ foreach( array('Toolbox','Autoloader') as $class ){
 	}
 }
 
-//	Init Env
-Env::Init();
-
 //	Handling vivre
 //Vivre::Handling();
 
 //	Register autoloader.
 spl_autoload_register('Autoloader::Autoload');
+
+//	Init Env
+Env::Init();
 
 /**
  * @see http://jp.php.net/manual/ja/function.register-shutdown-function.php
@@ -865,6 +865,9 @@ __EOL__;
 	
 	/**
 	 * SetCookie is auto set to $_COOKIE, and value is valid all value! (string, number, array and object!!)
+	 *
+	 * Expire value's default is 0.
+	 * 0 is 365 days. -1 is out of valid expire. 
 	 *
 	 * @param string $key
 	 * @param mixed  $value
