@@ -608,6 +608,7 @@ class Wizard extends OnePiece5
 		
 		//  Get table-name list.
 		$table_list = $this->pdo()->GetTableList($database);
+		
 		if( $table_list === false ){
 			//	result
 			$this->_result->connect->$host->$user->$db = false;
@@ -621,6 +622,9 @@ class Wizard extends OnePiece5
 		//  Loop
 		foreach( $config->table as $table_name => $table ){
 			
+			//	database name
+			$database_name = $config->database->database;
+			
 			//  Check table exists.
 			if( array_search( $table_name, $table_list) === false ){
 				
@@ -628,9 +632,7 @@ class Wizard extends OnePiece5
 				$this->model('Log')->Set("FAILED: $table_name is does not exists. (or denny access)",false);
 				
 				//	result
-				$this->_result->table->$table_name = false;
-
-				$this->_result->table->debug = false;
+				$this->_result->table->$database_name->$table_name = false;
 				
 				//	fail...next!
 				$fail = true;
@@ -638,7 +640,7 @@ class Wizard extends OnePiece5
 			}
 			
 			//	Good!	
-			$this->_result->table->$table_name = true;
+			$this->_result->table->$database_name->$table_name = true;
 			
 			//	Check column config exists
 			if( $config->table->$table_name->column ){
