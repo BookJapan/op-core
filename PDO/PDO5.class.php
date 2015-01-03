@@ -264,7 +264,10 @@ class PDO5 extends OnePiece5
 				return false;
 			}
 		}catch( PDOException $e){
-			$this->StackError( $e->GetMessage() );
+			$file = $e->getFile();
+			$line = $e->getLine();
+			$text = $e->GetMessage();
+			$this->StackError("$file (#$line) $text");
 			return false;
 		}
 		
