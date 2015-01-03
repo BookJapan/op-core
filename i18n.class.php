@@ -201,12 +201,14 @@ class i18n extends OnePiece5
 		$this->mark("![.blue .bold[URL: $url ($key)]]",__CLASS__);
 		
 		//	Check memcache
-		if( $this->_use_memcache and $translate = $this->Cache()->Get($key) ){
-			//	Hit
-			$this->mark("![.green .bold[Hit cache. ($translate, $text)]]",__CLASS__);
-			return $translate;
+		if( $this->_use_memcache ){
+			if( $translate = $this->Cache()->Get($key) ){
+				//	Hit
+				$this->mark("![.green .bold[Hit cache. ($translate, $text)]]",__CLASS__);
+				return $translate;
+			}
 		}
-				
+		
 		//	Check database connect.
 		if(!$this->pdo()){
 			return $text;
