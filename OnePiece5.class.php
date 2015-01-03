@@ -2130,7 +2130,7 @@ class Env
 	private static function _init_include_path()
 	{
 		//	init op_root
-		$op_root = dirname(__FILE__);
+		$op_root = $_SERVER['OP_ROOT']; // dirname(__FILE__);
 		
 		//	Added "op-root" to include_path.
 		$include_path = ini_get('include_path');
@@ -2140,6 +2140,7 @@ class Env
 			ini_set('include_path',$include_path);
 		}
 		
+		/*
 		//	Added "op-root" to $_SERVER
 		if(empty($_SERVER['OP_ROOT'])){
 			$_SERVER['OP_ROOT'] = $op_root;
@@ -2151,6 +2152,7 @@ class Env
 			$_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']);
 		}
 		$_SERVER['APP_ROOT'] = rtrim($_SERVER['APP_ROOT'],'/').'/';
+		*/
 	}
 	
 	private static function _init_cli()
