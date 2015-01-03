@@ -2308,9 +2308,9 @@ class Env
 	
 	static function GetAdminMailAddress()
 	{
-		if( isset($_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_]) ){
+		if(!empty($_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_]) ){
 			$mail_addr = $_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_];
-		}else if( isset($_SERVER['SERVER_ADMIN']) ){
+		}else if(!empty($_SERVER['SERVER_ADMIN']) ){
 			$mail_addr = $_SERVER['SERVER_ADMIN'];
 		}else{
 			$mail_addr = null;
@@ -2325,10 +2325,18 @@ class Env
 	
 	static function Get( $key )
 	{
+		//	Case
 		$key = strtoupper($key);
 		
+		//	Convert
 		list( $key, $var ) = self::_Convert( $key );
 		
+		//	Admin's E-Mail
+		if( $key === self::_ADMIN_EMAIL_ADDR_ ){
+			return self::GetAdminMailAddress();
+		}
+		
+		//	
 		if( isset($_SERVER[self::_NAME_SPACE_][$key]) ){
 			$var = $_SERVER[self::_NAME_SPACE_][$key];
 		}else if( isset($_SERVER[$key]) ){
@@ -2337,6 +2345,7 @@ class Env
 			$var = null;
 		}
 		
+		//	
 		return $var;
 	}
 	
@@ -2347,8 +2356,19 @@ class Env
 			$_SERVER['OP_IS_ADMIN'] = null;
 		}
 		
+		//	Case
 		$key = strtoupper($key);
+		
+		//	Convert
 		list( $key, $var ) = self::_Convert( $key, $var );
+		
+		//	Admin's E-Mail
+		if( $key === self::_ADMIN_EMAIL_ADDR_ ){
+			self::SetAdminMailAddress($var);
+			return;
+		}
+		
+		//	Set
 		$_SERVER[self::_NAME_SPACE_][$key] = $var;
 	}
 }
