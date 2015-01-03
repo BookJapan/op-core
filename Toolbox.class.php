@@ -408,6 +408,16 @@ class Toolbox
 		return $cache[$ckey] = $scheme.$domain.$path.$query;
 	}
 	
+	/**
+	 * Get Domain name
+	 * 
+	 * <pre>
+	 * $conf = array( 'scheme' => true, 'path' => true );
+	 * </pre>
+	 * 
+	 * @param  array $conf
+	 * @return string
+	 */
 	static function GetDomain( $conf=array() )
 	{
 		$conf['scheme'] = isset($conf['scheme']) ? $conf['scheme']: false;
