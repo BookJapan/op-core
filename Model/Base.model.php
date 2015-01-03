@@ -113,7 +113,7 @@ abstract class Config_Base extends OnePiece5
 				
 		//	password
 		if(!isset($args['password'])){
-			$key = $_SERVER['HTTP_HOST'].', '.$args['user'].', '.$this->GetEnv('admin-mail');
+			$key = $_SERVER['SERVER_NAME'].', '.$args['user'].', '.$this->GetEnv('admin-mail');
 			$password = md5($key);
 			$args['password'] = $password;
 		}
