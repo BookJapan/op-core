@@ -274,7 +274,9 @@ class Wizard extends OnePiece5
 				continue;
 			}else{
 				if(!method_exists( $class->Config(), 'selftest') ){
-					$this->mark("![.red .bold .i18n[This \Config\ class is not has \selftest\ method. ($class_name)]]");
+					$message = "![.red .bold .i18n[This \Config\ class is not has \selftest\ method. ($class_name)]]";
+					$message = $this->i18n()->Bulk($message);
+					$this->mark($message,'selftest');
 					continue;
 				}
 			}
