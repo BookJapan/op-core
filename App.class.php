@@ -123,7 +123,7 @@ class App extends NewWorld5
 				break;
 
 			case 'html':
-				if( $version == 4 or $version == 4.01 ){
+				if( $version == 4 or $version == '4.01' ){
 					$doctype = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">';
 				}else{
 					$doctype = '<!DOCTYPE html>';
@@ -259,6 +259,7 @@ class App extends NewWorld5
 	
 	function Selftest()
 	{
+		$this->mark();
 		$io = $this->Wizard()->Selftest();
 		$io = $this->Wizard()->isSelftest();
 		return $io;
