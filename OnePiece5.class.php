@@ -689,88 +689,6 @@ __EOL__;
 	}
 	
 	/**
-	 * Getter and Setter uses.
-	 * 
-	 * @param string $key
-	 * @param string|array $var
-	 */
-	static private function _Env( $key, $var=null, $ope )
-	{
-		// convert key name
-		$key = strtolower($key);
-		switch( $key ){
-			case 'nl':
-				$key = 'newline';
-				break;
-				
-			case 'href':
-				$key = 'HTTP_REFERER';
-				break;
-				
-			case 'lang':
-				$key = 'language';
-				break;
-				
-			case 'fqdn':
-			case 'domain':
-				$key = 'HTTP_HOST';
-				break;
-				
-			default:
-				/* Convert to unix path separator from Windows path separator.
-				 * C:¥www¥htdocs -> C:/www/htdocs
-				 */
-				if( preg_match( '/^([a-z0-9]+)[-_]?(root|dir|mail)$/',$key, $match ) ){
-					$key = $match[1].'_'.$match[2];
-					if( $match[2] === 'mail' ){
-						//  mail
-					}else if( $ope === 'set' ){
-						$var = str_replace( '\\', '/', $var);
-						$var = rtrim($var,'/') . '/';
-					}
-				}
-				break;
-		}
-		
-		// get key's value
-		switch($key){
-			case isset($_SERVER[strtoupper($key)]):
-				$var = $_SERVER[strtoupper($key)];
-				break;
-				
-			default:
-				if( $ope == 'set' ){
-					
-					//	If admin-ip case
-					if( $key === 'admin-ip' or $key === 'admin_ip' ){
-						//	reset flag
-						$_SERVER['OP_IS_ADMIN'] = null;
-					}
-					
-					$_SERVER[__CLASS__]['env'][$key] = $var;
-					
-				}else if( $ope == 'get' ){
-					if( isset( $_SERVER[__CLASS__]['env'][$key])){
-						$var = $_SERVER[__CLASS__]['env'][$key];
-					}
-				}else{
-					self::StackError('Operand is empty.');
-				}
-				break;
-		}
-		
-		if( empty($var) ){
-			switch($key){
-				case 'encrypt-key':
-					$var = OnePiece5::GetEnv('admin-mail');
-					break;
-			}
-		}
-		
-		return $var;
-	}
-	
-	/**
 	 * Set env-value.
 	 * 
 	 * @param string $key
@@ -779,14 +697,6 @@ __EOL__;
 	static function SetEnv( $key, $var )
 	{
 		return Env::Set($key, $var);
-		
-		/**************************/
-		
-		if( $_SERVER['OP_IS_LOCALHOST'] ){
-			return Env::Set($key, $var);
-		}
-		
-		return self::_Env( $key, $var, 'set' );
 	}
 
 	/**
@@ -797,27 +707,6 @@ __EOL__;
 	static function GetEnv( $key )
 	{
 		return Env::Get($key);
-
-		/**************************/
-		
-		if( isset($_SERVER) and $_SERVER['OP_IS_LOCALHOST']){
-			return Env::Get($key);
-		}
-		
-		switch(strtolower($key)){
-			case 'url':
-				if(empty($this)){
-					print OnePiece5::GetCallerLine();
-				}
-				$this->mark('Use GetURL method. (ex. Toolbox::GetURL($config))');
-				$result = null;
-				break;
-				
-			default:
-				$result = self::_Env( $key, null, 'get' );
-		}
-		
-		return self::Escape($result);
 	}
 	
 	private function _InitSession()
