@@ -268,6 +268,8 @@ class Cache extends OnePiece5
 	
 	function Get( $key )
 	{
+		//	Check connection
+		/*
 		static $skip;
 		if( $skip ){
 			return null;
@@ -275,8 +277,21 @@ class Cache extends OnePiece5
 			$skip = true;
 			return null;
 		}
+		*/
 		
-		//	key
+		if(!$this->_isConnect){
+			return null;
+		}
+		
+		//	If case of admin.
+		if( $this->Admin() ){
+			if(!$cache = Toolbox::GetRequest('cache') ){
+				//	Cache to invalid.
+				return null;
+			}
+		}
+		
+		//	Check key
 		if(!is_string($key)){
 			$type = gettype($key);
 			$this->StackError("key is not string. (type=$type)");
