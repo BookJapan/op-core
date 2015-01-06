@@ -211,12 +211,8 @@ class Cache extends OnePiece5
 	 */
 	function Set( $key, $value, $expire=null )
 	{
-		static $skip;
-		if( $skip ){
-			return null;
-		}else if(!$this->_isConnect){
-			$skip = true;
-			return null;
+		if(!$this->_isConnect){
+			return false;
 		}
 		
 		//	check value
@@ -233,7 +229,7 @@ class Cache extends OnePiece5
 		}
 		
 		//	Anti Injection, and separate each domain.
-		$key = md5( $key . $this->_domain );
+		$md5 = md5( $key . $this->_domain );
 		
 		//	Can not serialize SimpleXMLElement.
 		if( $value instanceof SimpleXMLElement ){
@@ -250,13 +246,13 @@ class Cache extends OnePiece5
 		switch( $name = get_class($this->_cache) ){
 			case 'Memcached':
 				//	Set
-				$io = $this->_cache->set( $key, $value, $expire );
+				$io = $this->_cache->set( $md5, $value, $expire );
 				break;
 				
 			case 'Memcache':
 				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
 				//	set
-				$io = $this->_cache->set( $key, $value, $compress, $expire );
+				$io = $this->_cache->set( $md5, $value, $compress, $expire );
 				break;
 				
 			default:
@@ -268,25 +264,15 @@ class Cache extends OnePiece5
 	
 	function Get( $key )
 	{
-		//	Check connection
-		/*
-		static $skip;
-		if( $skip ){
-			return null;
-		}else if(!$this->_isConnect){
-			$skip = true;
-			return null;
-		}
-		*/
-		
 		if(!$this->_isConnect){
 			return null;
 		}
 		
 		//	If case of admin.
 		if( $this->Admin() ){
-			if(!$cache = Toolbox::GetRequest('cache') ){
+			if(!$cache = Toolbox::GetRequest('cache',null,true) ){
 				//	Cache to invalid.
+				$this->mark("Cache is invalid for admin only", __CLASS__);
 				return null;
 			}
 		}
@@ -299,16 +285,16 @@ class Cache extends OnePiece5
 		}
 		
 		//	Anti Injection, and separate each domain.
-		$key = md5( $key . $this->_domain );
+		$md5 = md5( $key . $this->_domain );
 		
 		//	
 		switch( $this->_cache_type ){
 			case 'memcache':
 				$compress = $this->_compress ? MEMCACHE_COMPRESSED: null;
-				return $this->_cache->Get( $key, $compress );
+				return $this->_cache->Get( $md5, $compress );
 				
 			case 'memcached':
-				return $this->_cache->Get( $key );
+				return $this->_cache->Get( $md5 );
 				
 			default:
 				$this->StackError("undefined {$this->_cache_type}.");
@@ -318,6 +304,11 @@ class Cache extends OnePiece5
 	function Cas( $key, &$value, $expire=null )
 	{
 		static $cas_list;
+		
+		//	check connection.
+		if(!$this->_isConnect){
+			return false;
+		}
 		
 		//	expire
 		$expire = $expire ? $expire: $this->_expire;
