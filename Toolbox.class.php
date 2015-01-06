@@ -367,6 +367,8 @@ class Toolbox
 		//	init
 		$scheme	 = isset($conf['scheme']) ? $conf['scheme']: true;
 		$domain	 = isset($conf['domain']) ? $conf['domain']: true;
+		$host	 = isset($conf['host'])   ? $conf['host']:   false; // Host name is not domain.
+		$port	 = isset($conf['port'])   ? $conf['port']:   false;
 		$path	 = isset($conf['path'])   ? $conf['path']:   true;
 		$query	 = isset($conf['query'])  ? $conf['query']:  false;
 		
@@ -388,31 +390,32 @@ class Toolbox
 		}
 		
 		if( $scheme ){
-			$scheme = $_SERVER['SERVER_PORT'] !== '443' ? 'http://': 'https://';
+		//	$scheme = $_SERVER['SERVER_PORT'] !== '443' ? 'http://': 'https://';
+			$scheme = isset($_SERVER['HTTPS']) ? 'https://': 'http://';
 		}else{
 			$scheme = null;
 		}
-	
-		if( $path ){
-			$path = $_SERVER['REQUEST_URI'];
+		
+		if( $port ){
+			$port = ':'.$_SERVER['SERVER_PORT'];
 		}else{
-			$path = null;
-		}
-	
-		if( $query ){
-			$query = $_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING']: null;
-		}else{
-			$query = null;
+			$port = null;
 		}
 		
-		return $cache[$ckey] = $scheme.$domain.$path.$query;
+		if( $query ){
+			$path = $_SERVER['REQUEST_URI'];
+		}else{
+			list($path) = explode('?', $_SERVER['REQUEST_URI']);
+		}
+		
+		return $cache[$ckey] = $scheme.$domain.$port.$path;
 	}
 	
 	/**
 	 * Get Domain name
 	 * 
 	 * <pre>
-	 * $conf = array( 'scheme' => true, 'path' => true );
+	 * $conf = array( 'scheme' => true, 'port' => true, 'path' => true );
 	 * </pre>
 	 * 
 	 * @param  array $conf
@@ -421,6 +424,7 @@ class Toolbox
 	static function GetDomain( $conf=array() )
 	{
 		$conf['scheme'] = isset($conf['scheme']) ? $conf['scheme']: false;
+		$conf['port']   = isset($conf['port'])   ? $conf['port']  : false;
 		$conf['path']   = isset($conf['path'])   ? $conf['path']  : false;
 		return self::GetURL($conf);
 	}
