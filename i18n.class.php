@@ -190,8 +190,10 @@ class i18n extends OnePiece5
 		//	
 		$form = strtolower($from);
 		$to   = strtolower($to);
-		$to  .= '-';
-		$to  .= strtoupper($country_code);
+		if( $country_code ){
+			$to  .= '-';
+			$to  .= strtoupper($country_code);
+		}
 		
 		//	
 		$url = $this->Config()->url('i18n');
