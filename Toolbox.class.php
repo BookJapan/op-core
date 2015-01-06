@@ -402,6 +402,11 @@ class Toolbox
 			$port = null;
 		}
 		
+		if(!$path){
+			$path  = null;
+			$query = null;
+		}else
+		
 		if( $query ){
 			$path = $_SERVER['REQUEST_URI'];
 		}else{
