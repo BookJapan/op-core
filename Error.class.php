@@ -95,7 +95,7 @@ class Error
 		}
 		
 		//	Check admin and mime.
-		if( OnePiece5::Admin() and Toolbox::isHTML() ){
+		if( OnePiece5::Admin() and Toolbox::isHTML() and true ){
 			$io = self::_toDisplay();
 		}else{
 			$io = self::_toMail();
@@ -268,8 +268,12 @@ class Error
 		$var = $_SERVER['HTTP_USER_AGENT'];
 		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
 		
+		$key = 'Host';
+		$var = $_SERVER['HTTP_HOST'];
+		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
+		
 		$key = 'URL';
-		$var = $_SERVER['HTTP_HOST']. urldecode( $_SERVER['REQUEST_URI'] );
+		$var = Toolbox::GetURL(array('port'=>1,'query'=>1)); // urldecode( $_SERVER['REQUEST_URI'] );
 		$tr[] = "![tr[ ![th[$key]] ![td[$var]] ]]".PHP_EOL;
 		
 		$key = 'Referer';
