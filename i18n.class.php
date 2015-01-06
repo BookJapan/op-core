@@ -183,10 +183,15 @@ class i18n extends OnePiece5
 				$to = Env::Get('lang');
 			}
 		}
+
+		//	Visiter's country code. (By IP-Address)
+		$country_code = $this->GetCookie('country_code');
 		
 		//	
 		$form = strtolower($from);
 		$to   = strtolower($to);
+		$to  .= '-';
+		$to  .= strtoupper($country_code);
 		
 		//	
 		$url = $this->Config()->url('i18n');
@@ -252,7 +257,7 @@ class i18n extends OnePiece5
 		
 		//	Save memcache
 		if( $this->_use_memcache and $translate ){
-	//		$this->Cache()->Set( $key, $translate, $this->_cache_expire );
+			$this->Cache()->Set( $key, $translate, $this->_cache_expire );
 		}
 		
 		//	Save database
