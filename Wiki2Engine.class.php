@@ -28,7 +28,7 @@ class Wiki2Engine extends OnePiece5
 	
 	static function Wiki2( $string, $options = null )
 	{
-		if(!$string){
+		if(!is_string($string)){
 			return '';
 		}
 		
