@@ -43,7 +43,7 @@ foreach( array('Toolbox','Autoloader') as $class ){
 //Vivre::Handling();
 
 //	Register autoloader.
-spl_autoload_register('Autoloader::Autoload');
+spl_autoload_register('Autoloader::Autoload',true,true);
 
 //	Init Env
 Env::Init();
