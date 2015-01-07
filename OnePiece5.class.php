@@ -5,9 +5,9 @@
  *  By using this program, you agree to our Privacy Policy, Terms of Use and End User License Agreement.
  *
  * @version   1.0
+ * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
- * @package   op-core
  */
 
 //	Check mbstring installed.
@@ -1064,6 +1064,10 @@ __EOL__;
 		$call_line = self::GetCallerLIne(0,1,'mark');
 		
 		//	message
+		if( is_int($str) ){
+			var_dump((string)$str);
+			$str = (string)$str;
+		}else
 		if( is_null($str) ){
 			$str = '![ .red [null]]';
 		}else
