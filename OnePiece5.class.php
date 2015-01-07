@@ -1076,7 +1076,7 @@ __EOL__;
 		}else
 		if( $str and !is_string($str) ){
 			$str = var_export($str,true);
-			$str = str_replace( array("\r","\n"), array('',''), $str);
+			$str = str_replace( array("\r","\n"), array('\r','\n'), $str);
 		}
 		
 		//	Check Wiki2Engine
