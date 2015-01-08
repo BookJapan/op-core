@@ -200,6 +200,11 @@ class i18n extends OnePiece5
 			$to  .= strtoupper($country_code);
 		}
 		
+		//	If last character a backslash.
+		if( $text{strlen($text)-2} === '\\' ){
+			$text = rtrim($text);
+		}
+		
 		//	
 		$url = $this->Config()->url('i18n');
 		$url .= '?';
