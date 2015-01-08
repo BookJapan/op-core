@@ -317,10 +317,12 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @param boolean $flag
 	 */
+	/*
 	function SetDispatchFlag($flag)
 	{
 		$this->_isDispatch = $flag;
 	}
+	*/
 	
 	/**
 	 * Dispatch to the End-Point(End-point is page-controller file) by route arguments.
@@ -329,7 +331,7 @@ abstract class NewWorld5 extends OnePiece5
 	 * @return boolean
 	 */
 	function Dispatch($route=null)
-	{
+	{	
 		// Deny two time dispatch
 		if( $this->_isDispatch ){
 			$this->StackError("Dispatched two times. (Dispatched only one time.)");
@@ -356,7 +358,7 @@ abstract class NewWorld5 extends OnePiece5
 			if(!$this->doSetting($route)){
 				return true;
 			}
-			
+				
 			//	Forward
 			if( $this->doForward() ){
 				return true;
@@ -377,7 +379,7 @@ abstract class NewWorld5 extends OnePiece5
 				}
 				$this->SetSession('file_does_not_exists',null);
 			}
-			
+				
 			//  content
 			$this->doContent();
 			
@@ -412,7 +414,7 @@ abstract class NewWorld5 extends OnePiece5
 	 * @return boolean
 	 */
 	function doContent()
-	{	
+	{
 		//  Route
 		if(!$route = $this->GetEnv('route')){
 			$this->StackError('Empty route.');
@@ -876,6 +878,41 @@ abstract class NewWorld5 extends OnePiece5
 	function GetJson( $key )
 	{
 		return isset($this->_json[$key]) ? $this->_json[$key]: null;
+	}
+	
+	/**
+	 * This language code is NewWorld's scope.
+	 * Not system(PHP's multibyte function, timezone, etc), Not i18n(user use language code)
+	 * NewWorld is use html tag. (<html lang="<?php $this->Lang() ?>">)
+	 */
+	private $_lang;
+	
+	/**
+	 * Set html's language code.
+	 * 
+	 * @param string $lang
+	 */
+	function SetLang( $lang )
+	{
+		$this->_lang = $lang;
+	}
+	
+	/**
+	 * Get html's language code.
+	 */
+	function GetLang()
+	{
+		return $this->_lang ? $this->_lang: $this->GetEnv('lang');
+	}
+	
+	/**
+	 * print html's language code.
+	 * 
+	 * <html lang="<?php $this->Lang() ?>">
+	 */
+	function Lang()
+	{
+		print $this->GetLang();
 	}
 }
 
