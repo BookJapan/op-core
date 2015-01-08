@@ -68,11 +68,18 @@ abstract class Model_Base extends OnePiece5
 			
 			//  database connection
 			if(!$io = $pdo->Connect($config)){
+				/*
 				//  Selftest
 				if( method_exists( $this->config(), 'selftest') ){
-					$e = new OpException();
-					throw $e;
+					$model_name  = get_class($this);
+					$config_name = get_class($this->config());
+					throw new OpException("Model: $model_name, Config: $config_name,  was not have selftest method.");
 				}else if($this->Admin()){
+					$this->mark('![.red[Connect was denied.]]');
+					$this->d($config);
+				}
+				*/
+				if( $this->Admin() ){
 					$this->mark('![.red[Connect was denied.]]');
 					$this->d($config);
 				}
