@@ -151,14 +151,19 @@ class i18n extends OnePiece5
 		return $this->_pdo;
 	}
 	
-	function Bulk( $message, $from='en' )
+	function Bulk( $message, $from='en', $to=null )
 	{
-		$to = $this->GetLang();
-		$tr = $this->Get($message, $from, $to);
+		if(!$to){
+			$to = $this->GetLang();
+		}
+		
+		$tr = $this->Get( $message, $from, $to );
+		$en = $this->Get( $message, $from, $from ); // Remove back slash
+		
 		if( $to === $from ){
 			return $tr;
 		}else{
-			return "$tr ($message)";
+			return "$tr ($en)";
 		}
 	}
 	
