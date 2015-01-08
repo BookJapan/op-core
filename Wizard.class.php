@@ -259,10 +259,17 @@ class Wizard extends OnePiece5
 		
 		//	Set selftest config by model name list.
 		foreach( $this->_selftest_name_list as $class_name => $execute_flag ){
-			
 			//	Generate instance
 			if( class_exists($class_name) ){
-				$class = new $class_name();
+				try{
+					$class = new $class_name();
+				}catch( Exception $e ){
+					$file = $e->getFile();
+					$line = $e->getLine();
+					$message = $e->getMessage();
+					$this->Mark("$file (#$line) $message");
+					continue;
+				}
 			}else{
 				$this->mark("![.red .bold .i18n[This class does not exists. ($class_name)]]");
 				continue;
