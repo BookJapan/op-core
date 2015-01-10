@@ -274,4 +274,16 @@ class App extends NewWorld5
 	{
 		return $this->i18n()->Ja($japanese);
 	}
+	
+	/**
+	 * @return Model_Cloud
+	 */
+	function ModelCloud()
+	{
+		static $model;
+		if(!$model){
+			$model = $this->Model('Cloud');
+		}
+		return $model;
+	}
 }
