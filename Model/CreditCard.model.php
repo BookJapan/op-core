@@ -142,9 +142,10 @@ class Config_CreditCard extends Config_Base
 		return $this->_table_prefix.'_'.$this->_table_name;
 	}
 	
-	function database()
+	function database($args=null)
 	{
-		return parent::database(array('user'=>'op_mdl_creditcar'));
+		$args['user'] = 'op_mdl_creditcar';
+		return parent::database($args);
 	}
 	
 	function insert_payment( $uid, $sid, $amount )
