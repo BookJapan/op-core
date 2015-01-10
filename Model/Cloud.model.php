@@ -27,24 +27,42 @@ class Model_Cloud extends OnePiece5
 		return $config;
 	}
 	
-	function GetGeocodeByIpAddress($ip=null)
+	function wget( $url, $expire=3600)
+	{
+		$key = md5($url);
+		if(!$data = $this->Cache()->Get($key) ){
+			$data = file_get_contents($url);
+			$this->Cache()->Set($key, $data, $expire);
+		}
+		return $data;
+	}
+	
+	function json($url, $expire=3600)
+	{
+		$key = md5($url);
+		if(!$json = $this->Cache()->Get($key) ){
+			$data = $this->wget($url);
+			$json = json_decode($data,true);
+			
+			//	Check error is one time only.
+			if( isset($json['error']) ){
+				$this->StackError($json['error']);
+			}
+			
+			$this->Cache()->Set($key, $json, $expire);
+		}
+		return $json;
+	}
+	
+	function GetGeo($ip=null)
 	{
 		if(!$ip){
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
 		
 		//	Fetch
-		$url = $this->Config()->url('geocode')."?ip={$ip}";
-		if(!$json = file_get_contents($url)){
-			$this->StackError("Connection failed. ($url)");
-			return false;
-		}
-		
-		//	Convert to assoc.
-		$json = json_decode($json,true);
-		if( isset($json['error']) ){
-			$this->StackError($json['error']);
-		}
+		$url  = $this->Config()->url('geo')."?ip={$ip}";
+		$json = $this->json($url);
 		
 		return $json;
 	}
@@ -57,34 +75,34 @@ class Model_Cloud extends OnePiece5
 	 */
 	function CountryCode($ip=null)
 	{
-		if(!$json = self::GetGeocodeByIpAddress($ip)){
+		if(!$json = self::GetGeo($ip)){
 			return false;
 		}
-		return $json['geocode']['letter'];
+		return $json['geo']['code'];
 	}
 	
 	function CountryName($ip=null)
 	{
-		if(!$json = self::GetGeocodeByIpAddress($ip)){
+		if(!$json = self::GetGeo($ip)){
 			return false;
 		}
-		return $json['geocode']['country'];
+		return $json['geo']['country'];
 	}
 	
 	function CityName($ip=null)
 	{
-		if(!$json = self::GetGeocodeByIpAddress($ip)){
+		if(!$json = self::GetGeo($ip)){
 			return false;
 		}
-		return $json['geocode']['city'];
+		return $json['geo']['city'];
 	}
 	
-	function Geocode($ip=null)
+	function Geoinfo($ip=null)
 	{
-		if(!$json = self::GetGeocodeByIpAddress($ip)){
+		if(!$json = self::GetGeo($ip)){
 			return false;
 		}
-		return array('latitude'=>$json['geocode']['latitude'],'longitude'=>$json['geocode']['longitude']);
+		return array('latitude'=>$json['geo']['latitude'],'longitude'=>$json['geo']['longitude']);
 	}
 	
 	function GetLanguageByIpAddress($ip=null)
@@ -121,9 +139,8 @@ class Model_Cloud extends OnePiece5
 		}
 		
 		//	get language code by country code.
-		$url  = $this->Config()->url('lang')."?country={$country_code}";
-		$json = file_get_contents($url);
-		$json = json_decode($json,true);
+		$url  = $this->Config()->url('lang')."?code={$country_code}";
+		$json = $this->json($url);
 		
 		return isset($json['language']) ? $json['language']: false;
 	}
@@ -136,12 +153,12 @@ class Config_Cloud extends OnePiece5
 	function url( $key )
 	{
 		switch($key){
-			case 'geocode':
-				$url = 'http://'.self::_API_DOMAIN_.'/geocode/';
+			case 'geo':
+				$url = 'http://'.self::_API_DOMAIN_.'/geo/';
 				break;
 				
 			case 'lang':
-				$url = 'http://'.self::_API_DOMAIN_.'/geocode/language/';
+				$url = 'http://'.self::_API_DOMAIN_.'/geo/language/';
 				break;
 		}
 		return $url;
