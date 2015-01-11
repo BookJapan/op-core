@@ -101,7 +101,7 @@ class Model_CSV extends Model_Model
 		
 		//	Case of linux.
 		if(!$io = setlocale(LC_ALL,$this->_locale_of_csv)){
-			$this->_error = "Failed \setlocale\. Please call \Help\ method.";
+			$this->_error = "\CSV\ model is failed to \setlocale\. Please execute \ \$this->Model('CSV')->Help(); \.";
 			return false;
 		}
 		
