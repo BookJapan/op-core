@@ -38,7 +38,7 @@ class Model_Cloud extends OnePiece5
 		$key = md5("$url, $expire");
 		
 		//	Get from cache.
-		if(!$data = $this->Cache()->Get($key) ){
+		if(!$data = $this->Cache()->Get($key) or !$expire){
 			//	Get from internet.
 			$data = file_get_contents($url);
 			//	Save to cache.
