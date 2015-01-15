@@ -29,28 +29,36 @@ class Model_Cloud extends OnePiece5
 	
 	function wget( $url, $expire=3600)
 	{
-		$key = md5($url);
+		//	Does not cache for admin.
+		if( $this->admin() ){
+			$expire = false;
+		}
+		
+		//	Generate cache's key.
+		$key = md5("$url, $expire");
+		
+		//	Get from cache.
 		if(!$data = $this->Cache()->Get($key) ){
+			//	Get from internet.
 			$data = file_get_contents($url);
+			//	Save to cache.
 			$this->Cache()->Set($key, $data, $expire);
 		}
+		
+		//	Return for result.
 		return $data;
 	}
 	
-	function json($url, $expire=3600)
+	function json($url, $expire=null)
 	{
-		$key = md5($url);
-		if(!$json = $this->Cache()->Get($key) ){
-			$data = $this->wget($url);
-			$json = json_decode($data,true);
-			
-			//	Check error is one time only.
-			if( isset($json['error']) ){
-				$this->StackError($json['error']);
-			}
-			
-			$this->Cache()->Set($key, $json, $expire);
+		$data = $this->wget($url,$expire);
+		$json = json_decode($data,true);
+		
+		//	Check error is one time only.
+		if( isset($json['error']) ){
+			$this->StackError($json['error']);
 		}
+		
 		return $json;
 	}
 	
@@ -64,6 +72,9 @@ class Model_Cloud extends OnePiece5
 		$url  = $this->Config()->url('geo')."?ip={$ip}";
 		$json = $this->json($url);
 		
+		$this->mark($url);
+		$this->d($json);
+		
 		return $json;
 	}
 	
@@ -76,6 +87,7 @@ class Model_Cloud extends OnePiece5
 	function CountryCode($ip=null)
 	{
 		if(!$json = self::GetGeo($ip)){
+			$this->mark($json);
 			return false;
 		}
 		return $json['geo']['code'];
@@ -137,10 +149,15 @@ class Model_Cloud extends OnePiece5
 				$this->SetCookie('country_code',$country_code);
 			}
 		}
+
+		$this->mark($country_code);
 		
 		//	get language code by country code.
 		$url  = $this->Config()->url('lang')."?code={$country_code}";
 		$json = $this->json($url);
+		
+		$this->mark($url);
+		$this->d($json);
 		
 		return isset($json['language']) ? $json['language']: false;
 	}

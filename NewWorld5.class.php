@@ -52,7 +52,7 @@ abstract class NewWorld5 extends OnePiece5
 		$io = parent::__construct($args);
 				
 		//  Vivre
-		$this->vivre(true);
+	//	$this->vivre(true);
 		
 		//  result
 		return $io;
@@ -80,7 +80,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  Vivre
-		$this->vivre(false);
+	//	$this->vivre(false);
 		
 		//  
 		$io = parent::__destruct();

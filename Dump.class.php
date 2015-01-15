@@ -22,7 +22,11 @@ class Dump
 	 * @param mixed   $args
 	 * @param integer $depth
 	 */
-	static function D( $args, $lifetime=null ){
+	static function D( $args, $lifetime=null )
+	{
+		//	JS, CSS
+		self::PrintAttache();
+		
 		if( is_array($args) and count($args) === 0 ){
 			print self::GetDump( ' ', null, null, false );
 			return;
@@ -48,10 +52,12 @@ class Dump
 		
 		$depth++;
 		
+		/*
 		if(!$calls){
 			print self::PrintDumpStyleSheet();
 			print self::PrintDumpJavaScript();
 		}
+		*/
 		
 		//  $calles is count calling times. use did, create uniq key.
 		if(!$history){
@@ -396,6 +402,26 @@ class Dump
 		}else{
 			return htmlentities( $args, ENT_QUOTES, 'UTF-8');
 		}
+	}
+	
+	static function PrintAttach()
+	{
+		//	Only once.
+		static $print;
+		if(!$print){
+			$print = true;
+		}else{
+			return;
+		}
+		
+		//	If html
+		if(!Toolbox::isHtml()){
+			return;
+		}
+		
+		//	Print
+		print self::PrintDumpStyleSheet();
+		print self::PrintDumpJavaScript();
 	}
 	
 	static function PrintDumpStyleSheet()
