@@ -72,9 +72,6 @@ class Model_Cloud extends OnePiece5
 		$url  = $this->Config()->url('geo')."?ip={$ip}";
 		$json = $this->json($url);
 		
-		$this->mark($url);
-		$this->d($json);
-		
 		return $json;
 	}
 	
@@ -149,15 +146,10 @@ class Model_Cloud extends OnePiece5
 				$this->SetCookie('country_code',$country_code);
 			}
 		}
-
-		$this->mark($country_code);
 		
 		//	get language code by country code.
-		$url  = $this->Config()->url('lang')."?code={$country_code}";
+		$url  = $this->Config()->url('lang')."?country_code={$country_code}";
 		$json = $this->json($url);
-		
-		$this->mark($url);
-		$this->d($json);
 		
 		return isset($json['language']) ? $json['language']: false;
 	}
