@@ -374,6 +374,11 @@ class Wizard extends OnePiece5
 				}
 			} // end of selftest loop.
 			
+			//	If display, only html.
+			if( $to_wizard and !Toolbox::isHTML() ){
+				$this->StackError("Wizard is occurred.");
+			}else
+			
 			//	Execute the Wizard
 			if( $to_wizard ){
 				//  Get form name.

@@ -379,7 +379,7 @@ abstract class NewWorld5 extends OnePiece5
 				}
 				$this->SetSession('file_does_not_exists',null);
 			}
-				
+			
 			//  content
 			$this->doContent();
 			
