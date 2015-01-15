@@ -25,7 +25,7 @@ class Dump
 	static function D( $args, $lifetime=null )
 	{
 		//	JS, CSS
-		self::PrintAttache();
+		self::PrintAttach();
 		
 		if( is_array($args) and count($args) === 0 ){
 			print self::GetDump( ' ', null, null, false );
