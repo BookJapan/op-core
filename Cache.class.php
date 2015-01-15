@@ -228,6 +228,11 @@ class Cache extends OnePiece5
 			return false;
 		}
 		
+		//	If expire is false.
+		if( $expire === false ){
+			return $this->Delete($key);
+		}
+		
 		//	Anti Injection, and separate each domain.
 		$md5 = md5( $key . $this->_domain );
 		
