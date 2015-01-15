@@ -16,13 +16,59 @@ if(!include_once('NewWorld5.class.php')){
  */
 class App extends NewWorld5
 {
+	/**
+	 * SmatURL's key separate character 
+	 * 
+	 * @var string
+	 */
+	private $_args_keys_needle = ':';
+	
+	function GetArgs($key=null)
+	{
+		//	Accelerate
+		static $args;
+		if(!$args){
+			$args = parent::GetArgs();
+		}
+		
+		//	Return all
+		if( is_null($key) ){
+			return $args;
+		}
+		
+		//	Return a specific value.
+		if( is_int($key) ){
+			//	at integer
+			$result = isset($args[$key]) ? $args[$key]: null;
+		}else{
+			//	at key (ex. /foo/bar/color:red/ )
+			$result = null;
+			$needle = $this->_args_keys_needle;
+			foreach( $args as $var ){
+				if( strpos( $var, $needle ) ){
+					$temp = explode( $needle, $var );
+					if( $temp[0] === $key ){
+						$result = $temp[1];
+						break;
+					}
+				}
+			}
+		}
+		
+		return $result;
+	}
+	
 	function GetAction()
 	{
-		static $action;
-		if(!$action){
+		/*
+		if(!$action = $this->GetEnv('action') ){
+			//  Does not undefine.
 			$args = $this->GetArgs();
 			$action = $args[0] ? $args[0]: 'index';
 		}
+		*/
+		$args = $this->GetArgs();
+		$action = empty($args[0]) ? 'index': $args[0];
 		return $action;
 	}
 	

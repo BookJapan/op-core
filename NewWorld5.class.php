@@ -798,35 +798,11 @@ abstract class NewWorld5 extends OnePiece5
 		$this->_content = '';
 	}
 	
-	function GetArgs( $key=null )
+	function GetArgs()
 	{
-		static $args;
-		if(!$args){
-			$route = $this->GetEnv('route');
-			$args = $route['args'];
-		}
-		
-		if( is_null($key) ){
-			return $args;
-		}
-		
-		if( is_int($key) ){
-			$result = isset($args[$key]) ? $args[$key]: null;
-		}else{
-			$result = null;
-			$needle = ':';
-			foreach( $args as $var ){
-				if( strpos( $var, $needle ) ){
-					$temp = explode( $needle, $var );
-					if( $temp[0] === $key ){
-						$result = $temp[1];
-						break;
-					}
-				}
-			}
-		}
-		
-		return $result;
+		$route = $this->GetEnv('route');
+		$args  = $route['args'];
+		return $args;
 	}
 	
 	function GetRequest( $keys=null, $method=null )
