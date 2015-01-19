@@ -135,35 +135,30 @@ class PDO5 extends OnePiece5
 		
 		//  Execute
 		if( $st = $this->pdo->query( $this->qu ) ){
-			//  success
-			if( $st instanceof PDOStatement ){
-				switch($key){
-					case 'alter':
-					case 'create':
-						$result = true;
-						break;
-						
-					case 'count':
-						$result = $st->fetch(PDO::FETCH_ASSOC);
-						if( isset($result['COUNT(*)']) ){
-							$result = $result['COUNT(*)'];
-						}else if( isset($result['COUNT()']) ){
-							$result = $result['COUNT()'];
-						}else{
-							$result = false;
-						}
-						break;
-						
-					case 'update':
-					case 'delete':
-						$result = $st->rowCount();
-						break;
-						
-					default:
-						$result = $st->fetchAll(PDO::FETCH_ASSOC);
-				}
-			}else{
-				$this->d($st);
+			switch($key){
+				case 'alter':
+				case 'create':
+					$result = true;
+					break;
+					
+				case 'count':
+					$result = $st->fetch(PDO::FETCH_ASSOC);
+					if( isset($result['COUNT(*)']) ){
+						$result = $result['COUNT(*)'];
+					}else if( isset($result['COUNT()']) ){
+						$result = $result['COUNT()'];
+					}else{
+						$result = false;
+					}
+					break;
+					
+				case 'update':
+				case 'delete':
+					$result = $st->rowCount();
+					break;
+					
+				default:
+					$result = $st->fetchAll(PDO::FETCH_ASSOC);
 			}
 		}else{
 			switch(strtolower($key)){
@@ -1274,19 +1269,60 @@ class PDO5 extends OnePiece5
 		return $num;
 	}
 	
+	private $_is_transaction;
+	
 	function Transaction()
 	{
-		$this->pdo->beginTransaction();
+		if( $this->_is_transaction ){
+			$this->StackError("TRANSACTION has already started.");
+			return false;
+		}
+		
+		if(!$this->pdo->beginTransaction() ){
+			$this->StackError("TRANSACTION can not be started.");
+			return false;
+		}
+
+		$this->qu("START TRANSACTION");
+		$this->_is_transaction = true;
+		
+		return true;
 	}
 	
 	function Rollback()
 	{
-		$this->pdo->rollBack();
+		if(!$this->_is_transaction ){
+			$this->StackError("TRANSACTION is not started.");
+			return false;
+		}
+		
+		if(!$this->pdo->rollBack() ){
+			$this->StackError("Could not be ROLLBACK.");
+			return false;
+		}
+		
+		$this->qu("ROLLBACK");
+		$this->_is_transaction = null;
+		
+		return true;
 	}
 	
 	function Commit()
 	{
-		$this->pdo->commit();
+		if(!$this->_is_transaction ){
+			$this->StackError("TRANSACTION is not started.");
+			return false;
+		}
+		
+		if(!$this->pdo->commit() ){
+			$this->StackError("Could not be COMMIT.");
+			return false;
+		}
+		
+		$this->qu("COMMIT");
+		$this->_is_transaction = true;
+
+		return true;
 	}
 	
 	function Lock( $args )
