@@ -23,18 +23,6 @@
  */
 class Autoloader
 {
-	static function InitIncludePath()
-	{
-		$op_root = dirname(__FILE__);
-		foreach( explode(PATH_SEPARATOR,ini_get('include_path')) as $path ){
-			if( $path !== $op_root ){
-				$join[] = $path;
-			}
-		}
-		$join[] = $op_root;
-		ini_set('include_path',join(PATH_SEPARATOR,$join));
-	}
-	
 	static function Autoload( $class_name )
 	{
 		//	Checking used sub directory.
