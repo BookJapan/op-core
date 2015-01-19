@@ -459,6 +459,25 @@ class PDO5 extends OnePiece5
 		return $struct;
 	}
 	
+	function GetTableDefine( $database=null, $table=null )
+	{
+		//	select database
+		$this->SetDatabase('information_schema');
+		
+		//	select
+		$select = new Config();
+		$select->table = 'tables';
+		if( $database ){
+			$select->where->TABLE_SCHEMA = $database;
+		}
+		if( $table ){
+			$select->where->TABLE_NAME	 = $table;
+		}
+		$record = $this->Select($select);
+		
+		return $record;
+	}
+	
 	function GetTableColumn( $table, $database=null )
 	{
 		if( $structs = $this->GetTableStruct($table,$database) ){
