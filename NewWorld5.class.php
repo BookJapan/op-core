@@ -48,24 +48,19 @@ abstract class NewWorld5 extends OnePiece5
 	function __construct($args=array())
 	{
 		//  output is buffering.
-		$io = ob_start();
-		$io = parent::__construct($args);
-				
-		//  Vivre
-	//	$this->vivre(true);
-		
-		//  result
-		return $io;
+		if(!ob_start()){
+			print __FILE__.', '.__LINE__;
+		}
+		parent::__construct($args);
 	}
 	
 	function __destruct()
-	{	
+	{
 		//  Called dispatch?
 		if(!$this->_isDispatch){
 			$class_name = get_class($this);
 			$message = "$class_name has not dispatched. Please call \$app->Dispatch();'";
-		//	$this->StackError($message);
-			Error::Set($message);
+			$this->StackError($message);
 		}
 		
 		//  flush buffer
@@ -78,9 +73,6 @@ abstract class NewWorld5 extends OnePiece5
 			$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
 			$this->content();
 		}
-		
-		//  Vivre
-	//	$this->vivre(false);
 		
 		//  
 		$io = parent::__destruct();

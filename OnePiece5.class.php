@@ -41,6 +41,7 @@ Env::Init();
 //	Register shutdown function
 register_shutdown_function('Env::Shutdown');
 
+//	
 if(!function_exists('OnePieceErrorHandler')){
 	function OnePieceErrorHandler( $no, $str, $file, $line, $context)
 	{
@@ -1758,59 +1759,6 @@ __EOL__;
 			return nl2br(trim($string)) . PHP_EOL;
 		}
 	}
-	
-	/**
-	 * Checked dead or alive.
-	 * 
-	 * @param boolen $args
-	 */
-	function Vivre( $register )
-	{
-		$line = OnePiece5::GetCallerLine();
-		OnePiece5::Mark("This method is deprecated. ($line)",'vivre');
-		return true;
-		
-		if( $register ){
-			//	register
-			if($this->GetEnv('vivre')){
-				//	Double registration.
-				$this->mark("Vivre check is double booking");
-			}else if( isset($_SESSION[__CLASS__]['vivre']) ){
-				//	unset されていないということは途中でエラーになっている。
-				if( $this->admin() ){
-					$this->mark("VIVRE!!");
-				}else{
-					
-					$host  = $_SERVER['HTTP_HOST']; // SERVER_NAME, SERVER_ADDR
-					$addr  = $_SERVER['SERVER_ADDR'];
-					$xhost = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST']: $host; // HTTP_X_FORWARDED_SERVER
-					$uri   = $_SERVER['REQUEST_URI'];
-					
-					$ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $_SERVER['REMOTE_ADDR'];
-					$domain = gethostbyaddr($ip);
-					
-					$ua = $_SERVER['HTTP_USER_AGENT'];
-					
-					$args = array();
-					$args['to']		 = $this->GetEnv('admin-mail');
-					$args['subject'] = '[OnePiece] VIVRE ALERT';
-					$args['body']	.= "HOST = $host ($addr) \n";
-					$args['body']	.= "REQUEST_URI = {$xhost}{$uri} \n";
-					$args['body']	.= "VISITOR = $ip($domain) \n";
-					$args['body']	.= "USER AGENT = $ua \n";
-					$this->Mail($args);
-				}
-			}else{
-				$_SESSION[__CLASS__]['vivre'] = 1;
-			}
-			
-			//	Anti double registration.
-			$this->SetEnv('vivre',1);
-		}else{
-			//  release
-			unset($_SESSION[__CLASS__]['vivre']);
-		}
-	}
 }
 
 class OpException extends Exception
@@ -2248,34 +2196,7 @@ class Env
  * @author tomoaki.nagahara@gmail.com
  */
 class Vivre
-{
-	const _NAMESPACE_	 = Env::_NAME_SPACE_;
-	const _KEY_NAME_	 = 'VIVRE';
-	
-	static function Handling()
-	{
-		//	Check session
-		if(!session_id()){
-			OnePiece5::Mark("This system not working php's session.");
-		}
-		
-		//	Generate key
-		$key = $_SERVER['REQUEST_URI'];
-		$key = md5($key);
-		
-		if( isset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_][$key])){
-			unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_][$key]);
-			self::Warning();
-		}
-		
-		$_SESSION[self::_NAMESPACE_][self::_KEY_NAME_][$key] = true;
-	}
-	
-	static function Relaese()
-	{
-		unset($_SESSION[self::_NAMESPACE_][self::_KEY_NAME_]);
-	}
-	
+{	
 	static function Warning($message=null)
 	{
 		//	local info
