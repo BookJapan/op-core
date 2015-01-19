@@ -60,9 +60,7 @@ class Model_CSV extends Model_Model
 	
 	function GetError()
 	{
-		$english = $this->i18n()->En($this->_error,'En');
-		$translate = $this->i18n()->En($this->_error);
-		return "$translate ($english)";
+		return $this->i18n()->Bulk($this->_error);
 	}
 	
 	function SetFile( $file_path )
