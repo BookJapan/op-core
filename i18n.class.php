@@ -201,7 +201,7 @@ class i18n extends OnePiece5
 		}
 		
 		//	If last character a backslash.
-		if( $text{strlen($text)-2} === '\\' ){
+		if( strlen($text) > 2 and $text{strlen($text)-2} === '\\' ){
 			$text = rtrim($text);
 		}
 		
