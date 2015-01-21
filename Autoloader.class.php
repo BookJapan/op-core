@@ -42,6 +42,9 @@ class Autoloader
 		//	Get include path.
 		$include_path = explode( PATH_SEPARATOR, ini_get('include_path') );
 		
+		//	Add op-core's root.
+		$include_path[] = $_SERVER['OP_ROOT'];
+		
 		//	Generate file name.
 		if( isset($_is_model) ){
 			$file_name = self::_model($class);
@@ -65,6 +68,8 @@ class Autoloader
 			$file_path = rtrim($path,DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$file_name;
 			if( $io = file_exists($file_path) ){
 				$io = include_once($file_path);
+			}else{
+			//	OnePiece5::Mark($file_path);
 			}
 		}
 		
