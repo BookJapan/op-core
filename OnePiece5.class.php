@@ -35,8 +35,8 @@ $doc_root = $_SERVER['DOC_ROOT'] = $_SERVER['DOCUMENT_ROOT'].'/';
 include('Autoloader.class.php');
 spl_autoload_register('Autoloader::Autoload',true,true);
 
-//	Init Error
-Error::Init();
+//	Init
+Autoloader::Init();
 
 //	Init Env
 Env::Init();
