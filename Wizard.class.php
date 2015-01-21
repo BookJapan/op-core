@@ -766,24 +766,24 @@ class Wizard extends OnePiece5
 				//	Check type
 				if( $type != $structs[$column_name]['type'] ){
 					$fail = true;
-					$hint = "type=$type not {$structs[$column_name]['type']}";
+					$hint = "type is $type not {$structs[$column_name]['type']}";
 				
 				//	Check length
 				}else if( $length and $length != $structs[$column_name]['length'] ){
 					
 					$fail = true;
-					$hint = "length=$length not {$structs[$column_name]['length']}";
+					$hint = "length is $length not {$structs[$column_name]['length']}";
 					
 				//	Check NULL
 				}else if( $null != $structs[$column_name]['null'] ){	
 					$fail = true;
-					$hint = "null=$null not {$structs[$column_name]['null']}";
+					$hint = "null is $null not {$structs[$column_name]['null']}";
 
 				//	Check default
 				}else if( !is_null($default) and $default != $structs[$column_name]['default'] ){
 					$fail = true;
 					$temp = is_null($structs[$column_name]['default']) ? 'null': $structs[$column_name]['default'];
-					$hint = "default=$default not $temp";
+					$hint = "default is $default not $temp";
 					
 				}else{
 					//	
@@ -1037,7 +1037,6 @@ class Wizard extends OnePiece5
 			
 			//	There is no column to change.
 			if( empty($this->_result->column->$table_name) ){
-				$this->mark("![.red[$table_name is empty]]");
 				continue;
 			}
 			
