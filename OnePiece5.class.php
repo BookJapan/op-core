@@ -111,15 +111,7 @@ if(!function_exists('OnePieceShutdown')){
 			$rand = rand( 0, 1000);
 			if( 1 == $rand ){
 				$_SESSION = array();
-				$i18n = OnePiece5::i18n();
-				$text = '\OnePiece5\ did initialize the \SESSION\.';
-				/*
-				if( $i18n->GetLang() !== 'en' ){
-					$translation = ' ('.$i18n->En($text).')';
-				}
-				$message = $text.$translation;
-				*/
-				$message = $i18n->Bulk($text);
+				$message = OnePiece5::i18n()->Bulk('\OnePiece5\ did initialize the \SESSION\.');
 				print "<script>alert('$message');</script>";
 			}
 		}
