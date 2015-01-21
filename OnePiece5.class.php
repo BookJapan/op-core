@@ -38,6 +38,9 @@ $doc_root = $_SERVER['DOC_ROOT'] = $_SERVER['DOCUMENT_ROOT'].'/';
 include('Autoloader.class.php');
 spl_autoload_register('Autoloader::Autoload',true,true);
 
+//	Init Error
+Error::Init();
+
 //	Init Env
 Env::Init();
 
@@ -248,52 +251,6 @@ class OnePiece5
 			}
 			$this->Init();
 		}
-		
-		//------------------------------------------------------//
-		
-		//  Check already init.
-		if( $this->GetEnv('init') ){
-			return;
-		}
-		$this->SetEnv('init',true);
-
-		//------------------------------------------------------//
-		
-		//	Overwrite header
-		/**
-		 * @see http://www.ipa.go.jp/security/awareness/vendor/programmingv2/contents/405.html
-		 * @see http://msdn.microsoft.com/en-us/library/ms533020%28VS.85%29.aspx#Use_Cache-Control_Extensions
-		 */
-	//	header('X-Powered-By: OnePiece/1.0',true);
-	//	Case of not set timezone
-	//	header('Expires: '.date('D, d M Y H:i:s ', strtotime('+1 second',time() + date('Z'))).'GMT',true);
-		
-		// Error control
-		$save_level = error_reporting();
-		error_reporting( E_ALL );
-		ini_set('display_errors',1);
-		
-		if(!$this->GetEnv('cli') ){
-			//  unique id
-			if(empty($_COOKIE[self::_KEY_COOKIE_UNIQ_ID_])){
-				$this->SetCookie( self::_KEY_COOKIE_UNIQ_ID_, md5(microtime() + $_SERVER['REMOTE_ADDR']), 0);
-			}
-		}
-		
-		//  mark_label
-		if( isset($_GET['mark_label']) ){
-			$mark_label = $_GET['mark_label'];
-			$mark_value = $_GET['mark_label_value'];
-			Developer::SaveMarkLabelValue($mark_label,$mark_value);
-		}
-		
-		//  recovery (display_errors)
-		if(!$this->admin()){
-			ini_set('display_errors',0);
-		}
-		
-		//  recovery (error_reporting)
-		error_reporting( $save_level );
 	}
 
 	/**
