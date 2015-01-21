@@ -76,16 +76,16 @@ if(!function_exists('OnePieceShutdown')){
 			}
 		}
 		
-		//	mime
+		//	Output shutdown label
 		switch( $mime = Toolbox::GetMIME(true) ){
 			case 'plain':
 				if( Env::Get('cli') ){
-					print PHP_EOL . ' -- OnePiece is shutdown -- ' . PHP_EOL;
+					$label = ' -- OnePiece is shutdown -- ';
 				}
 				break;
 				
 			case 'css':
-				print PHP_EOL . '/* OnePiece is shutdown. */' . PHP_EOL;
+				$label = ' /* OnePiece is shutdown */ ';
 				break;
 				
 			case 'javascript':
@@ -99,10 +99,15 @@ if(!function_exists('OnePieceShutdown')){
 				
 			case 'html':
 			default:
-				Developer::PrintStyleSheet();
-				Developer::PrintGetFlagList();
-				print PHP_EOL.'<OnePiece mime="'.$mime.'"/>'.PHP_EOL;
+				$label = "<OnePiece mime=\"$mime\"/>";
 				break;
+		}
+		print PHP_EOL.$label.PHP_EOL;
+		
+		//	Developer
+		if( OnePiece5::Admin() ){
+			Developer::PrintStyleSheet();
+			Developer::PrintGetFlagList();
 		}
 	}
 	register_shutdown_function('OnePieceShutdown');
