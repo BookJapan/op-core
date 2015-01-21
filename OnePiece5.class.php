@@ -38,75 +38,8 @@ spl_autoload_register('Autoloader::Autoload',true,true);
 //	Init Env
 Env::Init();
 
-/**
- * @see http://jp.php.net/manual/ja/function.register-shutdown-function.php
- */
-	function OnePieceShutdown()
-	{
-		//	Error
-		Error::Report();
-		
-		//	Check
-		if(!OnePiece5::Admin()){
-			return;
-		}
-		
-		/**
-		 * @see http://jp.php.net/manual/ja/features.connection-handling.php
-		 */
-		$aborted = connection_aborted();
-		$status  = connection_status();
-		
-		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
-		if( function_exists('error_get_last') and $error = error_get_last()){
-			Error::LastError($error);
-		}
-		
-		// Session reset
-		if( Toolbox::isLocalhost() and Toolbox::isHtml() ){
-			$rand = rand( 0, 1000);
-			if( 1 == $rand ){
-				$_SESSION = array();
-				$message = OnePiece5::i18n()->Bulk('\OnePiece5\ did initialize the \SESSION\.');
-				print "<script>alert('$message');</script>";
-			}
-		}
-		
-		//	Output shutdown label
-		switch( $mime = Toolbox::GetMIME(true) ){
-			case 'plain':
-				if( Env::Get('cli') ){
-					$label = ' -- OnePiece is shutdown -- ';
-				}
-				break;
-				
-			case 'css':
-				$label = ' /* OnePiece is shutdown */ ';
-				break;
-				
-			case 'javascript':
-				break;
-				
-			case 'json':
-				break;
-
-			case 'csv':
-				break;
-				
-			case 'html':
-			default:
-				$label = "<OnePiece mime=\"$mime\"/>";
-				break;
-		}
-		print PHP_EOL.$label.PHP_EOL;
-		
-		//	Developer
-		if( OnePiece5::Admin() ){
-			Developer::PrintStyleSheet();
-			Developer::PrintGetFlagList();
-		}
-	}
-	register_shutdown_function('OnePieceShutdown');
+//	Register shutdown function
+register_shutdown_function('Env::Shutdown');
 
 if(!function_exists('OnePieceErrorHandler')){
 	function OnePieceErrorHandler( $no, $str, $file, $line, $context)
@@ -2246,6 +2179,68 @@ class Env
 		
 		//	Set
 		$_SERVER[self::_NAME_SPACE_][$key] = $var;
+	}
+	
+	/**
+	 * @see http://jp.php.net/manual/ja/function.register-shutdown-function.php
+	 */
+	static function Shutdown()
+	{
+		//	Error
+		Error::Report();
+		
+		//	Check
+		if(!OnePiece5::Admin()){
+			return;
+		}
+		
+		/**
+		 * @see http://jp.php.net/manual/ja/features.connection-handling.php
+		 */
+		$aborted = connection_aborted();
+		$status  = connection_status();
+		
+		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
+		if( function_exists('error_get_last') and $error = error_get_last()){
+			Error::LastError($error);
+		}
+		
+		// Session reset
+		if( Toolbox::isLocalhost() and Toolbox::isHtml() ){
+			$rand = rand( 0, 1000);
+			if( 1 == $rand ){
+				$_SESSION = array();
+				$message = OnePiece5::i18n()->Bulk('\OnePiece5\ did initialize the \SESSION\.');
+				print "<script>alert('$message');</script>";
+			}
+		}
+	
+		//	Output shutdown label
+		switch( $mime = Toolbox::GetMIME(true) ){
+			case 'plain':
+				if( Env::Get('cli') ){
+					$label = ' -- OnePiece is shutdown -- ';
+				}
+				break;
+			case 'css':
+				$label = ' /* OnePiece is shutdown */ ';
+				break;
+			case 'javascript':
+			case 'json':
+			case 'csv':
+					break;
+			case 'html':
+			default:
+				$label = "<OnePiece mime=\"$mime\"/>";
+				break;
+		}
+		print PHP_EOL.$label.PHP_EOL;
+		
+		//	Developer
+		if( OnePiece5::Admin() ){
+			Developer::PrintStyleSheet();
+			Developer::PrintGetFlagList();
+		}
 	}
 }
 
