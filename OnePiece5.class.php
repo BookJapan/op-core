@@ -1987,10 +1987,29 @@ class Env
 		self::Set('mime','text/html');
 		self::Set('charset','utf-8');
 		
-		self::_init_cli();
+		self::_init_error();
+	//	self::_init_cli();
 		self::_init_admin();
 		self::_init_session();
+		self::_init_cookie();
 		self::_init_locale();
+		self::_init_mark_label();
+	}
+	
+	private static function _init_error()
+	{
+		// Error control
+		$save_level = error_reporting();
+		error_reporting( E_ALL );
+		ini_set('display_errors',1);
+		
+		//  recovery (display_errors)
+		if(!OnePiece5::Admin()){
+			ini_set('display_errors',0);
+		}
+		
+		//  recovery (error_reporting)
+		error_reporting( $save_level );
 	}
 	
 	private static function _init_cli()
@@ -2039,7 +2058,29 @@ class Env
 			}
 		}
 	}
-
+	
+	private static function _init_cookie()
+	{
+		if(!Toolbox::isCLI()){
+			//  unique id
+			if( empty($_COOKIE[OnePiece5::_KEY_COOKIE_UNIQ_ID_]) ){
+				$uniq_id = md5(microtime() + $_SERVER['REMOTE_ADDR']);
+				$expire  = 60*60*24*365*10;
+				OnePiece5::SetCookie(OnePiece5::_KEY_COOKIE_UNIQ_ID_, $uniq_id, $expire);
+			}
+		}
+	}
+	
+	private static function _init_mark_label()
+	{
+		//  mark_label
+		if( isset($_GET['mark_label']) ){
+			$mark_label = $_GET['mark_label'];
+			$mark_value = $_GET['mark_label_value'];
+			Developer::SaveMarkLabelValue($mark_label,$mark_value);
+		}
+	}
+	
 	/**
 	 * locale setting.
 	 *

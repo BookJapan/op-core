@@ -23,38 +23,6 @@
  */
 class Autoloader
 {
-	static function Init()
-	{
-		// Error control
-		$save_level = error_reporting();
-		error_reporting( E_ALL );
-		ini_set('display_errors',1);
-		
-		if(!OnePiece5::GetEnv('cli') ){
-			//  unique id
-			if( empty($_COOKIE[OnePiece5::_KEY_COOKIE_UNIQ_ID_]) ){
-				$uniq_id = md5(microtime() + $_SERVER['REMOTE_ADDR']);
-				$expire  = 60*60*24*365*10;
-				OnePiece5::SetCookie(OnePiece5::_KEY_COOKIE_UNIQ_ID_, $uniq_id, $expire);
-			}
-		}
-		
-		//  mark_label
-		if( isset($_GET['mark_label']) ){
-			$mark_label = $_GET['mark_label'];
-			$mark_value = $_GET['mark_label_value'];
-			Developer::SaveMarkLabelValue($mark_label,$mark_value);
-		}
-		
-		//  recovery (display_errors)
-		if(!OnePiece5::Admin()){
-			ini_set('display_errors',0);
-		}
-		
-		//  recovery (error_reporting)
-		error_reporting( $save_level );
-	}
-	
 	static function Autoload( $class_name )
 	{
 		//	Checking used sub directory.
