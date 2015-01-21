@@ -2012,6 +2012,7 @@ class Env
 		error_reporting( $save_level );
 	}
 	
+	/*
 	private static function _init_cli()
 	{
 		//	Check if CLI.
@@ -2025,6 +2026,7 @@ class Env
 			$_SERVER[self::_SERVER_IS_ADMIN_] = true;
 		}
 	}
+	*/
 	
 	private static function _init_admin()
 	{
