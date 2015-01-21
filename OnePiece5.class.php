@@ -63,44 +63,7 @@ if(!function_exists('OnePieceShutdown')){
 		
 		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
 		if( function_exists('error_get_last') and $error = error_get_last()){
-			switch($error['type']){
-				case E_ERROR:	// 1
-					$type = 'E_FATAL';
-					break;
-					
-				case E_WARNING: // 2
-					$type = 'E_WARNING';
-					break;
-					
-				case E_PARSE:	// 4
-					$type = 'E_PARSE';
-					break;
-					
-				case E_NOTICE:  // 8
-					$type = 'E_NOTICE';
-					break;
-					
-				case E_STRICT:  // 2048
-					$type = 'E_STRICT';
-					break;
-					
-				case E_USER_NOTICE: // 1024
-					$type = 'E_USER_NOTICE';
-					break;
-					
-				default:
-					$type = $error['type'];
-			}
-			
-			$message = "{$error['file']} (#{$error['line']}) {$type}: {$error['message']}";
-			if( OnePiece5::Admin() ){
-				OnePiece5::StackError($message);
-			/*
-				OnePiece5::mark("![.red[$message]]");
-			}else{
-				Vivre::Warning($message);
-			*/
-			}
+			Error::LastError($error);
 		}
 		
 		// Session reset
