@@ -493,6 +493,11 @@ class Toolbox
 		return $mime === 'text/html' ? true: false;
 	}
 	
+	static function isCLI()
+	{
+		return isset($_SERVER['SHELL']) ? true: false;
+	}
+	
 	static function Curl( $url, $args=null, $method='get')
 	{
 		OnePiece5::StackError("This method is deprecated.");
