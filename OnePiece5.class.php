@@ -94,11 +94,8 @@ if(!function_exists('OnePieceErrorHandler')){
 if(!function_exists('OnePieceExceptionHandler')){
 	function OnePieceExceptionHandler($e)
 	{
-		//  TODO: 
 		print "<h1>Catch the Exception.</h1>";
-		
-		$op = new OnePiece5();
-		$op->StackError( $e->getMessage() );
+		OnePiece5::StackError( $e->getMessage() );
 		printf('<div style="background-color:black; color:white;">[%s] %s<br/>%s : %s</div>', get_class($e), $e->GetMessage(), $e->GetFile(), $e->GetLine() );
 	}
 	set_exception_handler('OnePieceExceptionHandler');
