@@ -473,6 +473,9 @@ class PDO5 extends OnePiece5
 		if( $table ){
 			$select->where->TABLE_NAME	 = $table;
 		}
+		$select->cache = $this->Admin() ? false: 60*60*1;
+		
+		//	fetch
 		$record = $this->Select($select);
 		
 		return $record;
