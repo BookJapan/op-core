@@ -31,18 +31,11 @@ $app_root = $_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']).'/';
 //	DOC_ROOT
 $doc_root = $_SERVER['DOC_ROOT'] = $_SERVER['DOCUMENT_ROOT'].'/';
 
-//	include
-foreach( array('Toolbox','Autoloader') as $class ){
-	$path = "{$op_root}{$class}.class.php";
-	if(!class_exists($path)){
-		include_once($path);
-	}
-}
-
 //	Handling vivre
 //Vivre::Handling();
 
 //	Register autoloader.
+include('Autoloader.class.php');
 spl_autoload_register('Autoloader::Autoload',true,true);
 
 //	Init Env
