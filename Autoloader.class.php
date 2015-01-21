@@ -57,7 +57,7 @@ class Autoloader
 			$include_path[] = rtrim($_SERVER['APP_ROOT'],DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'App';
 			$include_path[] = rtrim($_SERVER['OP_ROOT'],DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'App';
 		}else{
-			$file_name = self::_file($class_name);
+			$file_name = self::_class($class_name);
 		}
 		
 		//	Challenge to include.
@@ -80,7 +80,7 @@ class Autoloader
 		}
 	}
 	
-	static function _file( $class_name )
+	static function _class( $class_name )
 	{
 		return $class_name.".class.php";
 	}
