@@ -31,9 +31,6 @@ $app_root = $_SERVER['APP_ROOT'] = dirname($_SERVER['SCRIPT_FILENAME']).'/';
 //	DOC_ROOT
 $doc_root = $_SERVER['DOC_ROOT'] = $_SERVER['DOCUMENT_ROOT'].'/';
 
-//	Handling vivre
-Vivre::Handling();
-
 //	Register autoloader.
 include('Autoloader.class.php');
 spl_autoload_register('Autoloader::Autoload',true,true);
@@ -52,9 +49,6 @@ if(!function_exists('OnePieceShutdown')){
 	{
 		//	Error
 		Error::Report();
-		
-		//	Release vivre
-		Vivre::Relaese();
 		
 		//	Check
 		if(!OnePiece5::Admin()){
