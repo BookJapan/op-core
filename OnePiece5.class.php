@@ -35,16 +35,12 @@ $doc_root = $_SERVER['DOC_ROOT'] = $_SERVER['DOCUMENT_ROOT'].'/';
 include('Autoloader.class.php');
 spl_autoload_register('Autoloader::Autoload',true,true);
 
-//	Init
-Autoloader::Init();
-
 //	Init Env
 Env::Init();
 
 /**
  * @see http://jp.php.net/manual/ja/function.register-shutdown-function.php
  */
-if(!function_exists('OnePieceShutdown')){
 	function OnePieceShutdown()
 	{
 		//	Error
@@ -111,7 +107,6 @@ if(!function_exists('OnePieceShutdown')){
 		}
 	}
 	register_shutdown_function('OnePieceShutdown');
-}
 
 if(!function_exists('OnePieceErrorHandler')){
 	function OnePieceErrorHandler( $no, $str, $file, $line, $context)
