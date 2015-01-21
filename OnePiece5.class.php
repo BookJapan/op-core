@@ -94,9 +94,12 @@ if(!function_exists('OnePieceShutdown')){
 			
 			$message = "{$error['file']} (#{$error['line']}) {$type}: {$error['message']}";
 			if( OnePiece5::Admin() ){
+				OnePiece5::StackError($message);
+			/*
 				OnePiece5::mark("![.red[$message]]");
 			}else{
 				Vivre::Warning($message);
+			*/
 			}
 		}
 		
