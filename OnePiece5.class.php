@@ -160,9 +160,6 @@ class OnePiece5
 	 */
 	function __call( $name, $args )
 	{
-		//  Toolbox
-		//call_user_func_array(array($this->toolbox, $name), $args);
-		
 		//  If Toolbox method.
 		if( method_exists('Toolbox', $name) and false ){
 			return Toolbox::$name(
@@ -192,6 +189,7 @@ class OnePiece5
 					break;
 			}
 		}
+		
 		$argument = join(', ',$join);
 		$message = sprintf('Does not exists this function: %s(%s)', $name, $argument );
 		self::StackError($message);
