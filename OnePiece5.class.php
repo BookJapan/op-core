@@ -1987,29 +1987,11 @@ class Env
 		self::Set('mime','text/html');
 		self::Set('charset','utf-8');
 		
-	//	self::_init_include_path();
 		self::_init_cli();
 		self::_init_admin();
 		self::_init_session();
 		self::_init_locale();
 	}
-	
-	/*
-	private static function _init_include_path()
-	{
-		//	init op_root
-		$op_root = $_SERVER['OP_ROOT'];
-		
-		//	Added "op-root" to include_path.
-		$include_path = ini_get('include_path');
-		
-		if(!strpos( $include_path, PATH_SEPARATOR.$op_root ) ){
-			$include_path = rtrim( $include_path, PATH_SEPARATOR );
-			$include_path .= PATH_SEPARATOR . $op_root;
-			ini_set('include_path',$include_path);
-		}
-	}
-	*/
 	
 	private static function _init_cli()
 	{
