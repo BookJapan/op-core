@@ -445,51 +445,7 @@ class OnePiece5
 	 */
 	static function StackError( $args, $translation=null )
 	{
-		if( $_SERVER[Env::_SERVER_IS_LOCALHOST_] ){
-			Error::Set( $args, $translation );
-			return;
-		}
-		
-		/*
-		$encoding = mb_internal_encoding();
-		
-		//  TODO: To model
-		if( $args instanceof Exception ){
-			$e = $args;
-			$message  = $e->getMessage();
-			$traceArr = $e->getTrace();
-			$traceStr = $e->getTraceAsString();
-			$file     = $e->getFile();
-			$line     = $e->getLine();
-			$prev     = $e->getPrevious();
-			$code     = $e->getCode();
-			
-			$file     = self::CompressPath($file);
-			$catch    = self::GetCallerLine();
-			$incident = "$file [$line]";
-			
-			$file = $traceArr[0]['file'];
-			$line = $traceArr[0]['line'];
-			$func = $traceArr[0]['function'];
-			$class= isset($traceArr[0]['class']) ? $traceArr[0]['class'] : null;
-			$type = isset($traceArr[0]['type'])  ? $traceArr[0]['type']  : null;
-			$args = isset($traceArr[0]['type'])  ? var_export( $traceArr[0]['args'], true) : null;
-			$args = str_replace(array("\r","\n",'array ()'), array('','',''), $args);
-			
-			$file = self::CompressPath($file);
-			$trace = "$file [$line] {$class}{$type}{$func}($args)";
-		}else{
-			$incident = self::GetCallerLine( 1, 1, 'incident');
-			$message  = self::Escape( $args, $encoding );
-			$trace    = self::GetCallerLine( 0, -1, 'trace');
-		}
-		
-		$error['incident'] = $incident;
-		$error['message']  = $message;
-		$error['trace']	   = $trace;
-		
-		$_SERVER['OnePiece5']['errors'][] = $error;
-		*/
+		Error::Set( $args, $translation );
 	}
 	
 	function FetchError()
