@@ -98,114 +98,45 @@ class OnePiece5
 		$this->PrintError();
 	}
 	
-	/**
-	 * 
-	 * @param string $name
-	 * @param array  $args
-	 */
 	function __call( $name, $args )
 	{
-		//  If Toolbox method.
-		if( method_exists('Toolbox', $name) and false ){
-			return Toolbox::$name(
-				isset($args[0]) ? $args[0]: null,
-				isset($args[1]) ? $args[1]: null,
-				isset($args[2]) ? $args[2]: null,
-				isset($args[3]) ? $args[3]: null,
-				isset($args[4]) ? $args[4]: null,
-				isset($args[5]) ? $args[5]: null
-			);
-		}
-		
-		//  error reporting
-		$join = array();
-		foreach( $args as $temp ){
-			switch(gettype($temp)){
-				case 'string':
-					$join[] = '"'.$temp.'"';
-					break;
-					
-				case 'array':
-					$join[] = var_export($temp,true);
-					break;
-					
-				default:
-					$join[] = gettype($temp);
-					break;
-			}
-		}
-		
-		$argument = join(', ',$join);
-		$message = sprintf('Does not exists this function: %s(%s)', $name, $argument );
-		self::StackError($message);
+		Error::MagicMethodCall( $name, $args );
 	}
 	
-	static function __callStatic( $name , $arguments )
+	static function __callStatic( $name , $args )
 	{
-		if( isset($this) ){
-			//  PHP 5.3.0 later
-			$func    = __FUNCTION__;
-			$caller  = $this->GetCallerLine();
-			$message = "MAGIC METHOD ($func): $name, ".serialize($arguments);
-			
-			$this->StackError( __FUNCTION__ );
-			$this->mark(PHP_VERSION);
-		}else{
-			OnePiece5::StackError(__FUNCTION__);
-			/*
-			OnePiece5::Mark("$name");
-			if(!empty($arguments)){
-				OnePiece5::D($arguments);
-			}
-			*/
-		}
+		Error::MagicMethodCallStatic($name, $args);
 	}
 	
-	function __set( $name, $value )
+	function __set( $name, $args )
 	{
-//		$value   = is_string($value) or is_numeric($value) ? $value: serialize($value);
-		$func    = __FUNCTION__;
-		$caller  = $this->GetCallerLine();
-		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller, value=$value)";
-		
-		$this->StackError($message);
-		$this->mark("![.red .bold[$message]]");
+		$class	 = get_class($this);
+		$call	 = OnePiece5::GetCallerLine();
+		Error::MagicMethodSet( $class, $name, $args, $call );
 	}
 	
 	function __get( $name )
 	{
-		$func    = __FUNCTION__;
-		$caller  = $this->GetCallerLine();
-		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller)";
-		
-		$this->StackError($message);
-		$this->mark("![.red .bold[$message]]");
+		$call = $this->GetCallerLine();
+		Error::MagicMethodGet( $name, $call );
 	}
 	
 	function __isset( $name )
 	{
-		$func    = __FUNCTION__;
-		$caller  = $this->GetCallerLine();
-		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller)";
-		
-		$this->StackError($message);
-		$this->mark("![.red .bold[$message]]");
+		$call = $this->GetCallerLine();
+		Error::MagicMethodGet( $name, $call );
 	}
 	
 	function __unset( $name )
 	{
-		$func    = __FUNCTION__;
-		$caller  = $this->GetCallerLine();
-		$message = "MAGIC METHOD ($func): `$name` is not accessible property. (call=$caller)";
-		
-		$this->StackError($message);
-		$this->mark("![.red .bold[$message]]");
+		$call = $this->GetCallerLine();
+		Error::MagicMethodGet( $name, $call );
 	}
 	
 	/*
 	function __sleep()
 	{
-		serialize() called __sleep method.
+		
 	}
 	
 	function __wakeup()
@@ -216,17 +147,17 @@ class OnePiece5
 	
 	function __toString()
 	{
-		$this->mark('![.red .bold[ CATCH MAGIC METHOD ]]');
+		OnePiece5::Mark('![.red .bold[ CATCH MAGIC METHOD ]]');
 	}
 	
 	function __invoke()
 	{
-		$this->mark('![.red .bold[ CATCH MAGIC METHOD ]]');
+		OnePiece5::Mark('![.red .bold[ CATCH MAGIC METHOD ]]');
 	}
 	
 	function __set_state()
 	{
-		$this->mark('![.red .bold[ CATCH MAGIC METHOD ]]');
+		OnePiece5::Mark('![.red .bold[ CATCH MAGIC METHOD ]]');
 	}
 	
 	function Init()
@@ -291,7 +222,7 @@ class OnePiece5
 	}
 	
 	/**
-	 * Error stacking
+	 * Stack of error.
 	 * 
 	 * @param string $message is message.
 	 * @param string $translation is language code (En, Ja, Fr).
@@ -302,150 +233,22 @@ class OnePiece5
 		Error::Set( $args, $translation );
 	}
 	
+	/**
+	 * Fetch stack error.
+	 * 
+	 * @return array
+	 */
 	function FetchError()
 	{
-		if( isset($_SERVER['OnePiece5']['errors']) ){
-			return array_shift($_SERVER['OnePiece5']['errors']);
-		}else{
-			return null;
-		}
+		return Error::Get();
 	}
 	
 	/**
-	 * Error print.
+	 * Print error.
 	 */
 	function PrintError()
 	{
-		// init
-		$nl		 = "\r\n";//self::GetEnv('nl');
-		$cli	 = self::GetEnv('cli');
-		$mime	 = self::GetEnv('mime');
-		$charset = self::GetEnv('charset');
-		$class	 = 'OnePiece5';
-		
-		//	Check CLI mode
-		switch( strtolower($mime) ){
-			case 'text/css':
-				$cli = true;
-				break;
-		//	default:
-		//		$cli = false;
-		}
-		
-		if(isset($_SERVER[$class]['errors'])){
-			$errors = $_SERVER[$class]['errors'];
-			unset($_SERVER[$class]['errors']);
-		}else{
-			return true;
-		}
-		
-		//	Require OnePiece Style-Sheet. (print from Toolbox.class.php)
-		$this->SetEnv('isRequireStyleSheet',true);
-		
-		// stack trace show/hide script  
-		$javascript = <<< __EOL__
-		<script>
-		function op_error_trace( t, id ){
-			if( t.checked ){
-				document.getElementById(id).style.display = 'none';
-			}else{
-				document.getElementById(id).style.display = 'block';
-			}
-		}
-		</script>
-__EOL__;
-
-		// stack trace style
-		$style = 'display:none;';
-
-		// create print
-		$print  = '';
-		$print .= "<div class=\"$class small \">";
-		
-		//  wiki2 options
-		$o = array('tag'=>true);
-		
-		for( $i=0, $count = count($errors); $i<$count; $i++ ){
-			
-			$error = $errors[$i];
-			$incident = $error['incident'];
-			$message  = $error['message'];
-			$trace    = $error['trace'];
-			
-			// stack trace show/hide control input
-			$trace_id  = 'op-trace-div-'.$i;
-			$input_id  = 'op-trace-input-'.$i;
-			$input = sprintf('<input type="checkbox" id="%s" checked="checked" onChange="op_error_trace( this, \'%s\')" />', $input_id, $trace_id);
-
-			$print .= sprintf('<div class="red">%s <label for="%s">%s - %s</label></div>'.$nl, $input, $input_id, self::wiki2($incident,$o), self::wiki2($message,$o));
-			$print .= sprintf('<div class="trace" style="%s" id="%s">%s</div>'.$nl, $style, $trace_id, self::wiki2($trace,$o));
-		}
-		$print .= '</div>';
-		
-		// Finish
-		//if( /*$cli*/ /*self::GetEnv('Pacifista')*/ ){
-		//	print strip_tags( html_entity_decode( $print, ENT_QUOTES, $charset ) );
-		//}else
-		 
-		if( self::Admin() and Toolbox::isHtml() ){
-
-			//	Notify
-			if( Toolbox::isHtml() ){
-				print $javascript . $nl;
-				print $print;
-			}else{
-				//	Not HTML
-				print html_entity_decode(strip_tags( $print, null ),ENT_QUOTES,$charset);
-			}
-			
-		}else{
-			
-			//	Notify at email.
-			$ua   = isset($_SERVER['HTTP_USER_AGENT'])	 ? $_SERVER['HTTP_USER_AGENT']: null;
-			$ip   = isset($_SERVER['REMOTE_ADDR'])		 ? $_SERVER['REMOTE_ADDR']: 	null;
-			$href = isset($_SERVER['HTTP_REFERER'])		 ? $_SERVER['HTTP_REFERER']: 	null;
-			$host = $ip ? gethostbyaddr($ip): null;
-			$date = date('Y-m-d H:i:s');
-			$url  = Toolbox::GetURL();
-			
-			//  The same mail is not delivered repeatedly.
-			$key = 'mail-notify-' . md5($errors[0]['trace']);
-			if( $num = $this->GetSession($key) ){
-				$this->SetSession($key, $num +1 );
-				return;
-			}else{
-				$this->SetSession($key, 1 );
-			}
-			
-			//  Subject
-			$incident = strip_tags($this->wiki2($errors[0]['incident']));
-			$incident = str_replace('&gt;',   '>', $incident);
-			$incident = str_replace('&quot;', '' , $incident);
-			$subject  = sprintf('[%s] PrintError: %s', __CLASS__, $incident );
-			
-			//  page
-			$page_info  = "Page Info: $nl";
-			$page_info .= "  Date: $date" . $nl;
-			$page_info .= "  URL: $url" . $nl;
-			$page_info .= "  REFERER: $href" . $nl . $nl;
-			
-			//  user
-			$user_info  = "User Info: $nl";
-			$user_info .= "  IP: $host($ip)" . $nl;
-			$user_info .= "  UA: $ua" . $nl . $nl;
-			
-			//  message
-			$message = $page_info . $user_info . "Errors: $nl ". strip_tags($print);
-			//$message = str_replace( array('%20'), array(' '), $message);
-			$message = str_replace( array('%20','%3C','%3E'), array(' ','<','>'), $message);
-			
-			$mail['to'] = $this->GetEnv('Admin-mail');
-			$mail['subject'] = $subject;
-			$mail['message'] = html_entity_decode( $message, ENT_QUOTES, 'utf-8');
-			self::Mail($mail);
-		}
-		
-		return true;
+		Error::Report();
 	}
 	
 	/**
@@ -2166,7 +1969,7 @@ class Env
  * @author tomoaki.nagahara@gmail.com
  */
 class Vivre
-{	
+{
 	static function Warning($message=null)
 	{
 		//	local info

@@ -161,7 +161,6 @@ class Error
 			
 			if( $count = count($backtraces) ){				
 				foreach( $backtraces as $index => $backtrace ){
-				//	$color = $index === 0 ? '.red':null;
 					$color = null;
 					$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
 				}
@@ -369,7 +368,81 @@ class Error
 				$type = $number;
 		}
 		
-		return $string;
+		return $type;
+	}
+	
+	static function MagicMethodCall( $name, $args )
+	{
+		//  If Toolbox method.
+		if( method_exists('Toolbox', $name) and false ){
+			OnePiece5::Mark("Please use Toolbox::$name");
+			return Toolbox::$name(
+				isset($args[0]) ? $args[0]: null,
+				isset($args[1]) ? $args[1]: null,
+				isset($args[2]) ? $args[2]: null,
+				isset($args[3]) ? $args[3]: null,
+				isset($args[4]) ? $args[4]: null,
+				isset($args[5]) ? $args[5]: null
+			);
+		}
+		
+		//  error reporting
+		$join = array();
+		foreach( $args as $temp ){
+			switch(gettype($temp)){
+				case 'boolean':
+					$join[] = $temp ? 'true': 'false';
+					break;
+					
+				case 'integer':
+				case 'double':
+					$join[] = $temp;
+					break;
+					
+				case 'string':
+					$join[] = "'$temp'";
+					break;
+					
+				case 'object':
+					$class_name = get_class($temp);
+					if( $class_name === 'Config' ){
+						$join[] = var_export(Toolbox::toArray($temp),true);
+					}else{
+						$join[] = $class_name;
+					}
+					break;
+					
+				case 'array':
+					$join[] = var_export($temp,true);
+					break;
+						
+				default:
+					$join[] = gettype($temp);
+					break;
+			}
+		}
+		
+		$argument = join(', ',$join);
+		$message = "Does not exists this method: $name($argument)";
+		OnePiece5::StackError($message);
+	}
+	
+	static function MagicMethodCallStatic( $name, $args )
+	{
+		//	Call static is PHP 5.3.0 later
+		self::MagicMethodCall( $name, $args );
+	}
+	
+	static function MagicMethodSet( $class, $name, $args, $call )
+	{
+		$message = "{$class}::{$name} is not accessible property. ($call, value=$args)";
+		OnePiece5::StackError($message);
+	}
+	
+	static function MagicMethodGet( $class, $name, $call )
+	{
+		$message = "{$class}::{$name} is not accessible property. ($call)";
+		OnePiece5::StackError($message);
 	}
 	
 	static function LastError( $e )
