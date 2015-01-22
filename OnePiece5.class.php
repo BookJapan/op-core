@@ -555,6 +555,7 @@ class OnePiece5
 	}
 	
 	/**
+	 * Compress file path by metaphar.
 	 * 
 	 * @param  string $file_path
 	 * @return string $file_path
@@ -569,18 +570,16 @@ class OnePiece5
 		
 		$op_root	 = self::GetEnv('op_root');
 		$app_root	 = self::GetEnv('app_root');
-		$doc_root	 = self::GetEnv('doc_root');
-	//	$ctrl_root	 = self::GetEnv('ctrl_root');
+	//	$doc_root	 = self::GetEnv('doc_root');
 		
 		//  remove slash (easy-to-read)
 		$op_root	 = $op_root   ? rtrim($op_root,  '/') : ' ';
 		$app_root	 = $app_root  ? rtrim($app_root, '/') : ' ';
-		$doc_root	 = $doc_root  ? rtrim($doc_root, '/') : ' ';
-	//	$ctrl_root	 = $ctrl_root ? rtrim($ctrl_root,'/') : ' ';
+	//	$doc_root	 = $doc_root  ? rtrim($doc_root, '/') : ' ';
 		
 		$patt = array();
 		$patt[] = "|^".preg_quote($app_root)."|";
-		$patt[] = "|^".preg_quote($doc_root)."|";
+	//	$patt[] = "|^".preg_quote($doc_root)."|";
 		$patt[] = "|^".preg_quote($op_root)."|";
 		$repl = array('App:','Doc:','OP:');
 		$path = preg_replace( $patt, $repl, $path );
