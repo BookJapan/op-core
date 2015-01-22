@@ -337,9 +337,10 @@ class Error
 		return $serial;
 	}
 	
-	function LastError( $error )
+	static function ConvertErrorNumberToString( $number )
 	{
-		switch($error['type']){
+		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
+		switch( $number ){
 			case E_ERROR:	// 1
 				$type = 'E_FATAL';
 				break;
@@ -365,12 +366,50 @@ class Error
 				break;
 					
 			default:
-				$type = $error['type'];
+				$type = $number;
 		}
 		
-		$message = "{$error['file']} (#{$error['line']}) {$type}: {$error['message']}";
-		if( OnePiece5::Admin() ){
-			OnePiece5::StackError($message);
+		return $string;
+	}
+	
+	static function LastError( $e )
+	{
+		$file	 = $e['file'];
+		$line	 = $e['line'];
+		$type	 = $e['type'];
+		$message = $e['message'];
+		
+		$type = self::ConvertErrorNumberToString( $type );
+		
+		OnePiece5::StackError("$file [$line] $type: $message");
+	}
+	
+	static function Handler( $no, $str, $file, $line, $context )
+	{
+		$type = self::ConvertErrorNumberToString( $no );
+		
+		//  Output error message.
+		$format = '%s [%s] %s: %s';
+		if(empty($env['cgi'])){
+			$format = '<div>'.$format.'</div>';
 		}
+		
+		//  check ini setting
+		if( ini_get( 'display_errors') ){
+			printf( $format.PHP_EOL, $file, $line, $type, $str );
+		}
+	
+		return true;
+	}
+	
+	static function ExceptionHandler( $e )
+	{
+		$class	 = get_class($e);
+		$file	 = $e->GetFile();
+		$line	 = $e->GetLine();
+		$message = $e->GetMessage();
+		
+		$error = "$class: $file [$line] $message";
+		OnePiece5::StackError($error);
 	}
 }

@@ -42,64 +42,11 @@ Env::Init();
 register_shutdown_function('Env::Shutdown');
 
 //	
-if(!function_exists('OnePieceErrorHandler')){
-	function OnePieceErrorHandler( $no, $str, $file, $line, $context)
-	{
-		static $oproot;
-		if(empty($oproot)){
-			$oproot  = dirname(__FILE__) . '/';
-		}
-		$env = isset($_SERVER['OnePiece5']['env']) ? $_SERVER['OnePiece5']['env']: array();
-		
-		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
-		switch($no){
-			case E_WARNING: // 2
-				$er = 'E_WARNING';
-				break;
-			case E_NOTICE:  // 8
-				$er = 'E_NOTICE';
-				break;
-			case E_STRICT:  // 2048
-				$er = 'E_STRICT';
-				break;
-			case E_USER_NOTICE: // 1024
-				$er = 'E_USER_NOTICE';
-				break;
-			default:
-				$er = 'ERROR: '.$no;
-		}
-		
-		//  Output error message.
-		$format = '%s [%s] %s: %s';
-		if(empty($env['cgi'])){
-			$format = '<div>'.$format.'</div>';
-		}
-		
-		//  check ini setting
-		if( ini_get( 'display_errors') ){
-			printf( $format.PHP_EOL, $file, $line, $er, $str );
-		}
-		
-		return true;
-	}
-	
-	if( isset($_SERVER['HTTP_HOST']) ){
-		$level = $_SERVER['HTTP_HOST'] === 'localhost' ? E_ALL | E_STRICT: error_reporting();
-		set_error_handler('OnePieceErrorHandler',$level);
-	}else{
-		//	Pacifista
-	}
-}
+$level = $_SERVER['HTTP_HOST'] === 'localhost' ? E_ALL | E_STRICT: error_reporting();
+set_error_handler('OnePiece5::ErrorHandler',$level);
 
-if(!function_exists('OnePieceExceptionHandler')){
-	function OnePieceExceptionHandler($e)
-	{
-		print "<h1>Catch the Exception.</h1>";
-		OnePiece5::StackError( $e->getMessage() );
-		printf('<div style="background-color:black; color:white;">[%s] %s<br/>%s : %s</div>', get_class($e), $e->GetMessage(), $e->GetFile(), $e->GetLine() );
-	}
-	set_exception_handler('OnePieceExceptionHandler');
-}
+//	
+set_exception_handler('OnePiece5::ErrorExceptionHandler');
 
 /**
  * OnePiece5
@@ -315,6 +262,32 @@ class OnePiece5
 		
 		//	
 		return $io;
+	}
+	
+	/**
+	 * Wrapper method.
+	 * Error.class.php is not load until was needed.
+	 * 
+	 * @param number  $no
+	 * @param string  $str
+	 * @param string  $file
+	 * @param number  $line
+	 * @param unknown $context
+	 */
+	static function ErrorHandler( $no, $str, $file, $line, $context )
+	{
+		Error::Handler( $no, $str, $file, $line, $context );
+	}
+	
+	/**
+	 * Wrapper method.
+	 * Error.class.php is not load until was needed.
+	 * 
+	 * @param Exception $e
+	 */
+	static function ErrorExceptionHandler( $e )
+	{
+		Error::ExceptionHandler( $e );
 	}
 	
 	/**
