@@ -100,12 +100,14 @@ class OnePiece5
 	
 	function __call( $name, $args )
 	{
-		Error::MagicMethodCall( $name, $args );
+		$class = get_class($this);
+		Error::MagicMethodCall( $class, $name, $args );
 	}
 	
 	static function __callStatic( $name , $args )
 	{
-		Error::MagicMethodCallStatic($name, $args);
+		$class = get_class($this);
+		Error::MagicMethodCallStatic( $class, $name, $args);
 	}
 	
 	function __set( $name, $args )
@@ -117,20 +119,23 @@ class OnePiece5
 	
 	function __get( $name )
 	{
-		$call = $this->GetCallerLine();
-		Error::MagicMethodGet( $name, $call );
+		$class = get_class($this);
+		$call  = $this->GetCallerLine();
+		Error::MagicMethodGet( $class, $name, $call );
 	}
 	
 	function __isset( $name )
 	{
+		$class = get_class($this);
 		$call = $this->GetCallerLine();
-		Error::MagicMethodGet( $name, $call );
+		Error::MagicMethodGet( $class, $name, $call );
 	}
 	
 	function __unset( $name )
 	{
+		$class = get_class($this);
 		$call = $this->GetCallerLine();
-		Error::MagicMethodGet( $name, $call );
+		Error::MagicMethodGet( $class, $name, $call );
 	}
 	
 	/*
@@ -225,12 +230,11 @@ class OnePiece5
 	 * Stack of error.
 	 * 
 	 * @param string $message is message.
-	 * @param string $translation is language code (En, Ja, Fr).
-	 * @param string $class is label use to print.
+	 * @param string $translation is source language code (En, Ja, Fr).
 	 */
-	static function StackError( $args, $translation=null )
+	static function StackError( $args, $lang=null )
 	{
-		Error::Set( $args, $translation );
+		Error::Set( $args, $lang );
 	}
 	
 	/**

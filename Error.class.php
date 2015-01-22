@@ -25,12 +25,34 @@ class Error
 {
 	const _NAME_SPACE_ = '_STACK_ERROR_';
 	
+	static private function _Set( $name, $message, $backtrace=null, $translation=false )
+	{
+		if(!$backtrace){
+			$backtrace = debug_backtrace();
+		}
+		
+		//	key
+		$key = md5(serialize($backtrace));
+		
+		//	save
+		$error['name']		 = $name;
+		$error['message']	 = $message;
+		$error['backtrace']	 = $backtrace;
+		$error['timestamp']	 = date('Y-m-d H:i:s');
+		$error['translation']= $translation;
+		
+		//	save to session
+		$_SESSION[self::_NAME_SPACE_][$key] = $error;
+	}
+	
 	static function Set( $e, $translation=null )
 	{
+		$name = null;
+		
 		if( $e instanceof Exception ){
 			$message   = $e->getMessage();
 			$backtrace = $e->getTrace();
-			$traceStr  = $e->getTraceAsString();
+		//	$traceStr  = $e->getTraceAsString();
 			$file      = $e->getFile();
 			$line      = $e->getLine();
 			$prev      = $e->getPrevious();
@@ -40,6 +62,7 @@ class Error
 			$message = $e;
 			
 			//	save debug backtrace
+			/*
 			$v = PHP_VERSION;
 			if( version_compare($v,'5.4.0') >= 0 ){
 				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
@@ -55,27 +78,22 @@ class Error
 			}else{
 				$backtrace = debug_backtrace();
 			}
+			*/
+			$backtrace = debug_backtrace();
 			
 			//	serialize backtrace
-			$traceStr = serialize($backtrace);
+		//	$traceStr = serialize($backtrace);
 		}
 		
 		//	creat check key (duplicate check)
-		$key = md5($traceStr);
+	//	$key = md5($traceStr);
 		
 		//	already exists?
-		if( isset($_SESSION[self::_NAME_SPACE_][$key]) ){
-			return true;
-		}
+	//	if( isset($_SESSION[self::_NAME_SPACE_][$key]) ){
+	//		return true;
+	//	}
 		
-		//	save
-		$error['message'] = $message;
-		$error['backtrace'] = $backtrace;
-		$error['timestamp'] = date('Y-m-d H:i:s');
-		$error['translation'] = $translation;
-		
-		//	save to session
-		$_SESSION[self::_NAME_SPACE_][$key] = $error;
+		self::_Set( $name, $message, $backtrace, $translation );
 	}
 	
 	static function Get()
@@ -116,8 +134,9 @@ class Error
 		}
 	}
 	
-	static private function _formatBacktrace( $index, $backtrace, $color=null )
+	static private function _formatBacktrace( $index, $backtrace, $name )
 	{
+		static $find;
 		$file	 = isset($backtrace['file'])	 ? $backtrace['file']:	 null;
 		$line	 = isset($backtrace['line'])	 ? $backtrace['line']:	 null;
 		$func	 = isset($backtrace['function']) ? $backtrace['function']: null;
@@ -127,16 +146,25 @@ class Error
 		
 		$file	 = OnePiece5::CompressPath($file);
 		
+		if( $name === $func or $func === '__get' ){
+			$find = true;
+			$style = '.bg-yellow .bold';
+		}else if( $find ){
+			$style = '.black';
+		}else{
+			$style = '.gray';
+		}
+		
 		if( $index === 0 ){
 			$index   = '';
 			$tail	 = $args[0]; // error message
 		}else{
-			$args	 = $args ? self::_Serialize($args): null;
+			$args	 = $args ? self::ConvertStringFromArguments($args): null;
 			$method	 = $type ? $class.$type.$func: $func;
 			$tail	 = "$method($args)";
 		}
 		
-		$info = "![tr $color [ ![td .w1em [ $index ]] ![td .w10em .nobr[ $file ]] ![td .right[ $line ]] ![td[ $tail ]] ]]";
+		$info = "![tr {$style}[ ![td .w1em .right [{$index}]] ![td .w10em .nobr[{$file}]] ![td .right[{$line}]] ![td[{$tail}]] ]]";
 		
 		return $info.PHP_EOL;
 	}
@@ -147,9 +175,10 @@ class Error
 		$return = '![table .small [';
 		foreach( $_SESSION[self::_NAME_SPACE_] as $error ){
 			$i++;
-			$from = $error['translation'];
-			$message = $error['message'];
-			$backtraces = $error['backtrace'];
+			$name		 = $error['name'];
+			$message	 = $error['message'];
+			$backtraces	 = $error['backtrace'];
+			$from		 = $error['translation'];
 			
 			//	i18n
 			if( $from ){
@@ -161,13 +190,12 @@ class Error
 			
 			if( $count = count($backtraces) ){				
 				foreach( $backtraces as $index => $backtrace ){
-					$color = null;
-					$return .= self::_formatBacktrace( $count-$index, $backtrace, $color );
+					$return .= self::_formatBacktrace( $count-$index, $backtrace, $name );
 				}
 			}
 		}
 		$return .= ']]'.PHP_EOL;
-		return Wiki2Engine::Wiki2($return);
+		return Wiki2Engine::Wiki2( $return, array('style'=>true));
 	}
 	
 	static private function _toDisplay()
@@ -287,56 +315,7 @@ class Error
 		return $message;
 	}
 	
-	static private function _Serialize( $args )
-	{
-		$serial = '';
-		foreach( $args as $arg ){
-			switch($type = gettype($arg)){
-				case 'NULL':
-					$var = 'null';
-					break;
-				case 'string':
-					$var = "'$arg'";
-					break;
-				case 'boolean':
-					$var = $var ? 'true':'false';
-					break;
-				case 'array':
-					$var = self::_SerializeArray($arg);
-					break;
-				case 'object':
-					$var = get_class($arg);
-					break;
-				default:
-					$var = "$type $arg";
-			}
-			$serial .= "$var, ";
-		}
-		$serial = trim($serial,', ');
-		return $serial;
-	}
-	
-	static private function _SerializeArray($args)
-	{
-		$serial = 'array(';
-		foreach($args as $key => $var){
-			switch($type = gettype($var)){
-				case 'string':
-					$var = "'$var'";
-					break;
-				case 'object':
-					$var = 'object('.__METHOD__.')';
-					break;
-				default:
-			}
-			$serial .= "$key => $var, ";
-		}
-		$serial = trim($serial,', ');
-		$serial .= ')'; 
-		return $serial;
-	}
-	
-	static function ConvertErrorNumberToString( $number )
+	static function ConvertStringFromErrorNumber( $number )
 	{
 		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
 		switch( $number ){
@@ -371,25 +350,11 @@ class Error
 		return $type;
 	}
 	
-	static function MagicMethodCall( $name, $args )
+	static function ConvertStringFromArguments( $args )
 	{
-		//  If Toolbox method.
-		if( method_exists('Toolbox', $name) and false ){
-			OnePiece5::Mark("Please use Toolbox::$name");
-			return Toolbox::$name(
-				isset($args[0]) ? $args[0]: null,
-				isset($args[1]) ? $args[1]: null,
-				isset($args[2]) ? $args[2]: null,
-				isset($args[3]) ? $args[3]: null,
-				isset($args[4]) ? $args[4]: null,
-				isset($args[5]) ? $args[5]: null
-			);
-		}
-		
-		//  error reporting
 		$join = array();
 		foreach( $args as $temp ){
-			switch(gettype($temp)){
+			switch( $type = strtolower(gettype($temp)) ){
 				case 'boolean':
 					$join[] = $temp ? 'true': 'false';
 					break;
@@ -415,33 +380,50 @@ class Error
 				case 'array':
 					$join[] = var_export($temp,true);
 					break;
-						
+					
 				default:
-					$join[] = gettype($temp);
+					$join[] = $type;
 					break;
 			}
 		}
-		
-		$argument = join(', ',$join);
-		$message = "Does not exists this method: $name($argument)";
-		OnePiece5::StackError($message);
+		return join(', ',$join);
 	}
 	
-	static function MagicMethodCallStatic( $name, $args )
+	static function MagicMethodCall( $class, $name, $args )
+	{
+		//  If Toolbox method.
+		if( method_exists('Toolbox', $name) and false ){
+			OnePiece5::Mark("Please use Toolbox::$name");
+			return Toolbox::$name(
+				isset($args[0]) ? $args[0]: null,
+				isset($args[1]) ? $args[1]: null,
+				isset($args[2]) ? $args[2]: null,
+				isset($args[3]) ? $args[3]: null,
+				isset($args[4]) ? $args[4]: null,
+				isset($args[5]) ? $args[5]: null
+			);
+		}
+		
+		$argument = self::ConvertStringFromArguments($args);
+		$message = "Does not exists this method: {$class}::{$name}({$argument})";
+		self::_Set( $name, $message );
+	}
+	
+	static function MagicMethodCallStatic( $class, $name, $args )
 	{
 		//	Call static is PHP 5.3.0 later
-		self::MagicMethodCall( $name, $args );
+		self::MagicMethodCall( $class, $name, $args );
 	}
 	
 	static function MagicMethodSet( $class, $name, $args, $call )
 	{
-		$message = "{$class}::{$name} is not accessible property. ($call, value=$args)";
+		$message = "{$class}::{$name} is not accessible property. ({$call}, value={$args})";
 		OnePiece5::StackError($message);
 	}
 	
 	static function MagicMethodGet( $class, $name, $call )
 	{
-		$message = "{$class}::{$name} is not accessible property. ($call)";
+		$message = "{$class}::{$name} is not accessible property. ({$call})";
 		OnePiece5::StackError($message);
 	}
 	
@@ -452,14 +434,14 @@ class Error
 		$type	 = $e['type'];
 		$message = $e['message'];
 		
-		$type = self::ConvertErrorNumberToString( $type );
+		$type = self::ConvertStringFromErrorNumber($type);
 		
 		OnePiece5::StackError("$file [$line] $type: $message");
 	}
 	
-	static function Handler( $no, $str, $file, $line, $context )
+	static function Handler( $type, $str, $file, $line, $context )
 	{
-		$type = self::ConvertErrorNumberToString( $no );
+		$type = self::ConvertStringFromErrorNumber($type);
 		
 		//  Output error message.
 		$format = '%s [%s] %s: %s';
