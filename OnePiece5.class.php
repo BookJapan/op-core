@@ -1908,6 +1908,10 @@ class Env
 	 */
 	static function Shutdown()
 	{
+		if( $error = error_get_last()){
+			Error::LastError($error);
+		}
+		
 		//	Error
 		Error::Report();
 		
@@ -1922,11 +1926,6 @@ class Env
 		$aborted = connection_aborted();
 		$status  = connection_status();
 		
-		/* @see http://www.php.net/manual/ja/errorfunc.constants.php */
-		if( function_exists('error_get_last') and $error = error_get_last()){
-			Error::LastError($error);
-		}
-		
 		// Session reset
 		if( Toolbox::isLocalhost() and Toolbox::isHtml() ){
 			$rand = rand( 0, 1000);
@@ -1936,7 +1935,7 @@ class Env
 				print "<script>alert('$message');</script>";
 			}
 		}
-	
+		
 		//	Output shutdown label
 		switch( $mime = Toolbox::GetMIME(true) ){
 			case 'plain':
@@ -1960,7 +1959,6 @@ class Env
 		
 		//	Developer
 		if( OnePiece5::Admin() ){
-			Developer::PrintStyleSheet();
 			Developer::PrintGetFlagList();
 		}
 	}
