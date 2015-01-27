@@ -1,4 +1,4 @@
-<?php /* vim: ts=4:sw=4:tw=80 */
+<?php /* vim: set ts=4 ft=php fenc=utf-8 ff=unix: */
 /**
  *  OnePiece5.class.php
  *  
