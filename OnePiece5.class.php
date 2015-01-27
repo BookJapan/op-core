@@ -1941,15 +1941,19 @@ class Env
 			case 'plain':
 				if( Env::Get('cli') ){
 					$label = ' -- OnePiece is shutdown -- ';
+				}else{
+					//	json
+					$label = null;
 				}
 				break;
+				
 			case 'css':
-				$label = ' /* OnePiece is shutdown */ ';
-				break;
 			case 'javascript':
 			case 'json':
 			case 'csv':
-					break;
+				$label = ' /* OnePiece is shutdown */ ';
+				break;
+				
 			case 'html':
 			default:
 				$label = "<OnePiece mime=\"$mime\"/>";
