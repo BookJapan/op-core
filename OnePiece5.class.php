@@ -650,7 +650,7 @@ class OnePiece5
 	 */
 	static function Html($str, $tag='span', $attr=null)
 	{
-		$nl    = self::GetEnv('newline');
+	//	$nl    = self::GetEnv('newline');
 		$str   = self::Escape($str);
 		$tag   = self::Escape($tag);
 		$attr  = self::Escape($attr);
@@ -664,16 +664,17 @@ class OnePiece5
 			}else{
 				$temp = $attr['class'];
 			}
-			$class = sprintf('class="%s"', $temp);
+			$class = sprintf(' class="%s"', $temp);
 		}
 		
 		if(isset($attr['style'])){
 			foreach($attr['style'] as $key => $var){
 				$styles[] = "$key:$var;";
 			}
-			$style = sprintf('style="%s"', implode(' ', $styles));
+			$style = sprintf(' style="%s"', implode(' ', $styles));
 		}
 		
+		return PHP_EOL."<{$tag}{$class}{$style}>{$str}</{$tag}>".PHP_EOL;
 		return sprintf($nl.'<%s %s %s>%s</%s>'.$nl, $tag, $class, $style, $str, $tag );
 	}
 	
@@ -784,8 +785,12 @@ class OnePiece5
 	 * @param string|array $args
 	 * @param string $charset
 	 */
-	static function Escape( $args, $charset='utf-8' )
+	static function Escape( $args, $charset=null )
 	{
+		if(!$charset){
+			$charset = Env::Get('charset');
+		}
+		
 		switch($type = gettype($args)){
 			case 'null':
 			case 'NULL':
@@ -794,13 +799,13 @@ class OnePiece5
 			case 'double':
 				break;
 			case 'string':
-				$args = self::EscapeString($args,$charset);
+				$args = self::_EscapeString($args,$charset);
 				break;
 			case 'array':
-				$args = self::EscapeArray($args,$charset);
+				$args = self::_EscapeArray($args,$charset);
 				break;
 			case 'object':
-				$args = self::EscapeObject($args,$charset);
+				$args = self::_EscapeObject($args,$charset);
 				break;
 			default:
 				self::p("[".__METHOD__."] undefined type($type)");
@@ -814,8 +819,12 @@ class OnePiece5
 	 * @param string $args
 	 * @param string $charset
 	 */
-	static function EscapeString( &$args, $charset='utf-8' )
+	static private function _EscapeString( /*&*/$args, $charset )
 	{
+		if( preg_match($pattern, $subject) ){
+			
+		}
+		
 		//  Anti null byte attack
 		$args = str_replace("\0", '\0', $args);
 		
@@ -842,11 +851,11 @@ class OnePiece5
 	 * @param array  $args
 	 * @param string $charset
 	 */
-	static function EscapeArray( &$args, $charset='utf-8' )
+	static private function _EscapeArray( /*&*/$args, $charset )
 	{
 		$temp = array();
 		foreach ( $args as $key => $var ){
-			$key = self::Escape( $key, $charset );
+			$key = self::_EscapeString( $key, $charset );
 			$var = self::Escape( $var, $charset );
 			$temp[$key] = $var;
 		}
@@ -858,11 +867,11 @@ class OnePiece5
 	 * @param array  $args
 	 * @param string $charset
 	 */
-	static function EscapeObject( &$args, $charset='utf-8' )
+	static private function _EscapeObject( /*&*/$args, $charset )
 	{
 		$temp = new Config();
 		foreach ( $args as $key => $var ){
-			$key = self::EscapeString( $key, $charset );
+			$key = self::_EscapeString( $key, $charset );
 			$var = self::Escape( $var, $charset );
 			$temp->$key = $var;
 		}
@@ -1508,7 +1517,7 @@ class OnePiece5
 		if( class_exists('Wiki2Engine',true) ){
 			return nl2br(trim(Wiki2Engine::Wiki2( $string, $options ))) . PHP_EOL;
 		}else{
-			return nl2br(trim($string)) . PHP_EOL;
+			return nl2br( self::Escape(trim($string)) ) . PHP_EOL;
 		}
 	}
 }
