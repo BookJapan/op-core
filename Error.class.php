@@ -32,7 +32,8 @@ class Error
 		}
 		
 		//	key
-		$key = md5(serialize($backtrace));
+	//	$key = md5(serialize($backtrace)); // Does not serialized object.
+		$key = md5("$name, $message");
 		
 		//	save
 		$error['name']		 = $name;
