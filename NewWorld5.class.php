@@ -305,18 +305,6 @@ abstract class NewWorld5 extends OnePiece5
 	}
 	
 	/**
-	 * Warning is displayed, if has not been the Dispatch.
-	 * 
-	 * @param boolean $flag
-	 */
-	/*
-	function SetDispatchFlag($flag)
-	{
-		$this->_isDispatch = $flag;
-	}
-	*/
-	
-	/**
 	 * Dispatch to the End-Point(End-point is page-controller file) by route arguments.
 	 * 
 	 * @param  array   $route
@@ -546,20 +534,6 @@ abstract class NewWorld5 extends OnePiece5
 			$path = $this->ConvertPath($layout) .'/'. $controller;
 		}
 		
-		//  for debug
-		if( 0 ){
-			$this->d($_SERVER[Env::_ONE_PIECE_]);
-			$temp['controller'] = $controller;
-			$temp['layout']     = $layout;
-			$temp['layout_dir'] = $layout_dir.' ('.$this->GetEnv('layout-dir').')';
-			$temp['app-root']   = $this->GetEnv('app-root');
-			$temp['proj-root']  = $this->GetEnv('proj-root');
-			$temp['site-root']  = $this->GetEnv('site-root');
-			$temp['ConvertPath']= $this->ConvertPath($layout) . ", layout=$layout";
-			$temp['path']       = $path;
-			$this->d($temp);
-		}
-		
 		//  include controller
 		if( file_exists($path) ){
 			//  OK
@@ -644,18 +618,6 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function Header( $str, $replace=null, $code=null )
 	{
-		/*
-		if( null === $replace ){
-			switch($str){
-				case 'hoge':
-					$replace = false;
-					break;
-				default:
-					$replace = true;
-			}
-		}
-		*/
-	
 		if( headers_sent() ){
 			$io = false;
 			$this->StackError("already header sent.");
