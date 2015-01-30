@@ -23,9 +23,11 @@ class Model_Log extends Model_Model
 			return;
 		}
 		
+		
 		if(!$this->log){
 			return;
 		}
+		
 		
 		$result = '<div class="log table small">';
 		foreach( $this->log as $i => $stack ){
