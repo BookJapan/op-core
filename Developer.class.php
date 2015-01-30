@@ -99,7 +99,7 @@ class Developer
 		
 		print '<!-- '.__FILE__.' - '.__LINE__.' -->';
 		if( $join ){
-			print '<div class="small">[ '.join(' | ', $join).' ]</div>';
+			print '<div style="font-size:small;">[ '.join(' | ', $join).' ]</div>';
 		}
 	}
 }

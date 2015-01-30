@@ -1,5 +1,4 @@
 <?php
-# vim: ts=4:sw=4:tw=80
 /**
  * Error.class.php
  * 
@@ -165,7 +164,7 @@ class Error
 			$tail	 = "$method($args)";
 		}
 		
-		$info = "![tr {$style}[ ![td .w1em .right [{$index}]] ![td .w10em .nobr[{$file}]] ![td .right[{$line}]] ![td[{$tail}]] ]]";
+		$info = "![tr {$style}[ ![td .w1em text-align:right [{$index}]] ![td .w10em .nobr[{$file}]] ![td text-align:right [{$line}]] ![td[{$tail}]] ]]";
 		
 		return $info.PHP_EOL;
 	}
@@ -173,7 +172,7 @@ class Error
 	static private function _getBacktrace()
 	{
 		$i = 0;
-		$return = '![table .small [';
+		$return = '![table font-size:small [';
 		foreach( $_SESSION[self::_NAME_SPACE_] as $error ){
 			$i++;
 			$name		 = $error['name'];
@@ -187,7 +186,7 @@ class Error
 			}
 			
 			//	Sequence no.
-			$return .= "![tr[ ![th colspan:4 .left .red [ Error #{$i} $message ]] ]]".PHP_EOL;
+			$return .= "![tr[ ![th colspan:4 color:red [ Error #{$i} $message ]] ]]".PHP_EOL;
 			
 			if( $count = count($backtraces) ){				
 				foreach( $backtraces as $index => $backtrace ){
