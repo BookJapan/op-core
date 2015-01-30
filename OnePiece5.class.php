@@ -1542,6 +1542,32 @@ class OpException extends Exception
 	private $_wizard = null;
 	private $_isSelftest = null;
 	
+	/**
+	 * Message's original language.
+	 * 
+	 * @var string
+	 */
+	private $_lang = null;
+
+	/**
+	 * @param message[optional]
+	 * @param lang[optional]
+	 * @param code[optional]
+	 * @param previous[optional]
+	 */
+	public function __construct($message, $lang=null, $code=null, $previous=null)
+	{
+		if( $lang ){
+			$this->_lang = $lang;
+		}
+		parent::__construct( $message, $code, $previous );
+	}
+	
+	function getLang()
+	{
+		return $this->_lang;
+	}
+	
 	function isSelftest($var=null)
 	{
 		if( $var ){
