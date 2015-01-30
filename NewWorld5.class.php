@@ -51,6 +51,13 @@ abstract class NewWorld5 extends OnePiece5
 		if(!ob_start()){
 			print __FILE__.', '.__LINE__;
 		}
+		
+		//	Get Rewrite base.
+		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
+		$path = preg_replace("|^$patt|", '', $_SERVER['SCRIPT_FILENAME']);
+		$_SERVER['REWRITE_BASE'] = dirname($path).'/';
+		self::mark( $_SERVER['REWRITE_BASE'] );
+		
 		parent::__construct($args);
 	}
 	
@@ -87,221 +94,6 @@ abstract class NewWorld5 extends OnePiece5
 		//	Set default value
 		$this->GetEnv('doctype','html');
 		$this->GetEnv('title','The NewWorld is the new world');
-		
-		//	If empty REWRITE_BASE
-		if( empty($_SERVER['REWRITE_BASE']) ){
-			$path = dirname($_SERVER['SCRIPT_FILENAME']).'/.htaccess';
-			$file = file_get_contents($path);
-			if(!preg_match('|RewriteBase(.+)|',$file,$match)){
-				$this->StackError("There is no RewriteBase value in .htaccess file.");
-			}else{
-				$_SERVER['REWRITE_BASE'] = trim($match[1]);
-			}
-		}
-		//	add slash
-		$_SERVER['REWRITE_BASE'] = rtrim($_SERVER['REWRITE_BASE'],'/').'/';
-	}
-	
-	/**
-	 * Setup route table
-	 * 
-	 * @param string $request_uri
-	 * @param array  $route
-	 */
-	function SetRoute($request_uri, $route)
-	{
-		list( $path, $query_string ) = explode('?',$request_uri);
-		$route = $this->Escape($route);
-		$this->_routeTable[md5($path)] = $route;
-	}
-	
-	/**
-	 * Determine the route to dispatch from request-uri.
-	 * 
-	 * @param  string $request_uri
-	 * @return array
-	 */
-	function GetRoute($request_uri=null)
-	{
-		//	get request uri
-		if( $request_uri ){
-			if( preg_match( '|^http://|', $request_uri ) ){
-				$this->mark("![ .red [Domain name is not required. Please specify document root path. ($request_uri)]]");
-			}
-		}else{
-			$request_uri = $_SERVER['REQUEST_URI'];
-		}
-		
-		//	separate query
-		list( $path, $query_string ) = explode('?',$request_uri.'?');
-		
-		//	check alias
-		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'].$_SERVER['REWRITE_BASE']);
-		
-		//	Divide the processing in the real-path and alias.
-		if( preg_match("|^{$patt}|",$_SERVER['SCRIPT_FILENAME']) ){
-			//	real path
-		//	$this->mark('![.red[REAL]]');
-			$full_path = $_SERVER['DOCUMENT_ROOT'].$path;
-		}else{
-			//	use alias
-		//	$this->mark('![.red[alias]]');
-			$full_path = dirname($_SERVER['SCRIPT_FILENAME']).'/'.preg_replace("|^".preg_quote($_SERVER['REWRITE_BASE'])."|", '', $path);
-		}
-		
-		//  Real file is pass through.
-		if( preg_match('/\/([-_a-z0-9\.]+)\.(html|css|js)$/i',$path,$match) ){
-			if( $route = $this->HtmlPassThrough( $match, $full_path ) ){
-				return $route;
-			}
-		}
-		
-		//	Admin Notification
-		if( $this->admin() ){
-			//	If there is extension
-			if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
-				if(!file_exists($full_path)){
-					if( $this->Admin() ){
-						$_file_does_not_exists_ = $this->GetSession('file_does_not_exists');
-						$_file_does_not_exists_[] = $full_path;
-						$this->SetSession('file_does_not_exists',$_file_does_not_exists_);
-					}
-					/**
-					 * Is the URL specified file (with the extension), has been finished.
-					 * But does it become an attack?
-					 * 
-					//	exit
-					$this->SetEnv('cli',true);
-					exit;
-					*/
-				}
-			}
-		}
-		
-		//	search controller
-		$route = $this->_getController( $full_path );
-		
-		//  escape
-		$route = $this->Escape($route);
-		
-		return $route;
-	}
-	
-	/**
-	 * Search of end-point. (end-point is page-controller)
-	 * 
-	 * @param  string $full_path
-	 * @throws OpException
-	 * @return array
-	 */
-	private function _getController( $full_path )
-	{
-		// controller file name
-		if(!$controller = $this->GetEnv('controller-name')){
-			throw new OpException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
-		}
-		
-		//	init
-		$arr = explode('/',$full_path);
-		$dirs = array();
-		$args = array();
-		
-		//	search controller
-		while(count($arr)){
-			$path = join('/',$arr).'/'.$controller;
-			if( file_exists($path) ){
-				break;
-			}
-			$args[] = array_pop($arr);
-		}
-		
-		//	anti-notice
-		if(empty($args)){
-			$args[] = null;
-		}
-		
-		//	search app.php
-		while(count($arr)){
-			$path = join('/',$arr).'/app.php';
-			if( file_exists($path) ){
-				break;
-			}
-			$dirs[] = array_pop($arr);
-		}
-		
-		//	build route variable.
-		$route = array();
-		$route['app_root'] = join('/',$arr);
-		$route['path'] = '/'.join('/',array_reverse($dirs)).'/';
-		$route['file'] = $controller;
-		$route['args'] = array_reverse($args);
-		
-		return $route;
-	}
-	
-	function HtmlPassThrough( $match, $full_path )
-	{
-			//  file extension
-			$extension = $match[2];
-			
-			//  access file name
-			$file_name = $match[1].'.'.$match[2];
-			
-			//  current path is App path.
-			$app_root = getcwd();
-			
-			//  document root path
-			$doc_path = $_SERVER['DOCUMENT_ROOT'];
-			
-			//  create app path
-			if( preg_match("|^".preg_quote($app_root)."(.+)|", $full_path, $match) ){
-				$app_path = $match[1];
-			}else if( preg_match("|^".preg_quote($doc_path)."(.+)|", $full_path, $match) ){
-				$app_path = $match[1];
-			}else{
-				$app_path = $full_path;
-			}
-			
-			$route = array();
-			$route['app_root'] = $app_root;
-			$route['fullpath'] = $full_path;
-			$route['path'] = dirname($app_path);
-			$route['file'] = $file_name;
-			$route['args'] = array(null);
-			$route['pass'] = true;
-			$route['ctrl'] = null;
-			$route = $this->Escape($route);
-			
-			//  full path is real path.
-			$real_path = $route['fullpath'];
-			
-			//  file is exists?
-			if( file_exists($real_path) ){
-				
-				switch( strtolower($extension) ){
-					case 'html':
-						if( $this->GetEnv('HtmlPassThrough') ){
-							return $route;
-						}else{
-							$this->mark("![.red[HtmlPassThrough is off. please \$app->SetEnv('HtmlPassThrough',true);]]");
-						}
-						break;
-						
-					case 'css':
-						$this->doCss($route);
-						$this->_isDispatch = true;
-						exit(0);
-						
-					case 'js':
-						$this->doJs($route);
-						$this->_isDispatch = true;
-						exit(0);
-					default:
-						$this->mark("![.red[Does not match extension. ($extension)]]");
-				}
-			}
-		
-		return false;
 	}
 	
 	/**
@@ -312,7 +104,7 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function Dispatch($route=null)
 	{	
-		// Deny two time dispatch
+		// Deny many times dispatch.
 		if( $this->_isDispatch ){
 			$this->StackError("Dispatched two times. (Dispatched only one time.)");
 			return false;
@@ -320,67 +112,34 @@ abstract class NewWorld5 extends OnePiece5
 			$this->_isDispatch = true;
 		}
 		
-		//	if route is emtpy, get route.
+		//	If route is emtpy, get route.
 		if(!$route){
-			if(!$route = $this->GetRoute()){
-				return false;
-			}
+			$route = Router::GetRoute();
 		}
 		
-		//	route info
-		$this->SetEnv('route',$route);
+		//	Save route.
+		Env::Set('route',$route);
 		
+		//	Execute end point program from route information.
 		try{
-			//	Flash buffer
-			$this->_content  = ob_get_contents(); ob_clean();
+			//	Flash buffer 
+			$this->_content .= ob_get_contents(); ob_clean();
 			
-			//	setting
-			if(!$this->doSetting($route)){
-				return true;
+			//  Execute end point program.
+			$this->_doContent($route);
+			
+			//	Save to content buffer.
+			$this->_content .= ob_get_contents(); ob_clean();
+			
+			//	Switch
+			if( Toolbox::isHtml() ){
+				//	If content-type is html.
+				$this->_doWizard();
+				$this->_doLayout();
+			}else{
+				//	Case of css and js, output of content buffer.
+				$this->Content();
 			}
-				
-			//	Forward
-			if( $this->doForward() ){
-				return true;
-			}
-			
-			//	Reload route info
-			$route = $this->GetEnv('route');
-			
-			//	Display to case of html.
-			list($uri) = explode('?',$_SERVER['REQUEST_URI']);			
-			if( preg_match('/\.(js|css|html)$/i',$uri,$match) ){
-				//	This file did not exist. (Warning to developer)
-				if( $_file_does_not_exists_ = $this->GetSession('file_does_not_exists') ){
-					if( $this->admin() ){
-						$this->p("![.red .bold[This file does not exists.]]",'div');
-						$this->d($_file_does_not_exists_);
-					}
-				}
-				$this->SetSession('file_does_not_exists',null);
-			}
-			
-			//  content
-			$this->doContent();
-			
-			//	do wizard
-			if( $this->admin() ){
-				if( ob_start() ){
-					$this->Wizard()->Selftest();
-					$this->_content .= ob_get_contents();
-					ob_end_clean();
-				}else{
-					$this->StackError("\ob_start\ was failed. Does not run selftest.");
-				}
-			}
-			
-		}catch( Exception $e ){
-			$this->StackError($e);
-		}
-		
-		//  layout
-		try{
-			$this->doLayout();
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
@@ -393,36 +152,21 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @return boolean
 	 */
-	function doContent()
+	private function _doContent($route)
 	{
-		//  Route
-		if(!$route = $this->GetEnv('route')){
-			$this->StackError('Empty route.');
+		//	Get controller root
+		$ctrl_root = dirname($route['full_path']);
+		
+		//	Check exists controller root
+		if(!$io = file_exists($ctrl_root)){
+			$_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_] = $ctrl_root;
 			return false;
 		}
 		
-		// controller root
-		$app_root = rtrim( $this->GetEnv('App-Root'), '/');
-		$ctrl = isset($route['ctrl']) ? $route['ctrl']: $route['path'];
-		$ctrl_root = rtrim($app_root . $ctrl, '/') . '/';
+		//	Change current directory.
+		chdir($ctrl_root);
 		$this->SetEnv('Ctrl-Root',$ctrl_root);
 		
-		// change dir
-		$chdir = rtrim($app_root,'/') .'/'. trim($route['path'],'/');
-		
-		if( isset($route['pass']) and $route['pass'] ){
-			chdir( dirname($route['fullpath']) );
-		}else{
-			if( file_exists($chdir) ){
-				chdir( $chdir );
-			}else{
-				$this->StackError("Does not exists dir. ($chdir)");
-			}
-		}
-		
-		//  Controller file path.
-		$path = getcwd().'/'.$route['file'];
-				
 		//	@see http://d.hatena.ne.jp/sen-u/20131130/p1
 		header("X-Frame-Options: SAMEORIGIN");
 		header("X-XSS-Protection: 1; mode=block");
@@ -430,8 +174,8 @@ abstract class NewWorld5 extends OnePiece5
 		header("X-Download-Options: noopen");
 		header("X-Content-Type-Options: nosniff");
 		
-		//header("Content-Security-Policy: default-src 'self'");
-		//header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
+	//	header("Content-Security-Policy: default-src 'self'");
+	//	header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
 		
 		/* cache control
 		header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -445,51 +189,31 @@ abstract class NewWorld5 extends OnePiece5
 		header("Access-Control-Max-Age: 1728000");
 		*/
 		
-		//	Execute controller.
-		$this->_content .= $this->GetTemplate($path);
+		switch( $route['extension'] ){
+			case 'css':
+				header("Content-Type: text/css");
+				Env::Set('mime','text/css');
+				Env::Set('cli',true);
+				Env::Set('css',true);
+				break;
+				
+			case 'js':
+				header("Content-Type: text/javascript");
+				Env::Set('mime','text/javascript');
+				Env::Set('cli',true);
+				Env::Set('js',true);
+				break;
+				
+			default:
+		}
+		
+		//  Execute.
+		$this->Template( $route['full_path'] );
 		
 		return true;
 	}
 	
-	function doSetting($route)
-	{
-		/**
-		 * Search begins from AppRoot.
-		 * settings-file is looked for forward Dispatch-dir, from AppRoot
-		 */
-		
-		//  Get settings file name.
-		if(!$setting = $this->GetEnv('setting-name') ){
-			return true;
-		}
-		
-		//  Get app root.
-		$app_root = $this->GetEnv('AppRoot');
-		$app_root = rtrim( $app_root, '/');
-		
-		//  Search settings file, and execute settings.
-		$save_dir = getcwd();
-		
-		$io = true;
-		foreach(explode('/', rtrim($route['path'],'/') ) as $dir){
-			$dirs[] = $dir;
-			$path = $app_root.join('/',$dirs)."/$setting";
-			
-			if( file_exists($path) ){
-				chdir( dirname($path) );
-				if(!$io = include($path) ){
-					break;
-				}
-			}
-		}
-		
-		//  Recovery current directory.
-		chdir($save_dir);
-		
-		return $io ? true: false;
-	}
-	
-	function doLayout()
+	private function _doLayout()
 	{
 		//  Check layout value.
 		if(!$layout = $this->GetEnv('layout') ){
@@ -513,11 +237,6 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//	get mime
 		$mime = $this->GetEnv('mime');
-
-		//	not do layout.
-		if( $mime != 'text/html' ){
-			return true;
-		}
 		
 		//	set header
 		header("Content-type: $mime; charset=$charset");
@@ -580,40 +299,18 @@ abstract class NewWorld5 extends OnePiece5
 		}
 	}
 	
-	function doCss($route)
+	private function _doWizard()
 	{
-		//  Init garbage code. 
-		ob_clean();
-		
-		//  Print headers.
-		header("Content-Type: text/css");
-		header("X-Content-Type-Options: nosniff");
-		
-		//  Change cli mode.
-		$this->SetEnv('cli',true);
-		$this->SetEnv('css',true);
-		$this->SetEnv('mime','text/css');
-		
-		//  Execute.
-		$this->template( $route['fullpath'] );
-	}
-	
-	function doJs($route)
-	{
-		//  Init garbage code. 
-	//	ob_clean();
-		
-		//  Print headers.
-		header("Content-Type: text/javascript");
-	//	header("X-Content-Type-Options: nosniff");
-		
-		//  Change cli mode.
-		$this->SetEnv('cli',true);
-		$this->SetEnv('js',true);
-		$this->SetEnv('mime','text/javascript');
-		
-		//  Execute.
-		$this->template( $route['fullpath'] );
+		//	do wizard
+		if( $this->admin() ){
+			if( ob_start() ){
+				$this->Wizard()->Selftest();
+				$this->_content .= ob_get_contents();
+				ob_end_clean();
+			}else{
+				$this->StackError("\ob_start\ was failed. Does not run selftest.",'en');
+			}
+		}
 	}
 	
 	function Header( $str, $replace=null, $code=null )
@@ -668,60 +365,6 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
-	/**
-	 * Save the forward URL
-	 * 
-	 * @param string $url
-	 */
-	function SetForward( $url )
-	{
-		//	Reset forward URL
-		if( empty($url) ){
-			$this->SetEnv('forward', null);
-			return;
-		}
-		
-		//	Convert URL
-		$url = $this->ConvertPath($url);
-		$app_root = rtrim($this->GetEnv('app-root'),'/');
-		$patt = preg_quote($app_root);
-		$url = preg_replace( "|^{$patt}|", '', $url );
-		
-		//	Save forward URL
-		$this->SetEnv('forward', $url);
-	}
-	
-	/**
-	 * Execute forward from saved forward url.
-	 * 
-	 * @return boolean.
-	 */
-	function doForward()
-	{
-		//	Forward URL
-		if(!$url = $this->GetEnv('forward')){
-			return false;
-		}
-		
-		//	Before route
-		$route_old = $this->GetEnv('route');
-		
-		//	Get change route info.
-		$route = $this->GetRoute($url);
-		
-		//	Compare
-		if( $route == $route_old ){
-			//	This is already been forwarding.
-			return false;
-		}
-		
-		//	Dispatched.
-		$this->_isDispatch = false;
-		$this->Dispatch($route);
-		
-		return true;
-	}
-	
 	function GetContent()
 	{
 		return $this->_content;
@@ -730,20 +373,29 @@ abstract class NewWorld5 extends OnePiece5
 	function Content()
 	{
 		switch( $mime = strtolower(Toolbox::GetMIME(true)) ){
+			//	plain text
 			case 'csv':
 			case 'plain':
-				
+			//	javascript
 			case 'json':
 			case 'javascript':
-				$this->doJson();
+				$this->_doJson();
 				break;
 				
 			case 'html':
 			default:
 				//
 				if( $this->_json ){
-					Dump::D($this->doJson(true));
+					Dump::D($this->_doJson(true));
+				}else if( $this->Admin() ){
+					//	Notice un exists file.
+					if( isset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]) ){
+						$path = $_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_];
+						$this->Mark("![.red[ This file does not exists. ($path) ]]");
+						unset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]);
+					}
 				}
+			//	end of default
 		}
 		
 		print $this->_content;
@@ -844,3 +496,149 @@ abstract class NewWorld5 extends OnePiece5
 	}
 }
 
+class Router extends OnePiece5
+{
+	static function SetRoute($route)
+	{
+		Env::Set('route',$route);
+	}
+
+	/**
+	 * Determine the route to dispatch from request-uri.
+	 *
+	 * @param  string $request_uri
+	 * @return array
+	 */
+	static function GetRoute($request_uri=null)
+	{
+		if(!$route = Env::Get('route')){
+			$route = self::CalcRoute($request_uri);
+		}
+		return $route;
+	}
+	
+	static function CalcRoute($request_uri=null)
+	{
+		//	Get request uri.
+		if(!$request_uri){
+			$request_uri = $_SERVER['REQUEST_URI'];
+		}
+
+		//	Sanitize.
+		$request_uri = self::Escape($request_uri);
+		
+		//	Separate query.
+		list( $request_uri, $query_string ) = explode('?',$request_uri.'?');
+		
+		//	
+		$route = self::_GetRouteAsBase($request_uri);
+		
+		//	If file have extension.
+		if( $route['extension'] ){
+			//	If file extension as css or js.
+			if( ($route['extension'] === 'css' or $route['extension'] === 'js') ){
+				$_is_html_pass_through = true;
+			}else{
+				//	If file extension is html or other.
+				if( Env::Get('HtmlPassThrough') ){
+					$_is_html_pass_through = true;
+				}else{
+					self::Mark('![.red[HtmlPassThrough is off. please $this->SetEnv("HtmlPassThrough",true);]]');
+				}
+			}
+		}
+		
+		//	This is not html pass through.
+		if( empty($_is_html_pass_through) ){
+			$route = self::_GetRouteAsController($route);
+		}
+		
+		//	Admin Notification
+		if( self::admin() ){
+			self::_CheckFileExists($route['full_path']);
+		}
+		
+		return $route;
+	}
+	
+	static private function _GetRouteAsBase($request_uri)
+	{
+		//	Application root
+		$app_root = dirname($_SERVER['SCRIPT_FILENAME']);
+		
+		//	Check extension.
+		if( preg_match('/\/([-_a-z0-9\.]+)\.(html|css|js)$/i',$request_uri,$match) ){
+			$file_name = $match[1].'.'.$match[2];
+			$extension = strtolower($match[2]);
+		}else{
+			$extension = null;
+		}
+		
+		$route['app_root']  = $app_root;
+		$route['full_path'] = $_SERVER['DOCUMENT_ROOT'].$request_uri;
+		$route['file_name'] = $file_name;
+		$route['extension'] = $extension;
+		
+		return $route;
+	}
+	
+	/**
+	 * Search of end-point. (end-point is page-controller)
+	 * 
+	 */
+	static private function _GetRouteAsController($route)
+	{
+		// controller file name
+		if(!$controller = Env::Get('controller-name')){
+			throw new OpException('Does not set controller-name. Please call $app->SetEnv("controller-name","index.php");');
+		}
+		
+		//	init
+		$arr = explode('/',$route['full_path']);
+		$dirs = array();
+		$args = array();
+		
+		//	search controller
+		while(count($arr)){
+			$path = join('/',$arr).'/'.$controller;
+			if( file_exists($path) ){
+				break;
+			}
+			$args[] = array_pop($arr);
+		}
+		
+		//	anti-notice
+		if(empty($args)){
+			$args[] = null;
+		}
+		
+		//	search app.php
+		while(count($arr)){
+			$path = join('/',$arr).'/app.php';
+			if( file_exists($path) ){
+				break;
+			}
+			$dirs[] = array_pop($arr);
+		}
+		
+		//	build route variable.
+		$route['path'] = rtrim(join('/',array_reverse($dirs)),'/').'/';
+		$route['file'] = $controller;
+		$route['args'] = array_reverse($args);
+		$route['full_path'] = $route['app_root'].$route['path'].$route['file'];
+		
+		return $route;
+	}
+	
+	const _KEY_FILE_DOES_NOT_EXISTS_ = 'file_does_not_exists';
+	
+	static function _CheckFileExists($full_path)
+	{
+		//	If there is extension
+		if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
+			if(!file_exists($full_path)){
+				$_SESSION[self::_KEY_FILE_DOES_NOT_EXISTS_] = $full_path;
+			}
+		}
+	}
+}
