@@ -617,14 +617,14 @@ class OnePiece5
 		}
 		
 		//	php momory usage 
-		$memory_usage = memory_get_usage(true) /1000 /1000;
+		$memory_usage = memory_get_usage(true) /1000;
 		if( strpos($memory_usage,'.') ){
 			list( $mem_int, $mem_dec ) = explode( '.', $memory_usage );
 		}else{
 			$mem_int = $memory_usage;
 			$mem_dec = 0;
 		}
-		$memory = sprintf('(%s.%s MB)', number_format($mem_int), $mem_dec );
+		$memory = sprintf('(%s.%s KB)', number_format($mem_int), $mem_dec );
 		
 		//	call line
 		$call_line = self::GetCallerLIne(0,1,'mark');
@@ -653,7 +653,7 @@ class OnePiece5
 		//	build
 		$nl = PHP_EOL;
 		$str = Wiki2Engine::Wiki2($str);
-		$string = "{$nl}<div class=\"OnePiece mark\">{$call_line}- {$str} <span class=\"OnePiece mark memory\">{$memory}</span></div>{$nl}";
+		$string = "{$nl}<div class=\"OnePiece mark\" style=\"font-size:small;\">{$call_line}- {$str} <span class=\"OnePiece mark memory\">{$memory}</span></div>{$nl}";
 				
 		//	Case of plain text.
 		if(!Toolbox::isHtml()){
