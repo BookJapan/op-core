@@ -564,15 +564,15 @@ abstract class NewWorld5 extends OnePiece5
 		if( file_exists($path) ){
 			//  OK
 			if(!include($path) ){
-				throw new OpNwException("include is failed. ($path)");
+				throw new OpException("include is failed. ($path)");
 			}
 			if(!isset($_layout) or !count($_layout)){
-				throw new OpNwException("Not set \$_layout variable. ($path)");
+				throw new OpException("Not set \$_layout variable. ($path)");
 			}
 		}else{
 			//  NG
 			print $this->_content;
-			throw new OpNwException("Does not exists layout controller.($path)");
+			throw new OpException("Does not exists layout controller.($path)");
 		}
 		
 		//  layout directory
@@ -602,9 +602,7 @@ abstract class NewWorld5 extends OnePiece5
 			print ${$file_name};
 		}else{
 			$msg = "Does not set file name.($file_name)";
-			throw new OpNwException($msg);
-		//	$this->StackError($msg);
-		//	return;
+			throw new OpException($msg);
 		}
 	}
 	
@@ -884,7 +882,3 @@ abstract class NewWorld5 extends OnePiece5
 	}
 }
 
-class OpNwException extends OpException
-{
-	
-}
