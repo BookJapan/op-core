@@ -60,16 +60,18 @@ class App extends NewWorld5
 	
 	function GetAction()
 	{
-		/*
-		if(!$action = $this->GetEnv('action') ){
-			//  Does not undefine.
-			$args = $this->GetArgs();
-			$action = $args[0] ? $args[0]: 'index';
-		}
-		*/
 		$args = $this->GetArgs();
 		$action = empty($args[0]) ? 'index': $args[0];
 		return $action;
+	}
+	
+	function SetConfig($file_name)
+	{
+		if( file_exists($file_name) ){
+			include($file_name);
+		}else{
+			self::Mark("Does not exists this file. ($file_name)");
+		}
 	}
 	
 	function SetControllerName( $var )
