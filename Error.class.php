@@ -439,6 +439,16 @@ class Error
 		OnePiece5::StackError("$file [$line] $type: $message");
 	}
 	
+	/**
+	 * This method has been transferred from OnePiece5::ErrorHandler.
+	 * 
+	 * @param  integer $type
+	 * @param  string  $str
+	 * @param  string  $file
+	 * @param  integer $line
+	 * @param  unknown $context
+	 * @return boolean
+	 */
 	static function Handler( $type, $str, $file, $line, $context )
 	{
 		$type = self::ConvertStringFromErrorNumber($type);
@@ -457,14 +467,31 @@ class Error
 		return true;
 	}
 	
+	/**
+	 * This method has been transferred from OnePiece5::ErrorExceptionHandler.
+	 * 
+	 * @param OpException $e
+	 */
 	static function ExceptionHandler( $e )
 	{
 		$class	 = get_class($e);
 		$file	 = $e->GetFile();
 		$line	 = $e->GetLine();
 		$message = $e->GetMessage();
+		$lang	 = null;
 		
+		//	get language of message's original language.
+		if( method_exists($e,'getLang') ){
+			$lang = $e->getLang();
+		}
+		
+		//	to translate
+		if( $lang ){
+			$message = OnePiece5::i18n()->Bulk($message);
+		}
+		
+		//	join
 		$error = "$class: $file [$line] $message";
-		OnePiece5::StackError($error);
+		OnePiece5::StackError($error,$lang);
 	}
 }
