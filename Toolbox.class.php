@@ -634,8 +634,12 @@ class Toolbox
 		}
 		
 		//	Join rewrite base.
-		$rewrite_base = isset($_SERVER['REWRITE_BASE']) ? $_SERVER['REWRITE_BASE']: null;
-		$url = $rewrite_base . preg_replace($pattern,'',$path);
+	//	$rewrite_base = isset($_SERVER['REWRITE_BASE']) ? $_SERVER['REWRITE_BASE']: null;
+	//	$url = $rewrite_base . preg_replace($pattern,'',$path);
+		
+		//	Does not use rewrite base.
+		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
+		$url  = preg_replace("|^$patt|",'',$path);
 		
 		return $url;
 	}
