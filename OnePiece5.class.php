@@ -1988,14 +1988,14 @@ class Env
 			case 'html':
 			default:
 				$label = "<OnePiece mime=\"$mime\"/>";
+				
+				//	Developer
+				if( OnePiece5::Admin() ){
+					Developer::PrintGetFlagList();
+				}
 				break;
 		}
 		print PHP_EOL.$label.PHP_EOL;
-		
-		//	Developer
-		if( OnePiece5::Admin() ){
-			Developer::PrintGetFlagList();
-		}
 	}
 }
 
