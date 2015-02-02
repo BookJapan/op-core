@@ -718,7 +718,7 @@ class OnePiece5
 		if( Toolbox::isHtml() ){
 			print self::Html( $str, $tag, $attr );
 		}else{
-			print trim(strip_tags(self::Html( $str, $tag, $attr )));
+			print trim( html_entity_decode(strip_tags(self::Html( $str, $tag, $attr ))) );
 		}
 		print PHP_EOL;
 	}
