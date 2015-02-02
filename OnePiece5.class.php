@@ -821,17 +821,11 @@ class OnePiece5
 	 */
 	static private function _EscapeString( /*&*/$args, $charset )
 	{
-		if( preg_match($pattern, $subject) ){
-			
-		}
-		
 		//  Anti null byte attack
 		$args = str_replace("\0", '\0', $args);
 		
 		//  Anti ASCII Control code.
-	//	if( Toolbox::isLocalhost() ){
-			$args = trim( $args, "\x00..\x1F");
-	//	}
+		$args = trim( $args, "\x00..\x1F");
 		
 		/**
 		 * htmlentities's double_encoding off funciton is PHP Version 5.2.3 latter.
