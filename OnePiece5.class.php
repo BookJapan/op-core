@@ -586,7 +586,7 @@ class OnePiece5
 		$patt[] = "|^".preg_quote($app_root)."|";
 	//	$patt[] = "|^".preg_quote($doc_root)."|";
 		$patt[] = "|^".preg_quote($op_root)."|";
-		$repl = array('App:','Doc:','OP:');
+		$repl = array('App:',/*'Doc:',*/'OP:');
 		$path = preg_replace( $patt, $repl, $path );
 		
 		//  easy-to-read. (op:OnePiece.class.php & app:/template/form.phtml)
