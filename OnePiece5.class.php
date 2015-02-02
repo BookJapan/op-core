@@ -196,6 +196,11 @@ class OnePiece5
 		//	
 		$_SERVER['OP_IS_ADMIN'] = $io;
 		
+		//	reset display error.
+		if( $io ){
+			ini_set('display_errors',1);
+		}
+		
 		//	
 		return $io;
 	}
