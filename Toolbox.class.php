@@ -625,21 +625,33 @@ class Toolbox
 		
 		//	Convert
 		$path = self::ConvertPath($url);
+		
+		//	App root
 		$app_root = $_SERVER['APP_ROOT'];
-		$app_root = preg_quote($app_root,'|');
-		$pattern  = "|^$app_root|";
-		if(!preg_match($pattern,$path)){
+		$app_root = preg_quote($app_root,'/');
+		$pattern  = "/^($app_root)/";
+		
+		//	Alias root
+		if( isset($_SERVER['ALIAS_ROOT']) ){
+			$ali_root = $_SERVER['ALIAS_ROOT'];
+			$ali_root = preg_quote($ali_root,'/');
+			$pattern  = "/^($app_root|$ali_root)/";
+		}
+		
+		//	Check root
+		if(!preg_match($pattern,$path,$match)){
 			//	unmatch metaphor word
+			OnePiece5::Mark("![.blue[$pattern]], ![.red[$path]]",__FUNCTION__);
 			return false;
 		}
 		
-		//	Join rewrite base.
-	//	$rewrite_base = isset($_SERVER['REWRITE_BASE']) ? $_SERVER['REWRITE_BASE']: null;
-	//	$url = $rewrite_base . preg_replace($pattern,'',$path);
-		
-		//	Does not use rewrite base.
-		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
+		//	Remove document root part.
+		$patt = preg_quote($match[1],'|');
 		$url  = preg_replace("|^$patt|",'',$path);
+		
+		//	Added base directory from document root path.
+		$rewrite_base = isset($_SERVER['REWRITE_BASE']) ? $_SERVER['REWRITE_BASE']: null;
+		$url = $rewrite_base . $url;
 		
 		return $url;
 	}
