@@ -1210,6 +1210,7 @@ class OnePiece5
 	static function ConvertURL( $meta, $domain=false )
 	{
 		if( $domain ){
+			//	Added about 2014-Q4.
 			OnePiece5::StackError("\domain\ option is obsolete. Please use \Toolbox::GetDomain\ method.");
 		}
 		return Toolbox::ConvertURL($meta);
@@ -1613,6 +1614,8 @@ class Env
 	
 	static private function _Convert( $key, $var=null )
 	{
+		$key = strtoupper($key);
+		
 		switch($key){
 			case 'NL':
 				$key = 'NEW_LINE';
@@ -1886,9 +1889,6 @@ class Env
 	
 	static function Get( $key )
 	{
-		//	Case
-		$key = strtoupper($key);
-		
 		//	Convert
 		list( $key, $var ) = self::_Convert( $key );
 		
@@ -1912,16 +1912,13 @@ class Env
 	
 	static function Set( $key, $var )
 	{
-		//	Reset admin flag. 
-		if( $key === 'admin-ip' ){
-			$_SERVER['OP_IS_ADMIN'] = null;
-		}
-		
-		//	Case
-		$key = strtoupper($key);
-		
 		//	Convert
 		list( $key, $var ) = self::_Convert( $key, $var );
+
+		//	Reset admin flag.
+		if( $key === 'ADMIN_IP' ){
+			$_SERVER['OP_IS_ADMIN'] = null;
+		}
 		
 		//	Admin's E-Mail
 		if( $key === self::_ADMIN_EMAIL_ADDR_ ){
