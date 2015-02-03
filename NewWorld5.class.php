@@ -55,8 +55,7 @@ abstract class NewWorld5 extends OnePiece5
 		//	Get Rewrite base.
 		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
 		$path = preg_replace("|^$patt|", '', $_SERVER['SCRIPT_FILENAME']);
-		$_SERVER['REWRITE_BASE'] = dirname($path).'/';
-		self::mark( $_SERVER['REWRITE_BASE'] );
+		$_SERVER['REWRITE_BASE'] = rtrim(dirname($path),'/').'/';
 		
 		parent::__construct($args);
 	}
@@ -580,6 +579,7 @@ class Router extends OnePiece5
 			$file_name = $match[1].'.'.$match[2];
 			$extension = strtolower($match[2]);
 		}else{
+			$file_name = null;
 			$extension = null;
 		}
 		
