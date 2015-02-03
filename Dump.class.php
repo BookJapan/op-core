@@ -128,14 +128,22 @@ class Dump
 		$prop['public']    = array();
 		foreach((array)$args as $key => $var ){
 			
-			if(gettype($var) == 'object'){
-				$key .= ' ('.get_class($var).')';
-				$value = self::GetProperty($var);
-			}else
-			if(gettype($var) == 'string'){
-				$value = sprintf('[%s(%s)] %s', gettype($var), mb_strlen($var), $var );
-			}else{
-				$value = sprintf('[%s] %s', gettype($var), $var );
+			switch( $type = gettype($var) ){
+				case 'object':
+					$key .= ' ('.get_class($var).')';
+					$value = self::GetProperty($var);
+					break;
+					
+				case 'array':
+					$value = self::GetDump($var);
+					break;
+					
+				case 'string':
+					$value = sprintf('[%s(%s)] %s', gettype($var), mb_strlen($var), $var );
+					break;
+					
+				default:
+					$value = "[{$type}] {$var}"; // sprintf('[%s] %s', gettype($var), $var );
 			}
 			
 			$temp = explode("\0",$key);
