@@ -573,20 +573,19 @@ class OnePiece5
 			$path = str_replace( '\\', '/', $path );
 		}
 		
-		$op_root	 = self::GetEnv('op_root');
-		$app_root	 = self::GetEnv('app_root');
-	//	$doc_root	 = self::GetEnv('doc_root');
+		//	get each root directory.
+		$op_root  = self::GetEnv('op_root');
+		$app_root = self::GetEnv('app_root');
 		
-		//  remove slash (easy-to-read)
-		$op_root	 = $op_root   ? rtrim($op_root,  '/') : ' ';
-		$app_root	 = $app_root  ? rtrim($app_root, '/') : ' ';
-	//	$doc_root	 = $doc_root  ? rtrim($doc_root, '/') : ' ';
+		//  remove slash. (easy-to-read)
+		$op_root  = $op_root  ? rtrim($op_root,  '/') : ' ';
+		$app_root = $app_root ? rtrim($app_root, '/') : ' ';
 		
+		//	replace.
 		$patt = array();
 		$patt[] = "|^".preg_quote($app_root)."|";
-	//	$patt[] = "|^".preg_quote($doc_root)."|";
 		$patt[] = "|^".preg_quote($op_root)."|";
-		$repl = array('App:',/*'Doc:',*/'OP:');
+		$repl = array('App:','OP:');
 		$path = preg_replace( $patt, $repl, $path );
 		
 		//  easy-to-read. (op:OnePiece.class.php & app:/template/form.phtml)
