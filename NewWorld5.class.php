@@ -496,6 +496,15 @@ abstract class NewWorld5 extends OnePiece5
 	}
 }
 
+/**
+ * Router
+ * 
+ * creation: 2015-01-30
+ * 
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
+ */
 class Router extends OnePiece5
 {
 	static function SetRoute($route)
@@ -564,7 +573,7 @@ class Router extends OnePiece5
 	static private function _GetRouteAsBase($request_uri)
 	{
 		//	Application root
-		$app_root = dirname($_SERVER['SCRIPT_FILENAME']);
+		$app_root = dirname($_SERVER['SCRIPT_FILENAME']).'/';
 		
 		//	Check extension.
 		if( preg_match('/\/([-_a-z0-9\.]+)\.(html|css|js)$/i',$request_uri,$match) ){
@@ -622,10 +631,10 @@ class Router extends OnePiece5
 		}
 		
 		//	build route variable.
-		$route['path'] = rtrim(join('/',array_reverse($dirs)),'/').'/';
+		$route['path'] = '/'.ltrim(join('/',array_reverse($dirs)),'/');
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
-		$route['full_path'] = $route['app_root'].$route['path'].$route['file'];
+		$route['full_path'] = rtrim($route['app_root'],'/').$route['path'].$route['file'];
 		
 		return $route;
 	}
