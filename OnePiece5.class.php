@@ -94,8 +94,6 @@ class OnePiece5
 			$message = sprintf( $format, get_class($this));
 			$this->StackError( $message );
 		}
-		
-		$this->PrintError();
 	}
 	
 	function __call( $name, $args )
