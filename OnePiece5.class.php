@@ -520,7 +520,7 @@ class OnePiece5
 			
 			switch(strtolower($format)){
 				case 'mark':
-					$format = '$file [$line] ';
+					$format = '$file ($line) ';
 					break;
 					
 				case 'incident':
