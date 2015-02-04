@@ -382,7 +382,12 @@ abstract class NewWorld5 extends OnePiece5
 				break;
 				
 			case 'html':
-				//
+				//	If json.
+				if( $this->_json ){
+					Dump::D($this->_json);
+				}
+				
+				//	If is admin.
 				if( $this->Admin() ){
 					//	Notice un exists file.
 					if( isset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]) ){
