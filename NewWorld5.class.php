@@ -162,9 +162,11 @@ abstract class NewWorld5 extends OnePiece5
 			return false;
 		}
 		
+		//	Save controller root.
+		$this->SetEnv('Ctrl-Root',$ctrl_root);
+		
 		//	Change current directory.
 		chdir($ctrl_root);
-		$this->SetEnv('Ctrl-Root',$ctrl_root);
 		
 		//	@see http://d.hatena.ne.jp/sen-u/20131130/p1
 		header("X-Frame-Options: SAMEORIGIN");
