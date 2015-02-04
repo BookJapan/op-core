@@ -6,18 +6,19 @@
  * 
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  */
+
+//	Developer is not read from not admin.
+if(!OnePiece5::Admin()){
+	OnePiece5::StackError("!!ATTENSION!!");
+}
+
 /**
  * Developer
  * 
  * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  */
-class Developer
+class Developer extends OnePiece5
 {
-	function __call( $func, $args )
-	{
-		$this->mark("$func is not implements.");
-	}
-	
 	/**
 	 * Save mark-label for use footer links.
 	 *
