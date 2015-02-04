@@ -375,18 +375,13 @@ abstract class NewWorld5 extends OnePiece5
 			//	plain text
 			case 'csv':
 			case 'plain':
-			//	javascript
 			case 'json':
-			case 'javascript':
 				$this->_doJson();
 				break;
 				
 			case 'html':
-			default:
 				//
-				if( $this->_json ){
-					Dump::D($this->_doJson(true));
-				}else if( $this->Admin() ){
+				if( $this->Admin() ){
 					//	Notice un exists file.
 					if( isset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]) ){
 						$path = $_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_];
@@ -394,9 +389,12 @@ abstract class NewWorld5 extends OnePiece5
 						unset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]);
 					}
 				}
+				
+			default:
 			//	end of default
 		}
 		
+		//	Output content to stdout.
 		print $this->_content;
 		$this->_content = '';
 	}
@@ -422,6 +420,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 	}
 	
+	/*
 	function doJson($is_get=null)
 	{
 		if( $this->admin() ){
@@ -439,6 +438,24 @@ abstract class NewWorld5 extends OnePiece5
 		}else if($this->_json){
 			print json_encode($this->_json);
 		}
+	}
+	*/
+	
+	private function _doJson()
+	{
+		if( $this->Admin() ){
+			//	Help to debug information.
+			if( strlen($this->_content) ){
+				if( Toolbox::GetRequest('html') ){
+					print $this->_content;
+				}else{
+					$this->_json['_LEAKED_CONTENT_'] = strip_tags($this->_content);
+				}
+				$this->_content = '';
+			}
+		}
+		
+		print json_encode($this->_json);
 	}
 	
 	function SetJson( $key, $var )
