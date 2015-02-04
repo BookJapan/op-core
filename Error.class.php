@@ -112,15 +112,20 @@ class Error
 			return;
 		}
 		
+		//	Check display is html.
+		if(!$is_html = Toolbox::isHTML() and !$is_cli = Env::Get('cli') ){
+			return;
+		}
+		
 		//	Check admin and mime.
-		if( OnePiece5::Admin() and Toolbox::isHTML() and true ){
+		if( OnePiece5::Admin() ){
 			$io = self::_toDisplay();
 		}else{
 			$io = self::_toMail();
 		}
 		
 		//	Remove error report.
-		if($io){
+		if( $io ){
 			unset($_SESSION[self::_NAME_SPACE_]);
 		}
 	}
