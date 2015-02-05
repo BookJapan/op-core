@@ -517,6 +517,18 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		print $this->GetLang();
 	}
+	
+	/**
+	 * This method will abolished.
+	 * 
+	 * @param  string $request_uri
+	 * @return array|boolean
+	 */
+	function GetRoute($request_uri=null)
+	{
+		$this->StackError("This method will abolished. Please use \Router::GetRoute();\.",'en');
+		return Router::GetRoute($request_uri);
+	}
 }
 
 /**
