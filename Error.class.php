@@ -409,8 +409,9 @@ class Error
 			);
 		}
 		
+		$bulk = OnePiece5::i18n()->Bulk("This method does not exist in class.","en");
 		$argument = self::ConvertStringFromArguments($args);
-		$message = "Does not exists this method: {$class}::{$name}({$argument})";
+		$message = "$bulk - {$class}::{$name}({$argument})";
 		self::_Set( $name, $message );
 	}
 	
@@ -422,13 +423,15 @@ class Error
 	
 	static function MagicMethodSet( $class, $name, $args, $call )
 	{
-		$message = "{$class}::{$name} is not accessible property. ({$call}, value={$args})";
+		$bulk = OnePiece5::i18n()->Bulk("\{$class}::{$name}\ is not accessible property.","en");
+		$message = "$bulk ({$call}, value={$args})";
 		OnePiece5::StackError($message);
 	}
 	
 	static function MagicMethodGet( $class, $name, $call )
 	{
-		$message = "{$class}::{$name} is not accessible property. ({$call})";
+		$bulk = OnePiece5::i18n()->Bulk("\{$class}::{$name}\ is not accessible property.","en");
+		$message = "$bulk ({$call})";
 		OnePiece5::StackError($message);
 	}
 	
