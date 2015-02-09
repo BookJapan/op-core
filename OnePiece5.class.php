@@ -174,33 +174,7 @@ class OnePiece5
 	 */
 	static function Admin()
 	{
-		if( isset($_SERVER['OP_IS_ADMIN']) ){
-			if(!is_null($_SERVER['OP_IS_ADMIN'])){
-				return  $_SERVER['OP_IS_ADMIN'];
-			}
-		}
-		
-		$server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR']: '127.0.0.1';
-		$remote_addr = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR']: null;
-		$remote_addr = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR']: $remote_addr;
-		
-		//	
-		if( $server_addr === $remote_addr ){
-			$io = true;
-		}else{
-			$io = Env::Get(Env::_ADMIN_IP_ADDR_) === $remote_addr ? true: false;
-		}
-		
-		//	
-		$_SERVER['OP_IS_ADMIN'] = $io;
-		
-		//	reset display error.
-		if( $io ){
-			ini_set('display_errors',1);
-		}
-		
-		//	
-		return $io;
+		return Env::isAdmin();
 	}
 	
 	/**
@@ -1690,7 +1664,7 @@ class Env
 		ini_set('display_errors',1);
 		
 		//	If not an administrator.
-		if(!OnePiece5::Admin()){
+		if(!self::isAdmin()){
 			//  recovery (display_errors)
 			ini_set('display_errors',0);
 			//  recovery (error_reporting)
@@ -1728,9 +1702,18 @@ class Env
 			$is_localhost = false;
 		}
 		
+		//	Check if admin
+		if( $is_localhost ){
+			$is_admin = true;
+		}else if( isset($_SERVER[self::_ADMIN_IP_ADDR_]) ){
+			$is_admin = $_SERVER[self::_ADMIN_IP_ADDR_] === $remote_addr ? true: false;
+		}else{
+			$is_admin = false;
+		}
+		
 		//	Set to $_SERVER
 		$_SERVER[self::_SERVER_IS_LOCALHOST_]	 = $is_localhost;
-		$_SERVER[self::_SERVER_IS_ADMIN_]		 = $is_localhost ? true: null;
+		$_SERVER[self::_SERVER_IS_ADMIN_]		 = $is_admin;
 	}
 	
 	private static function _init_session()
@@ -1873,6 +1856,18 @@ class Env
 		return array( $codes, $timezone );
 	}
 	
+	static function isAdmin()
+	{
+		return isset($_SERVER[self::_SERVER_IS_ADMIN_]) ? $_SERVER[self::_SERVER_IS_ADMIN_]: null;
+	}
+	
+	static function SetAdminIpAddress($var)
+	{
+		$_SERVER[self::_NAME_SPACE_][self::_ADMIN_IP_ADDR_] = $var;
+		$_SERVER[self::_SERVER_IS_ADMIN_] = $_SERVER['REMOTE_ADDR'] === $var ? true: false;
+		self::_init_error();
+	}
+	
 	static function GetAdminMailAddress()
 	{
 		if(!empty($_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_]) ){
@@ -1919,8 +1914,9 @@ class Env
 		list( $key, $var ) = self::_Convert( $key, $var );
 
 		//	Reset admin flag.
-		if( $key === 'ADMIN_IP' ){
-			$_SERVER['OP_IS_ADMIN'] = null;
+		if( $key === self::_ADMIN_IP_ADDR_ ){
+			self::SetAdminIpAddress($var);
+			return;
 		}
 		
 		//	Admin's E-Mail
