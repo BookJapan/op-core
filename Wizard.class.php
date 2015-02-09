@@ -171,8 +171,8 @@ class Wizard extends OnePiece5
 		$config = Toolbox::toConfig($config);
 		
 		//	name to database
-		if( isset($config->database->name) ){
-			$config->database->database = (string)$config->database->name;
+		if( isset($config->database->name) and is_string($config->database->name)){
+			$config->database->database = $config->database->name;
 		}
 		
 		//	check key
@@ -571,7 +571,7 @@ class Wizard extends OnePiece5
 		$port  = $database->port;
 		$user  = $database->user;
 		$db    = $database->database;
-		
+				
 		//	if set name as database name.
 		if( isset($database->name) ){
 			$db = $database->name;

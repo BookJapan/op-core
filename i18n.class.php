@@ -405,14 +405,14 @@ class Config_i18n extends OnePiece5
 			
 			//	loop to each value
 			foreach(array('driver','host','port','user','password','database','charset','name') as $key){
-				if( $key === 'name'){ continue; }
+			//	if( $key === 'name'){ continue; }
 				if(!is_string($config->$key)){
 					$config->{$key} = $this->_database->$key;
 				}
 			}
 			
 			//	use name property
-			if( $config->name->isEmpty() ){
+			if( isset($config->name) ){
 				$config->name = $config->database;
 			}else{
 				$config->database = $config->name;
