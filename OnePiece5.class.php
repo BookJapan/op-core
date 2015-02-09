@@ -1864,7 +1864,13 @@ class Env
 	static function SetAdminIpAddress($var)
 	{
 		$_SERVER[self::_NAME_SPACE_][self::_ADMIN_IP_ADDR_] = $var;
-		$_SERVER[self::_SERVER_IS_ADMIN_] = $_SERVER['REMOTE_ADDR'] === $var ? true: false;
+		if( $_SERVER[self::_SERVER_IS_LOCALHOST_] ){
+			$io = true;
+		}else{
+			$io = $_SERVER['REMOTE_ADDR'] === $var ? true: false;
+		}
+		$_SERVER[self::_SERVER_IS_ADMIN_] = $io;
+		
 		self::_init_error();
 	}
 	
