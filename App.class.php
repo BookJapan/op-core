@@ -334,4 +334,15 @@ class App extends NewWorld5
 		}
 		return $model;
 	}
+	
+	/**
+	 * Import is wrapper of Template method.
+	 * 
+	 * @param  string $path
+	 * @return Ambigous <string, boolean>
+	 */
+	function Import($path)
+	{
+		return $this->Template($path);
+	}
 }
