@@ -1595,6 +1595,11 @@ class OpException extends Exception
  * 
  * Creation: 2014-01-22
  * Release:  2014-09-17
+ * 
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2014 (C) Tomoaki Nagahara All right reserved.
  */
 class Env
 {
@@ -1684,13 +1689,13 @@ class Env
 		error_reporting( E_ALL );
 		ini_set('display_errors',1);
 		
-		//  recovery (display_errors)
+		//	If not an administrator.
 		if(!OnePiece5::Admin()){
+			//  recovery (display_errors)
 			ini_set('display_errors',0);
+			//  recovery (error_reporting)
+			error_reporting( $save_level );
 		}
-		
-		//  recovery (error_reporting)
-		error_reporting( $save_level );
 	}
 	
 	/*
