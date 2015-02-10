@@ -1747,10 +1747,13 @@ class Env
 	private static function _init_mark_label()
 	{
 		//  mark_label
-		if( isset($_GET['mark_label']) ){
+		if( OnePiece5::Admin() and isset($_GET['mark_label']) ){
 			$mark_label = $_GET['mark_label'];
 			$mark_value = $_GET['mark_label_value'];
 			Developer::SaveMarkLabelValue($mark_label,$mark_value);
+			list($uri) = explode('?',$_SERVER['REQUEST_URI'].'?');
+		//	header("Location: $uri");
+		//	exit;
 		}
 	}
 	
@@ -1874,6 +1877,7 @@ class Env
 		$_SERVER[self::_SERVER_IS_ADMIN_] = $io;
 		
 		self::_init_error();
+		self::_init_mark_label();
 	}
 	
 	static function GetAdminMailAddress()
