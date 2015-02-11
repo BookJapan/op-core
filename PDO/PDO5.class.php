@@ -236,7 +236,7 @@ class PDO5 extends OnePiece5
 		//	check
 		foreach( array('driver','host','user') as $key ){
 			if( empty($this->$key) ){
-				$this->StackError("Empty $key");
+				$this->StackError("\'$key'\ is empty.",'en');
 				return false;
 			}
 		}
@@ -255,7 +255,7 @@ class PDO5 extends OnePiece5
 			
 			//	Instance PDO
 			if(!$this->pdo = new PDO( $dns, $this->user, $password, $options )){
-				$this->StackError("Can not connect database. ( $dns, {$this->user} )");
+				$this->StackError("Can not connect database. \( $dns, {$this->user} )\ ",'en');
 				return false;
 			}
 		}catch( PDOException $e){
