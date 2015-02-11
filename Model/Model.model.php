@@ -87,18 +87,21 @@ abstract class Config_Model extends OnePiece5
 	function _insert()
 	{
 		$config = new Config();
+		$config->set->created = gmdate('Y-m-d H:i:s');
 		return $config;
 	}
 	
 	function _update()
 	{
 		$config = new Config();
+		$config->set->updated = gmdate('Y-m-d H:i:s');
 		return $config;
 	}
 	
 	function _delete()
 	{
 		$config = new Config();
+		$config->set->deleted = gmdate('Y-m-d H:i:s');
 		return $config;
 	}
 }
