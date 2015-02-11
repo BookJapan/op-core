@@ -409,6 +409,9 @@ abstract class NewWorld5 extends OnePiece5
 	function GetArgs()
 	{
 		$route = $this->GetEnv('route');
+		if(!$route){
+			$this->StackError("Route table is not initialized.",'en');
+		}
 		$args  = $route['args'];
 		return $args;
 	}
