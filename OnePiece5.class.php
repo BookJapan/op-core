@@ -684,7 +684,7 @@ class OnePiece5
 	 * @param string $tag
 	 * @param array $attr
 	 */
-	static function P( $str='OnePiece!', $tag='p', $attr=null)
+	static function P( $str, $tag='p', $attr=null)
 	{
 		if( Toolbox::isHtml() ){
 			print self::Html( $str, $tag, $attr );
