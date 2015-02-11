@@ -22,22 +22,28 @@
  */
 abstract class Model_Model extends OnePiece5
 {
+	/**
+	 * Wrapper PDO5 of OnePiece5
+	 * 
+	 * @return PDO5
+	 */
 	function pdo()
 	{
-		static $pdo;
-		if(!$pdo){
-			$pdo = parent::PDO();	
-			if(!$pdo->isConnect()){
-				
-				//  get database config
-				$config = $this->config()->database();
-				$config->password = ';';
-				$this->d($config);
-				
-				//  database connection
-				if(!$io = $pdo->Connect($config)){
-					$this->mark();
-				}
+		$pdo = parent::PDO();	
+		if(!$pdo->isConnect()){
+			
+			//  get database config
+			$database = $this->config()->database();
+			
+			//	databaes name
+			if( isset($database->name) ){
+				$database->database = $database->name;
+			}
+			
+			//  database connection
+			if(!$io = $pdo->Connect($database)){
+				$this->p('![.red[Failed to connect database.]]');
+				$this->d($database);
 			}
 		}
 		return $pdo;
@@ -56,6 +62,19 @@ abstract class Model_Model extends OnePiece5
  */
 abstract class Config_Model extends OnePiece5
 {
+	function _database( $user_name=null )
+	{
+		$database = new Config();
+		$database->driver	 = 'mysql';
+		$database->host		 = 'localhost';
+		$database->port		 = '3306';
+		$database->name		 = 'onepiece';
+		$database->charset	 = 'utf8';
+		$database->user		 = $user_name ? $user_name: 'op_mdl_model';
+		$database->password	 = md5($_SERVER['SERVER_ADDR'].', '.$database->name.', '.$database->user);
+		return $database;
+	}
+	
 	function _select()
 	{
 		$config = new Config();
