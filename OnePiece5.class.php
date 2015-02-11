@@ -607,7 +607,6 @@ class OnePiece5
 		
 		//	message
 		if( is_int($str) ){
-			var_dump((string)$str);
 			$str = (string)$str;
 		}else
 		if( is_null($str) ){
