@@ -322,13 +322,15 @@ class DDL5 extends OnePiece5
 			$first		 = (isset($temp['first']) and $temp['first']) ? $temp['first'] : null; // Add top.
 			$after		 = (isset($temp['after']) and $temp['after']) ? $temp['after'] : null; // Add after specified column.
 			
-			$ai			 = isset($temp['auto_increment']) ? $temp['auto_increment']: null;
-			$ai			 = isset($temp['a_i'])    ? $temp['a_i']  : null;
-			$ai			 = isset($temp['ai'])     ? $temp['ai']   : null;
-			$pkey		 = isset($temp['pkey'])   ? $temp['pkey'] : null;
-			$index		 = isset($temp['index'])  ? $temp['index']: null;
-			$unique		 = isset($temp['unique']) ? $temp['unique']: null;
+			$ai			 = isset($temp['auto_increment'])	 ? $temp['auto_increment']	 : null;
+			$ai			 = isset($temp['a_i'])				 ? $temp['a_i']				 : $ai;
+			$ai			 = isset($temp['ai'])				 ? $temp['ai']				 : $ai;
+			$pkey		 = isset($temp['primary_key'])		 ? $temp['primary_key']		 : null;
+			$pkey		 = isset($temp['pkey'])				 ? $temp['pkey']			 : $pkey;
+			$index		 = isset($temp['index'])			 ? $temp['index']			 : null;
+			$unique		 = isset($temp['unique'])			 ? $temp['unique']			 : null;
 			
+			//	Quote value
 			$name		 = ConfigSQL::Quote($name,$this->driver);
 			$type		 = ConfigSQL::QuoteType($type,$this->driver);
 			$rename		 = ConfigSQL::Quote($rename,$this->driver);
@@ -387,7 +389,7 @@ class DDL5 extends OnePiece5
 				$type = 'INT';
 				$pkey = true;
 			}
-						
+			
 			//	PRIMARY KEY
 			if( $pkey ){
 			//	$pkey = "PRIMARY KEY"; // TODO: only mysql, other engine unknown.
@@ -463,7 +465,7 @@ class DDL5 extends OnePiece5
 			//  Create define
 			switch($ACD){
 				case '':
-					$definition = "$name $type $charset $collate $attributes $pkey  $null $default $comment";
+					$definition = "$name $type $charset $collate $attributes $pkey $null $default $comment";
 					break;
 					
 				case 'CHANGE':
