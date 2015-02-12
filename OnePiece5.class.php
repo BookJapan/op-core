@@ -1154,8 +1154,9 @@ class OnePiece5
 		
 		// 2nd check
 		if(!file_exists($path)){
-			$this->StackError("This template file does not exist. \(file=$file, path=$path)\ ",'en');
-			return false;	
+			$message = $this->i18n()->Bulk("This template file does not exist.");
+			$this->StackError("$message path=$path");
+			return false;
 		}
 		
 		// extract array
