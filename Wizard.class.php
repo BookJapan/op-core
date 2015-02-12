@@ -770,7 +770,6 @@ class Wizard extends OnePiece5
 				
 				//	Check length
 				}else if( $length and $length != $structs[$column_name]['length'] ){
-					
 					$fail = true;
 					$hint = "length is $length not {$structs[$column_name]['length']}";
 					

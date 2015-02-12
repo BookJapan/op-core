@@ -444,10 +444,19 @@ class PDO5 extends OnePiece5
 			$record = array_change_key_case( $record, CASE_LOWER );
 			$name = $record['field'];
 			
-			//	int(11), char(10), enum('A','B')
-			if( preg_match('|^([a-z]+)\(([-_a-z0-9\'\,]+)\)$|i',$record['type'],$match) ){
+			//	int(11), char(10), enum('A','B'), int(10) unsigned
+			if( preg_match("|^([a-z]+)(\(.+\))?(.+)?|i",$record['type'],$match) ){
 				$record['type']   = $match[1];
-				$record['length'] = $match[2];
+				$record['length'] = isset($match[2]) ? trim($match[2],'()'): null;
+				if(isset($match[3])){
+					$record['attribute'] = $match[3];
+					if( preg_match('/unsigned/',$match[3]) ){
+						$record['unsigned'] = true;
+					}
+					if( preg_match('/zerofill/',$match[3]) ){
+						$record['zerofill'] = true;
+					} 
+				}
 			}else{
 				$record['type']   = $record['type'];
 				$record['length'] = null;

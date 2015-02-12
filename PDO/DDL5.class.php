@@ -344,22 +344,6 @@ class DDL5 extends OnePiece5
 			$first		 = ConfigSQL::Quote($first,$this->driver);
 			$after		 = ConfigSQL::Quote($after,$this->driver);
 			
-			/*
-			//	type flag
-			$is_int = null;
-			$is_str = null;
-			
-			switch($type){
-				case 'TEXT':
-				case 'CHAR':
-				case 'VARCHAR':
-					$is_str = true;
-					break;
-				default:
-					$is_int = true;
-			}
-			*/
-			
 			if( $length and $type !== 'ENUM' and $type !== 'SET' ){
 				if(!is_numeric($length)){
 					$length	 = $this->pdo->quote($length);
@@ -490,7 +474,7 @@ class DDL5 extends OnePiece5
 			//  Create define
 			switch($ACD){
 				case '':
-					$definition = "$name $type $charset $collate $attributes $pkey $null $default $comment";
+					$definition = "$name $type $unsigned $charset $collate $attributes $pkey $null $default $comment";
 					break;
 					
 				case 'CHANGE':
@@ -502,7 +486,7 @@ class DDL5 extends OnePiece5
 				//	ALTER TABLE `t_table` ADD `id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`thread_id`) ;
 				//	ALTER TABLE `t_table` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
 				//	ALTER TABLE `t_table`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
-					$definition = "$ACD $index $rename $name $type $unsigned $attributes $null $default $comment $first $after";
+					$definition = "$ACD $index $rename $name $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
 					break;
 	
 				case 'DROP':
