@@ -592,8 +592,7 @@ class Toolbox
 	
 	static function ConvertPath($path)
 	{
-		$path = self::ConvertMeta($path);
-		return $path;
+		return self::ConvertMeta($path);
 	}
 	
 	static function ConvertURL($url)
@@ -640,9 +639,8 @@ class Toolbox
 		
 		//	Check root
 		if(!preg_match($pattern,$path,$match)){
-			//	unmatch metaphor word
-			OnePiece5::Mark("![.blue[$pattern]], ![.red[$path]]",__FUNCTION__);
-			return false;
+			//	unmatch metaphor.
+			return $url;
 		}
 		
 		//	Remove document root part.
