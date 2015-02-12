@@ -1407,14 +1407,17 @@ class ConfigSQL extends OnePiece5
 	static function Quote( $var, $driver )
 	{
 		list( $ql, $qr ) = self::GetQuote($driver);
-		
+		return self::_Quote( $var, $ql, $qr );
+	}
+	
+	static function _Quote( $var, $ql, $qr )
+	{
 		if( is_array($var) ){
 			$safe = null;
 			foreach( $var as $key => $tmp ){
-				$safe[$key] = self::Quote( $tmp, $driver );
+				$safe[$key] = self::_Quote( $tmp, $ql, $qr );
 			}
 		}else if( is_string($var) and strlen($var) ){
-			
 			//	Replase quote
 			$patt = ($ql === $qr) ? $ql: $ql.$qr;
 			$patt = preg_quote($patt,'/');
@@ -1447,6 +1450,6 @@ class ConfigSQL extends OnePiece5
 	
 	static function CacheKey( $args )
 	{
-		return md5(serialize(toolbox::toarray($args)));
+		return md5(serialize(Toolbox::toArray($args)));
 	}
 }
