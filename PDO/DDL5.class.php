@@ -310,6 +310,7 @@ class DDL5 extends OnePiece5
 			$length		 = isset($temp['length'])     ? $temp['length']           : null;
 			$value		 = isset($temp['value'])      ? $temp['value']            : null; // 複数形苦手対応
 			$values		 = isset($temp['values'])     ? $temp['values']           : $value;
+			$unsigned	 = isset($temp['unsigned'])   ? $temp['unsigned']         : null;
 			$attribute	 = isset($temp['attribute'])  ? $temp['attribute']        : null; // 複数形苦手対応
 			$attributes	 = isset($temp['attributes']) ? $temp['attributes']       : $attribute;
 			$charset	 = isset($temp['charset'])	  ? $temp['charset']          : null;
@@ -342,6 +343,22 @@ class DDL5 extends OnePiece5
 			$default	 = ConfigSQL::Quote($default,$this->driver);
 			$first		 = ConfigSQL::Quote($first,$this->driver);
 			$after		 = ConfigSQL::Quote($after,$this->driver);
+			
+			/*
+			//	type flag
+			$is_int = null;
+			$is_str = null;
+			
+			switch($type){
+				case 'TEXT':
+				case 'CHAR':
+				case 'VARCHAR':
+					$is_str = true;
+					break;
+				default:
+					$is_int = true;
+			}
+			*/
 			
 			if( $length and $type !== 'ENUM' and $type !== 'SET' ){
 				if(!is_numeric($length)){
@@ -386,8 +403,11 @@ class DDL5 extends OnePiece5
 			//	auto_increment
 			if( $ai ){
 				$attributes = "AUTO_INCREMENT";
-				$type = 'INT';
+				$unsigned = true;
 				$pkey = true;
+				if(!$type){
+					$type = 'INT';
+				}
 			}
 			
 			//	PRIMARY KEY
@@ -462,6 +482,11 @@ class DDL5 extends OnePiece5
 				$null = $null ? 'NULL': 'NOT NULL';
 			}
 			
+			//	 unsigned
+			if( $unsigned ){
+				$unsigned = 'UNSIGNED';
+			}
+			
 			//  Create define
 			switch($ACD){
 				case '':
@@ -474,9 +499,10 @@ class DDL5 extends OnePiece5
 					}
 					
 				case 'ADD':
-				//	ALTER TABLE `op_message` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
-				//	ALTER TABLE `op_sandbox`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
-					$definition = "$ACD $index $rename $name $type $attributes $null $default $comment $first $after";
+				//	ALTER TABLE `t_table` ADD `id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`thread_id`) ;
+				//	ALTER TABLE `t_table` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
+				//	ALTER TABLE `t_table`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
+					$definition = "$ACD $index $rename $name $type $unsigned $attributes $null $default $comment $first $after";
 					break;
 	
 				case 'DROP':
