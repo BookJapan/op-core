@@ -23,6 +23,11 @@ class PDO5 extends OnePiece5
 	private $database	 = null;
 	private $charset	 = null;
 	
+	function Debug()
+	{
+		$this->D($this->qus);
+	}
+	
 	/**
 	 * 
 	 * @param  string $name
