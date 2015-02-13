@@ -268,6 +268,7 @@ class PDO5 extends OnePiece5
 			
 			//	Create DNS
 			$dns = "{$this->driver}:{$db}host={$this->host}";
+			$this->Qu($dns);
 			
 			//	Instance PDO
 			if(!$this->pdo = new PDO( $dns, $this->user, $password, $options )){
