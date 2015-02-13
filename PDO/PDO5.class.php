@@ -106,6 +106,12 @@ class PDO5 extends OnePiece5
 		return $this->dcl;
 	}
 	
+	/**
+	 * Set/Get SQL Query string
+	 * 
+	 * @param  string|null $query
+	 * @return string
+	 */
 	function Qu($qu=null)
 	{
 		if( $qu ){
@@ -119,6 +125,11 @@ class PDO5 extends OnePiece5
 		return $qu;
 	}
 	
+	/**
+	 * Get all SQL Query
+	 * 
+	 * @return array:
+	 */
 	function Qus()
 	{
 		return $this->qus;
