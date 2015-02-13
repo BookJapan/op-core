@@ -26,11 +26,18 @@ class Autoloader
 	static function Autoload( $class_name )
 	{
 		//	Check alias name
+		/*
 		if( $table = Env::Get(self::_KEY_TABLE_) ){
 			if( isset($table[$class_name]) ){
 				$class_name = $table[$class_name];
 			}
 		}
+		*/
+		if( isset(self::$_table[$class_name]) ){
+			print 'match!!';
+			$class_name = $table[$class_name];
+		}
+		
 		
 		//	Checking used sub directory.
 		if( $pos = strpos($class_name,'_',1) ){
@@ -88,12 +95,12 @@ class Autoloader
 	}
 	
 	const _KEY_TABLE_ = 'autoloader_alias_table';
-	
+	static $_table;
 	static function SetAlias( $alias, $original )
 	{
-		$table = Env::Get(self::_KEY_TABLE_);
-		$table[$alias] = $original;
-		Env::Set(self::_KEY_TABLE_, $table);
+	//	$table = Env::Get(self::_KEY_TABLE_);
+		self::$_table[$alias] = $original;
+	//	Env::Set(self::_KEY_TABLE_, $table);
 	}
 	
 	static function _class( $class_name )
