@@ -285,7 +285,7 @@ class PDO5 extends OnePiece5
 		
 		//  Database select
 		if( $this->database ){
-			$this->Database( $this->database, $this->charset );
+			$this->SetDatabase( $this->database, $this->charset );
 		}
 		
 		//  connected flag
