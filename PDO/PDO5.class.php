@@ -1119,19 +1119,19 @@ class PDO5 extends OnePiece5
 	function Select( $args )
 	{
 		if(!$this->isConnect){
-			$this->StackError("Not connected. (isConnect is false)");
+			$this->StackError("Not connected. (isConnect is false)",'en');
 			return false;
 		}
 		
 		//  Check
 		if(!$this->pdo){
-			$this->StackError("Does not instanced PDO object.");
+			$this->StackError("Does not instanced PDO object.",'en');
 			return false;
 		}
 		
 		//	empty config
 		if( empty($args) ){
-			$this->StackError("Does not set config. (empty)");
+			$this->StackError("Does not set argument. (empty)",'en');
 			return false;
 		}
 		
