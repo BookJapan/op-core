@@ -22,18 +22,6 @@
  */
 class Autoloader
 {
-	static function preload()
-	{
-		//	init preload pool.
-		if(!isset($_SESSION['_ONE_PIECE_']['_AUTOLODER_PRE_LOAD_'])){
-			$_SESSION['_ONE_PIECE_']['_AUTOLODER_PRE_LOAD_'] = array();
-		}
-		foreach( $_SESSION['_ONE_PIECE_']['_AUTOLODER_PRE_LOAD_'] as $file_path ){
-			include_once($file_path);
-		}
-		return count($_SESSION['_ONE_PIECE_']['_AUTOLODER_PRE_LOAD_']);
-	}
-	
 	static function Autoload( $class_name )
 	{
 		//	Checking used sub directory.
@@ -79,11 +67,6 @@ class Autoloader
 			$file_path = rtrim($path,DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$file_name;
 			if( $io = file_exists($file_path) ){
 				$io = include_once($file_path);
-				if( $io ){
-					//	pre-load faeture
-					$key = md5( basename($file_path) );
-					$_SESSION['_ONE_PIECE_']['_AUTOLODER_PRE_LOAD_'][$key] = $file_path;
-				}
 			}
 		}
 		/*
