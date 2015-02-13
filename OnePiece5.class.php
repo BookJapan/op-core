@@ -62,6 +62,7 @@ class OnePiece5
 {
 	const  KEY_COOKIE_UNIQ_ID	 = 'op-uniq-id';
 	const _KEY_COOKIE_UNIQ_ID_	 = self::KEY_COOKIE_UNIQ_ID;
+	const _KEY_SESSION_NAME_SPACE_ = '_ONE_PIECE_';
 	
 	private $errors  = array();
 	private $session = array();
@@ -261,7 +262,7 @@ class OnePiece5
 		session_cache_limiter('private_no_expire');
 
 		//  separate session.
-		$this->session = &$_SESSION[__CLASS__][get_class($this)];
+		$this->session = &$_SESSION[self::_KEY_SESSION_NAME_SPACE_][get_class($this)];
 	}
 	
 	/**
