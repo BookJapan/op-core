@@ -22,8 +22,19 @@
  */
 class Autoloader
 {
+	static $_alias_table;
+	static function SetAlias( $alias_name, $original_name )
+	{
+		self::$_alias_table[$alias_name] = $original_name;
+	}
+	
 	static function Autoload( $class_name )
 	{
+		//	In case of match to alias name.
+		if( isset(self::$_alias_table[$class_name]) ){
+			$class_name = self::$_alias_table[$class_name];
+		}
+		
 		//	Checking used sub directory.
 		if( $pos = strpos($class_name,'_',1) ){
 			list( $prefix, $class ) = explode('_',$class_name);
