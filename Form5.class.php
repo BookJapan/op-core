@@ -1536,7 +1536,7 @@ class Form5 extends OnePiece5
 		return null;
 	}
 	
-	public function Erase( $form_name, $force=false, $location=true )
+	public function Clear( $form_name, $force=false, $location=true )
 	{
 		if(!is_string($form_name)){
 			$this->mark('$form_name is not string.');
@@ -1573,26 +1573,6 @@ class Form5 extends OnePiece5
 		}
 		
 		return true;
-	}
-	
-	public function Delete( $form_name, $force=false, $location=false )
-	{
-		return $this->Erase($form_name, $force, $location);
-	}
-	
-	public function Remove( $form_name, $force=false, $location=false )
-	{
-		return $this->Erase($form_name, $force, $location);
-	}
-	
-	public function Clear( $form_name, $force=false, $auto_relocate=false )
-	{
-		return $this->Erase($form_name, $force, $auto_relocate);
-	}
-	
-	public function Flash( $form_name, $force=false, $location=false )
-	{
-		return $this->Erase($form_name, $force, $location);
 	}
 	
 	private function CreateInputTag( $input, $form_name, $value_default=null )
