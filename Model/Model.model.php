@@ -48,26 +48,6 @@ abstract class Model_Model extends OnePiece5
 		}
 		return $pdo;
 	}
-	
-	/**
-	 * Return the date by calculating the user's timezone. (Y-m-d H:i:s)
-	 *
-	 * @return string
-	 */
-	function Date($sec)
-	{
-		return date('Y-m-d H:i:s',$this->GmTime($sec));
-	}
-	
-	/**
-	 * Returns the number of seconds by calculating the user's timezone.
-	 *
-	 * @return integer
-	 */
-	function GmTime($sec)
-	{
-		return $sec + date('Z');
-	}
 }
 
 /**
