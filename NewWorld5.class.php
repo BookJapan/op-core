@@ -86,6 +86,12 @@ abstract class NewWorld5 extends OnePiece5
 		return $io;
 	}
 	
+	function Debug()
+	{
+		$debug['route'] = Env::Get('route');
+		$this->D($debug);
+	}
+	
 	function Init()
 	{
 		parent::Init();
