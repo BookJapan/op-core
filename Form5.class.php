@@ -1536,7 +1536,7 @@ class Form5 extends OnePiece5
 		return null;
 	}
 	
-	public function Clear( $form_name, $force=false, $location=true )
+	public function Clear( $form_name, $force=false, $location=false )
 	{
 		if(!is_string($form_name)){
 			$this->mark('$form_name is not string.');
@@ -2101,14 +2101,10 @@ class Form5 extends OnePiece5
 			
 			foreach($this->status->$form_name->error->$input_name as $key => $value){
 				
-			//	$key   = $this->i18n()->get($key);
-			//	$value = $this->i18n()->get($value);
-				
 				if( isset($input->error->$key) ){
 					$format = '![ $html ['.$input->error->$key.']]';
 				}else{
-					//	TODO: \$[_a-z][-_a-z0-9]* <- i18n's support variable
-					$format = $this->i18n()->Get('$label is error. This field is $key. ($value)');
+					$format = $this->i18n()->Get('\$label\ is error. This field is \$key\. (\$value\)');
 					$format = "![ $html [$format]]";
 				}
 				
