@@ -225,10 +225,17 @@ abstract class NewWorld5 extends OnePiece5
 		//  Check layout value.
 		if(!$layout = $this->GetEnv('layout') ){
 			if(is_null($layout)){
+				
 				//  Does not set layout.
-				if( $this->admin() ){
-					$this->p("![ .gray .small [Hint: layout uses \$app->SetEnv('layout','app:/path/to/your/self')]]");
+				if( $this instanceof App ){
+					$method = "\$this->SetLayoutName('layout-name');";
+				}else{
+					$method = "\$this->SetEnv('layout','app:/path/to/your/self');";
 				}
+				
+				//	Stack Error
+				$this->StackError("Layout is null, Use to $method.");
+				
 				$io = false;
 			}else if(empty($layout)){
 				$io = true;
