@@ -676,8 +676,15 @@ class Router extends OnePiece5
 			$dirs[] = array_pop($arr);
 		}
 		
+		//	path
+		if( count($dirs) ){
+			$path = '/'.join('/',array_reverse($dirs)).'/';
+		}else{
+			$path = '/';
+		}
+		
 		//	build route table.
-		$route['path'] = '/'.trim(join('/',array_reverse($dirs)),'/').'/';
+		$route['path'] = $path;
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
 		$route['full_path'] = rtrim($route['app_root'],'/').$route['path'].$route['file'];
