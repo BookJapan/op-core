@@ -355,7 +355,13 @@ class Toolbox
 		return $list;
 	}
 	
-	static function GetURL( $conf=array() )
+	/**
+	 * Get URL
+	 * 
+	 * @param  array $conf
+	 * @return string
+	 */
+	static function GetURL($conf=array())
 	{
 		//	cache feature
 		$ckey = md5(serialize($conf));
