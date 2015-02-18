@@ -130,7 +130,7 @@ class App extends NewWorld5
 		return $this->SetEnv('layout', $var);
 	}
 	
-	function GetTemplateDir( $var )
+	function GetTemplateDir()
 	{
 		return $this->GetEnv('template-dir');
 	}
@@ -358,13 +358,16 @@ class App extends NewWorld5
 	
 	function Dispatch($route=null)
 	{
-		$admin_ip = Env::Get('admin-ip');
+		$admin_ip	 = Env::Get('admin-ip');
 		$admin_email = Env::Get('admin-mail');
 		
-		if( $admin_ip and $admin_email ){
-			parent::Dispatch($route);
-		}else{
-			$this->Template('introduction-app.phtml');
+		if(!Toolbox::isLocalhost() and (!$admin_ip or !$admin_email) ){
+			$this->SetLayoutName(false);
+			$path = $this->ConvertPath($this->GetTemplateDir()).'introduction-app.phtml';
+			$route['full_path'] = $path;
+			$route['extension'] = 'phtml';
 		}
+		
+		parent::Dispatch($route);
 	}
 }
