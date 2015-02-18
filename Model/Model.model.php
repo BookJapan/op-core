@@ -95,6 +95,7 @@ abstract class Config_Model extends OnePiece5
 	{
 		$config = new Config();
 		$config->set->updated = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
 		return $config;
 	}
 	
@@ -102,6 +103,7 @@ abstract class Config_Model extends OnePiece5
 	{
 		$config = new Config();
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
+		$config->limit = 1;
 		return $config;
 	}
 }
