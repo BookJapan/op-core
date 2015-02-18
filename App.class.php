@@ -74,6 +74,16 @@ class App extends NewWorld5
 		}
 	}
 	
+	function SetAdminIP($var)
+	{
+		return $this->SetEnv('admin-ip', $var);
+	}
+	
+	function SetAdminEMail($var)
+	{
+		return $this->SetEnv('admin-mail', $var);
+	}
+	
 	function SetControllerName( $var )
 	{
 		return $this->SetEnv('controller-name', $var);
@@ -344,5 +354,17 @@ class App extends NewWorld5
 	function Import($path)
 	{
 		return $this->Template($path);
+	}
+	
+	function Dispatch($route=null)
+	{
+		$admin_ip = Env::Get('admin-ip');
+		$admin_email = Env::Get('admin-mail');
+		
+		if( $admin_ip and $admin_email ){
+			parent::Dispatch($route);
+		}else{
+			$this->Template('introduction-app.phtml');
+		}
 	}
 }
