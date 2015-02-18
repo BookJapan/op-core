@@ -504,7 +504,7 @@ class Wizard extends OnePiece5
 				$this->d(Toolbox::toArray($database));
 				
 				//	Discard
-				$this->form()->Flash($form_name);
+				$this->form()->Clear($form_name);
 			}else{
 				$this->model('Log')->Set("Connect {$database->user} account.",true);
 			}
