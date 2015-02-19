@@ -216,14 +216,14 @@ class Error
 	
 	static private function _toMail()
 	{
-		$from = $_SERVER['SERVER_ADMIN'];
+		$from_addr = get_current_user().'@'.$_SERVER['SERVER_ADDR'];
 		$from_name = 'op-core/Error';
 		
 		$to = Env::GetAdminMailAddress();
 		$subject = '[Error] '.self::_getMailSubject();
 		$message = '';
 		$headers = '';
-		$parameters = "-f $from";
+		$parameters = "-f $from_addr";
 	//	$boundary = "--".uniqid(rand(),1)."--";
 		
 		//	get html message
@@ -268,7 +268,7 @@ class Error
 	//	$headers .= "Content-Transfer-Encoding: binary\r\n";
 	//	$headers .= "MIME-Version: 1.0\r\n";
 		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
-		$headers .= "From: ".mb_encode_mimeheader($from_name)."<$from>\r\n";
+		$headers .= "From: ".mb_encode_mimeheader($from_name)."<$from_addr>\r\n";
 		
 		//	subject
 		$subject = mb_encode_mimeheader($subject);
