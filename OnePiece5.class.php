@@ -643,10 +643,11 @@ class OnePiece5
 	}
 	
 	/**
+	 * Display at html format.
 	 * 
-	 * @param string $str
-	 * @param string $tag
-	 * @param array  $attr
+	 * @param  string $str
+	 * @param  string $tag
+	 * @param  array  $attr
 	 * @return string
 	 */
 	static function Html($str, $tag='span', $attr=null)
@@ -680,13 +681,20 @@ class OnePiece5
 	}
 	
 	/**
+	 * Display at html format by p tag.
+	 * 
+	 * <pre>
+	 * Example:
+	 * $this->P('Message','div',array('class'=>'bold blue'));
+	 * </pre>
 	 * 
 	 * @param string $str
 	 * @param string $tag
-	 * @param array $attr
+	 * @param array  $attr
 	 */
 	static function P( $str, $tag='p', $attr=null)
 	{
+		//	In case of plain text.
 		if( Toolbox::isHtml() ){
 			print self::Html( $str, $tag, $attr );
 		}else{
@@ -696,6 +704,12 @@ class OnePiece5
 	}
 	
 	/**
+	 * Dump
+	 * 
+	 * <pre>
+	 * Example:
+	 * $this->D($_SESSION);
+	 * </pre>
 	 * 
 	 * @param string|array $args
 	 * @param string $use_get_flag
@@ -1833,6 +1847,8 @@ class Env
 		mb_detect_order($codes);
 		//mb_http_input();
 		//mb_http_output()
+		
+		//	set timezone
 		ini_set('date.timezone',$timezone);
 	}
 	
