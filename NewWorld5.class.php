@@ -102,7 +102,7 @@ abstract class NewWorld5 extends OnePiece5
 	}
 	
 	/**
-	 * Dispatch to the End-Point(End-point is page-controller file) by route arguments.
+	 * Dispatch to the End-Point by route arguments. (End-point is page-controller file) 
 	 * 
 	 * @param  array   $route
 	 * @return boolean
@@ -645,8 +645,10 @@ class Router extends OnePiece5
 	}
 	
 	/**
-	 * Search of end-point. (end-point is page-controller)
+	 * Search of end-point by route table. (end-point is page-controller)
 	 * 
+	 * @param  array $route
+	 * @return array
 	 */
 	static private function _GetRouteAsController($route)
 	{
@@ -699,8 +701,18 @@ class Router extends OnePiece5
 		return $route;
 	}
 	
+	/**
+	 * Used to _CheckFileExists method.
+	 * 
+	 * @var string
+	 */
 	const _KEY_FILE_DOES_NOT_EXISTS_ = 'file_does_not_exists';
 	
+	/**
+	 * Do check of file exists.
+	 * 
+	 * @param string $full_path
+	 */
 	static function _CheckFileExists($full_path)
 	{
 		//	If there is extension

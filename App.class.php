@@ -23,6 +23,12 @@ class App extends NewWorld5
 	 */
 	private $_args_keys_needle = ':';
 	
+	/**
+	 * Get URL-Argument. (SmartURL)
+	 * 
+	 * (non-PHPdoc)
+	 * @see NewWorld5::GetArgs()
+	 */
 	function GetArgs($key=null)
 	{
 		//	Accelerate
@@ -58,6 +64,11 @@ class App extends NewWorld5
 		return $result;
 	}
 	
+	/**
+	 * Get Action key name by URL.
+	 * 
+	 * @return string
+	 */
 	function GetAction()
 	{
 		$args = $this->GetArgs();
@@ -356,6 +367,13 @@ class App extends NewWorld5
 		return $this->Template($path);
 	}
 	
+	/**
+	 * Wrapper of NewWorld5's Dispatch method.
+	 * Do check of Admin-IP and Admin-Mail.
+	 * 
+	 * (non-PHPdoc)
+	 * @see NewWorld5::Dispatch()
+	 */
 	function Dispatch($route=null)
 	{
 		$admin_ip	 = Env::Get('admin-ip');
