@@ -88,6 +88,10 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function Debug()
 	{
+		if(!$this->Admin() ){
+			return;
+		}
+		$this->p('Debug of NewWorld5');
 		$debug['route'] = Env::Get('route');
 		$this->D($debug);
 	}
