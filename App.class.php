@@ -5,6 +5,9 @@
  * @author tomoaki.nagahara@gmail.com
  */
 
+/**
+ * include parent class
+ */
 if(!include_once('NewWorld5.class.php')){
 	exit(0);
 }
@@ -381,7 +384,7 @@ class App extends NewWorld5
 		
 		if(!Toolbox::isLocalhost() and (!$admin_ip or !$admin_email) ){
 			$this->SetLayoutName(false);
-			$path = $this->ConvertPath($this->GetTemplateDir()).'introduction-app.phtml';
+			$path = $this->ConvertPath('op:/Template/introduction-app.phtml');
 			$route['full_path'] = $path;
 			$route['extension'] = 'phtml';
 		}
