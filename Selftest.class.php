@@ -1,5 +1,4 @@
 <?php
-# vim: ts=4:sw=4:tw=80
 /**
  * Selftest.class.php
  * 
@@ -23,11 +22,17 @@
  */
 class Selftest extends OnePiece5
 {
+	/**
+	 * 
+	 */
 	const _KEY_SELFTEST_ = 'SELFTEST_CONFIG';
 	
-	function Set()
+	function Init()
 	{
-		
+		parent::Init();
+		if(!$this->Admin()){
+			$this->StackError("Not admin call.");
+		}
 	}
 	
 	function SetSelftestConfig( $key, Config $config )
