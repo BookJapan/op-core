@@ -640,10 +640,21 @@ class Router extends OnePiece5
 			$extension = null;
 		}
 		
+		//	Build route data.
+		$real_app_dir = dirname($_SERVER['SCRIPT_FILENAME']);
+		$rewrite_base = dirname($_SERVER['SCRIPT_NAME']);
+		$arguments    = preg_replace("|^$rewrite_base|", '', $_SERVER['REQUEST_URI']);
+		list($smart_url) = explode('?',$arguments.'?');
+		
+		//	Build base route table
+		$route['rewrite_base'] = $rewrite_base;
 		$route['app_root']  = $app_root;
-		$route['full_path'] = $_SERVER['DOCUMENT_ROOT'].$request_uri;
+		$route['meta_path'] = $_SERVER['DOCUMENT_ROOT'].$request_uri;
+		$route['real_path'] = $real_app_dir . $arguments;
 		$route['file_name'] = $file_name;
 		$route['extension'] = $extension;
+		$route['arguments'] = $arguments;
+		$route['smart_url'] = $smart_url;
 		
 		return $route;
 	}
@@ -662,7 +673,7 @@ class Router extends OnePiece5
 		}
 		
 		//	init
-		$arr = explode('/',$route['full_path']);
+		$arr = explode('/',$route['real_path']);
 		$dirs = array();
 		$args = array();
 		
@@ -696,11 +707,14 @@ class Router extends OnePiece5
 			$path = '/';
 		}
 		
+		//	full path
+		$full_path = rtrim($route['app_root'],'/') . $path . $controller;
+		
 		//	build route table.
 		$route['path'] = $path;
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
-		$route['full_path'] = rtrim($route['app_root'],'/').$route['path'].$route['file'];
+		$route['full_path'] = $full_path;
 		
 		return $route;
 	}
