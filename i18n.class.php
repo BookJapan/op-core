@@ -379,8 +379,8 @@ class Config_i18n extends OnePiece5
 		$this->_database->driver = 'mysql';
 		$this->_database->host	 = 'localhost';
 		$this->_database->port	 = '3306';
-		$this->_database->user	 = 'i18n';
-		$this->_database->password	 = '';
+		$this->_database->user	 = 'op_i18n';
+		$this->_database->password	 = 'i18n';
 		$this->_database->database	 = 'onepiece';
 		$this->_database->charset	 = 'utf8';
 		$this->_database->table_prefix = 'op';
