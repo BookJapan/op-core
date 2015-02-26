@@ -47,6 +47,11 @@ class Selftest extends OnePiece5
 		return $this->GetSession(self::_KEY_SELFTEST_);
 	}
 	
+	function ClearSelftestConfig()
+	{
+		$this->SetSession(self::_KEY_SELFTEST_, null);
+	}
+	
 	function Execute()
 	{
 		//	each per config.
