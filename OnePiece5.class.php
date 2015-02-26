@@ -731,8 +731,12 @@ class OnePiece5
 		
 		//	CLI
 		if( self::GetEnv('cli') ){
+			$mime = Toolbox::GetMIME(1);
+			$flag = ($mime == 'js' or $mime == 'css') ? true: false;
+			if( $flag ){ print '/*'.PHP_EOL; }
 			self::p($line);
-			var_dump($args);
+			print_r($args);
+			if( $flag ){ print '*/'.PHP_EOL; }
 			return;
 		}
 		
