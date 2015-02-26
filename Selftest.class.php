@@ -60,4 +60,39 @@ class Selftest extends OnePiece5
 			$this->PDO()->Connect($config->database);
 		}
 	}
+	
+	function CheckConnection()
+	{
+		
+	} 
+	
+	function CheckDatabase()
+	{
+		
+	}
+	
+	function CheckTable()
+	{
+		
+	}
+	
+	function CheckColumn()
+	{
+		
+	}
+	
+	function CheckIndex()
+	{
+		
+	}
+	
+	function CheckAlter()
+	{
+		
+	}
+	
+	function CheckUser()
+	{
+		
+	}
 }
