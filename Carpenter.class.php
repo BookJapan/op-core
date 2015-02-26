@@ -29,4 +29,34 @@ class Carpenter extends OnePiece5
 			$this->StackError("Not admin call.");
 		}
 	}
+	
+	function CreateDatabase()
+	{
+		
+	}
+	
+	function CreateTable()
+	{
+		
+	}
+	
+	function CreateColumn()
+	{
+		
+	}
+	
+	function CreateIndex()
+	{
+		
+	}
+	
+	function CreateUser()
+	{
+		
+	}
+	
+	function CreateAlter()
+	{
+		
+	}
 }
