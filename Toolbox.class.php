@@ -636,12 +636,14 @@ class Toolbox
 		$app_root = preg_quote($app_root,'/');
 		$pattern  = "/^($app_root)/";
 		
+		/*
 		//	Alias root
-		if( isset($_SERVER['ALIAS_ROOT']) ){
-			$ali_root = $_SERVER['ALIAS_ROOT'];
+		if( isset($_SERVER['REWRITE_BASE']) ){
+			$ali_root = $_SERVER['REWRITE_BASE'];
 			$ali_root = preg_quote($ali_root,'/');
 			$pattern  = "/^($app_root|$ali_root)/";
 		}
+		*/
 		
 		//	Check root
 		if(!preg_match($pattern,$path,$match)){
@@ -654,8 +656,7 @@ class Toolbox
 		$url  = preg_replace("|^$patt|",'',$path);
 		
 		//	Added base directory from document root path.
-		$rewrite_base = isset($_SERVER['REWRITE_BASE']) ? $_SERVER['REWRITE_BASE']: null;
-		$url = $rewrite_base . $url;
+		$url = $_SERVER['REWRITE_BASE'] . $url;
 		
 		return $url;
 	}

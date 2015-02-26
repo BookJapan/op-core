@@ -53,9 +53,11 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	Get Rewrite base.
+		/*
 		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
 		$path = preg_replace("|^$patt|", '', $_SERVER['SCRIPT_FILENAME']);
 		$_SERVER['REWRITE_BASE'] = rtrim(dirname($path),'/').'/';
+		*/
 		
 		parent::__construct($args);
 	}
@@ -112,7 +114,7 @@ abstract class NewWorld5 extends OnePiece5
 	 * @return boolean
 	 */
 	function Dispatch($route=null)
-	{	
+	{
 		// Deny many times dispatch.
 		if( $this->_isDispatch ){
 			$this->StackError("Dispatched two times. (Dispatched only one time.)");
@@ -164,7 +166,7 @@ abstract class NewWorld5 extends OnePiece5
 	private function _doContent($route)
 	{
 		//	Get controller root
-		$ctrl_root = dirname($route['full_path']);
+		$ctrl_root = dirname($route['real_path']);
 		
 		//	Check exists controller root
 		if(!$io = file_exists($ctrl_root)){
@@ -219,7 +221,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  Execute.
-		$this->Template( $route['full_path'] );
+		$this->Template( $route['real_path'] );
 		
 		return true;
 	}
@@ -597,7 +599,7 @@ class Router extends OnePiece5
 		
 		//	
 		$route = self::_GetRouteAsBase($request_uri);
-		
+				
 		//	If file have extension.
 		if( $route['extension'] ){
 			//	If file extension as css or js.
@@ -620,7 +622,7 @@ class Router extends OnePiece5
 		
 		//	Admin Notification
 		if( self::admin() ){
-			self::_CheckFileExists($route['full_path']);
+			self::_CheckFileExists($route['real_path']);
 		}
 		
 		return $route;
@@ -641,20 +643,35 @@ class Router extends OnePiece5
 		}
 		
 		//	Build route data.
-		$real_app_dir = dirname($_SERVER['SCRIPT_FILENAME']);
-		$rewrite_base = dirname($_SERVER['SCRIPT_NAME']);
+		$real_app_dir = dirname($_SERVER['SCRIPT_FILENAME']).'/';
+
+		$route['$real_app_dir'] = $real_app_dir;
+		
+		$rewrite_base = dirname($_SERVER['SCRIPT_NAME']).'/';
 		$arguments    = preg_replace("|^$rewrite_base|", '', $_SERVER['REQUEST_URI']);
+
+		$route['$arguments'] = $arguments;
+		
 		list($smart_url) = explode('?',$arguments.'?');
+		
+		$rewrite_base = rtrim($rewrite_base,'/').'/';
+		$real_path = rtrim($real_app_dir,'/').'/'. ltrim($smart_url,'/');
+
+		$route['$real_path'] = $real_path;
 		
 		//	Build base route table
 		$route['rewrite_base'] = $rewrite_base;
 		$route['app_root']  = $app_root;
 		$route['meta_path'] = $_SERVER['DOCUMENT_ROOT'].$request_uri;
-		$route['real_path'] = $real_app_dir . $arguments;
+		$route['real_path'] = $real_path;
 		$route['file_name'] = $file_name;
 		$route['extension'] = $extension;
 		$route['arguments'] = $arguments;
 		$route['smart_url'] = $smart_url;
+		
+		
+		//	SET REWRITE_BASE
+		$_SERVER['REWRITE_BASE'] = rtrim($rewrite_base,'/').'/';
 		
 		return $route;
 	}
@@ -708,13 +725,13 @@ class Router extends OnePiece5
 		}
 		
 		//	full path
-		$full_path = rtrim($route['app_root'],'/') . $path . $controller;
+		$real_path = rtrim($route['app_root'],'/') . $path . $controller;
 		
 		//	build route table.
 		$route['path'] = $path;
 		$route['file'] = $controller;
 		$route['args'] = array_reverse($args);
-		$route['full_path'] = $full_path;
+		$route['real_path'] = $real_path;
 		
 		return $route;
 	}
@@ -729,14 +746,14 @@ class Router extends OnePiece5
 	/**
 	 * Do check of file exists.
 	 * 
-	 * @param string $full_path
+	 * @param string $real_path
 	 */
-	static function _CheckFileExists($full_path)
+	static function _CheckFileExists($real_path)
 	{
 		//	If there is extension
-		if( preg_match('|\.[a-z0-9]{2,4}$|i', $full_path, $match ) ){
-			if(!file_exists($full_path)){
-				$_SESSION[self::_KEY_FILE_DOES_NOT_EXISTS_] = $full_path;
+		if( preg_match('|\.[a-z0-9]{2,4}$|i', $real_path, $match ) ){
+			if(!file_exists($real_path)){
+				$_SESSION[self::_KEY_FILE_DOES_NOT_EXISTS_] = $real_path;
 			}
 		}
 	}
