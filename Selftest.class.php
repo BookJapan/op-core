@@ -95,4 +95,14 @@ class Selftest extends OnePiece5
 	{
 		
 	}
+	
+	function GetReceipt()
+	{
+		
+	}
+	
+	function GetBlueprint()
+	{
+		
+	}
 }
