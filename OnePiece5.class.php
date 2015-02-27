@@ -41,12 +41,12 @@ Env::Init();
 //	Register shutdown function
 register_shutdown_function('Env::Shutdown');
 
-//	
-$level = $_SERVER['HTTP_HOST'] === 'localhost' ? E_ALL | E_STRICT: error_reporting();
-set_error_handler('OnePiece5::ErrorHandler',$level);
+//	Set error heandler
+$level = Toolbox::isLocalhost() ? E_ALL | E_STRICT: error_reporting();
+set_error_handler('Error::Handler',$level);
 
-//	
-set_exception_handler('OnePiece5::ErrorExceptionHandler');
+//	Set exception handler
+set_exception_handler('Error::ExceptionHandler');
 
 /**
  * OnePiece5
