@@ -116,10 +116,12 @@ class Router extends OnePiece5
 		
 		//	Check alias.
 		if( preg_match("|^($doc_root)(.*)|",$app_root,$match) ){
+			//	not alias
 			$is_alias = false;
 			$real_app_dir = $match[1];
 			$rewrite_base = $match[2] ? $match[2]: '/';
 		}else{
+			//	alias
 			$is_alias = true;
 			$rewrite_base = dirname($_SERVER['SCRIPT_NAME']).'/';
 			$real_app_dir = dirname($_SERVER['SCRIPT_FILENAME']);
@@ -128,7 +130,15 @@ class Router extends OnePiece5
 		//	Build route data.
 		$arguments    = preg_replace("|^$rewrite_base|", '', $_SERVER['REQUEST_URI']);
 		list($smart_url) = explode('?',$arguments.'?');
-		$real_path = $real_app_dir . $rewrite_base . $smart_url;
+		
+		//	Build real path
+		if(!$is_alias ){
+			//	not alias
+			$real_path = $real_app_dir . $rewrite_base . $smart_url;
+		}else{
+			//	alias
+			$real_path = $real_app_dir .'/'. $smart_url;
+		}
 		
 		/*
 		//	debug
