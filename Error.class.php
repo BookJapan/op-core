@@ -57,6 +57,9 @@ class Error
 			$line      = $e->getLine();
 			$prev      = $e->getPrevious();
 			$code      = $e->getCode();
+			if( method_exists($e,'getLang') ){
+				$translation = $e->getLang();
+			}
 		}else{
 			//	is message
 			$message = $e;
