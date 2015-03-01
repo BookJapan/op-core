@@ -73,8 +73,13 @@ abstract class Config_Model extends OnePiece5
 		$database->name		 = 'onepiece';
 		$database->charset	 = 'utf8';
 		$database->user		 = $user_name ? $user_name: 'op_mdl_model';
-		$database->password	 = md5($_SERVER['SERVER_ADDR'].', '.$database->name.', '.$database->user);
+		$database->password	 = $this->_password($database);
 		return $database;
+	}
+	
+	function _password($database)
+	{
+		return md5($_SERVER['SERVER_ADDR'].', '.$database->name.', '.$database->user);
 	}
 	
 	function _select()
