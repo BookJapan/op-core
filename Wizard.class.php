@@ -27,13 +27,6 @@ class Wizard extends OnePiece5
 	const _DO_SELFTEST_ = 'do_selftest';
 	
 	/**
-	 * Selftest result.
-	 *
-	 * @var boolean
-	 */
-	const _IS_SELFTEST_ = 'is_selftest';
-	
-	/**
 	 * Execute wizard flag.
 	 * 
 	 * @var boolean
@@ -58,14 +51,13 @@ class Wizard extends OnePiece5
 		return $this->_config;
 	}
 	
-	/**
-	 * Get execution flag of selftest.
-	 *
-	 * @return boolean
-	 */
-	function isSelftest()
+	function isFailed($io=null)
 	{
-		return Env::Get(self::_IS_SELFTEST_);
+		static $_is_failed;
+		if( $io ){
+			$_is_failed = $io;
+		}
+		return $_is_failed;
 	}
 	
 	function isWizard()
@@ -253,7 +245,7 @@ class Wizard extends OnePiece5
 		if( Env::Get(self::_DO_SELFTEST_) ){
 			$line = $this->GetCallerLine();
 			$this->mark("Selftest is already execute. ($line)",'selftest');
-			return Env::Get(self::_IS_SELFTEST_);
+			return $this->isFailed();
 		}
 		Env::Set(self::_DO_SELFTEST_,true);
 		
@@ -317,7 +309,7 @@ class Wizard extends OnePiece5
 			$this->mark($this->_status,'selftest');
 		}
 		
-		return Env::Get(self::_IS_SELFTEST_);
+		return $this->isFailed();
 	}
 	
 	function Reset()
@@ -410,7 +402,7 @@ class Wizard extends OnePiece5
 		}
 		
 		//	Save selftest result.
-		Env::Set(self::_IS_SELFTEST_, $is_selftest);
+		$this->isFailed(!$is_selftest);
 		
 		//	Logger
 		$this->model('Log')->Out();
