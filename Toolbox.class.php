@@ -659,4 +659,17 @@ class Toolbox
 		
 		return $url;
 	}
+	
+	function is64bit()
+	{
+		//	http://stackoverflow.com/questions/2353473/can-php-tell-if-the-server-os-it-64-bit
+		return intval("9223372036854775807") == 9223372036854775807 ? true: false;
+	}
+	
+	function Dec2Bin( $dec )
+	{
+		$bit = self::is64bit() ? 64: 32;
+		$bin = decbin($dec);
+		return str_pad($bin,64,0,STR_PAD_LEFT);
+	}
 }
