@@ -385,7 +385,7 @@ class App extends NewWorld5
 		if(!Toolbox::isLocalhost() and (!$admin_ip or !$admin_email) ){
 			$this->SetLayoutName(false);
 			$path = $this->ConvertPath('op:/Template/introduction-app.phtml');
-			$route['full_path'] = $path;
+			$route['real_path'] = $path;
 			$route['extension'] = 'phtml';
 		}
 		
