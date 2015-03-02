@@ -128,7 +128,7 @@ class Router extends OnePiece5
 		}
 		
 		//	Build route data.
-		$arguments    = preg_replace("|^$rewrite_base|", '', $_SERVER['REQUEST_URI']);
+		$arguments    = preg_replace("|^$rewrite_base|", '', $request_uri);
 		list($smart_url) = explode('?',$arguments.'?');
 		
 		//	Build real path
@@ -140,14 +140,16 @@ class Router extends OnePiece5
 			$real_path = $real_app_dir .'/'. $smart_url;
 		}
 		
-		/*
+		
 		//	debug
+		/*
 		$route['match'] = $match;
 		$route['DOCUMENT_ROOT']		 = $doc_root;
 		$route['APP_ROOT']			 = $app_root;
 		$route['SCRIPT_FILENAME']	 = $_SERVER['SCRIPT_FILENAME'];
 		$route['SCRIPT_NAME']		 = $_SERVER['SCRIPT_NAME'];
-		
+
+		$route['$request_uri'] = $request_uri;
 		$route['$real_app_dir'] = $real_app_dir;
 		$route['$arguments'] = $arguments;
 		$route['$real_path'] = $real_path;

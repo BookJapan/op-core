@@ -61,9 +61,11 @@ class App_i18n extends App
 				$this->SetDispatchFlag(true);
 				$this->Location('/');
 			}
+			
 			//	Get route infomation.
 			$route = Router::GetRoute($request_uri);
 		}
+		
 		return parent::Dispatch($route);
 	}
 	
