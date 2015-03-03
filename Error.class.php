@@ -210,11 +210,19 @@ class Error
 	{
 		if( Toolbox::isHtml() ){
 			print self::_getBacktrace();
+			self::_stackErrorJs();
 		}else{
 			print PHP_EOL.PHP_EOL;
 			print html_entity_decode(strip_tags(self::_getBacktrace()),ENT_QUOTES);
 		}
 		return true;
+	}
+	
+	static private function _stackErrorJs()
+	{
+		print "<script>".PHP_EOL;
+		print file_get_contents(Toolbox::ConvertPath('op:/Template/StackError.js')).PHP_EOL;
+		print "</script>".PHP_EOL;
 	}
 	
 	static private function _toMail()
