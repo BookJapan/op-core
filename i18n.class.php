@@ -182,19 +182,24 @@ class i18n extends OnePiece5
 		//	Connection to cloud.
 		static $_connection = true;
 		
+		//	Stacic cache
+		static $country_code;
+		
 		//	
 		if(!$to){
 			if(!$to = $this->GetLang()){
 				$to = Env::Get('lang');
 			}
 		}
-
+		
 		//	Visiter's country code. (By IP-Address)
-		$country_code = $this->GetCookie('country_code');
+		if(!$country_code){
+			$country_code = $this->GetCookie('country_code');
+		}
 		
 		//	
-		$form = strtolower($from);
-		$to   = strtolower($to);
+	//	$form = strtolower($from);
+	//	$to   = strtolower($to);
 		if( $country_code ){
 			$to  .= '-';
 			$to  .= strtoupper($country_code);
@@ -215,13 +220,10 @@ class i18n extends OnePiece5
 		//	Cache key.
 		$key = md5($url);
 		
-		$this->mark("![.blue .bold[URL: $url ($key)]]",__CLASS__);
-		
 		//	Check memcache
 		if( $this->_use_memcache ){
 			if( $translate = $this->Cache()->Get($key) ){
 				//	Hit
-				$this->mark("![.green .bold[Hit cache. ($translate, $text)]]",__CLASS__);
 				return $translate;
 			}
 		}
