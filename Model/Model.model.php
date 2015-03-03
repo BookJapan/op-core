@@ -23,6 +23,18 @@
 abstract class Model_Model extends OnePiece5
 {
 	/**
+	 * @return Config_Model;
+	 */
+	function Config()
+	{
+		static $config;
+		if(!$config){
+			$config = new OnePiece5();
+		}
+		return $config;
+	}
+	
+	/**
 	 * Wrapper PDO5 of OnePiece5
 	 * 
 	 * @return PDO5
