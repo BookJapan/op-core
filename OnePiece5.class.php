@@ -1966,7 +1966,7 @@ class Env
 				
 			case 'html':
 			default:
-				$label = "<OnePiece mime=\"$mime\"/>";
+				$label = "<OnePiece />";
 				
 				//	Developer
 				if( OnePiece5::Admin() ){
