@@ -27,16 +27,40 @@ class Selftest extends OnePiece5
 	 */
 	const _KEY_SELFTEST_ = 'SELFTEST_CONFIG';
 	
+	/**
+	 * Diagnosis.
+	 * 
+	 * @var Config
+	 */
+	private $_diagnosis;
+	
+	/**
+	 * Is diagnosis.
+	 * 
+	 * @var boolean
+	 */
+	private $_is_diagnosis;
+	
+	/**
+	 * OnePiece's PDO5 object
+	 * 
+	 * @var PDO5
+	 */
+	private $_pdo;
+	
 	function Init()
 	{
 		parent::Init();
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
+
+		$this->_diagnosis = new Config();
 	}
 	
-	function SetSelftestConfig( $key, Config $config )
+	function SetSelftestConfig( Config $config )
 	{
+		$key = md5($this->GetCallerLine());
 		$var = $this->GetSession(self::_KEY_SELFTEST_);
 		$var[$key] = $config;
 		$this->SetSession(self::_KEY_SELFTEST_, $var);
@@ -52,19 +76,41 @@ class Selftest extends OnePiece5
 		$this->SetSession(self::_KEY_SELFTEST_, null);
 	}
 	
-	function Execute()
+	function GetDiagnosis()
+	{
+		return $this->_diagnosis;
+	}
+	
+	function Diagnose($root=null)
 	{
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $config ){
 			//	Connection
-			$this->PDO()->Connect($config->database);
+			try {
+				
+				$this->CheckConnection($config->database);
+				
+			}catch ( Exception $e ){
+				$this->mark( $e->getMessage() );
+			}
 		}
 	}
 	
-	function CheckConnection()
+	function CheckConnection($database)
 	{
+		//	Connection
+		$io	 = $this->PDO()->Connect($database);
+		$dsn = $this->PDO()->GetDSN();
+		$user = $database->user;
 		
-	} 
+		//	Write diagnosis
+		$this->_diagnosis->connection->$user->$dsn = $io;
+		
+		//	return
+		if(!$io){
+			throw new OpException('failed');
+		}
+	}
 	
 	function CheckDatabase()
 	{
