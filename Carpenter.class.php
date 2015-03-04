@@ -65,10 +65,10 @@ class Carpenter extends OnePiece5
 		$this->d($this->_log);
 	}
 	
-	function Log($message, $io=null)
+	function Log($message, $result=null)
 	{
 		$log['call']	 = $this->GetCallerLine();
-		$log['io']		 = $io;
+		$log['result']	 = $result;
 		$log['message']	 = $message;
 		$this->_log[] = $log;
 	}
@@ -78,7 +78,16 @@ class Carpenter extends OnePiece5
 		$i = 0;
 		foreach($this->_log as $log){
 			$i++;
-			print "<div>$i: {$log['message']}</div>";
+			$result	 = $log['result'];
+			$message = $log['message'];
+			if( is_null($result) ){
+				$class = 'gray';
+			}else if(is_bool($result)){
+				$class = $result ? 'blue': 'red';
+			}else{
+				$class = $result;
+			}
+			print $this->Wiki2("![div .{$class}[{$i}: {$message}]]");
 		}
 		$this->_log = null;
 	}
@@ -122,7 +131,7 @@ class Carpenter extends OnePiece5
 			$message = "Database connection: user={$user}";
 			$this->Log($message, $io);
 			//	Error
-			if( $io ){
+			if(!$io){
 				$this->FetchError();
 				return false;
 			}
@@ -160,10 +169,10 @@ class Carpenter extends OnePiece5
 	function CreateUser()
 	{
 		foreach( $this->_blueprint->user as $user ){
-			$args['host'] = $user['host'];
-			$args['user'] = $user['user'];
-			$args['password'] = $user['password'];
-			if(!$io = $this->PDO()->CreateUser($user)){
+			$io = $this->PDO()->CreateUser($user);
+			$this->Log($this->PDO()->Qu(), $io);
+			
+			if(!$io){
 				$this->FetchError();
 				break;
 			}
