@@ -28,6 +28,13 @@ class Selftest extends OnePiece5
 	const _KEY_SELFTEST_ = 'SELFTEST_CONFIG';
 	
 	/**
+	 * OnePiece's PDO5 object
+	 * 
+	 * @var PDO5
+	 */
+	private $_pdo;
+	
+	/**
 	 * Diagnosis.
 	 * 
 	 * @var Config
@@ -42,11 +49,11 @@ class Selftest extends OnePiece5
 	private $_is_diagnosis;
 	
 	/**
-	 * OnePiece's PDO5 object
+	 * Blue print
 	 * 
-	 * @var PDO5
+	 * @var Config
 	 */
-	private $_pdo;
+	private $_blueprint;
 	
 	function Init()
 	{
@@ -76,6 +83,11 @@ class Selftest extends OnePiece5
 		$this->SetSession(self::_KEY_SELFTEST_, null);
 	}
 	
+	function isDiagnosis()
+	{
+		return $this->_is_diagnosis;
+	}
+	
 	function GetDiagnosis()
 	{
 		return $this->_diagnosis;
@@ -86,18 +98,23 @@ class Selftest extends OnePiece5
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $config ){
 			//	Connection
-			try {
+			try{
+				//	Set root user setting for Carpenter.
+				$this->_blueprint->database = clone($config->database);
 				
-				$this->CheckConnection($config->database);
+				//	
+				$this->CheckConnection($config);
 				
-			}catch ( Exception $e ){
-				$this->mark( $e->getMessage() );
+			}catch( Exception $e ){
+				$this->mark('![.red['. $e->getMessage() .']]');
 			}
 		}
 	}
 	
-	function CheckConnection($database)
+	function CheckConnection($config)
 	{
+		$database = $config->database;
+		
 		//	Connection
 		$io	 = $this->PDO()->Connect($database);
 		$dsn = $this->PDO()->GetDSN();
@@ -108,7 +125,11 @@ class Selftest extends OnePiece5
 		
 		//	return
 		if(!$io){
-			throw new OpException('failed');
+			//	Write blue print
+			$this->_blueprint->user[] = $database;
+			//	Exception
+			$error = $this->FetchError();
+			throw new OpException($error['message']);
 		}
 	}
 	
@@ -142,13 +163,8 @@ class Selftest extends OnePiece5
 		
 	}
 	
-	function GetReceipt()
-	{
-		
-	}
-	
 	function GetBlueprint()
 	{
-		
+		return $this->_blueprint;
 	}
 }
