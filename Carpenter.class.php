@@ -49,6 +49,8 @@ class Carpenter extends OnePiece5
 	 * @var string
 	 */
 	private $_password;
+
+	private $_log;
 	
 	function Init()
 	{
@@ -56,6 +58,29 @@ class Carpenter extends OnePiece5
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
+	}
+	
+	function Debug()
+	{
+		$this->d($this->_log);
+	}
+	
+	function Log($message, $io=null)
+	{
+		$log['call']	 = $this->GetCallerLine();
+		$log['io']		 = $io;
+		$log['message']	 = $message;
+		$this->_log[] = $log;
+	}
+	
+	function PrintLog()
+	{
+		$i = 0;
+		foreach($this->_log as $log){
+			$i++;
+			print "<div>$i: {$log['message']}</div>";
+		}
+		$this->_log = null;
 	}
 	
 	function FetchError()
@@ -90,11 +115,18 @@ class Carpenter extends OnePiece5
 		
 		//	
 		try{
-			if(!$this->PDO()->Connect($this->_blueprint->database)){
+			//	Database connection at root.
+			$io = $this->PDO()->Connect($this->_blueprint->database);
+			//	Log
+			$user = $this->_blueprint->database->user;
+			$message = "Database connection: user={$user}";
+			$this->Log($message, $io);
+			//	Error
+			if( $io ){
 				$this->FetchError();
 				return false;
 			}
-			
+			//	Rebuild
 			$this->CreateUser();
 			
 		}catch( OpException $e ){
@@ -131,7 +163,7 @@ class Carpenter extends OnePiece5
 			$args['host'] = $user['host'];
 			$args['user'] = $user['user'];
 			$args['password'] = $user['password'];
-			if(!$io = $this->PDO()->CreateUser($args)){
+			if(!$io = $this->PDO()->CreateUser($user)){
 				$this->FetchError();
 				break;
 			}

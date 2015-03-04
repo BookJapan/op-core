@@ -55,14 +55,21 @@ class Selftest extends OnePiece5
 	 */
 	private $_blueprint;
 	
+	private $_log;
+	
 	function Init()
 	{
 		parent::Init();
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
-
+	}
+	
+	function InitDiagnosis()
+	{
 		$this->_diagnosis = new Config();
+		$this->_blueprint = new Config();
+		$this->_blueprint->user = array();
 	}
 	
 	function SetSelftestConfig( Config $config )
@@ -95,20 +102,25 @@ class Selftest extends OnePiece5
 	
 	function Diagnose($root=null)
 	{
+		$this->InitDiagnosis();
+		
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $config ){
 			//	Connection
 			try{
 				//	Set root user setting for Carpenter.
-				$this->_blueprint->database = clone($config->database);
+				$this->_blueprint->database = Toolbox::toObject($config->database);
 				
 				//	
 				$this->CheckConnection($config);
 				
 			}catch( Exception $e ){
 				$this->mark('![.red['. $e->getMessage() .']]');
+				return false;
 			}
 		}
+		
+		return true;
 	}
 	
 	function CheckConnection($config)
