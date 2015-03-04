@@ -226,6 +226,18 @@ class PDO5 extends OnePiece5
 		return $this->isConnect;
 	}
 	
+	/**
+	 * Data Source Name
+	 * 
+	 * @var string
+	 */
+	private $_dsn;
+	
+	function GetDSN()
+	{
+		return $this->_dsn;
+	}
+	
 	function Connect( $config )
 	{
 		if( is_object($config) ){
@@ -267,12 +279,12 @@ class PDO5 extends OnePiece5
 			}
 			
 			//	Create DNS
-			$dns = "{$this->driver}:{$db}host={$this->host}";
-			$this->Qu($dns);
+			$this->_dsn = "{$this->driver}:{$db}host={$this->host}";
+			$this->Qu($this->_dsn);
 			
 			//	Instance PDO
-			if(!$this->pdo = new PDO( $dns, $this->user, $password, $options )){
-				$this->StackError("Can not connect database. \( $dns, {$this->user} )\ ",'en');
+			if(!$this->pdo = new PDO( $this->_dsn, $this->user, $password, $options )){
+				$this->StackError("Can not connect database. \( {$this->_dsn}, {$this->user} )\ ",'en');
 				return false;
 			}
 		}catch( PDOException $e){
