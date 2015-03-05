@@ -69,7 +69,13 @@ class Selftest extends OnePiece5
 	{
 		$this->_diagnosis = new Config();
 		$this->_blueprint = new Config();
-		$this->_blueprint->user = array();
+		$this->_blueprint->user		 = array();
+		$this->_blueprint->database	 = array();
+		$this->_blueprint->database	 = array();
+		$this->_blueprint->table	 = array();
+		$this->_blueprint->column	 = array();
+		$this->_blueprint->index	 = array();
+		$this->_blueprint->alter	 = array();
 	}
 	
 	function SetSelftestConfig( Config $config )
@@ -109,10 +115,15 @@ class Selftest extends OnePiece5
 			//	Connection
 			try{
 				//	Set root user setting for Carpenter.
-				$this->_blueprint->database = Toolbox::toObject($config->database);
+				$this->_blueprint->config = Toolbox::toObject($config);
 				
-				//	
+				//	Diagnosis
 				$this->CheckConnection($config);
+				$this->CheckDatabase($config);
+				$this->CheckTable($config);
+				$this->CheckColumn($config);
+				$this->CheckAlter($config);
+				$this->CheckIndex($config);
 				
 			}catch( Exception $e ){
 				$this->mark('![.red['. $e->getMessage() .']]');
@@ -138,39 +149,55 @@ class Selftest extends OnePiece5
 		//	return
 		if(!$io){
 			//	Write blue print
-			$this->_blueprint->user[] = $database;
+			$this->_blueprint->user[] = $user;
 			//	Exception
 			$error = $this->FetchError();
 			throw new OpException($error['message']);
 		}
 	}
 	
-	function CheckDatabase()
+	function CheckDatabase($config)
+	{
+		$db_name = $config->database->name;
+		$db_list = $this->PDO()->GetDatabaseList($config);
+		$io = in_array($db_name, $db_list);
+		
+		//	return
+		if(!$io){
+			//	Write blue print
+			$this->_blueprint->database[] = clone($config->database);
+			//	Exception
+			throw new OpException("Database \ $db_name \ is not exists. (or deny access) ",'en');
+		}
+		
+		
+		$this->Mark($io);
+		
+	//	$this->D($config);
+	//	$this->D($database);
+	}
+	
+	function CheckTable($config)
 	{
 		
 	}
 	
-	function CheckTable()
+	function CheckColumn($config)
 	{
 		
 	}
 	
-	function CheckColumn()
+	function CheckIndex($config)
 	{
 		
 	}
 	
-	function CheckIndex()
+	function CheckAlter($config)
 	{
 		
 	}
 	
-	function CheckAlter()
-	{
-		
-	}
-	
-	function CheckUser()
+	function CheckUser($config)
 	{
 		
 	}

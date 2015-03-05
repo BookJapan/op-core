@@ -58,6 +58,8 @@ class Carpenter extends OnePiece5
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
+		
+		$this->_log = array();
 	}
 	
 	function Debug()
@@ -70,7 +72,7 @@ class Carpenter extends OnePiece5
 		$log['call']	 = $this->GetCallerLine();
 		$log['result']	 = $result;
 		$log['message']	 = $message;
-		$this->_log[] = $log;
+		$this->_log[]	 = $log;
 	}
 	
 	function PrintLog()
@@ -117,26 +119,34 @@ class Carpenter extends OnePiece5
 			return;
 		}
 		
-		//	
-		$this->_blueprint = $blueprint;
-		$this->_blueprint->database->user     = $this->_user;
-		$this->_blueprint->database->password = $this->_password;
+		//	Database connection config.
+		$database = $blueprint->config->database;
+		$database->user     = $this->_user;
+		$database->password = $this->_password;
 		
 		//	
 		try{
 			//	Database connection at root.
-			$io = $this->PDO()->Connect($this->_blueprint->database);
+			$io = $this->PDO()->Connect($database);
+			
 			//	Log
-			$user = $this->_blueprint->database->user;
+			$user = $database->user;
 			$message = "Database connection: user={$user}";
 			$this->Log($message, $io);
+			
 			//	Error
 			if(!$io){
 				$this->FetchError();
 				return false;
 			}
+			
 			//	Rebuild
-			$this->CreateUser();
+			$this->CreateUser($blueprint);
+			$this->CreateDatabase($blueprint);
+			$this->CreateTable($blueprint);
+			$this->CreateColumn($blueprint);
+			$this->CreateIndex($blueprint);
+			$this->CreateAlter($blueprint);
 			
 		}catch( OpException $e ){
 			$this->_error = $e->getMessage();
@@ -145,30 +155,12 @@ class Carpenter extends OnePiece5
 		
 		return true;
 	}
-	
-	function CreateDatabase()
+
+	function CreateUser($blueprint)
 	{
-		
-	}
+		$io = true;
 	
-	function CreateTable()
-	{
-		
-	}
-	
-	function CreateColumn()
-	{
-		
-	}
-	
-	function CreateIndex()
-	{
-		
-	}
-	
-	function CreateUser()
-	{
-		foreach( $this->_blueprint->user as $user ){
+		foreach( $blueprint->user as $user ){
 			$io = $this->PDO()->CreateUser($user);
 			$this->Log($this->PDO()->Qu(), $io);
 			
@@ -177,11 +169,39 @@ class Carpenter extends OnePiece5
 				break;
 			}
 		}
-		
+	
 		return $io;
 	}
 	
-	function CreateAlter()
+	function CreateDatabase($blueprint)
+	{
+		foreach( $blueprint->database as $database ){
+			$io = $this->PDO()->CreateDatabase($database);
+			$this->Log($this->PDO()->Qu(), $io);
+			
+			if(!$io){
+				$this->FetchError();
+				break;
+			}
+		}
+	}
+	
+	function CreateTable($blueprint)
+	{
+		
+	}
+	
+	function CreateColumn($blueprint)
+	{
+		
+	}
+	
+	function CreateIndex($blueprint)
+	{
+		
+	}
+	
+	function CreateAlter($blueprint)
 	{
 		
 	}
