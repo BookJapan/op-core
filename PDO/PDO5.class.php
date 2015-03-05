@@ -320,19 +320,16 @@ class PDO5 extends OnePiece5
 		
 		if(!is_string($db_name)){
 			$type = gettype($db_name);
-			$me = "Database name is not string. ($type)";
-			//throw new OpException($me);
-			$this->StackError($me);
+			$this->StackError('Database name is not string. ($type)');
 			return false;
 		}
 		
 		//	Quote
 		$db_name = ConfigSQL::Quote( $db_name, $this->driver );
 		
+		//	Execute
 		if( $this->query("USE $db_name",'use') === false){
-			$me = "Database select is failed.";
-			//throw new OpException($me);
-			$this->StackError($me);
+			$this->StackError('Database select is failed.','en');
 			return false;
 		}
 		
