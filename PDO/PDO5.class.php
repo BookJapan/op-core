@@ -362,13 +362,8 @@ class PDO5 extends OnePiece5
 		return $io !== false ? true: false;
 	}
 	
-	function GetDatabaseList($config=null)
+	function GetDatabaseList()
 	{
-		//  init config
-		if(!is_array($config)){
-			$config = Toolbox::toArray($config);
-		}
-		
 		//  Which driver
 		switch($this->driver){
 			case 'mysql':
