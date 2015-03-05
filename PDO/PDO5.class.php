@@ -771,7 +771,7 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  execute
-		$io = $this->query($qu);
+		$io = $this->query($qu,'create');
 		
 		return $io;
 	}
