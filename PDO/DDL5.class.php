@@ -69,10 +69,14 @@ class DDL5 extends OnePiece5
 	
 	function GetCreateDatabase( $args )
 	{
-		//  Check 
+		//  Check database name
 		if( empty($args['database']) ){
-			$this->StackError("Database name is empty.");
-			return false;
+			if( empty($args['name']) ){
+				$this->StackError("Database name is empty.");
+				return false;
+			}else{
+				$args['database'] = $args['name'];
+			}
 		}
 		
 		//	IF NOT EXIST
