@@ -381,12 +381,9 @@ class PDO5 extends OnePiece5
 		return $result;
 	}
 	
-	function GetTableList( $config=null /*, $like=null*/ )
+	function GetTableList($database=null, $like=null)
 	{
-		if( is_string($config) ){
-			//  set database
-			$database = $config;
-		}else{
+		if(!is_string($database)){
 			if(!is_array($config)){
 				$config = Toolbox::toArray($config);
 			}
@@ -409,8 +406,7 @@ class PDO5 extends OnePiece5
 		$database = ConfigSQL::Quote($database, $this->driver);
 		
 		//	like
-		$like = null;
-		if( isset($like) ){
+		if( $like ){
 			if( $this->driver === 'mysql' ){
 				$like = str_replace("'",'',$like);
 				$like = "LIKE '$like'"; // ConfigSQL::Quote($like, $this->driver);

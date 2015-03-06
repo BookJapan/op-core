@@ -36,30 +36,17 @@ class DCL5 extends OnePiece5
 		$user		 = isset($args['user'])        ? $args['user']        : null;
 		$password	 = isset($args['password'])    ? $args['password']    : null;
 		
-		if(!$host){
-			$this->StackError("Empty host name.");
-			return false;
-		}
-
-		if(!$database){
-			$this->StackError("Empty database name.");
-			return false;
-		}
-
-		if(!$table){
-			$this->StackError("Empty table name.");
-			return false;
-		}
-		
-		if(!$user){
-			$this->StackError("Empty user name.");
-			return false;
+		foreach(array('host','database','table','user') as $key){
+			if(!${$key}){
+				$this->StackError("Empty {$key} name.");
+				return false;
+			}
 		}
 		
 		//	privilege
 		$privilege = $this->GetPrivilege($args);
 		
-		//  Do quote
+		//  database
 		$database = ConfigSQL::Quote( $database, $this->driver );
 		
 		//  Case of all tables does not quote. 
@@ -67,16 +54,18 @@ class DCL5 extends OnePiece5
 			$table = ConfigSQL::Quote( $table, $this->driver );
 		}
 		
-		//	Do quote
-		$host = $this->pdo->quote($host);
+		//	user, host
 		$user = $this->pdo->quote($user);
+		$host = $this->pdo->quote($host);
+		
+		//	password (identified)
 		if( $password ){
 			$identified = "IDENTIFIED BY ".$this->pdo->quote($password);
 		}else{
 			$identified = null;
 		}
 		
-		//  Create Query
+		//  Create Query -- GRANT {privilege} ON レベル TO user)
 		$query = "GRANT {$privilege} ON {$database}.{$table} TO {$user}@{$host} $identified";
 		
 		return $query;

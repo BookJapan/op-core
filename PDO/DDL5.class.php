@@ -32,30 +32,17 @@ class DDL5 extends OnePiece5
 	
 	function GetCreateUser( $args )
 	{
-		$user = isset($args['name']) ? $args['name']: null;
-		$user = isset($args['user']) ? $args['user']: $user;
+		foreach(array('host','user','password') as $key){
+			if(!${$key}){
+				$this->StackError("\{$key}\ is empty.",'en');
+				return false;
+			}
+		}
+		
+		$name = isset($args['name']) ? $args['name']: null;
+		$user = isset($args['user']) ? $args['user']: $name;
 		$host = $args['host'];
 		$password = $args['password'];
-		
-		if(!$host){
-			$this->StackError("Empty host name.");
-			return false;
-		}
-		
-		if(!$user){
-			$this->StackError("Empty user name.");
-			return false;
-		}
-		
-		if(!$password){
-			$this->StackError("Empty password.");
-			return false;
-		}
-		
-		if( strlen($user) > 16 ){
-			$this->StackError("User name is maximum 16 character.");
-			return false;
-		}
 		
 		$host = $this->pdo->quote($host);
 		$user = $this->pdo->quote($user);
