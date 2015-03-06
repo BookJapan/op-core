@@ -46,7 +46,7 @@ class Selftest extends OnePiece5
 	 * 
 	 * @var boolean
 	 */
-	private $_is_diagnosis;
+	private $_is_diagnosis = null;
 	
 	/**
 	 * Blue print
@@ -55,6 +55,25 @@ class Selftest extends OnePiece5
 	 */
 	private $_blueprint;
 	
+	/**
+	 * Root user's name.
+	 * 
+	 * @var string
+	 */
+	private $_root_user;
+	
+	/**
+	 * Root user's password.
+	 * 
+	 * @var string
+	 */
+	private $_root_password;
+	
+	/**
+	 * Stack log.
+	 *
+	 * @var array
+	 */
 	private $_log;
 	
 	function Init()
@@ -63,14 +82,15 @@ class Selftest extends OnePiece5
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
+		$this->_log('Init');
 	}
 	
 	function InitDiagnosis()
 	{
 		$this->_diagnosis = new Config();
 		$this->_blueprint = new Config();
+		$this->_blueprint->grant	 = array();
 		$this->_blueprint->user		 = array();
-		$this->_blueprint->database	 = array();
 		$this->_blueprint->database	 = array();
 		$this->_blueprint->table	 = array();
 		$this->_blueprint->column	 = array();
@@ -78,32 +98,77 @@ class Selftest extends OnePiece5
 		$this->_blueprint->alter	 = array();
 	}
 	
+	private function _Log($message, $result=null)
+	{
+		//	Generate log array.
+		$log = array();
+		$log['result']	 = $result;
+		$log['message']	 = $message;
+		
+		//	Stack log array.
+		$this->_log[] = $log;
+	}
+	
+	function PrintLog()
+	{
+		$i = 0;
+		while($log = array_shift($this->_log)){
+			$i++;
+			$result = $log['result'];
+			$message = $log['message'];
+			if( $result === null ){
+				$class = 'gray';
+			}else if( is_bool($result) ){
+				$class = $result ? 'blue': 'red';
+			}else{
+				$class = $result;
+			}
+			print $this->P("![.small[ ![.{$class}[{$i}: {$message}]] ]]");
+		}
+	}
+	
+	function Root($password, $root_user='root')
+	{
+		$this->_log('Root');
+		$this->_root_user     = $root_user;
+		$this->_root_password = $password;
+	}
+	
+	private $_selftest_config;
+	
 	function SetSelftestConfig( Config $config )
 	{
-		$key = md5($this->GetCallerLine());
-		$var = $this->GetSession(self::_KEY_SELFTEST_);
-		$var[$key] = $config;
-		$this->SetSession(self::_KEY_SELFTEST_, $var);
+		$this->_selftest_config[] = clone($config);
 	}
 	
 	function GetSelftestConfig()
 	{
-		return $this->GetSession(self::_KEY_SELFTEST_);
+		return $this->_selftest_config;
 	}
 	
 	function ClearSelftestConfig()
 	{
-		$this->SetSession(self::_KEY_SELFTEST_, null);
+		$this->_selftest_config = null;
 	}
 	
-	function isDiagnosis()
+	function GetBlueprint()
 	{
-		return $this->_is_diagnosis;
+		return $this->_blueprint;
 	}
 	
 	function GetDiagnosis()
 	{
 		return $this->_diagnosis;
+	}
+	
+	function isDiagnosis()
+	{
+		if( $this->_root_user ){
+			$io = false;
+		}else{
+			$io = $this->_is_diagnosis;
+		}
+		return $io;
 	}
 	
 	function Diagnose($root=null)
@@ -112,31 +177,32 @@ class Selftest extends OnePiece5
 		
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $config ){
-			//	Connection
-			try{
-				//	Set root user setting for Carpenter.
-				$this->_blueprint->config = Toolbox::toObject($config);
-				
-				//	Diagnosis
-				$this->CheckConnection($config);
-				$this->CheckDatabase($config);
-				$this->CheckTable($config);
-				$this->CheckColumn($config);
-				$this->CheckAlter($config);
-				$this->CheckIndex($config);
-				
-			}catch( Exception $e ){
-				$this->mark('![.red['. $e->getMessage() .']]');
-				return false;
-			}
+			
+			//	Set root user setting for Carpenter.
+			$this->_blueprint->config = Toolbox::toObject($config);
+			
+			//	Diagnosis
+			$this->CheckConnection($config);
+			$this->CheckDatabase($config);
+			$this->CheckTable($config);
+			$this->CheckColumn($config);
+			$this->CheckAlter($config);
+			$this->CheckIndex($config);
 		}
 		
-		return true;
+		return $this->_is_diagnosis;
 	}
 	
 	function CheckConnection($config)
 	{
-		$database = $config->database;
+		//	Database connection config.
+		$database = clone($config->database);
+		
+		//	Set root and password..
+		if( $this->_root_user ){
+			$database->user     = $this->_root_user;
+			$database->password = $this->_root_password;
+		}
 		
 		//	Connection
 		$io	 = $this->PDO()->Connect($database);
@@ -146,45 +212,58 @@ class Selftest extends OnePiece5
 		//	Write diagnosis
 		$this->_diagnosis->connection->$user->$dsn = $io;
 		
+		//	Log
+		$this->_log("DSN: $dsn, user: $user",$io);
+		
 		//	return
 		if(!$io){
-			//	Write blue print
 			$this->_blueprint->user[] = $user;
-			//	Exception
+			//	Error
 			$error = $this->FetchError();
-			throw new OpException($error['message']);
+			$this->_log($error['message'],$io);
 		}
 	}
 	
 	function CheckDatabase($config)
 	{
-		$db_name = $config->database->name;
-		$db_list = $this->PDO()->GetDatabaseList($config);
-		$io = in_array($db_name, $db_list);
+		if( $io = $this->PDO()->isConnect() ){
+			$db_name = $config->database->name;
+			$db_list = $this->PDO()->GetDatabaseList($config);
+			$io = in_array($db_name, $db_list);
+		}
 		
 		//	return
 		if(!$io){
-			//	Write blue print
+			$this->_is_diagnosis = false;
 			$this->_blueprint->database[] = clone($config->database);
-			//	Exception
-			throw new OpException("Database \ $db_name \ is not exists. (or deny access) ",'en');
 		}
-		
-		
-		$this->Mark($io);
-		
-	//	$this->D($config);
-	//	$this->D($database);
 	}
 	
 	function CheckTable($config)
 	{
-		
+		if(!$io = $this->PDO()->isConnect() ){
+			//	Failed database connection.
+			$this->_is_diagnosis = false;
+			foreach( $config->table as $name => $table ){
+				$table->name = $name;
+				$this->CheckGrant($config->database, $table);
+			}
+		}else{
+			//	Check each table.
+			$table_list = $this->PDO()->GetTableList($config->database->name);
+			$this->D($table_list);
+			
+			foreach($table_list as $table_name){
+				$table = new Config();
+				$table->name = $table_name;
+				$this->_blueprint->table[] = $table;
+			}
+		}
 	}
 	
 	function CheckColumn($config)
 	{
-		
+
 	}
 	
 	function CheckIndex($config)
@@ -197,13 +276,30 @@ class Selftest extends OnePiece5
 		
 	}
 	
-	function CheckUser($config)
+	function CheckUser($database)
 	{
 		
 	}
 	
-	function GetBlueprint()
+	/**
+	 * Grant to each user by table.
+	 * 
+	 * @param Config $database Database connection information.
+	 * @param Config $table    Table define.
+	 */
+	function CheckGrant( $database, $table )
 	{
-		return $this->_blueprint;
+		//	Generate grant config.
+		$grant = new Config;
+		$grant->host	 = $database->host;
+		$grant->database = $database->name;
+		$grant->table	 = $table->name;
+		$grant->user	 = $database->user;
+		$grant->password = $database->password;
+		$grant->privilege = isset($table->privilege) ? $table->privilege: 'select,insert,update';
+		
+		//	Stack grant config.
+		$this->_blueprint->grant[] = $grant;
 	}
+	
 }
