@@ -246,10 +246,14 @@ class Selftest extends OnePiece5
 			$this->_is_diagnosis = false;
 			foreach( $config->table as $name => $table ){
 				$table->name = $name;
-				$this->CheckGrant($config->database, $table);
+				$this->WriteTable($config->database, $table);
+				$this->WriteGrant($config->database, $table);
 			}
 		}else{
 			//	Check each table.
+			
+			var_dump($io);
+			
 			$table_list = $this->PDO()->GetTableList($config->database->name);
 			$this->D($table_list);
 			
@@ -281,13 +285,24 @@ class Selftest extends OnePiece5
 		
 	}
 	
+	function WriteTable($database, $table)
+	{
+		//	Generate create table config
+		$table = clone($table);
+		$table->database = $database->name;
+		$table->column = false;
+		
+		//	Stack create table config.
+		$this->_blueprint->table[] = $table;
+	}
+	
 	/**
 	 * Grant to each user by table.
 	 * 
 	 * @param Config $database Database connection information.
 	 * @param Config $table    Table define.
 	 */
-	function CheckGrant( $database, $table )
+	function WriteGrant( $database, $table )
 	{
 		//	Generate grant config.
 		$grant = new Config;

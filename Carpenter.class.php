@@ -69,23 +69,26 @@ class Carpenter extends OnePiece5
 	
 	function Log($message, $result=null)
 	{
-		$log['call']	 = $this->GetCallerLine();
-		$log['result']	 = $result;
-		$log['message']	 = $message;
-		$this->_log[]	 = $log;
+		if( $message ){
+			$log['call']	 = $this->GetCallerLine();
+			$log['result']	 = $result;
+			$log['message']	 = $message;
+			$this->_log[]	 = $log;
+		}
 		
 		if( $result === false ){
 			$error = $this->FetchError();
 			unset($error['backtrace']);
-			$this->_error = $error['message'];
+			$this->_error[] = $error;
 		}
 	}
 	
 	function PrintLog()
 	{
 		$this->p("![.bold[Display build log:]] ![.gray .small[".$this->GetCallerLine()."]]");
-		
+
 		$i = 0;
+		print '<ol>';
 		foreach($this->_log as $log){
 			$i++;
 			$result	 = $log['result'];
@@ -97,14 +100,31 @@ class Carpenter extends OnePiece5
 			}else{
 				$class = $result;
 			}
-			print $this->Wiki2("![div .{$class}[{$i}: {$message}]]");
+			print "<li>$message</li>";
 		}
+		print '</ol>';
+		
 		$this->_log = null;
 	}
 	
-	function GetError()
+	function PrintError()
 	{
-		return $this->_error;
+		$this->p("![.bold[Display error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+
+		$this->d($this->_error[0]);
+		$this->mark( $this->i18n()->En($this->_error[0]['message']) );
+		
+		$nl = PHP_EOL;
+		print '<ol>';
+		foreach($this->_error as $error){
+			$from	 = $error['translation'];
+			list( $id, $no, $message, $query) = explode(':',$error['message']);
+			$translation = $this->i18n()->Bulk($message, $from);
+			print $this->p("![li .small[$translation $nl $query]]");
+		}
+		print '</ol>';
+		
+		$this->_error = null;
 	}
 	
 	function Root($password, $user='root')
@@ -193,7 +213,13 @@ class Carpenter extends OnePiece5
 	
 	function CreateTable($blueprint)
 	{
-		
+		foreach( $blueprint->table as $table ){
+			//	execute
+			$io = $this->PDO()->CreateTable($table);
+				
+			//	log
+			$this->Log($this->PDO()->Qu(), $io);
+		}
 	}
 	
 	function CreateColumn($blueprint)
@@ -213,7 +239,6 @@ class Carpenter extends OnePiece5
 	
 	function CreateGrant($blueprint)
 	{
-		$config = clone($blueprint->config->database);
 		foreach( $blueprint->grant as $grant ){
 			//	execute
 			$io = $this->PDO()->Grant($grant);
