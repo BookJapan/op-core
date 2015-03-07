@@ -166,6 +166,7 @@ class PDO5 extends OnePiece5
 		if( $st = $this->pdo->query( $this->qu ) ){
 			switch($key){
 				case 'alter':
+				case 'grant':
 				case 'create':
 					$result = true;
 					break;
@@ -865,7 +866,7 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->query( $qu, 'grant' );
 	}
 
 	/**
