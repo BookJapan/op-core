@@ -131,7 +131,10 @@ class DDL5 extends OnePiece5
 		}
 		
 		//  Column
-		if( $column = $this->ConvertColumn($args) ){
+		if( empty($args['column']) ){
+			$this->StackError("\$table\ table is not set value of column.",'en');
+			return false;
+		}else if( $column = $this->ConvertColumn($args) ){
 			$column = '('.$column.')';
 		}else{
 			return;
