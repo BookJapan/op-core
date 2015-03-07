@@ -103,19 +103,11 @@ class DDL5 extends OnePiece5
 	
 	function GetCreateTable( $args )
 	{
-		if( empty($args['table']) ){
-			if( isset($args['name']) ){
-				$args['table'] = $args['name'];
-			}
-			$this->StackError("Empty table name.");
-			return false;
-		}
-		
 		//	TEMPORARY
 		$temporary = isset($args['temporary']) ? 'TEMPORARY': null;
 		
 		//	IF NOT EXIST
-		$if_not_exist = 'IF NOT EXISTS';
+		$if_not_exist = empty($args['if_not_exist']) ? null: 'IF NOT EXISTS';
 		
 		//	Database
 		if( isset($args['database']) ){
@@ -125,24 +117,29 @@ class DDL5 extends OnePiece5
 			$database = null;
 		}
 		
-		//	Table
-		if( isset($args['table']) ){
-			$table = ConfigSQL::Quote($args['table'], $this->driver );
+		//	Table name		
+		$table = isset($args['name'])  ? $args['name']: null;
+		$table = isset($args['table']) ? $args['table']: $table;
+		$table = ConfigSQL::Quote( $table, $this->driver );
+		if(!$table ){
+			$this->StackError("Empty table name.",'en');
+			return false;
+		}
+		if(!strlen($table) > 64){
+			$this->StackError("Table names are limited to 64 bytes.",'en');
+			return false;
 		}
 		
 		//  Column
 		if( $column = $this->ConvertColumn($args) ){
 			$column = '('.$column.')';
-		}else{
-			$this->StackError("Empty column.");
-			return false;
 		}
 		
 		//	Database Engine
 		if( isset($args['engine']) ){
 			$engine = "ENGINE = ".ConfigSQL::QuoteType($args['engine']);
 		}else{
-			$engine = "ENGINE = MYISAM";
+			$engine = "ENGINE = InnoDB";
 		}
 		
 		//	COLLATE
@@ -154,8 +151,10 @@ class DDL5 extends OnePiece5
 		}
 		
 		//	CHARACTER SET
-		if( isset($args['character']) ){
-			$character = 'CHARACTER SET '.ConfigSQL::QuoteType($args['character']);
+		$charset = isset($args['charset']) ? $args['charset']: null;
+		$charset = isset($args['character']) ? $args['character']: $charset;
+		if( $charset ){
+			$character = 'CHARACTER SET '.ConfigSQL::QuoteType($charset);
 		}else{
 			if( preg_match('/ utf8_/i', $collate) ){
 				//	default
@@ -165,14 +164,14 @@ class DDL5 extends OnePiece5
 			}
 		}
 		
-		//	TABLE COMMENT
+		//	COMMENT
 		if( isset($args['comment']) ){
 			$comment = "COMMENT = ".$this->pdo->quote($args['comment']);
 		}else{
 			$comment = null;
 		}
 		
-		//	SQL文の作成
+		//	Generate query.
 		$query = "CREATE {$temporary} TABLE {$if_not_exist} {$database}{$table} {$column} {$engine} {$character} {$collate} {$comment}";
 		
 		return $query;
