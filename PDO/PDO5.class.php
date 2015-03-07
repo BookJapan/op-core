@@ -200,7 +200,10 @@ class PDO5 extends OnePiece5
 					//  failed
 					$result = false;
 					$temp = $this->pdo->errorInfo();
-					$this->StackError("{$temp[2]} : ![.gray[{$this->qu}]]");
+					$error_id = $temp[0];
+					$error_no = $temp[1];
+					$message  = $temp[2];
+					$this->StackError("$error_id:$error_no: $message : {$this->qu}",'en');
 			}
 		}
 		
