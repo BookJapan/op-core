@@ -673,10 +673,12 @@ class Toolbox
 		return intval("9223372036854775807") == 9223372036854775807 ? true: false;
 	}
 	
-	static function Dec2Bin( $dec )
+	static function Dec2Bin($dec, $bit=null)
 	{
-		$bit = self::is64bit() ? 64: 32;
+		if(!$bit){
+			$bit = self::is64bit() ? 64: 32;
+		}
 		$bin = decbin($dec);
-		return str_pad($bin,64,0,STR_PAD_LEFT);
+		return str_pad($bin,$bit,0,STR_PAD_LEFT);
 	}
 }
