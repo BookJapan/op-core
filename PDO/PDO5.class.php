@@ -203,7 +203,7 @@ class PDO5 extends OnePiece5
 					$error_id = $temp[0];
 					$error_no = $temp[1];
 					$message  = $temp[2];
-					$this->StackError("$error_id:$error_no: $message : {$this->qu}",'en');
+					$this->StackError("$message : {$this->qu}",'en');
 			}
 		}
 		
