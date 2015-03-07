@@ -122,7 +122,7 @@ class DDL5 extends OnePiece5
 		$table = isset($args['table']) ? $args['table']: $table;
 		$table = ConfigSQL::Quote( $table, $this->driver );
 		if(!$table ){
-			$this->StackError("Empty table name.",'en');
+			$this->StackError("Put name of \table\.",'en');
 			return false;
 		}
 		if(!strlen($table) > 64){
@@ -133,6 +133,8 @@ class DDL5 extends OnePiece5
 		//  Column
 		if( $column = $this->ConvertColumn($args) ){
 			$column = '('.$column.')';
+		}else{
+			return;
 		}
 		
 		//	Database Engine
@@ -269,12 +271,8 @@ class DDL5 extends OnePiece5
 	
 	function ConvertColumn( $args, $ACD='' )
 	{
-		if( $args['column'] === false){
-			return '';
-		}
-		
 		if( empty($args['column']) ){
-			$this->StackError("Empty column");
+			$this->StackError("Put the value of column.",'en');
 			return false;
 		}
 		
