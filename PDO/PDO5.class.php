@@ -23,9 +23,22 @@ class PDO5 extends OnePiece5
 	private $database	 = null;
 	private $charset	 = null;
 	
+	/**
+	 * Debug information.
+	 */
 	function Debug()
 	{
 		$this->D($this->qus);
+	}
+	
+	/**
+	 * Get private PDO instance.
+	 * 
+	 * @return PDO
+	 */
+	function Instance()
+	{
+		return $this->pdo;
 	}
 	
 	/**
