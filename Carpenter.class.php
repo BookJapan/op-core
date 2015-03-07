@@ -60,6 +60,7 @@ class Carpenter extends OnePiece5
 		}
 		
 		$this->_log = array();
+		$this->_error = array();
 	}
 	
 	function Debug()
@@ -78,6 +79,7 @@ class Carpenter extends OnePiece5
 		
 		if( $result === false ){
 			$error = $this->FetchError();
+			$error['call'] = $this->GetCallerLine();
 			unset($error['backtrace']);
 			$this->_error[] = $error;
 		}
@@ -110,15 +112,12 @@ class Carpenter extends OnePiece5
 	function PrintError()
 	{
 		$this->p("![.bold[Display error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
-
-		$this->d($this->_error[0]);
-		$this->mark( $this->i18n()->En($this->_error[0]['message']) );
 		
 		$nl = PHP_EOL;
 		print '<ol>';
 		foreach($this->_error as $error){
 			$from	 = $error['translation'];
-			list( $id, $no, $message, $query) = explode(':',$error['message']);
+			list($message, $query) = explode(':',$error['message'].':');
 			$translation = $this->i18n()->Bulk($message, $from);
 			print $this->p("![li .small[$translation $nl $query]]");
 		}
@@ -214,9 +213,12 @@ class Carpenter extends OnePiece5
 	function CreateTable($blueprint)
 	{
 		foreach( $blueprint->table as $table ){
+			
+			$this->d($table);
+			
 			//	execute
 			$io = $this->PDO()->CreateTable($table);
-				
+			
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}

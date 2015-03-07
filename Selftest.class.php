@@ -87,6 +87,7 @@ class Selftest extends OnePiece5
 	
 	function InitDiagnosis()
 	{
+		$this->_is_diagnosis = true;
 		$this->_diagnosis = new Config();
 		$this->_blueprint = new Config();
 		$this->_blueprint->grant	 = array();
@@ -168,7 +169,7 @@ class Selftest extends OnePiece5
 		}else{
 			$io = $this->_is_diagnosis;
 		}
-		return $io;
+		return $this->_is_diagnosis;
 	}
 	
 	function Diagnose($root=null)
@@ -241,10 +242,15 @@ class Selftest extends OnePiece5
 	
 	function CheckTable($config)
 	{
+		$this->mark($this->PDO()->isConnect());
+		
 		if(!$io = $this->PDO()->isConnect() ){
 			//	Failed database connection.
 			$this->_is_diagnosis = false;
 			foreach( $config->table as $name => $table ){
+				
+				$this->D($table);
+				
 				$table->name = $name;
 				$this->WriteTable($config->database, $table);
 				$this->WriteGrant($config->database, $table);
@@ -257,11 +263,7 @@ class Selftest extends OnePiece5
 			$table_list = $this->PDO()->GetTableList($config->database->name);
 			$this->D($table_list);
 			
-			foreach($table_list as $table_name){
-				$table = new Config();
-				$table->name = $table_name;
-				$this->_blueprint->table[] = $table;
-			}
+			
 		}
 	}
 	
@@ -290,7 +292,14 @@ class Selftest extends OnePiece5
 		//	Generate create table config
 		$table = clone($table);
 		$table->database = $database->name;
-		$table->column = false;
+		
+		foreach( $table->column as $column_name => $column ){
+			unset($column->ai);
+			unset($column->index);
+		}
+		
+		$this->d( $table );
+		exit;
 		
 		//	Stack create table config.
 		$this->_blueprint->table[] = $table;
