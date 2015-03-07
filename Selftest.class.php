@@ -82,7 +82,7 @@ class Selftest extends OnePiece5
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
-		$this->_log('Init');
+		$this->_log('Execute the \Init\.');
 	}
 	
 	function InitDiagnosis()
@@ -99,10 +99,11 @@ class Selftest extends OnePiece5
 		$this->_blueprint->alter	 = array();
 	}
 	
-	private function _Log($message, $result=null)
+	private function _Log($message, $result=null, $from='en')
 	{
 		//	Generate log array.
 		$log = array();
+		$log['from']	 = $from;
 		$log['result']	 = $result;
 		$log['message']	 = $message;
 		
@@ -112,11 +113,14 @@ class Selftest extends OnePiece5
 	
 	function PrintLog()
 	{
-		$i = 0;
+		$this->p("![.bold[Display Selftest's diagnosis log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		
+		print '<ol>';
 		while($log = array_shift($this->_log)){
-			$i++;
-			$result = $log['result'];
+			$from	 = $log['from'];
+			$result  = $log['result'];
 			$message = $log['message'];
+			$translate = $this->i18n()->Bulk($message, $from);
 			if( $result === null ){
 				$class = 'gray';
 			}else if( is_bool($result) ){
@@ -124,13 +128,14 @@ class Selftest extends OnePiece5
 			}else{
 				$class = $result;
 			}
-			print $this->P("![.small[ ![.{$class}[{$i}: {$message}]] ]]");
+			print $this->p("![li .small .{$class}[{$translate}]]");
 		}
+		print '</ol>';
 	}
 	
 	function Root($password, $root_user='root')
 	{
-		$this->_log('Root');
+		$this->_log('Set the Root user and password.');
 		$this->_root_user     = $root_user;
 		$this->_root_password = $password;
 	}
@@ -191,6 +196,14 @@ class Selftest extends OnePiece5
 			$this->CheckIndex($config);
 		}
 		
+		//	Write Log.
+		if( $this->_is_diagnosis ){
+			$message = "Diagnostic result were nothing no problem.";
+		}else{
+			$message = "Diagnostic result has problem.";
+		}
+		$this->_Log($message, $this->_is_diagnosis);
+		
 		return $this->_is_diagnosis;
 	}
 	
@@ -211,10 +224,10 @@ class Selftest extends OnePiece5
 		$user = $database->user;
 		
 		//	Write diagnosis
-		$this->_diagnosis->connection->$user->$dsn = $io;
+		$this->_diagnosis->$user->$dsn->connection = $io;
 		
 		//	Log
-		$this->_log("DSN: $dsn, user: $user",$io);
+		$this->_log("Connection by \DSN: $dsn, user: $user\ ",$io);
 		
 		//	return
 		if(!$io){
@@ -227,43 +240,83 @@ class Selftest extends OnePiece5
 	
 	function CheckDatabase($config)
 	{
+		//	Connection
 		if( $io = $this->PDO()->isConnect() ){
 			$db_name = $config->database->name;
 			$db_list = $this->PDO()->GetDatabaseList($config);
 			$io = in_array($db_name, $db_list);
 		}
 		
-		//	return
+		//	result
 		if(!$io){
 			$this->_is_diagnosis = false;
 			$this->_blueprint->database[] = clone($config->database);
 		}
+		
+		//	Diagnosis
+		$db_name = $config->database->name;
+		$user	 = $config->database->user;
+		$dsn	 = $this->PDO()->GetDSN();
+		$this->_diagnosis->$user->$dsn->database->$db_name = $io;
+		
+		//	Log
+		if( $io ){
+			$result = "is success";
+		}else{
+			$result = "failed";
+		}
+		//	Write
+		$this->_Log("Access to the database $result. \($db_name)\ ", $io);
 	}
 	
 	function CheckTable($config)
 	{
-		$this->mark($this->PDO()->isConnect());
+		//	Diagnosis
+		$db_name = $config->database->name;
+		$user	 = $config->database->user;
+		$dsn	 = $this->PDO()->GetDSN();
 		
-		if(!$io = $this->PDO()->isConnect() ){
-			//	Failed database connection.
-			$this->_is_diagnosis = false;
-			foreach( $config->table as $name => $table ){
+		//	Get a list of the found table in this connection.
+		if( $io = $this->PDO()->isConnect() ){
+			//	This connection's found list.
+			$table_list = $this->PDO()->GetTableList($config->database->name);
+		}else{
+			//	Write to diagnosis.
+			$this->_diagnosis->$user->$dsn->$db_name->table = false;
+		}
+		
+		//	Check each table.
+		foreach( $config->table as $table_name => $table ){
+			//	Check failed.
+			if( empty($table_list) ){
+				$io = false;
+			}else if( in_array($table_name, $table_list) == false ){
+				$io = false;
+			}else{
+				$io = true;
+			}
+			
+			if( $io == false ){
+				//	Failed.
+				$this->_is_diagnosis = false;
 				
-				$this->D($table);
-				
-				$table->name = $name;
+				//	Write blueprint.
+				$table->name = $table_name;
 				$this->WriteTable($config->database, $table);
 				$this->WriteGrant($config->database, $table);
 			}
-		}else{
-			//	Check each table.
 			
-			var_dump($io);
+			//	Write diagnosis.
+			$join_name = $db_name.'.'.$table_name;
+			$this->_diagnosis->$user->$dsn->table->$join_name = $io;
 			
-			$table_list = $this->PDO()->GetTableList($config->database->name);
-			$this->D($table_list);
-			
-			
+			//	Write Log.
+			if( $io ){
+				$message = "Table name \`{$db_name}`.`{$table_name}`\ is found from \`$user`\ user.";
+			}else{
+				$message = "Table name \`{$db_name}`.`{$table_name}`\ is not found from \`$user`\ user.";
+			}
+			$this->_Log($message, $io);
 		}
 	}
 	
@@ -289,6 +342,11 @@ class Selftest extends OnePiece5
 	
 	function WriteTable($database, $table)
 	{
+		if( empty($table->column) ){
+			$this->_Log("Table name \\{$table->name}\ will skip the write to \blueprint\. (column is empty)");
+			return;
+		}
+		
 		//	Generate create table config
 		$table = clone($table);
 		$table->database = $database->name;
@@ -297,9 +355,6 @@ class Selftest extends OnePiece5
 			unset($column->ai);
 			unset($column->index);
 		}
-		
-		$this->d( $table );
-		exit;
 		
 		//	Stack create table config.
 		$this->_blueprint->table[] = $table;

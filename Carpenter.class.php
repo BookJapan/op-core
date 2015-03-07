@@ -87,12 +87,10 @@ class Carpenter extends OnePiece5
 	
 	function PrintLog()
 	{
-		$this->p("![.bold[Display build log:]] ![.gray .small[".$this->GetCallerLine()."]]");
-
-		$i = 0;
+		$this->p("![.bold[Display Carpenter's build log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		
 		print '<ol>';
 		foreach($this->_log as $log){
-			$i++;
 			$result	 = $log['result'];
 			$message = $log['message'];
 			if( is_null($result) ){
@@ -102,7 +100,7 @@ class Carpenter extends OnePiece5
 			}else{
 				$class = $result;
 			}
-			print "<li>$message</li>";
+			print $this->p("![li .small[$message]]");
 		}
 		print '</ol>';
 		
@@ -119,7 +117,7 @@ class Carpenter extends OnePiece5
 			$from	 = $error['translation'];
 			list($message, $query) = explode(':',$error['message'].':');
 			$translation = $this->i18n()->Bulk($message, $from);
-			print $this->p("![li .small[$translation $nl $query]]");
+			print $this->p("![li .small[{$translation}{$nl} ![.gray[{$query}]] ]]");
 		}
 		print '</ol>';
 		
