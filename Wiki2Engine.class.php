@@ -127,7 +127,7 @@ class Wiki2Engine extends OnePiece5
 			}else if(preg_match('/^0x([0-0a-f]{3,6})/i',$temp,$m)){
 				//	![p 0xc0f0a0 [this is paragraph.]]
 				$color[] = 'color:#'.$m[1];
-			}else if(preg_match('/^([-_a-z0-9]+):([-_a-z0-9]+)/',$temp,$m)){
+			}else if(preg_match('/^([-_a-z0-9]+):([-_a-z0-9\.]+)/',$temp,$m)){
 				if( $m[1] === 'colspan' or $m[1] === 'rowspan' ){
 					//	![td colspan:2 [cell data]]
 					$tag[0] .= " {$m[1]}={$m[2]}"; 
