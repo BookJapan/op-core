@@ -923,7 +923,7 @@ class PDO5 extends OnePiece5
 		}
 		
 		//  get select query
-		if(!$qu = $this->dcl()->GetAlterTable($conf)){
+		if(!$qu = $this->ddl()->GetAlterTable($conf)){
 			return false;
 		}
 		
