@@ -449,6 +449,14 @@ class PDO5 extends OnePiece5
 		return $result;
 	}
 	
+	/**
+	 * Get table struct.
+	 * 
+	 * @param string $table_name
+	 * @param string $database_name
+	 * @param string $charset
+	 * @return boolean|array
+	 */
 	function GetTableStruct( $table_name, $db_name=null, $charset=null )
 	{
 		//  Check table name
@@ -524,9 +532,16 @@ class PDO5 extends OnePiece5
 		return $record;
 	}
 	
-	function GetTableColumn( $table, $database=null )
+	/**
+	 * Get table's column name list.
+	 * 
+	 * @param string $table_name
+	 * @param string $database_name
+	 * @return boolean|array
+	 */
+	function GetTableColumn( $table_name, $database_name=null )
 	{
-		if( $structs = $this->GetTableStruct($table,$database) ){
+		if( $structs = $this->GetTableStruct($table_name, $database_name) ){
 			foreach( $structs as $struct ){
 				$columns[] = $struct['field'];
 			}
