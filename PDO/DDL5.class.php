@@ -134,7 +134,7 @@ class DDL5 extends OnePiece5
 		if( empty($args['column']) ){
 			$this->StackError("\$table\ table is not set value of column.",'en');
 			return false;
-		}else if( $column = $this->ConvertColumn($args) ){
+		}else if( $column = $this->ConvertColumn($args['column']) ){
 			$column = '('.$column.')';
 		}else{
 			return;
@@ -196,27 +196,27 @@ class DDL5 extends OnePiece5
 			$args['driver'] = $this->driver;
 		}
 		
-		//  Escape  
+		//  Escape
 		$database = ConfigSQL::Quote( $args['database'], $args['driver']);
 		$table    = ConfigSQL::Quote( $args['table'],    $args['driver']);
 		
 		//	Added
-		if( isset($args['add']) ){
-			if(!$add = $this->ConvertColumn( $args['add'], 'ADD' )){
+		if( isset($args['column']['add']) ){
+			if(!$add = $this->ConvertColumn( $args['column']['add'], 'ADD' )){
 				return false;
 			}
 		}else{ $add = null; }
-	
+		
 		//	Change
-		if( isset($args['change']) ){
-			if(!$change = $this->ConvertColumn( $args['change'], 'CHANGE' )){
+		if( isset($args['column']['change']) ){
+			if(!$change = $this->ConvertColumn( $args['column']['change'], 'CHANGE' )){
 				return false;
 			}
 		}else{ $change = null; }
 	
 		//	 Remove
-		if( isset($args['drop']) ){
-			if(!$drop = $this->ConvertColumn( $args['drop'], 'DROP' )){
+		if( isset($args['column']['drop']) ){
+			if(!$drop = $this->ConvertColumn( $args['column']['drop'], 'DROP' )){
 				return false;
 			}
 		}else{ $drop = null; }
@@ -272,18 +272,13 @@ class DDL5 extends OnePiece5
 		//DROP USER 'op_wizard'@'localhost';
 	}
 	
-	function ConvertColumn( $args, $ACD='' )
+	function ConvertColumn($args, $ACD='' )
 	{
-		if( empty($args['column']) ){
-			$this->StackError("Put the value of column.",'en');
-			return false;
-		}
-		
 		//	INIT
 		$indexes = array();
 		
 		//  loop from many columns
-		foreach($args['column'] as $name => $temp){
+		foreach($args as $name => $temp){
 			
 			//	column name
 			if( empty($temp['name']) ){
