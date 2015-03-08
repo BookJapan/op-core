@@ -105,7 +105,7 @@ class Carpenter extends OnePiece5
 			}else{
 				$class = $result;
 			}
-			print $this->p("![li .small[$message]]");
+			print $this->p("![li .{$class} .small[$message]]");
 		}
 		print '</ol>';
 		
@@ -120,9 +120,10 @@ class Carpenter extends OnePiece5
 		print '<ol>';
 		foreach($this->_error as $error){
 			$from	 = $error['translation'];
-			list($message, $query) = explode(':',$error['message'].':');
-			$translation = $this->i18n()->Bulk($message, $from);
-			print $this->p("![li .small[{$translation}{$nl} ![.gray[{$query}]] ]]");
+			$temp	 = explode(PHP_EOL,$error['message'].PHP_EOL);
+			$message = $this->i18n()->Bulk($temp[0], $from);
+			$query = trim($temp[1],'\\');
+			print $this->p("![li .small[{$message}{$nl} ![.gray[{$query}]] ]]");
 		}
 		print '</ol>';
 		
@@ -169,9 +170,9 @@ class Carpenter extends OnePiece5
 			$this->CreateUser($blueprint);
 			$this->CreateDatabase($blueprint);
 			$this->CreateTable($blueprint);
-			$this->CreateColumn($blueprint);
-			$this->CreateIndex($blueprint);
 			$this->CreateAlter($blueprint);
+			$this->CreatePkey($blueprint);
+			$this->CreateIndex($blueprint);
 			$this->CreateGrant($blueprint);
 			
 		}catch( OpException $e ){
@@ -227,9 +228,15 @@ class Carpenter extends OnePiece5
 		}
 	}
 	
-	function CreateColumn($blueprint)
+	function CreateAlter($blueprint)
 	{
-		
+		foreach( $blueprint->alter as $alter ){
+			//	Alter table
+			$io = $this->PDO()->AlterTable($alter);
+			
+			//	log
+			$this->Log($this->PDO()->Qu(), $io);
+		}
 	}
 	
 	function CreatePkey($blueprint)
@@ -239,18 +246,13 @@ class Carpenter extends OnePiece5
 	
 	function CreateIndex($blueprint)
 	{
-		
-	}
-	
-	function CreateAlter($blueprint)
-	{
 	
 	}
 	
 	function CreateGrant($blueprint)
 	{
 		foreach( $blueprint->grant as $grant ){
-			//	execute
+			//	Grant user
 			$io = $this->PDO()->Grant($grant);
 			
 			//	log

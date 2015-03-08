@@ -332,7 +332,7 @@ class Selftest extends OnePiece5
 			//	Check table exists.
 			$join_name = $db_name.'.'.$table_name;
 			if(!$this->_diagnosis->$user->$dsn->table->$join_name){
-				$this->_Log("Does not check column. Failed this table \ `{$db_name}`.`{$table_name}` \.");
+				$this->_Log("Column checking is skip. ($join_name)");
 				return;
 			}
 			
@@ -341,22 +341,23 @@ class Selftest extends OnePiece5
 			
 			//	Check each column.
 			foreach($table->column as $column_name => $column){
+				//	Compensate name.
+				$table->name  = $table_name;
+				$column->name = $column_name;
 				
 				//	Check column exists.
 				if( array_key_exists($column_name, $struct) ){
 					//	Check column's struct.
-					$table->name  = $table_name;
-					$column->name = $column_name;
-					$this->CheckColumnStruct($database, $table, $column, $struct[$column_name]);
+					$this->CheckColumnStruct($database, $table, clone($column), $struct[$column_name]);
 				}else{
 					//	Fail
 					$this->_is_diagnosis = false;
 					//	Diagnosis
 					$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = false;
 					//	Blueprint
-					$this->WriteAlter($database, $table, $column, 'add');
+					$this->WriteAlter($db_name, $table_name, clone($column), 'add');
 					//	Log
-					$this->_log("Does not found column name. \($column_name)\ ",false);
+					$this->_log("\\$column_name\ is not found.",false);
 				}
 				
 				//	余っているカラムもチェックする
@@ -367,7 +368,7 @@ class Selftest extends OnePiece5
 			}
 		}
 	}
-
+	
 	function CheckColumnStruct($database, $table, $column, $struct)
 	{
 		//	Init diagnosis property's value.
@@ -393,9 +394,15 @@ class Selftest extends OnePiece5
 			//	Diagnosis
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
 			
+			//	Write Log
+			$message = "\\{$table_name}.{$column_name}\'s \\$key\ is ";
+			$message.= $io ? "no problem.": "found problem.";
+			$this->_Log($message, $io);
+			
 			//	Write blueprint
 			if(!$io){
-				$this->WriteAlter($database, $table, $column, 'change');
+				$this->_is_diagnosis = false;
+				$this->WriteAlter($db_name, $table_name, $column, 'change');
 			}
 		}
 		
@@ -465,12 +472,17 @@ class Selftest extends OnePiece5
 	 * @param Config $database Database connection information.
 	 * @param Config $table    Table define.
 	 */
-	function WriteAlter($database, $table, $column, $acd)
+	function WriteAlter($database_name, $table_name, $column, $acd)
 	{
+		$column_name = $column->name;
+		unset($column->name);
+		unset($column->ai);
+		unset($column->index);
+		
 		$alter = new Config();
-		$alter->database = $database->name;
-		$alter->table	 = $table->name;
-		$alter->$acd->{$column->name} = clone($column);
+		$alter->database = $database_name;
+		$alter->table	 = $table_name;
+		$alter->column->$acd->{$column_name} = clone($column);
 		
 		//	Stack create table config.
 		$this->_blueprint->alter[] = $alter;
