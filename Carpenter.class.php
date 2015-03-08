@@ -89,6 +89,11 @@ class Carpenter extends OnePiece5
 	{
 		$this->p("![.bold[Display Carpenter's build log:]] ![.gray .small[".$this->GetCallerLine()."]]");
 		
+		if(!$this->_log){
+			$this->p("![ margin-left:0.6em .gray [Nothing.]]");
+			return;
+		}
+		
 		print '<ol>';
 		foreach($this->_log as $log){
 			$result	 = $log['result'];

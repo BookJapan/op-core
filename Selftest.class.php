@@ -192,7 +192,6 @@ class Selftest extends OnePiece5
 			$this->CheckDatabase($config);
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
-			$this->CheckAlter($config);
 			$this->CheckIndex($config);
 		}
 		
@@ -312,9 +311,9 @@ class Selftest extends OnePiece5
 			
 			//	Write Log.
 			if( $io ){
-				$message = "Table name \`{$db_name}`.`{$table_name}`\ is found from \`$user`\ user.";
+				$message = "Table name \ `{$db_name}`.`{$table_name}` \ is found from \ `$user` \ user.";
 			}else{
-				$message = "Table name \`{$db_name}`.`{$table_name}`\ is not found from \`$user`\ user.";
+				$message = "Table name \ `{$db_name}`.`{$table_name}` \ is not found from \ `$user` \ user.";
 			}
 			$this->_Log($message, $io);
 		}
@@ -322,42 +321,76 @@ class Selftest extends OnePiece5
 	
 	function CheckColumn($config)
 	{
+		//	Init diagnosis property's value.
+		$db_name = $config->database->name;
+		$user	 = $config->database->user;
+		$dsn	 = $this->PDO()->GetDSN();
 
+		//	Check each table.
+		foreach( $config->table as $table_name => $table ){
+			//	Check table exists.
+			$join_name = $db_name.'.'.$table_name;
+			if(!$this->_diagnosis->$user->$dsn->table->$join_name){
+				$this->_Log("Does not check column. Failed this table \ `{$db_name}`.`{$table_name}` \.");
+				return;
+			}
+			
+			//	Get column struct.
+			$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
+			
+			//	Check each column.
+			foreach($table->column as $column_name => $column){
+				
+				//	Column's struct.
+				if( $io = array_key_exists($column_name, $struct) ){
+					$io = $this->CheckColumnStruct($user, $dsn, $db_name, $table_name, $column_name, $column, $struct[$column_name]);
+				}
+				
+				//	余っているカラムもチェックする
+				
+				//	Diagnosis
+				if(!$io){
+					$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = $io;
+				}
+				
+				if( $io ){
+					
+				}else{
+					
+				}
+				
+				
+				//	Blueprint
+				
+				//	Log
+			}
+		}
+	}
+
+	function CheckColumnStruct($user, $dsn, $db_name, $table_name, $column_name, $column, $struct)
+	{
+		//	join name
+		$join_name = $db_name.'.'.$table_name;
+		
+		//	Correction.
+		$struct['type'] = $struct['field'];
+		
+		//	Each check.
+		foreach($column as $key => $scheme){
+			if( $key == 'ai' ){
+				$io = $scheme['extra'] == 'auto_increment' ? true: false;
+			}else{
+				$io = $struct[$key] == $scheme ? true: false;
+			}
+			
+			//	Diagnosis
+			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = true;
+		}
 	}
 	
 	function CheckIndex($config)
 	{
 		
-	}
-	
-	function CheckAlter($config)
-	{
-		
-	}
-	
-	function CheckUser($database)
-	{
-		
-	}
-	
-	function WriteTable($database, $table)
-	{
-		if( empty($table->column) ){
-			$this->_Log("Table name \\{$table->name}\ will skip the write to \blueprint\. (column is empty)");
-			return;
-		}
-		
-		//	Generate create table config
-		$table = clone($table);
-		$table->database = $database->name;
-		
-		foreach( $table->column as $column_name => $column ){
-			unset($column->ai);
-			unset($column->index);
-		}
-		
-		//	Stack create table config.
-		$this->_blueprint->table[] = $table;
 	}
 	
 	/**
@@ -380,5 +413,32 @@ class Selftest extends OnePiece5
 		//	Stack grant config.
 		$this->_blueprint->grant[] = $grant;
 	}
+
+	/**
+	 * Write create table config.
+	 *
+	 * @param Config $database Database connection information.
+	 * @param Config $table    Table define.
+	 */
+	function WriteTable($database, $table)
+	{
+		if( empty($table->column) ){
+			$this->_Log("Table name \\{$table->name}\ will skip the write to \blueprint\. (column is empty)");
+			return;
+		}
+		
+		//	Generate create table config
+		$table = clone($table);
+		$table->database = $database->name;
+		
+		foreach( $table->column as $column_name => $column ){
+			unset($column->ai);
+			unset($column->index);
+		}
+		
+		//	Stack create table config.
+		$this->_blueprint->table[] = $table;
+	}
+	
 	
 }
