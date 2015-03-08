@@ -102,7 +102,7 @@ class PDO5 extends OnePiece5
 	function DCL( $name='DCL5' )
 	{
 		if( empty($this->dcl) ){
-
+			
 			$path  = $this->GetEnv('op-root');
 			$path  = rtrim($path,'/').'/';
 			$path .= "PDO/$name.class.php";
@@ -203,7 +203,7 @@ class PDO5 extends OnePiece5
 					$error_id = $temp[0];
 					$error_no = $temp[1];
 					$message  = $temp[2];
-					$this->StackError("$message : {$this->qu}",'en');
+					$this->StackError($message.' '.PHP_EOL.$this->qu,'en');
 			}
 		}
 		
@@ -822,7 +822,7 @@ class PDO5 extends OnePiece5
 		//  execute
 		return $this->query( $qu, 'create' );
 	}
-
+	
 	/**
 	 * Create User
 	 *

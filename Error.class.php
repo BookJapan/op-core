@@ -190,7 +190,11 @@ class Error
 			
 			//	i18n
 			if( $from ){
-				$message = OnePiece5::i18n()->Bulk( $message, $from );
+				$temp = explode(PHP_EOL, $message.PHP_EOL);
+				$message = OnePiece5::i18n()->Bulk($temp[0], $from );
+				if( isset($temp[1]) ){
+					$message .= $temp[1];
+				}
 			}
 			
 			//	Sequence no.
@@ -420,10 +424,9 @@ class Error
 			);
 		}
 		
-		$bulk = OnePiece5::i18n()->Bulk("This method does not exist in class.","en");
 		$argument = self::ConvertStringFromArguments($args);
-		$message = "$bulk - {$class}::{$name}({$argument})";
-		self::_Set( $name, $message );
+		$message = "This method does not exists in class.".PHP_EOL."\ - {$class}::{$name}\\";
+		self::_Set( $name, $message, null, 'en' );
 	}
 	
 	static function MagicMethodCallStatic( $class, $name, $args )
