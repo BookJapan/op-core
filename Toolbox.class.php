@@ -8,7 +8,7 @@ class Toolbox
 {
 	function __call( $func, $args )
 	{
-		$this->mark("$func is not implements.");
+		OnePiece5::mark("$func is not implements.");
 	}
 	
 	function Command( $command, $args=array() )
@@ -149,7 +149,7 @@ class Toolbox
 				break;
 				
 			default:
-				$this->StackError('An unexpected error: empty method type.');
+				OnePiece5::StackError('An unexpected error: empty method type.');
 				return false;
 		}
 		
@@ -216,11 +216,11 @@ class Toolbox
 				break;
 				
 			case 'both':
-				$this->mark('not yet implements');
+				OnePiece5::mark('not yet implements');
 				break;
 				
 			default:
-				$this->StackError('An unexpected error: empty method type.');
+				OnePiece5::StackError('An unexpected error: empty method type.');
 				return false;
 		}
 		
@@ -229,13 +229,13 @@ class Toolbox
 	
 	function Module( $name, $args=null )
 	{
-		$path  = self::ConvertPath($this->GetEnv('module-dir'));
+		$path  = self::ConvertPath(OnePiece5::GetEnv('module-dir'));
 		$path .= '/' . $name . '/' . $name.'.module.php';
 		
 		if( file_exists($path) ){
 			include_once($path);
 		}else{
-			$this->StackError("does not file exists. ($name.module.php)");
+			OnePiece5::StackError("does not file exists. ($name.module.php)");
 			return null;
 		}
 		
@@ -304,6 +304,8 @@ class Toolbox
 	
 	function ConvertConfigToArray( $args )
 	{
+		$this->StackError("Used checking. Is this use?");
+		
 		$type = gettype($args);
 		
 		switch($type){
@@ -312,7 +314,7 @@ class Toolbox
 				if( file_exists($path) ){
 					include($path);
 				}else{
-					$this->StackError("File does not exist. ($path)");
+					OnePiece5::StackError("File does not exist. ($path)");
 					return false;
 				}
 				if(isset($_config)){
