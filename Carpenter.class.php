@@ -232,6 +232,11 @@ class Carpenter extends OnePiece5
 		
 	}
 	
+	function CreatePkey($blueprint)
+	{
+	
+	}
+	
 	function CreateIndex($blueprint)
 	{
 		
