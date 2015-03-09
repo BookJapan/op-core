@@ -618,17 +618,22 @@ class Selftest extends OnePiece5
 			default:
 		}
 		
-		$config = new Config();
-		$config->database = $database_name;
-		$config->table	 = $table_name;
-		$config->column	 = $column_name;
-		$config->type	 = $type;
+		$alter = new Config();
+		$alter->database = $database_name;
+		$alter->table	 = $table_name;
+		$alter->column	 = $column_name;
+		$alter->type	 = $type;
 		
-		$this->_blueprint->index->{$acd}[] = $config;
+		$this->_blueprint->index->{$acd}[] = $alter;
 	}
 	
-	function WritePKEY($database_name, $table_name, $column_name)
+	function WritePKEY($database_name, $table_name, $column)
 	{
-	
+		$alter = new Config();
+		$alter->database = $database_name;
+		$alter->table	 = $table_name;
+		$alter->column	 = $column;
+		
+		$this->_blueprint->index->pkey[] = $alter;
 	}
 }
