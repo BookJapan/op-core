@@ -189,6 +189,7 @@ class PDO5 extends OnePiece5
 					
 				default:
 					$result = $st->fetchAll(PDO::FETCH_ASSOC);
+				break;
 			}
 		}else{
 			switch(strtolower($key)){
@@ -1052,41 +1053,24 @@ class PDO5 extends OnePiece5
 		return $io;
 	}
 	
-	function AddPrimaryKey( $table_name, $column_name )
+	function AddPrimaryKey($args, $column=null)
 	{
-		$table_name  = $this->Escape($table_name);
-		$column_name = $this->Escape($column_name);
-		
-		$table_name  = ConfigSQL::Quote( $table_name, $this->driver );
-		
-		if( is_string($column_name) ){
-			$column_name = ConfigSQL::Quote( $column_name, $this->driver );
+		if( $qu = $this->DDL()->GetAddPrimarykey( Toolbox::toArray($args) )){
+			$io = $this->query($qu,'alter');
 		}else{
-			if( is_object($column_name) ){
-				$column_name = Toolbox::toArray($column_name);
-			}
-			if( is_array($column_name) ){
-				foreach( $column_name as $key => $var ){
-					$join[] = ConfigSQL::Quote( $var, $this->driver );
-				}
-				$column_name = join(', ',$join);
-			}else{
-				$type = gettype($column_name);
-				$this->StackError("Does not support type to \$column_name. ($type)");
-			}
+			$io = false;
 		}
-		
-		$qu = "ALTER TABLE $table_name ADD PRIMARY KEY($column_name)";
-		return $this->query( $qu, 'alter' );
+		return $io;
 	}
 	
-	function DropPrimarykey( $table_name )
+	function DropPrimarykey($args)
 	{
-		$table_name = $this->Escape($table_name);
-		$table_name = ConfigSQL::Quote( $table_name, $this->driver );
-		
-		$qu = "ALTER TABLE $table_name DROP PRIMARY KEY";
-		return $this->query( $qu, 'alter' );
+		if( $qu = $this->DDL()->GetDropPrimarykey( Toolbox::toArray($args) )){
+			$io = $this->query($qu,'alter');
+		}else{
+			$io = false;
+		}
+		return $io;
 	}
 	
 	/**

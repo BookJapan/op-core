@@ -227,6 +227,34 @@ class DDL5 extends OnePiece5
 		return $query;
 	}
 	
+	function GetAddPrimaryKey($args, $column=null)
+	{
+		if( is_string($args) ){
+			$table = $alter;
+		}else{
+			$args = ConfigSQL::Quote($args, $this->driver);
+			$database = isset($args['database']) ? $args['database'].'.': null;
+			$table    = isset($args['table'])    ? $args['table']       : null;
+			$column   = isset($args['column'])   ? $args['column']      : null;
+		}
+		
+		if(!$table){
+			$this->StackError("Table name has not been set.");
+			return;
+		}
+		
+		if(!$column){
+			$this->StackError("Column has not been set.");
+			return;
+		}
+		
+		if( is_array($column) ){
+			$column = join(',',$column);
+		}
+		
+		return "ALTER TABLE $database $table ADD PRIMARY KEY($column)";
+	}
+	
 	function GetAddIndex($args)
 	{
 		return $this->_GetIndex($args, 'add');
@@ -357,6 +385,24 @@ class DDL5 extends OnePiece5
 		$query = "DROP {$temporary} TABLE IF EXISTS {$database}.{$table}";
 		
 		return $query;
+	}
+	
+	function GetDropPrimarykey($args)
+	{
+		if( is_string($args) ){
+			$table = $args;
+		}else{
+			$args = ConfigSQL::Quote($args, $this->driver);
+			$database = isset($args['database']) ? $args['database'].'.': null;
+			$table    = isset($args['table'])    ? $args['table']       : null;
+		}
+		
+		if(!$table){
+			$this->StackError("Table name has not been set.");
+			return;
+		}
+		
+		return "ALTER TABLE $database $table DROP PRIMARY KEY";
 	}
 	
 	function GetDropUser()
