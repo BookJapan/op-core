@@ -354,6 +354,7 @@ class Selftest extends OnePiece5
 		$dsn	 = $this->PDO()->GetDSN();
 		$table_name = $table->name;
 		$join_name = $db_name.'.'.$table_name;
+		$after = null;
 		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
@@ -377,17 +378,19 @@ class Selftest extends OnePiece5
 				$this->_is_diagnosis = false;
 				//	Diagnosis
 				$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = false;
-				//	Blueprint
+				//	Add new column.
+				$column->after = $after;
 				$this->WriteAlter($db_name, $table_name, clone($column), 'add');
 				//	Log
 				$this->_log("\\$column_name\ is not found.",false);
 			}
-		
+			
 			//	余っているカラムもチェックする
 		
 			//	Blueprint
 		
 			//	Log
+			$after = $column_name;
 		}
 	}
 	
@@ -452,8 +455,8 @@ class Selftest extends OnePiece5
 		
 		//	Check each column.
 		foreach($table->column as $column_name => $column){
-			if(empty($this->_diagnosis->$user->$dsn->column->$join_name->$column_name)){
-				continue;
+			if( empty($this->_diagnosis->$user->$dsn->column->$join_name->$column_name) ){
+				$struct[$column_name]['key'] = '';
 			}
 			
 			//	Get column's key.
@@ -467,22 +470,20 @@ class Selftest extends OnePiece5
 			//	Evaluation
 			$io = $key === $struct[$column_name]['key'];
 			
-			//	Diagnosis
+			//	Diagnosis (In case of not empty)
 			if( !empty($key) or !empty($struct[$column_name]['key']) ){
-				if(!$key){
-					$key = $struct[$column_name]['key'];
+				//	In case of boolean. (Column is not exists in table)
+				if(!is_bool($this->_diagnosis->$user->$dsn->column->$join_name->$column_name)){
+					if(!$key){ $key = $struct[$column_name]['key']; /* Supplement index name */ }
+					//	Write
+					$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
 				}
-				$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
 			}
 			
 			//	Nothing problem
 			if( $io ){
 				continue;
 			}
-			
-			//	Log
-			$message = "\\$table_name, $column_name, $key\\";
-			$this->_Log($message,false);
 			
 			//	Diagnosis
 			$this->_is_diagnosis = false;
@@ -525,6 +526,7 @@ class Selftest extends OnePiece5
 					$key = 'MUL';
 					break;
 				default:
+					$this->D($column);
 			}
 		}else{
 			$key = '';
