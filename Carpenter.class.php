@@ -239,11 +239,6 @@ class Carpenter extends OnePiece5
 		}
 	}
 	
-	function CreatePkey($blueprint)
-	{
-	
-	}
-	
 	function CreateIndex($blueprint)
 	{
 		//	Drop
@@ -261,6 +256,11 @@ class Carpenter extends OnePiece5
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
+	}
+	
+	function CreatePkey($blueprint)
+	{
+	
 	}
 	
 	function CreateGrant($blueprint)

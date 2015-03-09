@@ -286,7 +286,9 @@ class Selftest extends OnePiece5
 		}
 		
 		//	Check each table.
-		foreach( $config->table as $table_name => $table ){
+		foreach( $config->table as $table_name => $original ){
+			$table = clone($original);
+			
 			//	Check failed.
 			if( empty($table_list) ){
 				$io = false;
@@ -329,7 +331,9 @@ class Selftest extends OnePiece5
 		$dsn	 = $this->PDO()->GetDSN();
 		
 		//	Check each table.
-		foreach( $config->table as $table_name => $table ){
+		foreach($config->table as $table_name => $original){
+			$table = clone($original);
+			
 			//	Check table exists.
 			$join_name = $db_name.'.'.$table_name;
 			if(!$this->_diagnosis->$user->$dsn->table->$join_name){
@@ -349,12 +353,15 @@ class Selftest extends OnePiece5
 		//	Init
 		$dsn	 = $this->PDO()->GetDSN();
 		$table_name = $table->name;
+		$join_name = $db_name.'.'.$table_name;
 		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
 			
 		//	Check each column.
-		foreach($table->column as $column_name => $column){
+		foreach($table->column as $column_name => $original){
+			$column = clone($original);
+			
 			//	Compensate name.
 			$table->name  = $table_name;
 			$column->name = $column_name;
@@ -393,14 +400,29 @@ class Selftest extends OnePiece5
 		
 		//	Each check.
 		foreach($column as $key => $var){
-			if( $key == 'name' ){
-				continue;
-			}else if( $key == 'ai' ){
-			//	$io = $struct['extra'] == 'auto_increment' ? true: false;
-				continue;
-			}else{
-				$io = $struct[$key] == $var ? true: false;
+			switch($key){
+				case 'name':
+				case 'ai':
+				case 'index':
+				case 'pkey':
+				case 'unique':
+					$continue = true;
+					break;
+				default:
+					$continue = false;
 			}
+			
+			if( $continue ){
+				continue;
+			}
+			
+			if(!isset($struct[$key])){
+				$this->StackError("This key has not been set. \($key)\\",'en');
+				continue;
+			}
+			
+			//	Evaluation
+			$io = $struct[$key] == $var ? true: false;
 			
 			//	Diagnosis
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
@@ -430,6 +452,10 @@ class Selftest extends OnePiece5
 		
 		//	Check each column.
 		foreach($table->column as $column_name => $column){
+			if(empty($this->_diagnosis->$user->$dsn->column->$join_name->$column_name)){
+				continue;
+			}
+			
 			//	Get column's key.
 			$key = $this->_ConvertColumnKey($column);
 
@@ -467,7 +493,9 @@ class Selftest extends OnePiece5
 			}
 			
 			//	Add Index
-			$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
+			if( $key !== 'PRI' ){
+				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
+			}
 		}
 		
 		//	Write PKEY
@@ -564,6 +592,7 @@ class Selftest extends OnePiece5
 		unset($column->name);
 		unset($column->ai);
 		unset($column->index);
+		unset($column->pkey);
 		
 		$alter = new Config();
 		$alter->database = $database_name;
