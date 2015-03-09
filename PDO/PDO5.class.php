@@ -1001,59 +1001,24 @@ class PDO5 extends OnePiece5
 		return $this->query( $qu, 'alter' );
 	}
 	
-	private function _index( $table_name, $column_name, $acd, $type='INDEX' )
+	function AddIndex($args)
 	{
-		$table_name  = $this->Escape($table_name);
-		$column_name = $this->Escape($column_name);
-		
-		$table_name  = ConfigSQL::Quote( $table_name,  $this->driver );
-		$column_name = ConfigSQL::Quote( $column_name, $this->driver );
-		
-		//	Check index type
-		switch( strtoupper($type) ){
-			case 'INDEX':
-			case 'UNIQUE':
-			case 'SPATIAL':
-			case 'FULLTEXT':
-			case 'PRIMARY KEY':
-				$acd  = strtoupper($acd);
-				$type = strtoupper($type);
-				break;
-			default:
-				$this->StackError("Does not define this definition. ($type)");
-				return false;
-		}
-		
-		//	Check Add or Drop
-		if( 'ADD' === strtoupper($acd) ){
-			if( $type === 'INDEX' ){
-				$target = "$column_name ($column_name)";
-			}else{
-				$target = "($column_name)";
-			}
-		}else if( 'DROP' === strtoupper($acd) ){
-			$target = "$column_name";
+		if( $qu = $this->DDL()->GetAddIndex(Toolbox::toArray($args)) ){
+			$io = $this->Query($qu,'alter');
 		}else{
-			$this->StackError("Does not define this definition. ($acd)");
-			return false;
+			$io = false;
 		}
-		
-		//	ALTER TABLE `t_table` ADD INDEX `column_name` (`column_name`);
-		//	ALTER TABLE `t_table` ADD UNIQUE (`column_name`);
-		//	ALTER TABLE `t_table` DROP INDEX `column_name`;
-		
-		$qu = "ALTER TABLE $table_name $acd $type $target";
-		return $this->query( $qu, 'alter' );
+		return $io;
 	}
 	
-	function AddIndex( $table_name, $column_name, $modifier='INDEX' )
+	function DropIndex($args)
 	{
-		return $this->_index($table_name, $column_name, 'ADD', $modifier);
-	}
-	
-	function DropIndex( $table_name, $column_name )
-	{
-		return $this->_index($table_name, $column_name, 'DROP');
+		if( $qu = $this->DDL()->GetDropIndex(Toolbox::toArray($args)) ){
+			$io = $this->Query($qu,'alter');
+		}else{
+			$io = false;
+		}
+		return $io;
 	}
 	
 	function AddPrimaryKey( $table_name, $column_name )

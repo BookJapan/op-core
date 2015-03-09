@@ -229,7 +229,99 @@ class DDL5 extends OnePiece5
 	
 	function GetAddIndex($args)
 	{
-		//	ALTER TABLE `t_count` ADD UNIQUE (`date`);
+		return $this->_GetIndex($args, 'add');
+	}
+	
+	function GetDropIndex($args)
+	{
+		return $this->_GetIndex($args, 'drop');
+	}
+	
+	private function _GetIndex( $args, $acd )
+	{
+		if(!empty($args['database'])){
+			$database_name = ConfigSQL::Quote($args['database'], $this->driver) . '.';
+		}else{ $database_name = null; }
+
+		if(!empty($args['table'])){
+			$table_name = ConfigSQL::Quote($args['table'], $this->driver);
+		}else{
+			$this->StackError("Table name has not been set.",'en');
+			return false;
+		}
+		
+		if(!empty($args['column'])){
+			$column = ConfigSQL::Quote($args['column'], $this->driver);
+			if( is_array($column) ){
+				$column = join(',',$column);
+			}
+		}else{
+			$this->StackError("Column name has not been set.",'en');
+			return false;
+		}
+		
+		if(!empty($args['type'])){
+			$type = $args['type'];
+		}else{
+			$this->StackError("Index type has not been set.",'en');
+			return false;
+		}
+		
+		if(!empty($args['label'])){
+			$label = ConfigSQL::Quote($args['label'], $this->driver);
+		}else{ $label = null; }
+		
+		//	Upper case
+		$acd  = strtoupper($acd);
+		$type = strtoupper($type);
+		
+		//	Check index type
+		switch( $type ){
+			case 'INDEX':
+			case 'UNIQUE':
+			case 'SPATIAL':
+			case 'FULLTEXT':
+			case 'PRIMARY KEY':
+				break;
+				
+			default:
+				$this->StackError("Does not define this definition. \($type)\\",'en');
+				return false;
+		}
+		
+		//	Check Add or Drop
+		if( 'ADD' === $acd ){
+			if( $label ){
+				$target = "$label ($column)";
+			}else{
+				$target = "($column)";
+			}
+		}else if( 'DROP' === $acd ){
+			if( $type === 'PRIMARY KEY' ){
+				$target = null;
+			}else{
+				$target = "$column";
+			}
+		}else{
+			$this->StackError("Does not define this definition. ($acd)");
+			return false;
+		}
+		
+		//	ALTER TABLE `t_table` CHANGE `id` `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'auto increment.';
+
+		//	ALTER TABLE `t_table` ADD INDEX (`created`,`updated`);		
+		//	ALTER TABLE `t_table` ADD INDEX `label` (`column_name`);
+		//	ALTER TABLE `t_table` ADD UNIQUE (`column_name`);
+		
+		//	ALTER TABLE `t_table` DROP INDEX `column_name`;
+		
+		//	ALTER TABLE `t_table` ADD  PRIMARY KEY(`id`);
+		//  ALTER TABLE `t_table` DROP PRIMARY KEY;
+		//  ALTER TABLE `t_table`
+		//		DROP PRIMARY KEY,
+		//		ADD  PRIMARY KEY(`id`);
+		
+		return "ALTER TABLE $database_name $table_name $acd $type $target";
 	}
 	
 	function GetDropDatabase( $args )
@@ -257,7 +349,7 @@ class DDL5 extends OnePiece5
 			$this->StackError("Empty table name.");
 			return false;
 		}
-
+		
 		$database  = ConfigSQL::Quote( $args['database'], $this->driver );
 		$table     = ConfigSQL::Quote( $args['table'],    $this->driver );
 		$temporary = empty($args['temporary']) ? null: 'TEMPORARY';
