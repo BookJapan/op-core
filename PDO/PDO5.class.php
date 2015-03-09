@@ -1493,6 +1493,7 @@ class ConfigSQL extends OnePiece5
 			}
 			*/
 			
+			$var  = OnePiece5::Escape($var);
 			$safe = $ql.trim($var).$qr;
 		}else{
 			$safe = $var;
