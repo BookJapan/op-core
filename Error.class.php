@@ -193,7 +193,7 @@ class Error
 				$temp = explode(PHP_EOL, $message.PHP_EOL);
 				$message = OnePiece5::i18n()->Bulk($temp[0], $from );
 				if( isset($temp[1]) ){
-					$message .= $temp[1];
+					$message .= trim($temp[1],'\\');
 				}
 			}
 			
