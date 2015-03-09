@@ -199,15 +199,46 @@ class PDO5 extends OnePiece5
 				default:
 					//  failed
 					$result = false;
-					$temp = $this->pdo->errorInfo();
-					$error_id = $temp[0];
-					$error_no = $temp[1];
-					$message  = $temp[2];
-					$this->StackError($message.' '.PHP_EOL.$this->qu,'en');
+					$this->_query_error();
+				break;
 			}
 		}
 		
 		return $result;
+	}
+	
+	private function _query_error()
+	{
+		if( $this->driver == 'mysql' ){
+			$message = $this->_query_error_mysql();
+		}else{
+			$temp = $this->pdo->errorInfo();
+			$error_id = $temp[0];
+			$error_no = $temp[1];
+			$message  = $temp[2];
+		}
+		
+		$this->StackError($message.' '.PHP_EOL.$this->qu,'en');
+	}
+
+	private function _query_error_mysql()
+	{
+		$temp = $this->pdo->errorInfo();
+		$error_id = $temp[0];
+		$error_no = $temp[1];
+		$message  = $temp[2]." \#{$error_no}\ ";
+		
+		switch($error_no){
+			case 1064:
+				$message  = "You have an error in your SQL syntax. "; 
+				$message .= "Check the manual that corresponds to your MySQL server version. ";
+				break;
+			case 1091:
+				$message = "Cannot DROP \PRIMARY KEY\. Check that column/key exists.";
+			default:
+		}
+		
+		return $message;
 	}
 	
 	function ConvertCharset( $charset=null )
