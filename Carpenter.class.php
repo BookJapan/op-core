@@ -246,7 +246,21 @@ class Carpenter extends OnePiece5
 	
 	function CreateIndex($blueprint)
 	{
-	
+		//	Drop
+		foreach($blueprint->index->drop as $drop){
+			$io = $this->PDO()->DropIndex($drop);
+
+			//	log
+			$this->Log($this->PDO()->Qu(), $io);
+		}
+		
+		//	Add
+		foreach($blueprint->index->add as $add){
+			$io = $this->PDO()->AddIndex($add);
+			
+			//	log
+			$this->Log($this->PDO()->Qu(), $io);
+		}
 	}
 	
 	function CreateGrant($blueprint)

@@ -434,7 +434,7 @@ class Selftest extends OnePiece5
 			$key = $this->_ConvertColumnKey($column);
 
 			//	Stack PKEY
-			if( $key === 'PKEY' ){
+			if( $key === 'PRI' ){
 				$pkeys[] = $column_name;
 			}
 			
@@ -462,30 +462,18 @@ class Selftest extends OnePiece5
 			$this->_is_diagnosis = false;
 			
 			//	Drop Index
-			$this->WriteIndex($db_name, $table_name, $column_name, 'drop');
+			if( $struct[$column_name]['key'] ){
+				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'drop');
+			}
 			
 			//	Add Index
-			$this->WriteIndex($db_name, $table_name, $column_name, 'add');
+			$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
 		}
 		
 		//	Write PKEY
 		if(!$this->_is_diagnosis and isset($pkeys)){
 			$this->WritePKEY($db_name, $table_name, $pkeys);
 		}
-		
-		return;
-		
-		
-		//	ALTER TABLE `t_hoge` ADD PRIMARY KEY(`id`);
-		//  ALTER TABLE `t_hoge`
-		//		DROP PRIMARY KEY,
-   		//		ADD  PRIMARY KEY(`id`);
-   		
-		//	ALTER TABLE `t_hoge` ADD  INDEX(`created`,`updated`);
-		//	ALTER TABLE `t_hoge` ADD  UNIQUE(`timestamp`);
-		//	ALTER TABLE `t_hoge` DROP INDEX timestamp;
-   		
-		//	ALTER TABLE `t_hoge` CHANGE `id` `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'auto increment.';
 	}
 	
 	function _ConvertColumnKey($column)
@@ -586,12 +574,26 @@ class Selftest extends OnePiece5
 		$this->_blueprint->alter[] = $alter;
 	}
 	
-	function WriteIndex($database_name, $table_name, $column_name, $acd)
+	function WriteIndex($database_name, $table_name, $column_name, $key, $acd)
 	{
+		switch($key){
+			case 'PRI':
+				$type = 'PRIMARY KEY';
+				break;
+			case 'MUL':
+				$type = 'INDEX';
+				break;
+			case 'UNI':
+				$type = 'UNIQUE';
+				break;
+			default:
+		}
+		
 		$config = new Config();
 		$config->database = $database_name;
 		$config->table	 = $table_name;
 		$config->column	 = $column_name;
+		$config->type	 = $type;
 		
 		$this->_blueprint->index->{$acd}[] = $config;
 	}
