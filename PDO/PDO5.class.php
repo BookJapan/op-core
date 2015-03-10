@@ -47,20 +47,17 @@ class PDO5 extends OnePiece5
 	 * @throws OpException
 	 * @return DML5
 	 */
-	function DML( $name='DML5' )
+	function DML()
 	{
 		if( empty($this->dml) ){
-
 			$path  = $this->GetEnv('op-root');
-			$path  = rtrim($path,'/').'/';
-			$path .= "PDO/$name.class.php";
-			$io = include_once($path);
-			if(!$io){
+			$path  = rtrim($path,'/').'/PDO/DML5.class.php';
+			if(!include_once($path)){
 				throw new OpException("Include failed.($path)");
 			}
 			
 			//  Init
-			$this->dml = new $name();
+			$this->dml = new DML5();
 			$this->dml->SetPDO( $this->pdo, $this->driver );
 			$this->dml->InitQuote($this->driver);
 		}
@@ -73,20 +70,17 @@ class PDO5 extends OnePiece5
 	 * @throws OpException
 	 * @return DDL5
 	 */
-	function DDL( $name='DDL5' )
+	function DDL()
 	{
 		if( empty($this->ddl) ){
-			
 			$path  = $this->GetEnv('op-root');
-			$path  = rtrim($path,'/').'/';
-			$path .= "PDO/$name.class.php";
-			$io = include_once($path);
-			if(!$io){
+			$path  = rtrim($path,'/').'/PDO/DDL5.class.php';
+			if(!include_once($path)){
 				throw new OpException("Include failed.($path)");
 			}
 			
 			//  Init
-			$this->ddl = new $name();
+			$this->ddl = new DDL5();
 			$this->ddl->SetPDO( $this->pdo, $this->driver );
 		}
 		
@@ -99,20 +93,17 @@ class PDO5 extends OnePiece5
 	 * @throws OpException
 	 * @return DCL5
 	 */
-	function DCL( $name='DCL5' )
+	function DCL()
 	{
 		if( empty($this->dcl) ){
-			
 			$path  = $this->GetEnv('op-root');
-			$path  = rtrim($path,'/').'/';
-			$path .= "PDO/$name.class.php";
-			$io = include_once($path);
-			if(!$io){
+			$path  = rtrim($path,'/').'/PDO/DCL5.class.php';
+			if(!include_once($path)){
 				throw new OpException("Include failed.($path)");
 			}
 			
 			//  Init
-			$this->dcl = new $name();
+			$this->dcl = new DCL5();
 			$this->dcl->SetPDO( $this->pdo, $this->driver );
 		}
 		
