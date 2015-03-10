@@ -182,23 +182,24 @@ class DDL5 extends OnePiece5
 		return $query;
 	}
 	
+	/**
+	 * Build alter table sql query.
+	 * 
+	 * @param  array $args
+	 * @return boolean|string
+	 */
 	function GetAlterTable( $args )
 	{
-		if( !isset($args['database']) ){
+		if( isset($args['database']) ){
+			$database = ConfigSQL::Quote($args['database'], $this->driver).'.';
+		}else{ $database = null; }
+		
+		if( isset($args['table']) ){
+			$table = ConfigSQL::Quote($args['table'], $this->driver);
+		}else{
 			$this->StackError("Does not set database name.");
+			return;
 		}
-		
-		if( !isset($args['table']) ){
-			$this->StackError("Does not set database name.");
-		}
-		
-		if( !isset($args['driver']) ){
-			$args['driver'] = $this->driver;
-		}
-		
-		//  Escape
-		$database = ConfigSQL::Quote( $args['database'], $args['driver']);
-		$table    = ConfigSQL::Quote( $args['table'],    $args['driver']);
 		
 		//	Added
 		if( isset($args['column']['add']) ){
@@ -214,7 +215,14 @@ class DDL5 extends OnePiece5
 			}
 		}else{ $change = null; }
 	
-		//	 Remove
+		//	Modify
+		if( isset($args['column']['modify']) ){
+			if(!$modify = $this->ConvertColumn( $args['column']['modify'], 'MODIFY' )){
+				return false;
+			}
+		}else{ $modify = null; }
+		
+		//	 Drop
 		if( isset($args['column']['drop']) ){
 			if(!$drop = $this->ConvertColumn( $args['column']['drop'], 'DROP' )){
 				return false;
@@ -222,8 +230,8 @@ class DDL5 extends OnePiece5
 		}else{ $drop = null; }
 		
 		//	Create SQL
-		$query = "ALTER TABLE {$database}.{$table} {$add} {$change} {$drop}";
-	
+		$query = "ALTER TABLE {$database}{$table} {$add} {$change} {$modify} {$drop}";
+		
 		return $query;
 	}
 	
@@ -660,13 +668,14 @@ class DDL5 extends OnePiece5
 						$rename = $name;
 					}
 					
+				case 'MODIFY':
 				case 'ADD':
 				//	ALTER TABLE `t_table` ADD `id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`thread_id`) ;
 				//	ALTER TABLE `t_table` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
 				//	ALTER TABLE `t_table`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
 					$definition = "$ACD $index $rename $name $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
 					break;
-	
+					
 				case 'DROP':
 					$definition = "{$ACD} {$name}";
 					break;
@@ -691,7 +700,6 @@ class DDL5 extends OnePiece5
 		
 		// primary key(s)
 		if(isset($pkeys)){
-			//  TODO use standard array function
 			$join = array();
 			foreach($pkeys as $name){
 				$join[] = $name;
@@ -703,16 +711,14 @@ class DDL5 extends OnePiece5
 		
 		// indexes
 		if( $indexes ){
-			$modifire = $ACD ? 'ADD ': null;
-		//	$column[] = $modifire.' INDEX('.join(",",$indexes).')';
-			$column[] = sprintf('%sINDEX(%s)', $modifire, join(",",$indexes));
+			$modifire = $ACD ? 'ADD': null;
+			$column[] = sprintf('%s INDEX(%s)', $modifire, join(",",$indexes));
 		}
 		
 		// uniques
 		if( isset($uniques) ){
-			$modifire = $ACD ? 'ADD ': null;
-		//	$column[] = $modifire.' UNIQUE('.join(",",$uniques).')';
-			$column[] = sprintf('%sUNIQUE(%s)', $modifire, join(",",$uniques));
+			$modifire = $ACD ? 'ADD': null;
+			$column[] = sprintf('%s UNIQUE(%s)', $modifire, join(",",$uniques));
 		}
 		
 		return isset($column) ? join(', ', $column): false;
