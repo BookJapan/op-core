@@ -227,6 +227,60 @@ class DDL5 extends OnePiece5
 		return $query;
 	}
 	
+	/**
+	 * Rename table name.
+	 * 
+	 * Parameter $args is only array.
+	 * In case of selected database, ...
+	 * Table name is include database name, separater is dot.
+	 * 
+	 * <pre>
+	 * $args = array(
+	 *   'database' => null, // database name.
+	 *   'table'    => 't_onepiece', // old table name. (from)
+	 *   'rename'   => 'test.t_onepiece', // new table name. (to)
+	 * );
+	 * </pre>
+	 * 
+	 * @param  array $args
+	 * @return string $query
+	 */
+	function GetRenameTable($args)
+	{
+		if( isset($args['database']) ){
+			$database = $args['database'];
+		}else{ $database = null; }
+		
+		if( isset($args['table']) ){
+			$table = $args['table'];
+			if( strpos($table,'.') !== false ){
+				list($database, $table) = explode('.',$table);
+			}
+		}
+		
+		if( isset($args['rename']) ){
+			$to_table = $args['rename'];
+			if( strpos($to_table,'.') !== false ){
+				list($to_database, $to_table ) = explode('.',$to_table);
+			}else{
+				$to_database = null;
+			}
+		}
+		
+		if( empty($table) ){
+			$this->StackError("Table name has not been set.",'en');
+			return;
+		}
+		
+		if( empty($table) ){
+			$this->StackError("\rename\ has not been set.",'en');
+			return;
+		}
+		
+		//	RENAME TABLE `database`.`table` TO `to_database`.`to_table`;
+		return "RENAME TABLE {$database}{$table} TO {$to_database}{$to_table}";
+	}
+	
 	function GetAddPrimaryKey($args, $column=null)
 	{
 		if( is_string($args) ){

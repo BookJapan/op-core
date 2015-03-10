@@ -804,7 +804,7 @@ class PDO5 extends OnePiece5
 		
 		return $return;
 	}
-
+	
 	/**
 	 * Create database
 	 *
@@ -844,11 +844,18 @@ class PDO5 extends OnePiece5
 		return $this->Query($qu,'create');
 	}
 	
+	/**
+	 * Rename table
+	 * 
+	 * @param array|Config $conf
+	 * @return boolean
+	 */
+	function RenameTable($conf)
+	{
+		if(!$qu = $this->DDL()->GetRenameTable( Toolbox::toArray($conf) )){
 			return false;
 		}
-		
-		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->Query($qu,'create');
 	}
 	
 	/**
