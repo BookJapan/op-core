@@ -429,7 +429,7 @@ class Selftest extends OnePiece5
 			//	Write blueprint
 			if(!$io){
 				$this->_is_diagnosis = false;
-				$this->WriteAlter($db_name, $table_name, $column, 'change');
+				$this->WriteAlter($db_name, $table_name, $column, 'modify');
 			}
 		}
 	}
@@ -526,11 +526,12 @@ class Selftest extends OnePiece5
 			//	Remove auto increment. (Does not drop pkey.)
 			foreach( $this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $value ){
 				$column = $config->table->$table_name->column->$column_name;
-		//		$this->WriteAlter($db_name, $table_name, $column, 'change');
+				$column->name = $column_name;
+				$this->WriteAlter($db_name, $table_name, $column, 'modify');
 			}
 			
 			//	Rebuild Primary key.
-		//	$this->WritePKEY($db_name, $table_name, $pkeys);
+			$this->WritePKEY($db_name, $table_name, $pkeys);
 		}
 	}
 	
@@ -613,7 +614,7 @@ class Selftest extends OnePiece5
 	 * @param Config $database Database connection information.
 	 * @param Config $table    Table define.
 	 */
-	function WriteAlter($database_name, $table_name, $column, $acd)
+	function WriteAlter($database_name, $table_name, $column, $acmd)
 	{
 		$column_name = $column->name;
 		unset($column->name);
@@ -624,7 +625,7 @@ class Selftest extends OnePiece5
 		$alter = new Config();
 		$alter->database = $database_name;
 		$alter->table	 = $table_name;
-		$alter->column->$acd->{$column_name} = clone($column);
+		$alter->column->$acmd->{$column_name} = clone($column);
 		
 		//	Stack create table config.
 		$this->_blueprint->alter[] = $alter;

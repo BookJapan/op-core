@@ -206,6 +206,7 @@ class Carpenter extends OnePiece5
 	function CreateDatabase($blueprint)
 	{
 		foreach( $blueprint->database as $database ){
+			
 			//	execute
 			$io = $this->PDO()->CreateDatabase($database);
 			
@@ -218,8 +219,6 @@ class Carpenter extends OnePiece5
 	{
 		foreach( $blueprint->table as $table ){
 			
-			$this->d($table);
-			
 			//	execute
 			$io = $this->PDO()->CreateTable($table);
 			
@@ -231,6 +230,7 @@ class Carpenter extends OnePiece5
 	function CreateAlter($blueprint)
 	{
 		foreach( $blueprint->alter as $alter ){
+			
 			//	Alter table
 			$io = $this->PDO()->AlterTable($alter);
 			
