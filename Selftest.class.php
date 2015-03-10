@@ -194,6 +194,7 @@ class Selftest extends OnePiece5
 			$this->CheckDatabase($config);
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
+			$this->CheckPkey($config);
 		}
 		
 		//	Write Log.
@@ -271,63 +272,52 @@ class Selftest extends OnePiece5
 	
 	function CheckTable($config)
 	{
-		//	Diagnosis
-		$db_name = $config->database->name;
-		$user	 = $config->database->user;
+		//	init
+		$database = clone($config->database);
+		$db_name = $database->name;
+		$user	 = $database->user;
 		$dsn	 = $this->PDO()->GetDSN();
 		
 		//	Get a list of the found table in this connection.
 		if( $io = $this->PDO()->isConnect() ){
 			//	This connection's found list.
-			$table_list = $this->PDO()->GetTableList($config->database->name);
+			$table_list = $this->PDO()->GetTableList($db_name);
 		}else{
 			//	Write to diagnosis.
 			$this->_diagnosis->$user->$dsn->$db_name->table = false;
+			return;
 		}
 		
 		//	Check each table.
 		foreach( $config->table as $table_name => $original ){
 			$table = clone($original);
 			
-			//	Check failed.
-			if( empty($table_list) ){
-				$io = false;
-			}else if( in_array($table_name, $table_list) == false ){
-				$io = false;
-			}else{
-				$io = true;
-			}
-			
-			if( $io == false ){
+			if(!$io = in_array($table_name, $table_list) ){
+				$table->database = $db_name;
+				$table->name = $table_name;
+				
 				//	Failed.
 				$this->_is_diagnosis = false;
 				
 				//	Write blueprint.
-				$table->name = $table_name;
-				$this->WriteTable($config->database, $table);
-				$this->WriteGrant($config->database, $table);
+				
+				
+				
+				$this->WriteTable($table);
+				$this->WriteGrant($database, $table);
 			}
 			
 			//	Write diagnosis.
 			$join_name = $db_name.'.'.$table_name;
 			$this->_diagnosis->$user->$dsn->table->$join_name = $io;
-			
-			//	Write Log.
-			if( $io ){
-				$message = "Table name \ `{$db_name}`.`{$table_name}` \ is found from \ `$user` \ user.";
-			}else{
-				$message = "Table name \ `{$db_name}`.`{$table_name}` \ is not found from \ `$user` \ user.";
-			}
-			$this->_Log($message, $io);
 		}
 	}
 	
 	function CheckColumn($config)
 	{
-		//	Init diagnosis property's value.
-		$database = $config->database;
-		$db_name = $database->name;
-		$user	 = $database->user;
+		//	Init
+		$db_name = $config->database->name;
+		$user	 = $config->database->user;
 		$dsn	 = $this->PDO()->GetDSN();
 		
 		//	Check each table.
@@ -342,6 +332,7 @@ class Selftest extends OnePiece5
 			}
 			
 			//	Check table's each column.
+			$table->database = $db_name;
 			$table->name = $table_name;
 			$this->CheckColumnEach($user, $db_name, $table);
 			$this->CheckColumnIndex($user, $db_name, $table);
@@ -461,11 +452,6 @@ class Selftest extends OnePiece5
 			
 			//	Get column's key.
 			$key = $this->_ConvertColumnKey($column);
-
-			//	Stack PKEY
-			if( $key === 'PRI' ){
-				$pkeys[] = $column_name;
-			}
 			
 			//	Evaluation
 			$io = $key === $struct[$column_name]['key'];
@@ -480,10 +466,18 @@ class Selftest extends OnePiece5
 				}
 			}
 			
-			//	Nothing problem
-			if( $io ){
-				continue;
+			//	Save the auto increment column.
+			if(!empty($column->ai)){
+				$this->_diagnosis->$user->$dsn->ai->$table_name->$column_name = $io;
 			}
+			
+			//	Save the column name with primary key value.
+			if( $key === 'PRI' ){
+				$this->_diagnosis->$user->$dsn->pkey->$table_name->$column_name = $io;
+			}
+			
+			//	Nothing problem
+			if( $io ){ continue; }
 			
 			//	Diagnosis
 			$this->_is_diagnosis = false;
@@ -498,10 +492,45 @@ class Selftest extends OnePiece5
 				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
 			}
 		}
+	}
+	
+	function CheckPkey($config)
+	{
+		//	Init
+		$dsn = $this->PDO()->GetDSN();
+		$user	 = $config->database->user;
+		$db_name = $config->database->name;
 		
-		//	Write PKEY
-		if(!$this->_is_diagnosis and isset($pkeys)){
-			$this->WritePKEY($db_name, $table_name, $pkeys);
+		//	If exists peky?
+		if( empty($this->_diagnosis->$user->$dsn->pkey) ){
+			return;
+		}
+		
+		//	Loop at each table.
+		foreach( $this->_diagnosis->$user->$dsn->pkey as $table_name => $columns ){
+			$rebuild = null;
+			
+			//	Collect column name.
+			foreach( $columns as $column_name => $value ){
+				$pkeys[] = $column_name;
+				if(!$value){
+					$rebuild = true;
+				}
+			}
+			
+			//	If failed?
+			if(!$rebuild){
+				continue;
+			}
+			
+			//	Remove auto increment. (Does not drop pkey.)
+			foreach( $this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $value ){
+				$column = $config->table->$table_name->column->$column_name;
+		//		$this->WriteAlter($db_name, $table_name, $column, 'change');
+			}
+			
+			//	Rebuild Primary key.
+		//	$this->WritePKEY($db_name, $table_name, $pkeys);
 		}
 	}
 	
@@ -558,21 +587,17 @@ class Selftest extends OnePiece5
 
 	/**
 	 * Write create table config.
-	 *
-	 * @param Config $database Database connection information.
+	 * 
 	 * @param Config $table    Table define.
 	 */
-	function WriteTable($database, $table)
+	function WriteTable($table)
 	{
 		if( empty($table->column) ){
 			$this->_Log("Table name \\{$table->name}\ will skip the write to \blueprint\. (column is empty)");
 			return;
 		}
 		
-		//	Generate create table config
-		$table = clone($table);
-		$table->database = $database->name;
-		
+		//	Remove
 		foreach( $table->column as $column_name => $column ){
 			unset($column->ai);
 			unset($column->index);
