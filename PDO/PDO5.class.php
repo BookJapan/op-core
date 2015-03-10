@@ -813,21 +813,10 @@ class PDO5 extends OnePiece5
 	 */
 	function CreateDatabase( $conf )
 	{
-		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
-		}
-		
-		//  get select query
-		if(!$qu = $this->ddl()->GetCreateDatabase($conf)){
-			$this->StackError("![ .red .bold [ Failed GetCreateDatabase-method. ]]");
+		if(!$qu = $this->DDL()->GetCreateDatabase( Toolbox::toArray($conf) )){
 			return false;
 		}
-		
-		//  execute
-		$io = $this->query($qu,'create');
-		
-		return $io;
+		return $this->query($qu,'create');
 	}
 	
 	/**
@@ -866,18 +855,10 @@ class PDO5 extends OnePiece5
 	 */
 	function CreateUser($conf)
 	{
-		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
-		}
-		
-		//  get select query
-		if(!$qu = $this->ddl()->GetCreateUser($conf)){
+		if(!$qu = $this->DDL()->GetCreateUser( Toolbox::toArray($conf) )){
 			return false;
 		}
-		
-		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->query($qu,'create');
 	}
 
 	/**
@@ -888,16 +869,10 @@ class PDO5 extends OnePiece5
 	 */
 	function Password($args)
 	{
-		//  object to array
-		if(!is_array($args)){
-			$conf = Toolbox::toArray($args);
+		if(!$qu = $this->DDL()->GetPassword( Toolbox::toArray($args) )){
+			return false;
 		}
-		
-		//  get select query
-		$qu = $this->ddl()->GetPassword($conf);
-		
-		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->query($qu,'create');
 	}
 
 	/**
@@ -908,18 +883,10 @@ class PDO5 extends OnePiece5
 	 */
 	function Grant($conf)
 	{
-		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
-		}
-	
-		//  get select query
-		if(!$qu = $this->dcl()->GetGrant($conf)){
+		if(!$qu = $this->DCL()->GetGrant( Toolbox::toArray($conf) )){
 			return false;
 		}
-		
-		//  execute
-		return $this->query( $qu, 'grant' );
+		return $this->query($qu,'grant');
 	}
 
 	/**
@@ -930,18 +897,11 @@ class PDO5 extends OnePiece5
 	 */
 	function Revoke($conf)
 	{
-		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
-		}
-		
 		//  get select query
-		if(!$qu = $this->dcl()->GetRevoke($conf)){
+		if(!$qu = $this->DCL()->GetRevoke( Toolbox::toArray($conf) )){
 			return false;
 		}
-	
-		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->query($qu,'create');
 	}
 	
 	/**
@@ -952,18 +912,10 @@ class PDO5 extends OnePiece5
 	 */
 	function AlterTable($conf)
 	{
-		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
-		}
-		
-		//  get select query
-		if(!$qu = $this->ddl()->GetAlterTable($conf)){
+		if(!$qu = $this->DDL()->GetAlterTable( Toolbox::toArray($conf) )){
 			return false;
 		}
-		
-		//  execute
-		return $this->query( $qu, 'create' );
+		return $this->query($qu,'alter');
 	}
 	
 	/**
