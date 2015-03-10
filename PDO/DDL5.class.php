@@ -117,12 +117,12 @@ class DDL5 extends OnePiece5
 			$database = null;
 		}
 		
-		//	Table name		
+		//	Table name
 		$table = isset($args['name'])  ? $args['name']: null;
 		$table = isset($args['table']) ? $args['table']: $table;
 		$table = ConfigSQL::Quote( $table, $this->driver );
 		if(!$table ){
-			$this->StackError("Put name of \table\.",'en');
+			$this->StackError("Table name has not been set.",'en');
 			return false;
 		}
 		if(!strlen($table) > 64){
