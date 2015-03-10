@@ -838,13 +838,12 @@ class PDO5 extends OnePiece5
 	 */
 	function CreateTable( $conf )
 	{
-		//  object to array
-		if(!is_array($conf)){
-			$conf = Toolbox::toArray($conf);
+		if(!$qu = $this->DDL()->GetCreateTable( Toolbox::toArray($conf) )){
+			return false;
 		}
-		
-		//  get select query
-		if(!$qu = $this->ddl()->GetCreateTable($conf)){
+		return $this->Query($qu,'create');
+	}
+	
 			return false;
 		}
 		
