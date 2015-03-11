@@ -46,7 +46,7 @@ class Selftest extends OnePiece5
 	 * 
 	 * @var boolean
 	 */
-	private $_is_diagnosis = null;
+	private $_is_diagnosis = null; // is_healthy
 	
 	/**
 	 * Blue print
@@ -144,9 +144,13 @@ class Selftest extends OnePiece5
 	
 	private $_selftest_config;
 	
-	function SetSelftestConfig( Config $config )
+	function SetSelftestConfig( $class_name, Config $config )
 	{
-		$this->_selftest_config[] = clone($config);
+		if( isset($this->_selftest_config[$class_name]) ){
+			$this->StackError("This class's self-test config is already exists.");
+			return;
+		}
+		$this->_selftest_config[$class_name] = clone($config);
 	}
 	
 	function GetSelftestConfig()
@@ -184,10 +188,10 @@ class Selftest extends OnePiece5
 		$this->InitDiagnosis();
 		
 		//	each per config.
-		foreach( $this->GetSelftestConfig() as $config ){
+		foreach( $this->GetSelftestConfig() as $class_name => $config ){
 			
 			//	Set root user setting for Carpenter.
-			$this->_blueprint->config = Toolbox::toObject($config);
+			$this->_blueprint->config->$class_name = Toolbox::toObject($config);
 			
 			//	Diagnosis
 			$this->CheckConnection($config);
@@ -279,37 +283,44 @@ class Selftest extends OnePiece5
 		$dsn	 = $this->PDO()->GetDSN();
 		
 		//	Get a list of the found table in this connection.
-		if( $io = $this->PDO()->isConnect() ){
-			//	This connection's found list.
+		$is_connection = $this->_diagnosis->$user->$dsn->connection;
+		
+		//	This connection's found list.
+		if( $is_connection ){
 			$table_list = $this->PDO()->GetTableList($db_name);
 		}else{
-			//	Write to diagnosis.
-			$this->_diagnosis->$user->$dsn->$db_name->table = false;
-			return;
+			$table_list = array();
 		}
 		
 		//	Check each table.
-		foreach( $config->table as $table_name => $original ){
-			$table = clone($original);
+		foreach( $config->table as $table_name => $table ){
+			$table = clone($table);
+			$join_name = $db_name.'.'.$table_name;
 			
-			if(!$io = in_array($table_name, $table_list) ){
-				$table->database = $db_name;
-				$table->name = $table_name;
-				
-				//	Failed.
-				$this->_is_diagnosis = false;
-				
-				//	Write blueprint.
-				
-				
-				
-				$this->WriteTable($table);
-				$this->WriteGrant($database, $table);
+			//	Check table exists.
+			$io = in_array($table_name, $table_list);
+
+			//	Write diagnosis.
+			$this->_diagnosis->$user->$dsn->table->$join_name = $io;
+			
+			//	In case of success to continue.
+			if( $io ){ continue; }
+			
+			//	Supplement value.
+			$table->database = $db_name;
+			$table->name = $table_name;
+			
+			//	Failed.
+			$this->_is_diagnosis = false;
+			
+			//	Is renamed?
+			if( isset($table->renamed) ){
+				$renamed = in_array($table->renamed, $table_list);
 			}
 			
-			//	Write diagnosis.
-			$join_name = $db_name.'.'.$table_name;
-			$this->_diagnosis->$user->$dsn->table->$join_name = $io;
+			//	Write blueprint.
+			$this->WriteTable($table, $renamed);
+			$this->WriteGrant($database, $table);
 		}
 	}
 	
@@ -327,13 +338,15 @@ class Selftest extends OnePiece5
 			//	Check table exists.
 			$join_name = $db_name.'.'.$table_name;
 			if(!$this->_diagnosis->$user->$dsn->table->$join_name){
-				$this->_Log("Column checking is skip. ($join_name)");
 				return;
 			}
 			
 			//	Check table's each column.
 			$table->database = $db_name;
 			$table->name = $table_name;
+			
+		//	$this->D($table);
+			
 			$this->CheckColumnEach($user, $db_name, $table);
 			$this->CheckColumnIndex($user, $db_name, $table);
 		}
@@ -347,9 +360,15 @@ class Selftest extends OnePiece5
 		$join_name = $db_name.'.'.$table_name;
 		$after = null;
 		
+		//	Table had no problem.
+		if( $this->_diagnosis->$user->$dsn->table->$join_name !== true ){
+			$this->mark("Does not check column of \\$table_name\. (\\$table_name\ table have failed to check.)");
+			continue;
+		}
+		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
-			
+		
 		//	Check each column.
 		foreach($table->column as $column_name => $original){
 			$column = clone($original);
@@ -372,8 +391,6 @@ class Selftest extends OnePiece5
 				//	Add new column.
 				$column->after = $after;
 				$this->WriteAlter($db_name, $table_name, clone($column), 'add');
-				//	Log
-				$this->_log("\\$column_name\ is not found.",false);
 			}
 			
 			//	余っているカラムもチェックする
@@ -577,7 +594,7 @@ class Selftest extends OnePiece5
 		$grant = new Config;
 		$grant->host	 = $database->host;
 		$grant->database = $database->name;
-		$grant->table	 = $table->name;
+		$grant->table	 = isset($table->name) ? $table->name: $table->table;
 		$grant->user	 = $database->user;
 		$grant->password = $database->password;
 		$grant->privilege = isset($table->privilege) ? $table->privilege: 'select,insert,update';
@@ -585,29 +602,41 @@ class Selftest extends OnePiece5
 		//	Stack grant config.
 		$this->_blueprint->grant[] = $grant;
 	}
-
+	
 	/**
 	 * Write create table config.
 	 * 
 	 * @param Config $table    Table define.
 	 */
-	function WriteTable($table)
+	function WriteTable($table, $renamed=null)
 	{
 		if( empty($table->column) ){
-			$this->_Log("Table name \\{$table->name}\ will skip the write to \blueprint\. (column is empty)");
+			$this->mark("Table name \\$table->name\ will skip the write to \blueprint\. (column is empty)");
 			return;
 		}
 		
-		//	Remove
+		//	Remove index property.
 		foreach( $table->column as $column_name => $column ){
 			unset($column->ai);
+			unset($column->pkey);
 			unset($column->index);
+			unset($column->unique);
 		}
+		
+		if( $renamed ){
+			$table->rename = $table->name;
+			$table->name = $table->renamed;
+			unset($table->renamed);
+		}
+		
+		//	Touch table name.
+		$table->table = $table->name;
+		unset($table->name);
 		
 		//	Stack create table config.
 		$this->_blueprint->table[] = $table;
 	}
-
+	
 	/**
 	 * Write alter table config.
 	 *

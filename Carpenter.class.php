@@ -114,7 +114,7 @@ class Carpenter extends OnePiece5
 	
 	function PrintError()
 	{
-		$this->p("![.bold[Display error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		$this->p("![.bold[Display Carpenter's error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
 		
 		$nl = PHP_EOL;
 		print '<ol>';
@@ -189,9 +189,12 @@ class Carpenter extends OnePiece5
 	
 		foreach( $blueprint->user as $user ){
 			
+			
 			$this->d($user);
 			
+			
 			continue;
+			
 			
 			//	execute
 			$io = $this->PDO()->CreateUser($user);
@@ -219,8 +222,13 @@ class Carpenter extends OnePiece5
 	{
 		foreach( $blueprint->table as $table ){
 			
-			//	execute
-			$io = $this->PDO()->CreateTable($table);
+			if( isset($table->rename) ){
+				//	Rename table
+				$io = $this->PDO()->RenameTable($table);
+			}else{
+				//	Create table
+				$io = $this->PDO()->CreateTable($table);
+			}
 			
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
