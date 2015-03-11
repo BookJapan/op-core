@@ -149,7 +149,7 @@ class Toolbox
 				break;
 				
 			default:
-				OnePiece5::StackError('An unexpected error: empty method type.');
+				OnePiece5::StackError("An unexpected error: empty method type. \($method)\\",'en');
 				return false;
 		}
 		
