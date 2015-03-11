@@ -82,12 +82,14 @@ class Selftest extends OnePiece5
 		if(!$this->Admin()){
 			$this->StackError("Not admin call.");
 		}
-		$this->_log('Execute the \Init\.');
 	}
 	
 	function InitDiagnosis()
 	{
 		$this->_is_diagnosis = true;
+		
+		$this->_log = array();
+		
 		$this->_diagnosis = new Config();
 		$this->_blueprint = new Config();
 		$this->_blueprint->grant	 = array();
@@ -115,7 +117,16 @@ class Selftest extends OnePiece5
 	
 	function PrintLog()
 	{
-		$this->p("![.bold[Display Selftest's diagnosis log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		$this->p("![.bold .bigger[Display Selftest's diagnosis log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		if( $this->_is_diagnosis ){
+			$class = 'green';
+			$message = "Diagnostic results was no problem.";
+		}else{
+			$class = 'red';
+			$message = "Diagnostic results has problem.";
+		}
+		$message = $this->i18n()->Bulk($message,'en');
+		$this->p("![.{$class} margin:1em [$message]]");
 		
 		print '<ol>';
 		while($log = array_shift($this->_log)){
@@ -190,7 +201,7 @@ class Selftest extends OnePiece5
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $class_name => $config ){
 			
-			//	Set root user setting for Carpenter.
+			//	Set config. (Is this required?)
 			$this->_blueprint->config->$class_name = Toolbox::toObject($config);
 			
 			//	Diagnosis
@@ -200,14 +211,6 @@ class Selftest extends OnePiece5
 			$this->CheckColumn($config);
 			$this->CheckPkey($config);
 		}
-		
-		//	Write Log.
-		if( $this->_is_diagnosis ){
-			$message = "Diagnostic result were nothing no problem.";
-		}else{
-			$message = "Diagnostic result has problem.";
-		}
-		$this->_Log($message, $this->_is_diagnosis);
 		
 		return $this->_is_diagnosis;
 	}
@@ -230,9 +233,6 @@ class Selftest extends OnePiece5
 		
 		//	Write diagnosis
 		$this->_diagnosis->$user->$dsn->connection = $io;
-		
-		//	Log
-		$this->_log("Connection by \DSN: $dsn, user: $user\ ",$io);
 		
 		//	return
 		if(!$io){
@@ -263,15 +263,6 @@ class Selftest extends OnePiece5
 		$user	 = $config->database->user;
 		$dsn	 = $this->PDO()->GetDSN();
 		$this->_diagnosis->$user->$dsn->database->$db_name = $io;
-		
-		//	Log
-		if( $io ){
-			$result = "is success";
-		}else{
-			$result = "failed";
-		}
-		//	Write
-		$this->_Log("Access to the database $result. \($db_name)\ ", $io);
 	}
 	
 	function CheckTable($config)
@@ -345,8 +336,6 @@ class Selftest extends OnePiece5
 			$table->database = $db_name;
 			$table->name = $table_name;
 			
-		//	$this->D($table);
-			
 			$this->CheckColumnEach($user, $db_name, $table);
 			$this->CheckColumnIndex($user, $db_name, $table);
 		}
@@ -362,16 +351,24 @@ class Selftest extends OnePiece5
 		
 		//	Table had no problem.
 		if( $this->_diagnosis->$user->$dsn->table->$join_name !== true ){
-			$this->mark("Does not check column of \\$table_name\. (\\$table_name\ table have failed to check.)");
-			continue;
+		//	$this->mark("Does not check column of $table_name. ($table_name table have failed to check.)");
+			return;
+		}
+		
+		//	
+		if(!isset($table->column)){
+		//	$this->mark("Does not check column of $table_name. ($table_name table does not been set column.)");
+			return;
 		}
 		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
 		
-		//	Check each column.
-		foreach($table->column as $column_name => $original){
-			$column = clone($original);
+		//	Check each column(exists).
+		$columns = array();
+		foreach($table->column as $column_name => $column){
+			$column = clone($column);
+			$columns[$column_name] = true;
 			
 			//	Compensate name.
 			$table->name  = $table_name;
@@ -381,7 +378,7 @@ class Selftest extends OnePiece5
 			if( array_key_exists($column_name, $struct) ){
 				
 				//	Check column's struct.
-				$this->CheckColumnEachStruct($user, $db_name, $table_name, clone($column), $struct[$column_name]);
+				$this->CheckColumnEachStruct($user, $db_name, $table_name, $column, $struct[$column_name]);
 				
 			}else{
 				//	Fail
@@ -390,15 +387,17 @@ class Selftest extends OnePiece5
 				$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = false;
 				//	Add new column.
 				$column->after = $after;
-				$this->WriteAlter($db_name, $table_name, clone($column), 'add');
+				$this->WriteAlter($db_name, $table_name, $column, 'add');
 			}
 			
-			//	余っているカラムもチェックする
-		
-			//	Blueprint
-		
-			//	Log
+			//	After where column.
 			$after = $column_name;
+		}
+		
+		//	This column is not used.
+		$temp = array_diff_key( $struct, $columns );
+		foreach($temp as $column_name => $column){
+			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = null;
 		}
 	}
 	
@@ -437,11 +436,6 @@ class Selftest extends OnePiece5
 			
 			//	Diagnosis
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
-			
-			//	Write Log
-			$message = "\\{$table_name}.{$column_name}\'s \\$key\ is ";
-			$message.= $io ? "no problem.": "found problem.";
-			$this->_Log($message, $io);
 			
 			//	Write blueprint
 			if(!$io){
