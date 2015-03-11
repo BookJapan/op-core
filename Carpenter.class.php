@@ -116,6 +116,11 @@ class Carpenter extends OnePiece5
 	{
 		$this->p("![.bold[Display Carpenter's error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
 		
+		if( empty($this->_error) ){
+			$this->p("![margin:0.7em .gray[Nothing]]");
+			return;
+		}
+		
 		$nl = PHP_EOL;
 		print '<ol>';
 		foreach($this->_error as $error){
