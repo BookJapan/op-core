@@ -271,7 +271,7 @@ class DDL5 extends OnePiece5
 			if( strpos($to_table,'.') !== false ){
 				list($to_database, $to_table ) = explode('.',$to_table);
 			}else{
-				$to_database = null;
+				$to_database = $database;
 			}
 		}
 		
@@ -280,10 +280,23 @@ class DDL5 extends OnePiece5
 			return;
 		}
 		
-		if( empty($table) ){
+		if( empty($to_table) ){
 			$this->StackError("\rename\ has not been set.",'en');
 			return;
 		}
+		
+		if( $database ){
+			$database = ConfigSQL::Quote($database, $this->driver).'.';
+		}
+		
+		if( $to_database ){
+			$to_database = ConfigSQL::Quote($to_database, $this->driver).'.';
+		}else{
+			$to_database = $database;
+		}
+		
+		$table = ConfigSQL::Quote($table, $this->driver);
+		$to_table = ConfigSQL::Quote($to_table, $this->driver);
 		
 		//	RENAME TABLE `database`.`table` TO `to_database`.`to_table`;
 		return "RENAME TABLE {$database}{$table} TO {$to_database}{$to_table}";
