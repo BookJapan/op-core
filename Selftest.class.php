@@ -128,6 +128,10 @@ class Selftest extends OnePiece5
 		$message = $this->i18n()->Bulk($message,'en');
 		$this->p("![.{$class} margin:1em [$message]]");
 		
+		//	Display diagnosis.
+		$Poneglyph = new Poneglyph();
+		$Poneglyph->Display($this->GetDiagnosis());
+		
 		print '<ol>';
 		while($log = array_shift($this->_log)){
 			$from	 = $log['from'];
@@ -714,4 +718,81 @@ class Selftest extends OnePiece5
 		
 		$this->_blueprint->index->pkey[] = $alter;
 	}
+}
+
+
+/**
+ * SelftestLogger
+ *
+ * Creation: 2015-03-12
+ *
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
+ */
+class Poneglyph extends OnePiece5
+{
+	function Display($diagnosis)
+	{
+		print "<ol>";
+		foreach( $diagnosis as $user => $dsn ){
+			
+			$this->li("User name is \\$user\.");
+			
+			foreach( $dsn as $dsn_key => $dsn_var){
+				
+				//	init
+				list($product, $temp) = explode(':', $dsn_key);
+				list($temp, $host) = explode('=', $temp);
+				
+				foreach($dsn_var as $key => $var){
+					print "<ol>";
+					
+					//	switch
+					switch( $var ){
+						case 'connection':
+							$this->_connection($host, $var);
+							break;
+						case 'database':
+							break;
+						case 'table':
+							break;
+						case 'column':
+							break;
+					}
+					print "</ol>";					
+				}
+			}
+		}
+		print "</ol>";
+	}
+	
+	function li($text, $io=null)
+	{
+		if( $io === null ){
+			$class = 'black';
+		}else{
+			$class = $io ? 'blue': 'red';
+		}
+		
+		print "<li>";
+		print "<span class=\"$class\">";
+		print $this->i18n()->En($text);
+		print "</span>";
+		print "</li>";
+	}
+	
+	function _connection($host, $io)
+	{
+		if( $io ){
+			$text = "Connection to \\$host\ is successful.";
+		}else{
+			$text = "Connection to \\$host\ is failed.";
+		}
+		$this->li($text, $io);
+	}
+	
+	
+	
 }
