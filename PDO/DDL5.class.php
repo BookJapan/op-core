@@ -659,16 +659,12 @@ class DDL5 extends OnePiece5
 					break;
 					
 				case 'CHANGE':
-					if(!$rename){
-						$rename = $name;
-					}
-					
 				case 'MODIFY':
 				case 'ADD':
 				//	ALTER TABLE `t_table` ADD `id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`thread_id`) ;
 				//	ALTER TABLE `t_table` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
 				//	ALTER TABLE `t_table`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
-					$definition = "$ACD $index $rename $name $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
+					$definition = "$ACD $index $name $rename $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
 					break;
 					
 				case 'DROP':
