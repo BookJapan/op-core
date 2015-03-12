@@ -201,33 +201,15 @@ class DDL5 extends OnePiece5
 			return;
 		}
 		
-		//	Added
-		if( isset($args['column']['add']) ){
-			if(!$add = $this->ConvertColumn( $args['column']['add'], 'ADD' )){
-				return false;
+		foreach( array('add','change','modify','drop') as $acmd ){
+			if( isset($args['column'][$acmd]) ){
+				if(!${$acmd} = $this->ConvertColumn($args['column'][$acmd], strtoupper($acmd))){
+					return false;
+				}
+			}else{
+				${$acmd} = null;
 			}
-		}else{ $add = null; }
-		
-		//	Change
-		if( isset($args['column']['change']) ){
-			if(!$change = $this->ConvertColumn( $args['column']['change'], 'CHANGE' )){
-				return false;
-			}
-		}else{ $change = null; }
-	
-		//	Modify
-		if( isset($args['column']['modify']) ){
-			if(!$modify = $this->ConvertColumn( $args['column']['modify'], 'MODIFY' )){
-				return false;
-			}
-		}else{ $modify = null; }
-		
-		//	 Drop
-		if( isset($args['column']['drop']) ){
-			if(!$drop = $this->ConvertColumn( $args['column']['drop'], 'DROP' )){
-				return false;
-			}
-		}else{ $drop = null; }
+		}
 		
 		//	Create SQL
 		$query = "ALTER TABLE {$database}{$table} {$add} {$change} {$modify} {$drop}";
