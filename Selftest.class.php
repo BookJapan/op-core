@@ -383,11 +383,16 @@ class Selftest extends OnePiece5
 			}else{
 				//	Fail
 				$this->_is_diagnosis = false;
+				
 				//	Diagnosis
 				$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = false;
+				
+				//	Alter is add or rename.
+				$acmd = empty($column->renamed) ? 'add': 'change'; 
+				
 				//	Add new column.
 				$column->after = $after;
-				$this->WriteAlter($db_name, $table_name, $column, 'add');
+				$this->WriteAlter($db_name, $table_name, $column, $acmd);
 			}
 			
 			//	After where column.
@@ -416,6 +421,7 @@ class Selftest extends OnePiece5
 				case 'index':
 				case 'pkey':
 				case 'unique':
+				case 'renamed':
 					$continue = true;
 					break;
 				default:
@@ -431,8 +437,23 @@ class Selftest extends OnePiece5
 				continue;
 			}
 			
+			//	Save column type.
+			if( $key === 'type' ){
+				$type = $var;
+			}
+			
 			//	Evaluation
-			$io = $struct[$key] == $var ? true: false;
+			if( ($type === 'enum' or $type === 'set') and $key === 'length' ){
+				foreach(explode(',',$var) as $temp){
+					$arr1[] = trim($temp);
+				}
+				foreach(explode(',',$struct[$key]) as $temp){
+					$arr2[] = trim($temp,"'");
+				}
+				$io = count(array_diff($arr1, $arr2)) === 0 ? true: false;
+			}else{
+				$io = $struct[$key] == $var ? true: false;
+			}
 			
 			//	Diagnosis
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
@@ -639,11 +660,17 @@ class Selftest extends OnePiece5
 	 */
 	function WriteAlter($database_name, $table_name, $column, $acmd)
 	{
+		if( $acmd === 'change' ){
+			$column->rename = $column->name;
+			$column->name = $column->renamed;
+		}
+		
 		$column_name = $column->name;
 		unset($column->name);
 		unset($column->ai);
-		unset($column->index);
 		unset($column->pkey);
+		unset($column->index);
+		unset($column->unique);
 		
 		$alter = new Config();
 		$alter->database = $database_name;
