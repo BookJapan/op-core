@@ -29,11 +29,20 @@ class i18n extends OnePiece5
 		}
 		return $config;
 	}
-
+	
+	private $_debug;
 	private $_lang;
+	private $_country;
 	private $_use_memcache	 = true;
 	private $_use_database	 = true;
 	private $_cache_expire	 = 3600; // 60 min
+	
+	/**
+	 * PDO interface object.
+	 *
+	 * @var PDO5
+	 */
+	private $_pdo = null;
 	
 	function init()
 	{
@@ -43,14 +52,24 @@ class i18n extends OnePiece5
 				$this->_use_memcache = $memcache->use;
 			}
 		}
+		
+		$this->_debug = new Config();
+		
+		if( $this->_use_memcache ){
+			$this->_debug->hit->memcache = 0;
+		}
+		
+		if( $this->_use_database ){
+			$this->_debug->hit->database = 0;
+		}
+		
+		$this->_debug->hit->internet = 0;
 	}
 	
-	/**
-	 * PDO interface object.
-	 * 
-	 * @var PDO5
-	 */
-	private $_pdo = null;
+	function Debug()
+	{
+		$this->D($this->_debug);
+	}
 	
 	function SetProp( $key, $var )
 	{
@@ -62,18 +81,81 @@ class i18n extends OnePiece5
 		return $this->{$key};
 	}
 	
+	function SetLocale($locale)
+	{
+		foreach( array('-','_') as $needle ){
+			if( strpos($lang, $needle) ){
+				list($lang, $country) = explode($needle, $lang);
+			}
+		}
+		
+		$this->SetLang($lang);
+		$this->SetCountry($country);
+	}
+	
+	function GetLocale()
+	{
+		$lang = $this->GetLang();
+		$coutry = $this->GetCountry();
+		return "{$lang}-{$coutry}";
+	}
+	
+	/**
+	 * Set language code.
+	 * 
+	 * @param string $lang
+	 */
 	function SetLang( $lang )
 	{
+		foreach( array('-','_') as $needle ){
+			if( strpos($lang, $needle) ){
+				list($lang, $country) = explode($needle, $lang);
+			}
+		}
+		
+		if( isset($country) ){
+			$this->_country = $country;
+		}
+		
 		$this->_lang = $lang;
 		$this->SetCookie('lang',$lang);
 	}
 	
+	/**
+	 * Get language code.
+	 * 
+	 * @return string $lang
+	 */
 	function GetLang()
 	{
 		if(!$lang = $this->_lang){
 			$lang = $this->GetCookie('lang','en'); // default is 'en'
 		}
 		return $lang;
+	}
+	
+	/**
+	 * Set country code.
+	 * 
+	 * @param string $country
+	 */
+	function SetCountry($country)
+	{
+		$this->_country = $country;
+		$this->SetCookie('country',$country);
+	}
+	
+	/**
+	 * Get country code.
+	 * 
+	 * @return string $country
+	 */
+	function GetCountry()
+	{
+		if(!$country = $this->_country){
+			$country = $this->GetCookie('country');
+		}
+		return $country;
 	}
 	
 	function FetchJson( $url, $expire )
@@ -151,7 +233,7 @@ class i18n extends OnePiece5
 		return $this->_pdo;
 	}
 	
-	function Bulk( $message, $from='en', $to=null )
+	function Bulk( $message, $from='en-US', $to=null )
 	{
 		if(!$to){
 			$to = $this->GetLang();
@@ -169,40 +251,22 @@ class i18n extends OnePiece5
 	
 	function En($text,$to=null)
 	{
-		return $this->Get($text,'en',$to);
+		return $this->Get($text,'en-US',$to);
 	}
 	
 	function Ja($text,$to=null)
 	{
-		return $this->Get($text,'ja',$to);
+		return $this->Get($text,'ja-JP',$to);
 	}
 	
-	function Get( $text, $from='en', $to=null )
+	function Get( $text, $from='en-US', $to=null )
 	{
 		//	Connection to cloud.
 		static $_connection = true;
 		
-		//	Stacic cache
-		static $country_code;
-		
-		//	
+		//	Get locale. (ja-JP, en-US, en-UK, zh-CN, zh-TW, zh-HK )
 		if(!$to){
-			if(!$to = $this->GetLang()){
-				$to = Env::Get('lang');
-			}
-		}
-		
-		//	Visiter's country code. (By IP-Address)
-		if(!$country_code){
-			$country_code = $this->GetCookie('country_code');
-		}
-		
-		//	
-	//	$form = strtolower($from);
-	//	$to   = strtolower($to);
-		if( $country_code ){
-			$to  .= '-';
-			$to  .= strtoupper($country_code);
+			$to = $this->GetLocale();
 		}
 		
 		//	If last character a backslash.
@@ -223,7 +287,8 @@ class i18n extends OnePiece5
 		//	Check memcache
 		if( $this->_use_memcache ){
 			if( $translate = $this->Cache()->Get($key) ){
-				//	Hit
+				//	Record of hit.
+				$this->_debug->hit->memcache++;
 				return $translate;
 			}
 		}
@@ -234,14 +299,18 @@ class i18n extends OnePiece5
 		}
 		
 		//	Check database
-		if( $this->_use_database and $translate = $this->Select( $text, $from, $to ) ){
-			//	Hit
-			$this->mark("![.green .bold[Hit database. ($translate, $text)]]",__CLASS__);
-			if( $this->_use_memcache ){
-				//	Save memcache
-				$this->Cache()->Set( $key, $translate, $this->_cache_expire );
+		if( $this->_use_database){
+			//	Get from database.
+			if( $translate = $this->Select( $text, $from, $to ) ){
+				//	Record of hit.
+				$this->_debug->hit->database++;
+				//	Save to memcache.
+				if( $this->_use_memcache ){
+					$this->Cache()->Set( $key, $translate, $this->_cache_expire );
+				}
+				//	return result.
+				return $translate;
 			}
-			return $translate;
 		}
 		
 		//	Cloud connection.
@@ -250,10 +319,12 @@ class i18n extends OnePiece5
 		}
 		
 		//	Get translate from API
-		if(!$json = file_get_contents($url)){
+		if( $json = file_get_contents($url) ){
+			//	Record of access.
+			$this->_debug->hit->internet++;
+		}else{
 			//	Fail
 			$_connection = false;
-			$this->mark("![.red .bold[file_get_contents is failed. ($url)]]",__CLASS__);
 			return $text;
 		}
 		
@@ -262,7 +333,6 @@ class i18n extends OnePiece5
 		
 		//	check translate
 		if( empty($json['translate']) ){
-			//	Fail
 			return $text;
 		}
 		
