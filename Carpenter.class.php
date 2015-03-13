@@ -155,21 +155,16 @@ class Carpenter extends OnePiece5
 		$database->user     = $this->_user;
 		$database->password = $this->_password;
 		
-		//	
 		try{
 			//	Database connection at root.
-			$io = $this->PDO()->Connect($database);
+			if(!$io = $this->PDO()->Connect($database)){
+				return false;
+			}
 			
 			//	Log
 			$user = $database->user;
 			$message = "Database connection: user={$user}";
 			$this->Log($message, $io);
-			
-			//	Error
-			if(!$io){
-				$this->SetError();
-				return false;
-			}
 			
 			//	Rebuild
 			$this->CreateUser($blueprint);

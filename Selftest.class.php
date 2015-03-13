@@ -277,11 +277,8 @@ class Selftest extends OnePiece5
 		$user	 = $database->user;
 		$dsn	 = $this->PDO()->GetDSN();
 		
-		//	Get a list of the found table in this connection.
-		$is_connection = $this->_diagnosis->$user->$dsn->connection;
-		
 		//	This connection's found list.
-		if( $is_connection ){
+		if( $this->_diagnosis->$user->$dsn->connection === true ){
 			$table_list = $this->PDO()->GetTableList($db_name);
 		}else{
 			$table_list = array();
@@ -630,7 +627,7 @@ class Selftest extends OnePiece5
 	function WriteTable($table, $renamed=null)
 	{
 		if( empty($table->column) ){
-			$this->mark("Table name \\$table->name\ will skip the write to \blueprint\. (column is empty)");
+			$this->mark("Table name {$table->name} will skip the write to blueprint. (column is empty)",__CLASS__);
 			return;
 		}
 		
@@ -750,7 +747,7 @@ class Poneglyph extends OnePiece5
 					print "<ol>";
 					
 					//	switch
-					switch( $var ){
+					switch( $key ){
 						case 'connection':
 							$this->_connection($host, $var);
 							break;
@@ -760,6 +757,12 @@ class Poneglyph extends OnePiece5
 							break;
 						case 'column':
 							break;
+						default:
+							$this->Mark($dsn);
+							$this->Mark($dsn_key);
+							$this->Mark($dsn_var);
+							$this->Mark($key);
+							$this->Mark($var);
 					}
 					print "</ol>";					
 				}
@@ -773,7 +776,7 @@ class Poneglyph extends OnePiece5
 		if( $io === null ){
 			$class = 'black';
 		}else{
-			$class = $io ? 'blue': 'red';
+			$class = $io === true ? 'blue': 'red';
 		}
 		
 		print "<li>";
@@ -785,7 +788,7 @@ class Poneglyph extends OnePiece5
 	
 	function _connection($host, $io)
 	{
-		if( $io ){
+		if( $io === true ){
 			$text = "Connection to \\$host\ is successful.";
 		}else{
 			$text = "Connection to \\$host\ is failed.";
