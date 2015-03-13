@@ -4,13 +4,19 @@
  * Wizard has self test feature.
  * If the database schema has been changed, Wizard will report to the administrator.
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2011 (C) Tomoaki Nagahara All right reserved.
  */
 
 /**
  * Wizard
  * 
- * @author tomoaki.nagahara@gmail.com
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2011 (C) Tomoaki Nagahara All right reserved.
  */
 class Wizard extends OnePiece5
 {

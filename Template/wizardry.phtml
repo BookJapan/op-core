@@ -1,0 +1,52 @@
+<?php
+/**
+ * Wizardry form.
+ * 
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
+ */
+/* @var $this Wizardry */
+$form_name = $this->Config()->form_name();
+?>
+<style>
+#op-wizardry input{
+	font-size: 12pt;
+}
+</style>
+<div id="op-wizardry">
+	<?php $this->Form()->Start($form_name) ?>
+	<table>
+		<tr>
+			<td>
+				<span class="big bold">Wizardry</span>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>Please enter the root password.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<?php $this->Form()->Label('user') ?> : 
+				<?php $this->Form()->Input('user') ?><br/>
+				<?php $this->Form()->Error('user') ?>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<?php $this->Form()->Label('password') ?> : 
+				<?php $this->Form()->Input('password') ?><br/>
+				<?php $this->Form()->Error('password') ?>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<?php $this->Form()->Input('submit') ?><br/>
+			</td>
+		</tr>
+	</table>
+	<?php $this->Form()->Finish($form_name) ?>
+</div>

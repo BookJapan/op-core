@@ -758,11 +758,11 @@ class Poneglyph extends OnePiece5
 						case 'column':
 							break;
 						default:
-							$this->Mark($dsn);
-							$this->Mark($dsn_key);
-							$this->Mark($dsn_var);
-							$this->Mark($key);
-							$this->Mark($var);
+							$this->d($dsn);
+							$this->d($dsn_key);
+							$this->d($dsn_var);
+							$this->d($key);
+							$this->d($var);
 					}
 					print "</ol>";					
 				}
