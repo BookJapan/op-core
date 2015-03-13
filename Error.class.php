@@ -31,7 +31,6 @@ class Error
 		}
 		
 		//	key
-	//	$key = md5(serialize($backtrace)); // Does not serialized object.
 		$key = md5("$name, $message");
 		
 		//	save
@@ -64,37 +63,9 @@ class Error
 			//	is message
 			$message = $e;
 			
-			//	save debug backtrace
-			/*
-			$v = PHP_VERSION;
-			if( version_compare($v,'5.4.0') >= 0 ){
-				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-			}else if( version_compare($v,'5.3.6') >= 0 ){
-				$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-			}else if( true ){
-				OnePiece5::Mark('This PHP is an old version (under 5.3.6). Was not possible to remove the argument.');
-				$backtrace = null;
-			}else if(version_compare($v,'5.2.5') >= 0 ){
-				$backtrace = debug_backtrace(false);
-			}else if(version_compare($v,'5.1.1') >= 0 ){
-				$backtrace = debug_backtrace();
-			}else{
-				$backtrace = debug_backtrace();
-			}
-			*/
+			//	
 			$backtrace = debug_backtrace();
-			
-			//	serialize backtrace
-		//	$traceStr = serialize($backtrace);
 		}
-		
-		//	creat check key (duplicate check)
-	//	$key = md5($traceStr);
-		
-		//	already exists?
-	//	if( isset($_SESSION[self::_NAME_SPACE_][$key]) ){
-	//		return true;
-	//	}
 		
 		self::_Set( $name, $message, $backtrace, $translation );
 	}
@@ -200,7 +171,7 @@ class Error
 			//	Sequence no.
 			$return .= "![tr[ ![th colspan:4 color:red [ Error #{$i} $message ]] ]]".PHP_EOL;
 			
-			if( $count = count($backtraces) ){				
+			if( $count = count($backtraces) ){
 				foreach( $backtraces as $index => $backtrace ){
 					$return .= self::_formatBacktrace( $count-$index, $backtrace, $name );
 				}
