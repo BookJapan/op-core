@@ -148,6 +148,10 @@ class Toolbox
 				$request = $_GET + $_POST;
 				break;
 				
+			case 'head':
+				$request = array();
+				break;
+				
 			default:
 				OnePiece5::StackError("An unexpected error: empty method type. \($method)\\",'en');
 				return false;
