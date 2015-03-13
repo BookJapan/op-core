@@ -151,7 +151,7 @@ class Error
 	static private function _getBacktrace()
 	{
 		$i = 0;
-		$return = '![table font-size:small [';
+		$return = '<table>';
 		foreach( $_SESSION[self::_NAME_SPACE_] as $error ){
 			$i++;
 			$name		 = $error['name'];
@@ -168,8 +168,10 @@ class Error
 				}
 			}
 			
+			$message = OnePiece5::Escape($message);
+			
 			//	Sequence no.
-			$return .= "![tr[ ![th colspan:4 color:red [ Error #{$i} $message ]] ]]".PHP_EOL;
+			$return .= "<tr><td colspan=4 clas=\"red\">Error #{$i} $message</td></tr>".PHP_EOL;
 			
 			if( $count = count($backtraces) ){
 				foreach( $backtraces as $index => $backtrace ){
@@ -177,8 +179,8 @@ class Error
 				}
 			}
 		}
-		$return .= ']]'.PHP_EOL;
-		return Wiki2Engine::Wiki2( $return, array('style'=>true));
+		$return .= '</table>'.PHP_EOL;
+		return $return;
 	}
 	
 	static private function _toDisplay()
