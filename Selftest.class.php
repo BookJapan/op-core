@@ -134,10 +134,15 @@ class Selftest extends OnePiece5
 		
 		print '<ol>';
 		while($log = array_shift($this->_log)){
+			//	init
 			$from	 = $log['from'];
 			$result  = $log['result'];
 			$message = $log['message'];
-			$translate = $this->i18n()->Bulk($message, $from);
+			//	translate
+			if( $from ){
+				$message = $this->i18n()->Bulk($message, $from);
+			}
+			//	class
 			if( $result === null ){
 				$class = 'gray';
 			}else if( is_bool($result) ){
@@ -145,14 +150,14 @@ class Selftest extends OnePiece5
 			}else{
 				$class = $result;
 			}
-			print $this->p("![li .small .{$class}[{$translate}]]");
+			//	print
+			print $this->p("![li .small .{$class}[{$message}]]");
 		}
 		print '</ol>';
 	}
 	
 	function Root($password, $root_user='root')
 	{
-		$this->_log('Set the Root user and password.');
 		$this->_root_user     = $root_user;
 		$this->_root_password = $password;
 	}
