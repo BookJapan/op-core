@@ -1,0 +1,30 @@
+<?php
+/**
+ * introduction.phtml
+ * 
+ * This file is called from app:/app/template/init-op-core.php.
+ * From this file, setting for each web server is loaded.
+ *  - Apache
+ *  - Nginx
+ * 
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
+ */
+/* @var $this App */
+
+//	get software name
+list( $software, $version ) = explode('/',$_SERVER['SERVER_SOFTWARE'].'/');
+
+//	branch each software
+switch(strtolower($software)){
+	case 'apache':
+		include('introduction-apache.phtml');
+		break;
+	case 'nginx':
+		include('introduction-nginx.phtml');
+		break;
+	defualt:
+		print __FILE__.', '.__LINE__.", $software<br/>\n";
+}

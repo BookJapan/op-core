@@ -1,0 +1,26 @@
+<?php
+/**
+ * introduction-apache.phtml
+ * 
+ * For Apache web-server's configuration.
+ * 
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2014 (C) Tomoaki Nagahara All right reserved.
+ */
+
+//	real path
+$full_path = dirname($_SERVER['SCRIPT_FILENAME']);
+
+//	meta path
+$doc_path = dirname($_SERVER['SCRIPT_NAME']);
+
+?>
+<p>Please check to <b>"<?php print $full_path ?>/.htaccess"</b> files settings.</p>
+<ol>
+	<li><b>RewriteEngine: </b>Change to <b>"ON"</b> from "OFF".</li>
+	<?php if( $_SERVER['REQUEST_URI'] !== '/' ): ?>
+		<li><b>RewriteBase: </b>Change to <b>"<?php print $doc_path ?>"</b> from "/".</li>
+	<?php endif; ?>
+</ol>

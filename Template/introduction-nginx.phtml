@@ -1,0 +1,75 @@
+<?php
+/**
+ * introduction-nginx.phtml
+ * 
+ * For Nginx web-server's configuration.
+ * 
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
+ */
+header("content-type: text/html; charset=utf-8");
+
+$port = $_SERVER['SERVER_PORT'];
+$host = $_SERVER['SERVER_NAME'];
+$root = $_SERVER['DOCUMENT_ROOT'];
+$index = 'index.php';
+
+list($uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
+$app  = rtrim($uri,'/').'/app.php';
+$mail = isset($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN']: 'your-addr@example.com';
+
+?>
+<p>Please check to nginx's conf file</p>
+<p>Under to write populer settings.</p>
+
+<hr/>
+
+<pre>
+	server {
+		listen      <?php print $port ?>;
+		server_name <?php print $host ?>;
+		root        <?php print $root ?>;
+		index       <?php print $index ?>; # No.1: If index.php file is exists, execute to No.2. 
+		
+		<?php if( $uri === '/' ): ?>
+		# No.2: Specify a file extension, controlled NewWorld.
+		location ~ \.(php|phtml|html|css|js)$ {
+			fastcgi_pass	127.0.0.1:9000;
+			fastcgi_param	SCRIPT_FILENAME  $document_root/app.php; # Always app.php is executed.
+			fastcgi_param	SERVER_ADMIN	 <?php print $mail ?>;
+			include			fastcgi_params;
+		}
+		
+		# 403 Forbidden error.
+		error_page 403 <?php print $uri ?>/app.php;
+		<?php endif; ?>
+		
+		# No.3: This app location.
+		location <?php print $uri ?> {
+			if ( !-e $request_filename ) {
+				# forward to No.2.
+				rewrite (.*) <?php print $app ?> last;
+			}
+			<?php if( $uri !== '/' ): ?> 
+			# No.2: Specify a file extension, controlled NewWorld.
+			location ~ \.(php|phtml|html|css|js)$ {
+				fastcgi_pass   127.0.0.1:9000;
+				fastcgi_param  SCRIPT_FILENAME  $document_root<?php print $uri ?>app.php; # Always app.php is executed.
+				fastcgi_param  SERVER_ADMIN     tomoaki.nagahara@gmail.com;
+				include  fastcgi_params;
+			}
+			
+			# 403 Forbidden error.
+			error_page 403 <?php print $uri ?>app.php;
+			<?php endif; ?> 
+		}
+		
+		# Deny access to apache setting file.
+		location ~ /\.ht {
+			deny all;
+		}
+	}
+</pre>
+<hr/>
