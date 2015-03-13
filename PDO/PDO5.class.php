@@ -337,7 +337,10 @@ class PDO5 extends OnePiece5
 			$file = $e->getFile();
 			$line = $e->getLine();
 			$text = $e->GetMessage();
-			$this->StackError("$file (#$line) $text");
+			if( preg_match('|^SQLSTATE\[28000\]\s\[1045\]|',$text) ){
+				$text = "Access was denied. \\{$this->user}@{$this->host}:{$this->port}\\";
+			}
+			$this->StackError("$text");
 			return false;
 		}
 		
