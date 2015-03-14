@@ -540,6 +540,8 @@ class OnePiece5
 	 */
 	static function CompressPath( $path )
 	{
+		$path = OnePiece5::Escape($path);
+		
 		// TODO: file system encoding. (Does not support multi language, yet)
 		$encode_file_system = PHP_OS === 'WINNT' ? 'sjis-win': 'utf-8';
 		if( PHP_OS == 'WINNT' ){
