@@ -724,7 +724,7 @@ class Selftest extends OnePiece5
 
 
 /**
- * SelftestLogger
+ * Poneglyph
  *
  * Creation: 2015-03-12
  *
@@ -762,12 +762,16 @@ class Poneglyph extends OnePiece5
 							break;
 						case 'column':
 							break;
+						case 'ai':
+							break;
+						case 'pkey':
+							break;
 						default:
-							$this->d($dsn);
-							$this->d($dsn_key);
-							$this->d($dsn_var);
+						//	$this->d($dsn);
+						//	$this->d($dsn_key);
+						//	$this->d($dsn_var);
 							$this->d($key);
-							$this->d($var);
+						//	$this->d($var);
 					}
 					print "</ol>";					
 				}
