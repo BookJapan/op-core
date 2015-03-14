@@ -125,13 +125,13 @@ class Error
 		
 		$file	 = OnePiece5::CompressPath($file);
 		
-		if( $name === $func or $func === '__get' ){
+		if( $name === $func or $func === '__get' or $func === 'StackError' ){
 			$find = true;
-			$style = '.bg-yellow .bold';
+			$style = 'bg-yellow bold';
 		}else if( $find ){
-			$style = '.black';
+			$style = 'gray';
 		}else{
-			$style = '.gray';
+			$style = 'gray';
 		}
 		
 		if( $index === 0 ){
@@ -148,7 +148,7 @@ class Error
 			}
 		}
 		
-		$info = "<tr style='font-size:small;'><td>{$index}</td><td>{$file}</td><td style='text-align:right;'>{$line}</td><td>{$tail}</td></tr>".PHP_EOL;
+		$info = "<tr style='font-size:small;' class='{$style}'><td>{$index}</td><td>{$file}</td><td style='text-align:right;'>{$line}</td><td>{$tail}</td></tr>".PHP_EOL;
 		
 		return $info.PHP_EOL;
 	}
