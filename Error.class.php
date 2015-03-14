@@ -138,12 +138,16 @@ class Error
 			$index   = '';
 			$tail	 = $args[0]; // error message
 		}else{
-			$args	 = $args ? self::ConvertStringFromArguments($args): null;
 			$method	 = $type ? $class.$type.$func: $func;
+			$args	 = $args ? self::ConvertStringFromArguments($args, $is_dump): null;
 			$tail	 = "$method($args)";
+			if(!empty($is_dump) ){
+				$tail .= Dump::GetDump($backtrace['args']);
+			}
 		}
 		
-		$info = "![tr {$style}[ ![td .w1em text-align:right [{$index}]] ![td .w10em .nobr[{$file}]] ![td text-align:right [{$line}]] ![td[{$tail}]] ]]";
+	//	$info = "![tr {$style}[ ![td .w1em text-align:right [{$index}]] ![td .w10em .nobr[{$file}]] ![td text-align:right [{$line}]] ![td[{$tail}]] ]]";
+		$info = "<tr style='font-size:small;'><td>{$index}</td><td>{$file}</td><td style='text-align:right;'>{$line}</td><td>{$tail}</td></tr>".PHP_EOL;
 		
 		return $info.PHP_EOL;
 	}
@@ -171,7 +175,7 @@ class Error
 			$message = OnePiece5::Escape($message);
 			
 			//	Sequence no.
-			$return .= "<tr><td colspan=4 clas=\"red\">Error #{$i} $message</td></tr>".PHP_EOL;
+			$return .= "<tr><td colspan=4 class=\"red bold\" style=\"padding:0.5em 2em;\">Error #{$i} $message</td></tr>".PHP_EOL;
 			
 			if( $count = count($backtraces) ){
 				foreach( $backtraces as $index => $backtrace ){
@@ -188,6 +192,7 @@ class Error
 		if( Toolbox::isHtml() ){
 			print self::_getBacktrace();
 			self::_stackErrorJs();
+			Dump::PrintAttach();
 		}else{
 			print PHP_EOL.PHP_EOL;
 			print html_entity_decode(strip_tags(self::_getBacktrace()),ENT_QUOTES);
@@ -343,8 +348,9 @@ class Error
 		return $type;
 	}
 	
-	static function ConvertStringFromArguments( $args )
+	static function ConvertStringFromArguments( $args, &$is_dump )
 	{
+		$is_dump = false;
 		$join = array();
 		foreach( $args as $temp ){
 			switch( $type = strtolower(gettype($temp)) ){
@@ -358,20 +364,18 @@ class Error
 					break;
 					
 				case 'string':
-					$join[] = "'$temp'";
+					$join[] = "'".OnePiece5::Escape($temp)."'";
 					break;
 					
 				case 'object':
+					$is_dump = true;
 					$class_name = get_class($temp);
-					if( $class_name === 'Config' ){
-						$join[] = var_export(Toolbox::toArray($temp),true);
-					}else{
-						$join[] = $class_name;
-					}
+					$join[] = $class_name;
 					break;
 					
 				case 'array':
-					$join[] = var_export($temp,true);
+					$is_dump = true;
+					$join[] = 'array';
 					break;
 					
 				default:
