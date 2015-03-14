@@ -142,11 +142,12 @@ class Error
 			$args	 = $args ? self::ConvertStringFromArguments($args, $is_dump): null;
 			$tail	 = "$method($args)";
 			if(!empty($is_dump) ){
-				$tail .= Dump::GetDump($backtrace['args']);
+				$did = md5(microtime());
+				$tail .= "<span class='dkey more' did='{$did}'>more...</span>";
+				$tail .= "<div id='{$did}' style='display:none;'>".Dump::GetDump($backtrace['args']).'</div>';
 			}
 		}
 		
-	//	$info = "![tr {$style}[ ![td .w1em text-align:right [{$index}]] ![td .w10em .nobr[{$file}]] ![td text-align:right [{$line}]] ![td[{$tail}]] ]]";
 		$info = "<tr style='font-size:small;'><td>{$index}</td><td>{$file}</td><td style='text-align:right;'>{$line}</td><td>{$tail}</td></tr>".PHP_EOL;
 		
 		return $info.PHP_EOL;

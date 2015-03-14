@@ -5,10 +5,7 @@ if( window.attachEvent ){
 	window.addEventListener('load', dump, false);
 }
 
-function dump(){	
-//	var tags = document.getElementsByTagName('body');
-//	var ref = tags[0].insertBefore( div, tags[0].firstChild );
-
+function dump(){
 	//	Web Strage	
 	var length = sessionStorage.length;
 	for( var i=0; i<length; i++ ){
@@ -25,14 +22,12 @@ function dump(){
 	//	addEventListener
 	var tags = document.getElementsByClassName('dkey');
 	for( var i=0; i<tags.length; i++){
-//		var did = tags[i].getAttribute('did');
 		tags[i].addEventListener('click',d2,true);
 	}
 };
 
 function d2(e){
 	var io;
-//	var dump_id = e.target.getAttribute('did');
 	var dump_id = this.getAttribute('did');
 	var div = document.getElementById(dump_id);
 	if( div.style.display == 'none' ){
