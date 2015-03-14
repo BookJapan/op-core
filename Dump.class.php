@@ -52,13 +52,6 @@ class Dump
 		
 		$depth++;
 		
-		/*
-		if(!$calls){
-			print self::PrintDumpStyleSheet();
-			print self::PrintDumpJavaScript();
-		}
-		*/
-		
 		//  $calles is count calling times. use did, create uniq key.
 		if(!$history){
 			$calls++;
@@ -114,7 +107,7 @@ class Dump
 		
 		if(!$depth){
 			//	root hierarchy
-			return '<div class="op-dump-root op-dump-ridge">'.$table.'</div>';
+			return '<div class="op-dump-root"><div class="op-dump-ridge">'.$table.'</div></div>';
 		}else{
 			return $table;
 		}
