@@ -207,12 +207,17 @@ class OnePiece5
 	/**
 	 * Stack of error.
 	 * 
+	 * The language code will be able to join the country code.
+	 * 
+	 * Example:
+	 * 	ja, ja-JP, en, en-US, en-UK, zh-CN, zh-TW, zh-HK
+	 * 
 	 * @param string $message is message.
-	 * @param string $translation is source language code (En, Ja, Fr).
+	 * @param string $translation is source language code. 
 	 */
-	static function StackError( $args, $lang=null )
+	static function StackError( $args, $locale=null )
 	{
-		Error::Set( $args, $lang );
+		Error::Set( $args, $locale );
 	}
 	
 	/**
