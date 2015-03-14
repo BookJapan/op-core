@@ -402,7 +402,6 @@ class Error
 			);
 		}
 		
-		$argument = self::ConvertStringFromArguments($args);
 		$message = "This method does not exists in class.".PHP_EOL."\ - {$class}::{$name}\\";
 		self::_Set( $name, $message, null, 'en' );
 	}
