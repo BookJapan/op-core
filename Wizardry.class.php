@@ -47,6 +47,18 @@ class Wizardry extends OnePiece5
 		$form_name = $this->Config()->form_name();
 		return $this->Form()->Secure($form_name);
 	}
+	
+	function GetUser()
+	{
+		$form_name = $this->Config()->form_name();
+		return $this->Form()->GetInputValue('user', $form_name);
+	}
+	
+	function GetPassword()
+	{
+		$form_name = $this->Config()->form_name();
+		return $this->Form()->GetInputValue('password', $form_name);
+	}
 }
 
 class Config_Wizardry extends OnePiece5
@@ -64,9 +76,11 @@ class Config_Wizardry extends OnePiece5
 		$input_name = 'user';
 		$form->input->$input_name->type	 = 'text';
 		$form->input->$input_name->value = 'root';
+		$form->input->$input_name->required	 = true;
 
 		$input_name = 'password';
 		$form->input->$input_name->type	 = 'password';
+		$form->input->$input_name->required	 = true;
 
 		$input_name = 'submit';
 		$form->input->$input_name->type	 = 'submit';
