@@ -63,7 +63,8 @@ class i18n extends OnePiece5
 			$this->_debug->hit->database = 0;
 		}
 		
-		$this->_debug->hit->internet = 0;
+		$this->_debug->hit->internet	 = 0;
+		$this->_debug->hit->disconnect	 = 0;
 	}
 	
 	function Debug()
@@ -160,19 +161,38 @@ class i18n extends OnePiece5
 		return $country;
 	}
 	
-	function FetchJson( $url, $expire )
+	function FetchJson( $url, $expire=null )
 	{
-		//	Execute
-		$body = file_get_contents($url);
+		$st = microtime(true);
 		
-		if(!$body){
-			$this->StackError("file_get_contents is failed.");
-		}else{
-			$json = json_decode($body,true);
-			if(!$json){
-				$this->StackError("JSON decode is failed.");
-				$this->Cache()->Delete(md5($url));
+		$conf['http']['timeout'] = Toolbox::isLocalhost() ? 5: 10;
+		$context = stream_context_create($conf);
+		if(!$body = file_get_contents($url, false, $context)){
+			if(count($http_response_header) > 0){
+				$stat = explode(' ', $http_response_header[0]);
+				switch($stat[1]){
+					case 404:
+						// 404 Not found
+						$this->StackError("404 Not found.");
+						break;
+					case 500:
+						// 500 Internal Server Error
+						$this->StackError("500 Internal Server Error.");
+						break;
+					default:
+						break;
+				}
+			}else{
+				//	timeout
+				$en = microtime(true);
+				$time = $en - $st;
+				$this->StackError("timeout. ".$time);
 			}
+			return false;
+		}
+		
+		if(!$json = json_decode($body,true)){
+			return false;
 		}
 		
 		return isset($json) ? $json: false;
@@ -195,7 +215,7 @@ class i18n extends OnePiece5
 		$url = $this->Config()->url('lang').$lang;
 		
 		//	Execute
-		$json = $this->FetchJson($url, 0);
+		$json = $this->FetchJson($url);
 		
 		//	Check
 		if( $error = $json['error'] ){
@@ -317,21 +337,20 @@ class i18n extends OnePiece5
 		
 		//	Cloud connection.
 		if(!$_connection){
+			$this->_debug->hit->disconnect++;
 			return $text;
 		}
 		
 		//	Get translate from API
-		if( $json = file_get_contents($url) ){
+		if( $json = $this->FetchJson($url) ){
 			//	Record of access.
 			$this->_debug->hit->internet++;
 		}else{
 			//	Fail
+			$this->_debug->hit->disconnect++;
 			$_connection = false;
 			return $text;
 		}
-		
-		//	parse json
-		$json = json_decode($json,true);
 		
 		//	check translate
 		if( empty($json['translate']) ){
