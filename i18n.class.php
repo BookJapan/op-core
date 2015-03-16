@@ -96,8 +96,10 @@ class i18n extends OnePiece5
 	function GetLocale()
 	{
 		$lang = $this->GetLang();
-		$coutry = $this->GetCountry();
-		return "{$lang}-{$coutry}";
+		if( $coutry = $this->GetCountry() ){
+			return "{$lang}-{$coutry}";
+		}
+		return $lang;
 	}
 	
 	/**
@@ -236,7 +238,7 @@ class i18n extends OnePiece5
 	function Bulk( $message, $from='en-US', $to=null )
 	{
 		if(!$to){
-			$to = $this->GetLang();
+			$to = $this->GetLocale();
 		}
 		
 		$tr = $this->Get( $message, $from, $to );
