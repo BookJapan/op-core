@@ -209,6 +209,13 @@ class Selftest extends OnePiece5
 		
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $class_name => $config ){
+			$config = clone($config);
+			
+			//	Set root and password..
+			if( $this->_root_user ){
+				$config->database->user     = $this->_root_user;
+				$config->database->password = $this->_root_password;
+			}
 			
 			//	Set config. (Is this required?)
 			$this->_blueprint->config->$class_name = Toolbox::toObject($config);
@@ -228,12 +235,6 @@ class Selftest extends OnePiece5
 	{
 		//	Database connection config.
 		$database = clone($config->database);
-		
-		//	Set root and password..
-		if( $this->_root_user ){
-			$database->user     = $this->_root_user;
-			$database->password = $this->_root_password;
-		}
 		
 		//	Connection
 		$io	 = $this->PDO()->Connect($database);

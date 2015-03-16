@@ -186,15 +186,8 @@ class Carpenter extends OnePiece5
 	function CreateUser($blueprint)
 	{
 		$io = true;
-	
+		
 		foreach( $blueprint->user as $user ){
-			
-			
-			$this->d($user);
-			
-			
-			continue;
-			
 			
 			//	execute
 			$io = $this->PDO()->CreateUser($user);
