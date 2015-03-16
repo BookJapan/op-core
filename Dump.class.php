@@ -298,7 +298,7 @@ class Dump
 		}else{
 			return sprintf('unsupported type: %s (%s)', gettype($tr), __LINE__);
 		}
-		return sprintf('<div class="op-dump-table">%s</div>', $united );
+		return sprintf('<table class="op-dump-table">%s</table>', $united );
 	}
 	
 	/**
@@ -310,9 +310,9 @@ class Dump
 	 */
 	static function GetTr( $td_of_key, $td_of_value ){
 		if( $td_of_key ){
-			$tr = sprintf('<div class="op-dump-tr">%s%s</div>', $td_of_key, $td_of_value);
+			$tr = sprintf('<tr class="op-dump-tr">%s%s</tr>', $td_of_key, $td_of_value);
 		}else{
-			$tr = sprintf('<div class="op-dump-tr">%s</div>', $td_of_value);
+			$tr = sprintf('<tr class="op-dump-tr">%s</tr>', $td_of_value);
 		}
 		return $tr;
 	}
@@ -326,7 +326,7 @@ class Dump
 	 */
 	static function GetTdOfKey( $args, $did ){
 		$args = self::Escape($args);
-		return sprintf('<div class="op-dump-th"><div class="dkey op-dump-ridge" did="%s"><div class="op-dump-key">%s</div></div></div>', $did, $args);
+		return sprintf('<th class="op-dump-th"><div class="dkey op-dump-ridge" did="%s"><div class="op-dump-key">%s</div></div></th>', $did, $args);
 	}
 	
 	/**
@@ -362,7 +362,7 @@ class Dump
 
 		$label = $label_flag ? self::GetLabel( $type, $args ).' ' : '';
 		$value = "<div class=\"$class\">$label<span class=\"op-dump-value-string\">$args</span></div>";
-		$html = sprintf('<div class="op-dump-td"><div id="%s" class="op-dump-ridge">%s</div></div>', $did, $value);
+		$html = sprintf('<td class="op-dump-td"><div id="%s" class="op-dump-ridge">%s</div></td>', $did, $value);
 		
 		return $html;
 	}

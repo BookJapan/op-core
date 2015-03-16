@@ -16,41 +16,43 @@ div.op-dump-root div{
 	padding: 0 0 0 0 !important;
 }
 
-div.op-dump-root div.op-dump-table{
+div.op-dump-root table.op-dump-table{
 	margin: 0 !important;
 	margin-bottom: 1px !important;
 	padding: 0 0 0 0 !important;
 	
-	border-width: 0px;
+	border-width: 0px !important;
 	border-style: solid;
 	border-color: #ddd #aaa #aaa #ddd;
 	
-	display: table;
+	border-collapse: separate !important;
+	border-spacing: 0px !important;
 	
-	border-collapse: separate;
-	border-spacing: 0px;
+	_display: table;
 }
 
-div.op-dump-root div.op-dump-tr{
+div.op-dump-root tr.op-dump-tr{
 	margin:  0 0 0 0 !important;
 	padding: 0 0 0 0 !important;
-	display: table-row;
+	_display: table-row;
 }
 
-div.op-dump-root div.op-dump-th{
+div.op-dump-root th.op-dump-th{
 	margin:  0 0 0 0 !important;
 	padding: 1px 1px 0px 1px !important;
 	
+	font-weight: normal;
+	
 	vertical-align: top;
-	display: table-cell;
+	_display: table-cell;
 }
 
-div.op-dump-root div.op-dump-td{
+div.op-dump-root td.op-dump-td{
 	margin:  0 0 0 0 !important;
 	padding: 1px 1px 0px 0px !important;
 	
 	vertical-align: top;
-	display: table-cell;
+	_display: table-cell;
 }
 
 .op-dump-ridge{
