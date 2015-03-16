@@ -176,7 +176,7 @@ class Error
 			$message = OnePiece5::Escape($message);
 			
 			//	Sequence no.
-			$return .= "<tr><td colspan=4 class=\"red bold\" style=\"padding:0.5em 2em;\">Error #{$i} $message</td></tr>".PHP_EOL;
+			$return .= "<tr><td colspan=4 class='' style='padding:0.5em 1em; color:red; font-weight: bold; font-size:small;'>Error #{$i} $message</td></tr>".PHP_EOL;
 			
 			if( $count = count($backtraces) ){
 				foreach( $backtraces as $index => $backtrace ){
@@ -311,6 +311,7 @@ class Error
 		$message  = Wiki2Engine::Wiki2($table);
 		$message .= '<hr/>'.PHP_EOL;
 		$message .= self::_getBacktrace();
+		
 		return $message;
 	}
 	
