@@ -210,7 +210,7 @@ class PDO5 extends OnePiece5
 			$message  = $temp[2];
 		}
 		
-		$this->StackError($message.' '.PHP_EOL.$this->qu,'en');
+		$this->StackError($message." \n".$this->qu,'en');
 	}
 	
 	private function _query_error_mysql()
@@ -219,7 +219,16 @@ class PDO5 extends OnePiece5
 		$error_id = $temp[0];
 		$error_no = $temp[1];
 		
+		if( preg_match("|'([\.-_a-z0-9]+)'@'([\.-_a-z0-9]+)'|",$temp[2],$match) ){
+			$user = $match[1];
+			$host = $match[2];
+		}
+		
 		switch($error_no){
+			case 1044:
+				$message = "This user's access was deny. \\{$user}@{$host}\\";
+				break;
+				
 			case 1064:
 				$message = "You have an error in your SQL syntax. "; 
 				$message.= "Check the manual that corresponds to your MySQL server version. ";
