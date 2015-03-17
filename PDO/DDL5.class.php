@@ -33,8 +33,8 @@ class DDL5 extends OnePiece5
 	function GetCreateUser( $args )
 	{
 		foreach(array('host','user','password') as $key){
-			if(!${$key}){
-				$this->StackError("\{$key}\ is empty.",'en');
+			if(empty($args[$key])){
+				$this->StackError("\\$key\ is empty.",'en');
 				return false;
 			}
 		}
@@ -49,7 +49,8 @@ class DDL5 extends OnePiece5
 		$password = $this->pdo->quote($password);
 		
 		//	CREATE USER 'user-name'@'host-name' IDENTIFIED BY '***';
-		$query = "CREATE USER {$user}@{$host} IDENTIFIED BY {$password}";
+		$query  = "CREATE USER {$user}@{$host}";
+		$query .= $password ? " IDENTIFIED BY {$password}": null;
 		
 		return $query;
 	}
