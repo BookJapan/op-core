@@ -224,6 +224,12 @@ class Selftest extends OnePiece5
 				//	Root user's Diagnosis.
 				$this->CheckConnection($config);
 				$this->CheckUser($origin);
+				//	Grant will done every time.
+				foreach( $config->table as $table_name => $table ){
+					$table = clone($table);
+					$table->name = $table_name;
+					$this->WriteGrant($origin->database, $table);
+				}
 			}
 			
 			//	Diagnosis.
@@ -232,15 +238,6 @@ class Selftest extends OnePiece5
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
 			$this->CheckPkey($config);
-		}
-		
-		//	Missing
-		if(!$this->_is_diagnosis){
-			foreach( $this->GetSelftestConfig() as $class_name => $config ){
-				foreach( $config->table as $table ){
-					$this->WriteGrant($config->database, $table);
-				}
-			}
 		}
 		
 		return $this->_is_diagnosis;
@@ -310,7 +307,7 @@ class Selftest extends OnePiece5
 			if(!$table_list = $this->PDO()->GetTableList($db_name)){
 				$table_list = array();
 				$error = $this->FetchError();
-				$this->mark($error['message']);
+				$this->mark($error['message'],__CLASS__);
 			}
 		}else{
 			$table_list = array();
@@ -587,7 +584,7 @@ class Selftest extends OnePiece5
 				continue;
 			}
 			
-			//	Remove auto increment. (Does not drop pkey.)
+			//	Remove auto increment. (Because can not drop pkey.)
 			foreach( $this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $value ){
 				$column = $config->table->$table_name->column->$column_name;
 				$column->name = $column_name;
@@ -596,6 +593,29 @@ class Selftest extends OnePiece5
 			
 			//	Rebuild Primary key.
 			$this->WritePKEY($db_name, $table_name, $pkeys);
+		}
+	}
+	
+	function CehckAutoIncrement($config)
+	{
+		//	Init
+		$dsn = $this->PDO()->GetDSN();
+		$user	 = $config->database->user;
+		$db_name = $config->database->name;
+		
+		//	If exists peky?
+		if( empty($this->_diagnosis->$user->$dsn->pkey) ){
+			return;
+		}
+		
+		//	Loop at each table.
+		foreach( $this->_diagnosis->$user->$dsn->pkey as $table_name => $columns ){
+			foreach($this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $io ){
+				if(!$io){
+					$column = 
+					$this->WriteAlter($db_name, $table_name, $column, 'modify');
+				}
+			}
 		}
 	}
 	
@@ -652,8 +672,8 @@ class Selftest extends OnePiece5
 		$grant->database = $database->name;
 		$grant->table	 = isset($table->name) ? $table->name: $table->table;
 		$grant->user	 = $database->user;
-		$grant->password = $database->password;
-		$grant->privilege = isset($table->privilege) ? $table->privilege: 'select,insert,update';
+		$grant->password = isset($database->password) ? $database->password: null;
+		$grant->privilege= isset($table->privilege)   ? $table->privilege: 'select,insert,update';
 				
 		//	Stack grant config.
 		$this->_blueprint->grant[] = $grant;
