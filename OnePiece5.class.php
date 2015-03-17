@@ -736,6 +736,12 @@ class OnePiece5
 		//	Call line.
 		$line = self::GetCallerLine();
 		
+		//	type
+		$type = gettype($args);
+		
+		//	join
+		$line .= " - ".$type;
+		
 		//	CLI
 		if( self::GetEnv('cli') ){
 			$mime = Toolbox::GetMIME(1);
