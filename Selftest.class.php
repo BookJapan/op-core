@@ -98,9 +98,11 @@ class Selftest extends OnePiece5
 		$this->_blueprint->table	 = array();
 		$this->_blueprint->column	 = array();
 		$this->_blueprint->alter	 = array();
-		$this->_blueprint->index->add  = array();
-		$this->_blueprint->index->drop = array();
-		$this->_blueprint->index->pkey = array();
+		$this->_blueprint->index->add	 = array();
+		$this->_blueprint->index->drop	 = array();
+		$this->_blueprint->index->change = array();
+		$this->_blueprint->index->pkey	 = array();
+		$this->_blueprint->ai		 = array();
 	}
 	
 	private function _Log($message, $result=null, $from='en')
@@ -209,24 +211,28 @@ class Selftest extends OnePiece5
 		
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $class_name => $origin ){
-		//	$config = $origin->Clone();
-			$config = clone($origin);
-			$config->database = clone($origin->database);
+			$config = $origin->Copy();
+		//	$config = clone($origin);
+		//	$config->database = clone($origin->database);
 			
 			//	Set config. (Is this required?)
 			$this->_blueprint->config->$class_name = Toolbox::toObject($config);
 			
 			//	Set root and password.
 			if( $this->_root_user ){
+				
 				//	Change root user name and password.
 				$config->database->user     = $this->_root_user;
 				$config->database->password = $this->_root_password;
+				
 				//	Root user's Diagnosis.
 				$this->CheckConnection($config);
 				$this->CheckUser($origin);
+				
 				//	Grant will done every time.
 				foreach( $config->table as $table_name => $table ){
-					$table = clone($table);
+				//	$table = clone($table);
+					$table = $table->Copy();
 					$table->name = $table_name;
 					$this->WriteGrant($origin->database, $table);
 				}
@@ -238,6 +244,7 @@ class Selftest extends OnePiece5
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
 			$this->CheckPkey($config);
+			$this->CehckAutoIncrement($config);
 		}
 		
 		return $this->_is_diagnosis;
@@ -246,7 +253,8 @@ class Selftest extends OnePiece5
 	function CheckConnection($config)
 	{
 		//	Database connection config.
-		$database = clone($config->database);
+	//	$database = clone($config->database);
+		$database = $config->database->Copy();
 		
 		//	Connection
 		$io	 = $this->PDO()->Connect($database);
@@ -284,7 +292,8 @@ class Selftest extends OnePiece5
 		//	result
 		if(!$io){
 			$this->_is_diagnosis = false;
-			$this->_blueprint->database[] = clone($config->database);
+		//	$this->_blueprint->database[] = clone($config->database);
+			$this->_blueprint->database[] = $config->database->Copy();
 		}
 		
 		//	Diagnosis
@@ -297,7 +306,8 @@ class Selftest extends OnePiece5
 	function CheckTable($config)
 	{
 		//	init
-		$database = clone($config->database);
+	//	$database = clone($config->database);
+		$database = $config->database->Copy();
 		$db_name = $database->name;
 		$user	 = $database->user;
 		$dsn	 = $this->PDO()->GetDSN();
@@ -315,7 +325,8 @@ class Selftest extends OnePiece5
 		
 		//	Check each table.
 		foreach( $config->table as $table_name => $table ){
-			$table = clone($table);
+		//	$table = clone($table);
+			$table = $table->Copy();
 			$join_name = $db_name.'.'.$table_name;
 			
 			//	Check table exists.
@@ -352,8 +363,9 @@ class Selftest extends OnePiece5
 		$dsn	 = $this->PDO()->GetDSN();
 		
 		//	Check each table.
-		foreach($config->table as $table_name => $original){
-			$table = clone($original);
+		foreach($config->table as $table_name => $origin){
+		//	$table = clone($origin);
+			$table = $origin->Copy();
 			
 			//	Check table exists.
 			$join_name = $db_name.'.'.$table_name;
@@ -396,7 +408,8 @@ class Selftest extends OnePiece5
 		//	Check each column(exists).
 		$columns = array();
 		foreach($table->column as $column_name => $column){
-			$column = clone($column);
+		//	$column = clone($column);
+			$column = $column->Copy();
 			$columns[$column_name] = true;
 			
 			//	Compensate name.
@@ -421,7 +434,7 @@ class Selftest extends OnePiece5
 				
 				//	Add new column.
 				$column->after = $after;
-				$this->WriteAlter($db_name, $table_name, $column, $acmd);
+				$this->WriteColumn($db_name, $table_name, $column, $acmd);
 			}
 			
 			//	After where column.
@@ -490,7 +503,7 @@ class Selftest extends OnePiece5
 			//	Write blueprint
 			if(!$io){
 				$this->_is_diagnosis = false;
-				$this->WriteAlter($db_name, $table_name, $column, 'modify');
+				$this->WriteColumn($db_name, $table_name, $column, 'modify');
 			}
 		}
 	}
@@ -530,27 +543,31 @@ class Selftest extends OnePiece5
 			//	Save the auto increment column.
 			if(!empty($column->ai)){
 				$this->_diagnosis->$user->$dsn->ai->$table_name->$column_name = $io;
+				$this->_diagnosis->ai->$db_name->$table_name->$column_name = $io;
 			}
 			
 			//	Save the column name with primary key value.
 			if( $key === 'PRI' ){
 				$this->_diagnosis->$user->$dsn->pkey->$table_name->$column_name = $io;
+				$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $io;
 			}
 			
 			//	Nothing problem
 			if( $io ){ continue; }
-			
+
 			//	Diagnosis
 			$this->_is_diagnosis = false;
 			
-			//	Drop Index
-			if( $struct[$column_name]['key'] ){
-				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'drop');
-			}
+			//	CheckPKey
+			if( $key === 'PRI' ){ continue; }
 			
-			//	Add Index
-			if( $key !== 'PRI' ){
+			//	Add, Change, Drop
+			if(!$key ){
+				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'drop');
+			}else if(!$struct[$column_name]['key'] ){
 				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
+			}else{
+				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'change');
 			}
 		}
 	}
@@ -569,30 +586,25 @@ class Selftest extends OnePiece5
 		
 		//	Loop at each table.
 		foreach( $this->_diagnosis->$user->$dsn->pkey as $table_name => $columns ){
-			$rebuild = null;
 			
-			//	Collect column name.
-			foreach( $columns as $column_name => $value ){
-				$pkeys[] = $column_name;
-				if(!$value){
-					$rebuild = true;
-				}
-			}
-			
-			//	If failed?
-			if(!$rebuild){
+			$pkeys = Toolbox::toArray($columns);
+			if(!in_array(false, $pkeys, true)){
 				continue;
 			}
 			
 			//	Remove auto increment. (Because can not drop pkey.)
 			foreach( $this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $value ){
-				$column = $config->table->$table_name->column->$column_name;
+				$column = $config->table->$table_name->column->$column_name->Copy();
+				if( $column->isEmpty() ){
+					//	In case of privilege only.
+					continue;
+				}
 				$column->name = $column_name;
-				$this->WriteAlter($db_name, $table_name, $column, 'modify');
+				$this->WriteColumn($db_name, $table_name, $column, 'modify');
 			}
 			
 			//	Rebuild Primary key.
-			$this->WritePKEY($db_name, $table_name, $pkeys);
+			$this->WritePKEY($db_name, $table_name, array_keys($pkeys));
 		}
 	}
 	
@@ -610,10 +622,18 @@ class Selftest extends OnePiece5
 		
 		//	Loop at each table.
 		foreach( $this->_diagnosis->$user->$dsn->pkey as $table_name => $columns ){
+			if(!isset($this->_diagnosis->$user->$dsn->ai)){
+				continue;
+			}
 			foreach($this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $io ){
 				if(!$io){
-					$column = 
-					$this->WriteAlter($db_name, $table_name, $column, 'modify');
+					$column = $config->table->$table_name->column->$column_name->Copy();
+					if( $column->isEmpty() ){
+						//	In case of privilege only.
+						continue;
+					}
+					$column->name = $column_name;
+					$this->WriteAI($db_name, $table_name, $column);
 				}
 			}
 		}
@@ -714,12 +734,14 @@ class Selftest extends OnePiece5
 	}
 	
 	/**
-	 * Write alter table config.
-	 *
-	 * @param Config $database Database connection information.
-	 * @param Config $table    Table define.
+	 * Alter each column.
+	 * 
+	 * @param string $database_name
+	 * @param string $table_name
+	 * @param Config $column
+	 * @param string $acmd
 	 */
-	function WriteAlter($database_name, $table_name, $column, $acmd)
+	function WriteColumn($database_name, $table_name, $column, $acmd)
 	{
 		if( $acmd === 'change' ){
 			$column->rename = $column->name;
@@ -728,6 +750,7 @@ class Selftest extends OnePiece5
 		
 		$column_name = $column->name;
 		unset($column->name);
+		unset($column->renamed);
 		unset($column->ai);
 		unset($column->pkey);
 		unset($column->index);
@@ -736,13 +759,14 @@ class Selftest extends OnePiece5
 		$alter = new Config();
 		$alter->database = $database_name;
 		$alter->table	 = $table_name;
-		$alter->column->$acmd->{$column_name} = clone($column);
+	//	$alter->column->$acmd->{(string)$column_name} = clone($column);
+		$alter->column->$acmd->{(string)$column_name} = $column->Copy();
 		
 		//	Stack create table config.
 		$this->_blueprint->alter[] = $alter;
 	}
 	
-	function WriteIndex($database_name, $table_name, $column_name, $key, $acd)
+	function WriteIndex($database_name, $table_name, $column_name, $key, $acmd)
 	{
 		switch($key){
 			case 'PRI':
@@ -762,8 +786,9 @@ class Selftest extends OnePiece5
 		$alter->table	 = $table_name;
 		$alter->column	 = $column_name;
 		$alter->type	 = $type;
+		$alter->debug = $this->GetCallerLine();
 		
-		$this->_blueprint->index->{$acd}[] = $alter;
+		$this->_blueprint->index->{$acmd}[] = $alter;
 	}
 	
 	function WritePKEY($database_name, $table_name, $column)
@@ -772,8 +797,23 @@ class Selftest extends OnePiece5
 		$alter->database = $database_name;
 		$alter->table	 = $table_name;
 		$alter->column	 = $column;
+		$alter->debug = $this->GetCallerLine();
 		
 		$this->_blueprint->index->pkey[] = $alter;
+	}
+	
+	function WriteAI($database_name, $table_name, $column)
+	{
+		$column_name = $column->name;
+		unset($column->name);
+		unset($column->renamed);
+		
+		$alter = new Config();
+		$alter->database = $database_name;
+		$alter->table	 = $table_name;
+		$alter->column->modify->$column_name = $column;
+		
+		$this->_blueprint->ai[] = $alter;
 	}
 }
 
@@ -794,6 +834,10 @@ class Poneglyph extends OnePiece5
 	{
 		print "<ol>";
 		foreach( $diagnosis as $user => $dsn ){
+			
+			if( $user === 'ai' or $user === 'pkey' ){
+				continue;
+			}
 			
 			$this->li("User name is \\$user\.");
 			
@@ -859,7 +903,4 @@ class Poneglyph extends OnePiece5
 		}
 		$this->li($text, $io);
 	}
-	
-	
-	
 }

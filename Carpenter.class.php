@@ -173,6 +173,7 @@ class Carpenter extends OnePiece5
 			$this->CreateAlter($blueprint);
 			$this->CreatePkey($blueprint);
 			$this->CreateIndex($blueprint);
+			$this->CreateAI($blueprint);
 			$this->CreateGrant($blueprint);
 			
 		}catch( OpException $e ){
@@ -269,6 +270,17 @@ class Carpenter extends OnePiece5
 			
 			//	Add Primary key
 			$io = $this->PDO()->AddPrimaryKey($alter);
+			//	log
+			$this->Log($this->PDO()->Qu(), $io);
+		}
+	}
+	
+	function CreateAI($blueprint)
+	{
+		foreach($blueprint->index->ai as $alter){
+			//	Alter table by each column
+			$io = $this->PDO()->AlterTable($alter);
+				
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
