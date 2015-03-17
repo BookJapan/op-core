@@ -121,11 +121,11 @@ class Carpenter extends OnePiece5
 			return;
 		}
 		
-		$nl = PHP_EOL;
+		$nl = "\n";
 		print '<ol>';
 		foreach($this->_error as $error){
 			$from	 = $error['translation'];
-			$temp	 = explode(PHP_EOL,$error['message'].PHP_EOL);
+			$temp	 = explode($nl, $error['message'].$nl);
 			$message = $this->i18n()->Bulk($temp[0], $from);
 			$query = trim($temp[1],'\\');
 			print $this->p("![li .small[{$message}{$nl} ![.gray[{$query}]] ]]");
@@ -135,9 +135,9 @@ class Carpenter extends OnePiece5
 		$this->_error = null;
 	}
 	
-	function Root($password, $user='root')
+	function Root($user, $password)
 	{
-		$this->_user = $user;
+		$this->_user	 = $user;
 		$this->_password = $password;
 		$this->Log("user:$user, password:$password");
 	}
