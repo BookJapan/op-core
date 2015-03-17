@@ -1,4 +1,4 @@
-<?php
+f<?php
 /**
  * Selftest.class.php
  * 
@@ -243,9 +243,11 @@ class Selftest extends OnePiece5
 			$this->CheckDatabase($config);
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
-			$this->CheckPkey($config);
-			$this->CehckAutoIncrement($config);
+			
 		}
+
+		$this->CheckPkey($config);
+		$this->CehckAutoIncrement($config);
 		
 		return $this->_is_diagnosis;
 	}
@@ -542,13 +544,11 @@ class Selftest extends OnePiece5
 			
 			//	Save the auto increment column.
 			if(!empty($column->ai)){
-				$this->_diagnosis->$user->$dsn->ai->$table_name->$column_name = $io;
-				$this->_diagnosis->ai->$db_name->$table_name->$column_name = $io;
+				$this->_diagnosis->ai->$db_name->$table_name->$column_name = $column;
 			}
 			
 			//	Save the column name with primary key value.
 			if( $key === 'PRI' ){
-				$this->_diagnosis->$user->$dsn->pkey->$table_name->$column_name = $io;
 				$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $io;
 			}
 			
@@ -574,64 +574,32 @@ class Selftest extends OnePiece5
 	
 	function CheckPkey($config)
 	{
-		//	Init
-		$dsn = $this->PDO()->GetDSN();
-		$user	 = $config->database->user;
-		$db_name = $config->database->name;
-		
-		//	If exists peky?
-		if( empty($this->_diagnosis->$user->$dsn->pkey) ){
+		if( empty($this->_diagnosis->pkey) ){
 			return;
 		}
 		
-		//	Loop at each table.
-		foreach( $this->_diagnosis->$user->$dsn->pkey as $table_name => $columns ){
-			
-			$pkeys = Toolbox::toArray($columns);
-			if(!in_array(false, $pkeys, true)){
-				continue;
-			}
-			
-			//	Remove auto increment. (Because can not drop pkey.)
-			foreach( $this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $value ){
-				$column = $config->table->$table_name->column->$column_name->Copy();
-				if( $column->isEmpty() ){
-					//	In case of privilege only.
+		foreach( $this->_diagnosis->pkey as $db_name => $table ){
+			foreach( $table as $table_name => $column ){
+				$pkeys = Toolbox::toArray($column);
+				if(!in_array(false, $pkeys, true)){
 					continue;
 				}
-				$column->name = $column_name;
-				$this->WriteColumn($db_name, $table_name, $column, 'modify');
+				
+				//	Rebuild Primary key.
+				$this->WritePKEY($db_name, $table_name, array_keys($pkeys));
 			}
-			
-			//	Rebuild Primary key.
-			$this->WritePKEY($db_name, $table_name, array_keys($pkeys));
 		}
 	}
 	
 	function CehckAutoIncrement($config)
 	{
-		//	Init
-		$dsn = $this->PDO()->GetDSN();
-		$user	 = $config->database->user;
-		$db_name = $config->database->name;
-		
-		//	If exists peky?
-		if( empty($this->_diagnosis->$user->$dsn->pkey) ){
+		if( empty($this->_diagnosis->ai) ){
 			return;
 		}
 		
-		//	Loop at each table.
-		foreach( $this->_diagnosis->$user->$dsn->pkey as $table_name => $columns ){
-			if(!isset($this->_diagnosis->$user->$dsn->ai)){
-				continue;
-			}
-			foreach($this->_diagnosis->$user->$dsn->ai->$table_name as $column_name => $io ){
-				if(!$io){
-					$column = $config->table->$table_name->column->$column_name->Copy();
-					if( $column->isEmpty() ){
-						//	In case of privilege only.
-						continue;
-					}
+		foreach( $this->_diagnosis->ai as $db_name => $table ){
+			foreach( $table as $table_name => $column ){
+				foreach( $column as $column_name => $column ){
 					$column->name = $column_name;
 					$this->WriteAI($db_name, $table_name, $column);
 				}
