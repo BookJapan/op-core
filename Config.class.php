@@ -8,11 +8,14 @@
  */
 class Config extends stdClass
 {
+	/*
 	function Config()
 	{
 		
 	}
+	*/
 	
+	/*
 	function Set( $key,  $val )
 	{
 		$this->$key = $val;
@@ -23,6 +26,7 @@ class Config extends stdClass
 	{
 		return $this->$key;
 	}
+	*/
 	
 	function __set( $name, $value )
 	{
