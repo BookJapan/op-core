@@ -123,7 +123,21 @@ class Config extends stdClass
 		foreach($this as $key => $var){
 			return false;
 		}
-		
 		return true;
+	}
+	
+	function Copy()
+	{
+		$copy = new Config();
+		
+		foreach($this as $key => $var){
+			if( $var instanceof Config ){
+				$copy->$key = $var->Copy();
+			}else{
+				$copy->$key = $var;
+			}
+		}
+		
+		return $copy;
 	}
 }
