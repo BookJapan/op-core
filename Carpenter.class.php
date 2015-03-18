@@ -246,7 +246,6 @@ class Carpenter extends OnePiece5
 		//	Drop
 		foreach($blueprint->index->drop as $alter){
 			$io = $this->PDO()->DropIndex($alter);
-
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
@@ -254,7 +253,6 @@ class Carpenter extends OnePiece5
 		//	Add
 		foreach($blueprint->index->add as $alter){
 			$io = $this->PDO()->AddIndex($alter);
-			
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
@@ -262,13 +260,15 @@ class Carpenter extends OnePiece5
 	
 	function CreatePkey($blueprint)
 	{
-		foreach($blueprint->index->pkey as $alter){
-			//	Drop first
+		//	Drop first
+		foreach($blueprint->pkey->drop as $alter){
 			$io = $this->PDO()->DropPrimarykey($alter);
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
-			
-			//	Add Primary key
+		}
+
+		//	Add Primary key
+		foreach($blueprint->pkey->add as $alter){
 			$io = $this->PDO()->AddPrimaryKey($alter);
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
@@ -277,10 +277,9 @@ class Carpenter extends OnePiece5
 	
 	function CreateAI($blueprint)
 	{
-		foreach($blueprint->index->ai as $alter){
-			//	Alter table by each column
+		//	Alter table by each column
+		foreach($blueprint->ai as $alter){
 			$io = $this->PDO()->AlterTable($alter);
-				
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
@@ -288,10 +287,9 @@ class Carpenter extends OnePiece5
 	
 	function CreateGrant($blueprint)
 	{
+		//	Grant user
 		foreach( $blueprint->grant as $grant ){
-			//	Grant user
 			$io = $this->PDO()->Grant($grant);
-			
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}

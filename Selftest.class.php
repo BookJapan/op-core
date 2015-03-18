@@ -1,4 +1,4 @@
-f<?php
+<?php
 /**
  * Selftest.class.php
  * 
@@ -101,8 +101,9 @@ class Selftest extends OnePiece5
 		$this->_blueprint->index->add	 = array();
 		$this->_blueprint->index->drop	 = array();
 		$this->_blueprint->index->change = array();
-		$this->_blueprint->index->pkey	 = array();
-		$this->_blueprint->ai		 = array();
+		$this->_blueprint->pkey->drop	 = array();
+		$this->_blueprint->pkey->add	 = array();
+		$this->_blueprint->ai = array();
 	}
 	
 	private function _Log($message, $result=null, $from='en')
@@ -460,14 +461,20 @@ class Selftest extends OnePiece5
 		//	Each check.
 		foreach($column as $key => $var){
 			switch($key){
+				case 'debug':
 				case 'name':
-				case 'ai':
 				case 'index':
 				case 'pkey':
 				case 'unique':
 				case 'renamed':
 					$continue = true;
 					break;
+					
+				case 'ai':
+					$key = 'extra';
+					$var = 'auto_increment';
+					break;
+					
 				default:
 					$continue = false;
 			}
@@ -501,6 +508,18 @@ class Selftest extends OnePiece5
 			
 			//	Diagnosis
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
+			
+			//	Auto Increment
+			if( $key === 'extra' and $var === 'auto_increment'){
+				if( $io === true ){
+					$this->_diagnosis->ai->$db_name->$table_name->$column_name = $io;
+				}else if(!empty($column->ai)){
+					//	Save the auto increment column.
+					$this->_is_diagnosis = false;
+					$this->_diagnosis->ai->$db_name->$table_name->$column_name = $column->Copy();
+					continue;
+				}
+			}
 			
 			//	Write blueprint
 			if(!$io){
@@ -540,11 +559,6 @@ class Selftest extends OnePiece5
 					//	Write
 					$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
 				}
-			}
-			
-			//	Save the auto increment column.
-			if(!empty($column->ai)){
-				$this->_diagnosis->ai->$db_name->$table_name->$column_name = $column;
 			}
 			
 			//	Save the column name with primary key value.
@@ -600,6 +614,9 @@ class Selftest extends OnePiece5
 		foreach( $this->_diagnosis->ai as $db_name => $table ){
 			foreach( $table as $table_name => $column ){
 				foreach( $column as $column_name => $column ){
+					if( $column === true ){
+						continue;
+					}
 					$column->name = $column_name;
 					$this->WriteAI($db_name, $table_name, $column);
 				}
@@ -759,25 +776,36 @@ class Selftest extends OnePiece5
 		$this->_blueprint->index->{$acmd}[] = $alter;
 	}
 	
-	function WritePKEY($database_name, $table_name, $column)
+	function WritePKEY($db_name, $table_name, $column_names, $modifier)
 	{
+		if(!$modifier){
+			$this->StackError("\$modifier is empty. (add or drop)");
+			return;
+		}
+		
 		$alter = new Config();
-		$alter->database = $database_name;
+		$alter->database = $db_name;
 		$alter->table	 = $table_name;
-		$alter->column	 = $column;
+		$alter->column	 = $column_names;
 		$alter->debug = $this->GetCallerLine();
 		
-		$this->_blueprint->index->pkey[] = $alter;
+		$this->_blueprint->pkey->{$modifier}[] = $alter;
 	}
 	
-	function WriteAI($database_name, $table_name, $column)
+	function WriteAI($db_name, $table_name, $column)
 	{
+		//	Will do drop to first.
+		$this->WritePKEY($db_name, $table_name, null, 'drop');
+		
+		//	Supplement.
 		$column_name = $column->name;
 		unset($column->name);
 		unset($column->renamed);
 		
+		
+		//	Build alter config.
 		$alter = new Config();
-		$alter->database = $database_name;
+		$alter->database = $db_name;
 		$alter->table	 = $table_name;
 		$alter->column->modify->$column_name = $column;
 		
