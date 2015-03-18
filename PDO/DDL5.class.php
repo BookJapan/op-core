@@ -570,7 +570,9 @@ class DDL5 extends OnePiece5
 			if( $ai ){
 				$attributes = "AUTO_INCREMENT";
 				$unsigned = true;
-				$pkey = true;
+				if(!$pkey){
+					$pkey = $pkey === null ? true: false;
+				}
 				if(!$type){
 					$type = 'INT';
 				}
