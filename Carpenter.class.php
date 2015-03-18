@@ -146,7 +146,14 @@ class Carpenter extends OnePiece5
 	{
 		//	
 		if(!$blueprint){
-			$this->_error = 'Empty blue print.';
+			return;
+		}
+		
+		if(!$this->_user){
+			return;
+		}
+		
+		if(!$this->_password){
 			return;
 		}
 		

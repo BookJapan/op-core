@@ -213,8 +213,6 @@ class Selftest extends OnePiece5
 		//	each per config.
 		foreach( $this->GetSelftestConfig() as $class_name => $origin ){
 			$config = $origin->Copy();
-		//	$config = clone($origin);
-		//	$config->database = clone($origin->database);
 			
 			//	Set config. (Is this required?)
 			$this->_blueprint->config->$class_name = Toolbox::toObject($config);
@@ -256,7 +254,6 @@ class Selftest extends OnePiece5
 	function CheckConnection($config)
 	{
 		//	Database connection config.
-	//	$database = clone($config->database);
 		$database = $config->database->Copy();
 		
 		//	Connection
@@ -295,7 +292,6 @@ class Selftest extends OnePiece5
 		//	result
 		if(!$io){
 			$this->_is_diagnosis = false;
-		//	$this->_blueprint->database[] = clone($config->database);
 			$this->_blueprint->database[] = $config->database->Copy();
 		}
 		
@@ -309,7 +305,6 @@ class Selftest extends OnePiece5
 	function CheckTable($config)
 	{
 		//	init
-	//	$database = clone($config->database);
 		$database = $config->database->Copy();
 		$db_name = $database->name;
 		$user	 = $database->user;
@@ -328,7 +323,6 @@ class Selftest extends OnePiece5
 		
 		//	Check each table.
 		foreach( $config->table as $table_name => $table ){
-		//	$table = clone($table);
 			$table = $table->Copy();
 			$join_name = $db_name.'.'.$table_name;
 			
@@ -367,7 +361,6 @@ class Selftest extends OnePiece5
 		
 		//	Check each table.
 		foreach($config->table as $table_name => $origin){
-		//	$table = clone($origin);
 			$table = $origin->Copy();
 			
 			//	Check table exists.
@@ -395,13 +388,11 @@ class Selftest extends OnePiece5
 		
 		//	Table had no problem.
 		if( $this->_diagnosis->$user->$dsn->table->$join_name !== true ){
-		//	$this->mark("Does not check column of $table_name. ($table_name table have failed to check.)");
 			return;
 		}
 		
 		//	
 		if(!isset($table->column)){
-		//	$this->mark("Does not check column of $table_name. ($table_name table does not been set column.)");
 			return;
 		}
 		
@@ -555,7 +546,10 @@ class Selftest extends OnePiece5
 			if( !empty($key) or !empty($struct[$column_name]['key']) ){
 				//	In case of boolean. (Column is not exists in table)
 				if(!is_bool($this->_diagnosis->$user->$dsn->column->$join_name->$column_name)){
-					if(!$key){ $key = $struct[$column_name]['key']; /* Supplement index name */ }
+					if(!$key){
+						//	Supplement index name
+						$key = $struct[$column_name]['key']; 
+					}
 					//	Write
 					$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
 				}
@@ -563,12 +557,16 @@ class Selftest extends OnePiece5
 			
 			//	Save the column name with primary key value.
 			if( $key === 'PRI' ){
-				$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $io;
+				if(empty($column->ai)){
+					$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $this->_ConvertColumnKey($column) === 'PRI' ? true: false;
+				}else{
+					$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $io;
+				}
 			}
 			
 			//	Nothing problem
 			if( $io ){ continue; }
-
+			
 			//	Diagnosis
 			$this->_is_diagnosis = false;
 			
@@ -601,8 +599,12 @@ class Selftest extends OnePiece5
 				
 				//	Will add pkey in auto increment.  
 				if( empty($this->_diagnosis->ai->$db_name->$table_name) ){
-					//	Build Primary key.
-					$this->WritePKEY($db_name, $table_name, array_keys($pkeys), 'add');
+					if( in_array(true, $pkeys, true) ){
+						//	Drop existing PKEY.
+						$this->WritePKEY($db_name, $table_name, null, 'drop');
+					}
+					//	Build primary key.
+					$this->WritePKEY($db_name, $table_name, array_keys($pkeys,true), 'add');
 				}
 			}
 		}
