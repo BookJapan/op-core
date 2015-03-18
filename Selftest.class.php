@@ -599,8 +599,12 @@ class Selftest extends OnePiece5
 					continue;
 				}
 				
-				//	Rebuild Primary key.
-				$this->WritePKEY($db_name, $table_name, array_keys($pkeys));
+				foreach($pkeys as $column_name => $var){
+					if( is_bool($this->_diagnosis->ai->$db_name->$table_name->$column_name) ){
+						//	Build Primary key.
+						$this->WritePKEY($db_name, $table_name, array_keys($pkeys), 'add');						
+					}
+				}
 			}
 		}
 	}
@@ -787,21 +791,21 @@ class Selftest extends OnePiece5
 		$alter->database = $db_name;
 		$alter->table	 = $table_name;
 		$alter->column	 = $column_names;
-		$alter->debug = $this->GetCallerLine();
 		
 		$this->_blueprint->pkey->{$modifier}[] = $alter;
 	}
 	
 	function WriteAI($db_name, $table_name, $column)
 	{
-		//	Will do drop to first.
-		$this->WritePKEY($db_name, $table_name, null, 'drop');
-		
 		//	Supplement.
 		$column_name = $column->name;
 		unset($column->name);
 		unset($column->renamed);
 		
+		if( $this->_diagnosis->pkey->$db_name->$table_name->$column_name ){
+			//	Will do drop to first.
+			$this->WritePKEY($db_name, $table_name, null, 'drop');
+		}
 		
 		//	Build alter config.
 		$alter = new Config();
