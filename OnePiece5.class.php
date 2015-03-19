@@ -1524,6 +1524,16 @@ class OnePiece5
 	}
 	
 	/**
+	 * Selftest
+	 * 
+	 * @return Selftest
+	 */
+	function Selftest()
+	{
+		return $this->Singleton('Selftest');
+	}
+	
+	/**
 	 * 
 	 * @param  string $string
 	 * @param  array  $options

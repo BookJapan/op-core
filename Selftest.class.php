@@ -109,10 +109,20 @@ class Selftest extends OnePiece5
 			$model = $this->Model($model_name);
 			$class_name = get_class($model);
 			$config = $model->Config()->selftest();
-			$selftest->SetSelftestConfig($class_name, $config);
+			$this->SetSelftestConfig($class_name, $config);
 		}
 	}
-
+	
+	/**
+	 * Carpenter
+	 * 
+	 * @return Carpenter
+	 */
+	function Carpenter()
+	{
+		return $this->Singleton('Carpenter');
+	}
+	
 	function Root($user, $password)
 	{
 		$this->_root_user     = $user;
@@ -124,7 +134,7 @@ class Selftest extends OnePiece5
 	
 	function Registration($model_name)
 	{
-		$_registration[md5($model_name)] = $model_name;
+		$this->_registration[md5($model_name)] = $model_name;
 	}
 	
 	function SetSelftestConfig( $class_name, Config $config )
