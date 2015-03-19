@@ -343,11 +343,11 @@ class Selftest extends OnePiece5
 			
 			//	Is renamed?
 			if( isset($table->renamed) ){
-				$renamed = in_array($table->renamed, $table_list);
-			}
+				$rename_flag = in_array($table->renamed, $table_list);
+			}else{ $rename_flag = null; }
 			
 			//	Write blueprint.
-			$this->WriteTable($table, $renamed);
+			$this->WriteTable($table, $rename_flag);
 		}
 	}
 	
@@ -699,7 +699,7 @@ class Selftest extends OnePiece5
 	 * 
 	 * @param Config $table    Table define.
 	 */
-	function WriteTable($table, $renamed=null)
+	function WriteTable($table, $rename_flag=null)
 	{
 		if( empty($table->column) ){
 			$this->mark("Table name {$table->name} will skip the write to blueprint. (column is empty)",__CLASS__);
@@ -714,7 +714,7 @@ class Selftest extends OnePiece5
 			unset($column->unique);
 		}
 		
-		if( $renamed ){
+		if( $rename_flag ){
 			$table->rename = $table->name;
 			$table->name = $table->renamed;
 			unset($table->renamed);
