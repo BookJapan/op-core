@@ -105,10 +105,20 @@ class Selftest extends OnePiece5
 		$this->_blueprint->pkey->add	 = array();
 		$this->_blueprint->ai = array();
 		
+		//	Init self-test config.
+		$this->ClearSelftestConfig();
 		foreach( $this->_registration as $model_name ){
+			//	Get model instance.
 			$model = $this->Model($model_name);
+			//	Check model exists.
+			if(!class_exists("Model_{$model_name}")){
+				continue;
+			}
+			//	Get class name.
 			$class_name = get_class($model);
+			//	Get self-test config.
 			$config = $model->Config()->selftest();
+			//	Set self-test config.
 			$this->SetSelftestConfig($class_name, $config);
 		}
 	}
@@ -140,7 +150,7 @@ class Selftest extends OnePiece5
 	function SetSelftestConfig( $class_name, Config $config )
 	{
 		if( isset($this->_selftest_config[$class_name]) ){
-			$this->StackError("This class's self-test config is already exists.");
+			$this->StackError("This class's self-test config is already exists. ($class_name)");
 			return;
 		}
 		$this->_selftest_config[$class_name] = clone($config);
