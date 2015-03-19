@@ -442,15 +442,15 @@ class PDO5 extends OnePiece5
 	function GetTableList($database=null, $like=null)
 	{
 		if(!is_string($database)){
-			if(!is_array($config)){
-				$config = Toolbox::toArray($config);
+			if(!is_array($database)){
+				$args = Toolbox::toArray($database);
 			}
 			
 			//  set database
-			$database = isset($config['database']) ? $config['database']: $this->database;
+			$database = isset($args['database']) ? $args['database']: $this->database;
 			
 			//  set like
-			$like = isset($config['like']) ? $config['like']: null;
+			$like = isset($args['like']) ? $args['like']: null;
 		}
 		
 		//  select database
