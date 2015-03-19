@@ -104,68 +104,28 @@ class Selftest extends OnePiece5
 		$this->_blueprint->pkey->drop	 = array();
 		$this->_blueprint->pkey->add	 = array();
 		$this->_blueprint->ai = array();
-	}
-	
-	private function _Log($message, $result=null, $from='en')
-	{
-		//	Generate log array.
-		$log = array();
-		$log['from']	 = $from;
-		$log['result']	 = $result;
-		$log['message']	 = $message;
 		
-		//	Stack log array.
-		$this->_log[] = $log;
-	}
-	
-	function PrintLog()
-	{
-		$this->p("![.bold .bigger[Display Selftest's diagnosis log:]] ![.gray .small[".$this->GetCallerLine()."]]");
-		if( $this->_is_diagnosis ){
-			$class = 'green';
-			$message = "Diagnostic results was no problem.";
-		}else{
-			$class = 'red';
-			$message = "Diagnostic results has problem.";
+		foreach( $this->_registration as $model_name ){
+			$model = $this->Model($model_name);
+			$class_name = get_class($model);
+			$config = $model->Config()->selftest();
+			$selftest->SetSelftestConfig($class_name, $config);
 		}
-		$message = $this->i18n()->Bulk($message,'en');
-		$this->p("![.{$class} margin:1em [$message]]");
-		
-		//	Display diagnosis.
-		$Poneglyph = new Poneglyph();
-		$Poneglyph->Display($this->GetDiagnosis());
-		
-		print '<ol>';
-		while($log = array_shift($this->_log)){
-			//	init
-			$from	 = $log['from'];
-			$result  = $log['result'];
-			$message = $log['message'];
-			//	translate
-			if( $from ){
-				$message = $this->i18n()->Bulk($message, $from);
-			}
-			//	class
-			if( $result === null ){
-				$class = 'gray';
-			}else if( is_bool($result) ){
-				$class = $result ? 'blue': 'red';
-			}else{
-				$class = $result;
-			}
-			//	print
-			print $this->p("![li .small .{$class}[{$message}]]");
-		}
-		print '</ol>';
 	}
-	
+
 	function Root($user, $password)
 	{
 		$this->_root_user     = $user;
 		$this->_root_password = $password;
 	}
 	
-	private $_selftest_config;
+	private $_registration = array();
+	private $_selftest_config = array();
+	
+	function Registration($model_name)
+	{
+		$_registration[md5($model_name)] = $model_name;
+	}
 	
 	function SetSelftestConfig( $class_name, Config $config )
 	{
@@ -243,9 +203,9 @@ class Selftest extends OnePiece5
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
 		}
-
-		$this->CheckPkey($config);
-		$this->CehckAutoIncrement($config);
+		
+		$this->CheckPkey();
+		$this->CehckAutoIncrement();
 		
 		return $this->_is_diagnosis;
 	}
@@ -347,7 +307,7 @@ class Selftest extends OnePiece5
 			}else{ $rename_flag = null; }
 			
 			//	Write blueprint.
-			$this->WriteTable($table, $rename_flag);
+			$this->WriteTable($table->Copy(), $rename_flag);
 		}
 	}
 	
@@ -587,7 +547,7 @@ class Selftest extends OnePiece5
 		}
 	}
 	
-	function CheckPkey($config)
+	function CheckPkey()
 	{
 		if( empty($this->_diagnosis->pkey) ){
 			return;
@@ -615,7 +575,7 @@ class Selftest extends OnePiece5
 		}
 	}
 	
-	function CehckAutoIncrement($config)
+	function CehckAutoIncrement()
 	{
 		if( empty($this->_diagnosis->ai) ){
 			return;
@@ -708,16 +668,19 @@ class Selftest extends OnePiece5
 		
 		//	Remove index property.
 		foreach( $table->column as $column_name => $column ){
+			/*
 			unset($column->ai);
 			unset($column->pkey);
 			unset($column->index);
 			unset($column->unique);
+			*/
 		}
 		
 		if( $rename_flag ){
 			$table->rename = $table->name;
 			$table->name = $table->renamed;
 			unset($table->renamed);
+			unset($table->column);
 		}
 		
 		//	Touch table name.
@@ -821,6 +784,60 @@ class Selftest extends OnePiece5
 		$alter->column->modify->$column_name = $column;
 		
 		$this->_blueprint->ai[] = $alter;
+	}
+
+
+	private function _Log($message, $result=null, $from='en')
+	{
+		//	Generate log array.
+		$log = array();
+		$log['from']	 = $from;
+		$log['result']	 = $result;
+		$log['message']	 = $message;
+	
+		//	Stack log array.
+		$this->_log[] = $log;
+	}
+	
+	function PrintLog()
+	{
+		$this->p("![.bold .bigger[Display Selftest's diagnosis log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		if( $this->_is_diagnosis ){
+			$class = 'green';
+			$message = "Diagnostic results was no problem.";
+		}else{
+			$class = 'red';
+			$message = "Diagnostic results has problem.";
+		}
+		$message = $this->i18n()->Bulk($message,'en');
+		$this->p("![.{$class} margin:1em [$message]]");
+	
+		//	Display diagnosis.
+		$Poneglyph = new Poneglyph();
+		$Poneglyph->Display($this->GetDiagnosis());
+	
+		print '<ol>';
+		while($log = array_shift($this->_log)){
+			//	init
+			$from	 = $log['from'];
+			$result  = $log['result'];
+			$message = $log['message'];
+			//	translate
+			if( $from ){
+				$message = $this->i18n()->Bulk($message, $from);
+			}
+			//	class
+			if( $result === null ){
+				$class = 'gray';
+			}else if( is_bool($result) ){
+				$class = $result ? 'blue': 'red';
+			}else{
+				$class = $result;
+			}
+			//	print
+			print $this->p("![li .small .{$class}[{$message}]]");
+		}
+		print '</ol>';
 	}
 }
 
