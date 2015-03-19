@@ -242,7 +242,6 @@ class Selftest extends OnePiece5
 			$this->CheckDatabase($config);
 			$this->CheckTable($config);
 			$this->CheckColumn($config);
-			
 		}
 
 		$this->CheckPkey($config);
@@ -555,13 +554,17 @@ class Selftest extends OnePiece5
 				}
 			}
 			
-			//	Save the column name with primary key value.
+			//	Save the column name with primary key value. and set Add/Drop flag.
 			if( $key === 'PRI' ){
-				if(empty($column->ai)){
-					$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $this->_ConvertColumnKey($column) === 'PRI' ? true: false;
+				if( empty($column->ai) ){
+					//	is not auto increment.
+					$flag = empty($column->pkey) ? null: $io;
 				}else{
-					$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $io;
+					//	is auto increment.
+					$flag = $io;
 				}
+				//	"true" is pkey is ON. "false" is pkey is OFF. "null" is to OFF from ON.
+				$this->_diagnosis->pkey->$db_name->$table_name->$column_name = $flag;
 			}
 			
 			//	Nothing problem
@@ -593,7 +596,7 @@ class Selftest extends OnePiece5
 		foreach( $this->_diagnosis->pkey as $db_name => $table ){
 			foreach( $table as $table_name => $column ){
 				$pkeys = Toolbox::toArray($column);
-				if(!in_array(false, $pkeys, true)){
+				if(!in_array(false, $pkeys)){
 					continue;
 				}
 				
@@ -603,8 +606,10 @@ class Selftest extends OnePiece5
 						//	Drop existing PKEY.
 						$this->WritePKEY($db_name, $table_name, null, 'drop');
 					}
+					
 					//	Build primary key.
-					$this->WritePKEY($db_name, $table_name, array_keys($pkeys,true), 'add');
+					$pkeys = array_merge(array_keys($pkeys,true), array_keys($pkeys,false,true));
+					$this->WritePKEY($db_name, $table_name, $pkeys,'add');
 				}
 			}
 		}
