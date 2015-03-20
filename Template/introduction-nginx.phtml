@@ -4,25 +4,42 @@
  * 
  * For Nginx web-server's configuration.
  * 
+ * @creation  2015-02-??
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */
+
+//	Output default header.
 header("content-type: text/html; charset=utf-8");
 
+//	Init
 $port = $_SERVER['SERVER_PORT'];
 $host = $_SERVER['SERVER_NAME'];
 $root = $_SERVER['DOCUMENT_ROOT'];
 $index = 'index.php';
 
+//	Separate URL-Query.
 list($uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
+
+//	Get App path and Admin's E-Mail address.
 $app  = rtrim($uri,'/').'/app.php';
 $mail = isset($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN']: 'your-addr@example.com';
 
 ?>
-<p>Please check to nginx's conf file</p>
-<p>Under to write populer settings.</p>
+<div>
+	<h1>How to Nginx settings.</h1>
+	<p>Please check to nginx's conf file.</p>
+	<ul>
+		<li>Linux
+			<ul>
+				<li>Redhat / CentOS - /etc/nginx/conf.d/default.conf</li>
+			</ul>
+		</li>
+	</ul>
+	<p>Write generic settings.</p>
+</div>
 
 <hr/>
 

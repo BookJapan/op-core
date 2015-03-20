@@ -14,6 +14,7 @@
 
 $ip = $_SERVER['REMOTE_ADDR'];
 $mail = $mail = isset($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN']: 'your-addr@example.com';
+$path = $this->ConvertPath('app:/config.inc.php');
 
 ?>
 <section>
@@ -22,8 +23,9 @@ $mail = $mail = isset($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN']: 'you
 		<div style="margin-left:1em;">
 			<p>Admin-IP is a need to a variety of features that are only notify the administrator.</p>
 			<p>Admin-Mail is when an error occurs in the app, notice to an error by E-Mail.</p>
+			<p><b><?= $path ?></b></p>
 		</div>
-	
+		
 		<div style="margin: 1em; padding: 1em; border: 1px solid black;">
 		
 		//	Set Admin's IP-Address.<br>
