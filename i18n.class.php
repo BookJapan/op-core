@@ -167,8 +167,12 @@ class i18n extends OnePiece5
 		
 		$conf['http']['timeout'] = Toolbox::isLocalhost() ? 5: 10;
 		$context = stream_context_create($conf);
+		
+		//	E_WARNING
+		ini_set('display_errors',false);
+		
 		if(!$body = file_get_contents($url, false, $context)){
-			if(count($http_response_header) > 0){
+			if( isset($http_response_header) and count($http_response_header) > 0){
 				$stat = explode(' ', $http_response_header[0]);
 				switch($stat[1]){
 					case 404:
@@ -188,8 +192,10 @@ class i18n extends OnePiece5
 				$time = $en - $st;
 				$this->StackError("timeout. ".$time);
 			}
-			return false;
 		}
+		
+		//	E_WARNING
+		ini_set('display_errors',true);
 		
 		if(!$json = json_decode($body,true)){
 			return false;
