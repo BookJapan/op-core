@@ -158,11 +158,11 @@ class Router extends OnePiece5
 		
 		$route['$arguments']	 = $arguments;
 		$route['$real_path']	 = $real_path;
-		OnePiece5::D($route);
+		//OnePiece5::D($route);
 		*/
 		
 		//	Build base route table
-		$route['alias']		 = $is_alias ? 1: 0;
+		$route['alias']		 = $is_alias;
 		$route['rewrite_base'] = $rewrite_base;
 		$route['app_root']	 = $app_root;
 		$route['meta_path']	 = $_SERVER['DOCUMENT_ROOT'].$request_uri;
@@ -221,7 +221,8 @@ class Router extends OnePiece5
 		
 		//	path
 		if( count($dirs) ){
-			$path = '/'.join('/',array_reverse($dirs)).'/';
+			$join = join('/',array_reverse($dirs));
+			$path = '/'.rtrim($join,'/').'/';
 		}else{
 			$path = '/';
 		}
