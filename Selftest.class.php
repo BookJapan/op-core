@@ -2,8 +2,7 @@
 /**
  * Selftest.class.php
  * 
- * Creation: 2014-09-16
- * 
+ * @creation 2014-09-16
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -13,8 +12,7 @@
 /**
  * Selftest
  * 
- * Creation: 2014-09-16
- *
+ * @creation 2014-09-16
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -80,7 +78,7 @@ class Selftest extends OnePiece5
 	{
 		parent::Init();
 		if(!$this->Admin()){
-			$this->StackError("Not admin call.");
+			$this->StackError("You are not an administrator.",'en');
 		}
 	}
 	
@@ -144,7 +142,18 @@ class Selftest extends OnePiece5
 	
 	function Registration($model_name)
 	{
-		$this->_registration[md5($model_name)] = $model_name;
+		if( is_string($model_name) ){
+			$args[] = $model_name;
+		}else if( is_array($model_name) ){
+			$args = $model_name;
+		}else{
+			$type = gettype($model_name);
+			$this->StackError("Does not support this type. ($type)", 'en');
+		}
+		
+		foreach($args as $model_name){
+			$this->_registration[md5($model_name)] = $model_name;
+		}
 	}
 	
 	function SetSelftestConfig( $class_name, Config $config )

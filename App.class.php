@@ -388,8 +388,34 @@ class App extends NewWorld5
 			$path = $this->ConvertPath('op:/Template/introduction-app.phtml');
 			$route['real_path'] = $path;
 			$route['extension'] = 'phtml';
+			$route['debug'] = __FILE__.', '.__METHOD__;
 		}
 		
 		parent::Dispatch($route);
+	}
+	
+	/**
+	 * Set self-test model name.
+	 * 
+	 * @param array $model_name
+	 */
+	function SetSelftestModelName($model_name)
+	{
+		if( is_string($model_name)){
+			$args[] = $model_name;
+		}else{
+			$args = $model_name;
+		}
+		$this->SetEnv('selftest-model-name',$args);
+	}
+	
+	/**
+	 * Get self-test model name.
+	 * 
+	 * @return array
+	 */
+	function GetSelftestModelName()
+	{
+		return $this->GetEnv('selftest-model-name');
 	}
 }
