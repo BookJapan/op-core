@@ -460,6 +460,8 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
+		/*
+		
 		//	Header has already been sent.
 		$_is_send = headers_sent($file,$line);
 		
@@ -479,7 +481,33 @@ class Toolbox
 			$mime = 'text/html';
 		}
 		
-		if( $only_sub_type ){
+		*/
+
+		$mime = __LINE__;
+		
+		//	Route table base.
+		if( $route = Env::Get('route') ){
+			$mime = $route['mime'];
+		}else{
+			list($uri) = explode('?', $_SERVER['REQUEST_URI'].'?');
+			if( preg_match('|\.([a-z0-9]+)$|i',$uri,$match) ){
+				switch(strtolower($match[1])){
+					case 'css':
+						$mime = 'text/css';
+						break;
+					case 'js':
+						$mime = 'text/javascript';
+						break;
+					default:
+						$mime = __LINE__;
+				}
+			}else{
+				$mime = __LINE__;
+			}
+		}
+		
+		//	parse
+		if( $mime and $only_sub_type ){
 			list($temp,$mime) = explode('/',$mime);
 		}
 		
