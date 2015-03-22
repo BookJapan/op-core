@@ -637,12 +637,23 @@ class OnePiece5
 		$nl = PHP_EOL;
 		$str = Wiki2Engine::Wiki2($str);
 		$string = "{$nl}<div class=\"OnePiece mark\" style=\"font-size:small;\">{$call_line}- {$str} <span class=\"OnePiece mark memory\">{$memory}</span></div>{$nl}";
-				
-		//	Case of plain text.
-		if(!Toolbox::isHtml()){
-			$string = strip_tags($string);
-			if( Toolbox::GetMIME() === 'text/css' ){
-				$string = "/* ". trim($string) ." */$nl";
+		
+		//	Get mime.
+		if( $mime = Toolbox::GetMIME() ){
+			list($type,$mime) = explode('/',$mime);
+			//	Branch to each mime
+			if( $type === 'text' ){
+				switch($mime){
+					case 'css':
+					case 'javascript':
+						$string = "/* ".strip_tags(trim($string))." */{$nl}";
+						break;
+					case 'plain':
+						$string = strip_tags(trim($string)).$nl;
+						break;
+				}
+			}else{
+				$string = null;
 			}
 		}
 		
