@@ -201,7 +201,8 @@ abstract class NewWorld5 extends OnePiece5
 		header("Access-Control-Allow-Headers: X-TRICORDER");
 		header("Access-Control-Max-Age: 1728000");
 		*/
-		
+
+		/*
 		switch( $route['extension'] ){
 			case 'css':
 				header("Content-Type: text/css");
@@ -219,6 +220,10 @@ abstract class NewWorld5 extends OnePiece5
 				
 			default:
 		}
+		*/
+		
+		//	Output content header.
+		header("Content-Type: {$route['mime']}");
 		
 		//  Execute.
 		$this->Template( $route['real_path'] );
