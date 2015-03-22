@@ -190,7 +190,7 @@ class i18n extends OnePiece5
 				//	timeout
 				$en = microtime(true);
 				$time = $en - $st;
-				$this->StackError("timeout. ".$time);
+				$this->Mark("timeout. ".$time,__CLASS__);
 			}
 		}
 		
