@@ -114,6 +114,18 @@ class Router extends OnePiece5
 			$extension = null;
 		}
 		
+		//	mime
+		switch( $extension ){
+			case 'js':
+				$mime = 'text/javascript';
+				break;
+			case 'css':
+				$mime = 'text/css';
+				break;
+			default:
+				$mime = 'text/html';
+		}
+		
 		//	Check alias.
 		if( preg_match("|^($doc_root)(.*)|",$app_root,$match) ){
 			//	not alias
@@ -171,6 +183,7 @@ class Router extends OnePiece5
 		$route['extension']	 = $extension;
 		$route['arguments']	 = $arguments;
 		$route['smart_url']	 = $smart_url;
+		$route['mime']		 = $mime;
 		
 		//	SET REWRITE_BASE
 		$_SERVER['REWRITE_BASE'] = rtrim($rewrite_base,'/').'/';
