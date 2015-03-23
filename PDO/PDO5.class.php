@@ -229,6 +229,10 @@ class PDO5 extends OnePiece5
 				$message = "This user's access was deny. \\{$user}@{$host}\\";
 				break;
 				
+			case 1062:
+				$message = "Duplicate entry.";
+				break;
+				
 			case 1064:
 				$message = "You have an error in your SQL syntax. "; 
 				$message.= "Check the manual that corresponds to your MySQL server version. ";

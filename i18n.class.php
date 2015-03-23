@@ -289,6 +289,36 @@ class i18n extends OnePiece5
 	
 	function Get( $text, $from='en-US', $to=null )
 	{
+		if( empty($text) ){
+			return null;
+		}
+		
+		//	Word swap to pool.
+		$i = 0;
+		$pool = array();
+		$patt = '\\\([^\\\]+)\\\\';
+		$patt = "|$patt|";
+		while( $io = preg_match($patt, $text, $match) ){
+			$i++;
+			$repl = "AAA$i";
+			$text = preg_replace($patt, $repl, $text, 1);
+			$pool[$repl] = $match[1];
+		}
+		
+		//	Translate
+		$text = $this->_Get($text, $from, $to);
+		
+		//	Word recovery from pool.
+		foreach($pool as $key => $var){
+			$quote = preg_quote($key);
+			$text = preg_replace("|($quote)|",$var,$text,1);
+		}
+		
+		return $text;
+	}
+	
+	private function _Get( $text, $from='en-US', $to=null )
+	{
 		//	Connection to cloud.
 		static $_connection = true;
 		
@@ -301,6 +331,7 @@ class i18n extends OnePiece5
 		if( strlen($text) > 2 and $text{strlen($text)-2} === '\\' ){
 			$text = rtrim($text);
 		}
+
 		
 		//	
 		$url = $this->Config()->url('i18n');

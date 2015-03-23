@@ -53,11 +53,9 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//	Get Rewrite base.
-		/*
 		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
 		$path = preg_replace("|^$patt|", '', $_SERVER['SCRIPT_FILENAME']);
 		$_SERVER['REWRITE_BASE'] = rtrim(dirname($path),'/').'/';
-		*/
 		
 		parent::__construct($args);
 	}

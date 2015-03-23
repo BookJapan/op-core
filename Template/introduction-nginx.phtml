@@ -44,49 +44,49 @@ $mail = isset($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN']: 'your-addr@e
 <hr/>
 
 <pre>
-	server {
-		listen      <?php print $port ?>;
-		server_name <?php print $host ?>;
-		root        <?php print $root ?>;
-		index       <?php print $index ?>; # No.1: If index.php file is exists, execute to No.2. 
-		
-		<?php if( $uri === '/' ): ?>
+server {
+	listen      <?php print $port ?>;
+	server_name <?php print $host ?>;
+	root        <?php print $root ?>;
+	index       <?php print $index ?>; # No.1: If index.php file is exists, execute to No.2.
+
+	<?php if( $uri === '/' ): ?> 
+	# No.2: Specify a file extension, controlled NewWorld.
+	location ~ \.(php|phtml|html|css|js)$ {
+		fastcgi_pass	127.0.0.1:9000;
+		fastcgi_param	SCRIPT_FILENAME  $document_root/app.php; # Always app.php is executed.
+		fastcgi_param	SERVER_ADMIN	 <?php print $mail ?>;
+		include			fastcgi_params;
+	}
+	
+	# 403 Forbidden error.
+	error_page 403 <?php print $uri ?>/app.php;
+	<?php endif; ?>
+	
+	# No.3: This app location.
+	location <?php print $uri ?> {
+		if ( !-e $request_filename ) {
+			# forward to No.2.
+			rewrite (.*) <?php print $app ?> last;
+		}
+		<?php if( $uri !== '/' ): ?> 
 		# No.2: Specify a file extension, controlled NewWorld.
 		location ~ \.(php|phtml|html|css|js)$ {
-			fastcgi_pass	127.0.0.1:9000;
-			fastcgi_param	SCRIPT_FILENAME  $document_root/app.php; # Always app.php is executed.
-			fastcgi_param	SERVER_ADMIN	 <?php print $mail ?>;
-			include			fastcgi_params;
+			fastcgi_pass   127.0.0.1:9000;
+			fastcgi_param  SCRIPT_FILENAME  $document_root<?php print $uri ?>app.php; # Always app.php is executed.
+			fastcgi_param  SERVER_ADMIN     tomoaki.nagahara@gmail.com;
+			include  fastcgi_params;
 		}
 		
 		# 403 Forbidden error.
-		error_page 403 <?php print $uri ?>/app.php;
-		<?php endif; ?>
-		
-		# No.3: This app location.
-		location <?php print $uri ?> {
-			if ( !-e $request_filename ) {
-				# forward to No.2.
-				rewrite (.*) <?php print $app ?> last;
-			}
-			<?php if( $uri !== '/' ): ?> 
-			# No.2: Specify a file extension, controlled NewWorld.
-			location ~ \.(php|phtml|html|css|js)$ {
-				fastcgi_pass   127.0.0.1:9000;
-				fastcgi_param  SCRIPT_FILENAME  $document_root<?php print $uri ?>app.php; # Always app.php is executed.
-				fastcgi_param  SERVER_ADMIN     tomoaki.nagahara@gmail.com;
-				include  fastcgi_params;
-			}
-			
-			# 403 Forbidden error.
-			error_page 403 <?php print $uri ?>app.php;
-			<?php endif; ?> 
-		}
-		
-		# Deny access to apache setting file.
-		location ~ /\.ht {
-			deny all;
-		}
+		error_page 403 <?php print $uri ?>app.php;
+		<?php endif; ?> 
 	}
+	
+	# Deny access to apache setting file.
+	location ~ /\.ht {
+		deny all;
+	}
+}
 </pre>
 <hr/>
