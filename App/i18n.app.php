@@ -58,7 +58,7 @@ class App_i18n extends App
 			}else if(preg_match('|\.[a-z]{2,4}$|i',$request_uri)){
 				//	js, css, html
 			}else{
-				$this->SetDispatchFlag(true);
+			//	$this->SetDispatchFlag(true);
 				$this->Location('/');
 			}
 			

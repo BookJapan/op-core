@@ -65,9 +65,9 @@ abstract class NewWorld5 extends OnePiece5
 	function __destruct()
 	{
 		//  Called dispatch?
-		if(!$this->_isDispatch){
+		if(!$this->_isDispatch and strlen($this->_content)){
 			$class_name = get_class($this);
-			$message = "$class_name has not dispatched. Please call \$app->Dispatch();'";
+			$message = "$class_name has not dispatched. Please call \$app->Dispatch();";
 			$this->StackError($message);
 		}
 		
