@@ -386,9 +386,11 @@ class App extends NewWorld5
 		if(!Toolbox::isLocalhost() and (!$admin_ip or !$admin_email) ){
 			$this->SetLayoutName(false);
 			$path = $this->ConvertPath('op:/Template/introduction-app.phtml');
-			$route['real_path'] = $path;
-			$route['extension'] = 'phtml';
-			$route['debug'] = __FILE__.', '.__METHOD__;
+			$route['real_path']	 = $path;
+			$route['extension']	 = 'phtml';
+			$route['mime']		 = Router::CalcMime('phtml');
+			$route['debug'][] = 'App have created a route table.';
+			$route['debug'][] = __FILE__.', '.__METHOD__.', '.__LINE__;
 		}
 		
 		parent::Dispatch($route);
