@@ -25,6 +25,9 @@ class App_i18n extends App
 	function Dispatch($route=null)
 	{
 		if(!$route){
+			//	Set default user lang.
+			$this->i18n()->SetLang('en');
+			
 			//	init
 			list($request_uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
 			$rewrite_base = rtrim($_SERVER['REWRITE_BASE'],'/').'/';
