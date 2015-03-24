@@ -25,41 +25,49 @@ class App_i18n extends App
 	function Dispatch($route=null)
 	{
 		if(!$route){
-			$request_uri = $_SERVER['REQUEST_URI'];
-			if(!strpos($request_uri, '?')){
-				$request_uri .= '?';
-			}
-			list($request_uri,$query) = explode('?',$request_uri);
+			//	init
+			list($request_uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
 			$rewrite_base = rtrim($_SERVER['REWRITE_BASE'],'/').'/';
+			
+			//	Get App root url
 			$patt = preg_quote($rewrite_base);
 			$path = explode('/', preg_replace("|^{$patt}|", '', $request_uri));
 			
-			//	
+			//	Get language list
 			if(!$list = $this->i18n()->GetLanguageList()){
 				throw new OpException("Empty language list from api.uqunie.com");
 			}
 			
-			//	
-			if( $io = array_key_exists($path[0], $list) ){
-				//	get lang
-				$lang = array_shift($path);
-				
-				//	set lang for i18n
-				$this->i18n()->SetLang($lang);
-				
-				//	set lang for App
-				$this->SetLang($lang);
-				
-				//	rebuild request uri
-				$request_uri = '/'.join('/',$path);
-				if($query){
-					$request_uri .= '?'.$query;
-				} 
-			}else if(preg_match('|\.[a-z]{2,4}$|i',$request_uri)){
-				//	js, css, html
+			//	Get extension
+			if( preg_match('|\.([0-9a-z]{2,4})$|i',$request_uri,$match) ){
+				$extension = $match[1];
 			}else{
-			//	$this->SetDispatchFlag(true);
-				$this->Location('/');
+				$extension = null;
+			}
+			
+			//	Get lang.
+			$lang = array_shift($path);
+			
+			//	rebuild request uri
+			$request_uri = '/'.join('/',$path);
+			if($query){
+				$request_uri .= '?'.$query;
+			}
+			
+			switch(strtolower($extension)){
+				case '':
+				case 'js':
+				case 'css':
+				case 'html':
+					//	Check lang.
+					$lang = array_key_exists($lang,$list) ? $lang: 'en';
+					
+					//	Set lang for i18n
+					$this->i18n()->SetLang($lang);
+					break;
+				default:
+					header("Location: $request_uri");
+					exit;
 			}
 			
 			//	Get route infomation.
@@ -84,28 +92,23 @@ class App_i18n extends App
 		if( $domain ){
 			$domain = Toolbox::GetDomain(array('scheme'=>true));
 		}
+		
 		//	standard
 		$app_root = parent::ConvertURL($meta,false);
+		
 		//	remove rewrite base
 		$app_root = preg_replace("|^{$_SERVER['REWRITE_BASE']}|",'/',$app_root);
+		
 		//	get i18n's set language code
-		$i18n = OnePiece5::i18n();
-		if(!$lang = $i18n->GetLang()){
+		if(!$lang = OnePiece5::i18n()->GetLang()){
 			$lang = 'en';
 		}
+		
 		//	build url by document root
 		$url = $_SERVER['REWRITE_BASE'].$lang.$app_root;
+		
 		//	return result
 		return $domain ? $domain.$url: $url;
 	}
 	
-	function En($string)
-	{
-		return $this->i18n()->En($string);
-	}
-	
-	function Ja($string)
-	{
-		return $this->i18n()->Ja($string);	
-	}
 }

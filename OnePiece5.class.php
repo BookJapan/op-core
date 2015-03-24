@@ -1222,7 +1222,8 @@ class OnePiece5
 	/**
 	 * Convert to browser url from meta-path. (base is document root.)
 	 * 
-	 * @param string $path
+	 * @param  string  $path
+	 * @param  boolean $domain is Deprecated.
 	 * @return string
 	 */
 	static function ConvertURL( $meta, $domain=false )
