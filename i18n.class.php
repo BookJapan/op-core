@@ -61,6 +61,8 @@ class i18n extends OnePiece5
 		
 		if( $this->_use_database ){
 			$this->_debug->hit->database = 0;
+			$this->_debug->hit->insert->true = 0;
+			$this->_debug->hit->insert->false = 0;
 		}
 		
 		$this->_debug->hit->internet	 = 0;
@@ -165,6 +167,15 @@ class i18n extends OnePiece5
 	{
 		$st = microtime(true);
 		
+		//	Cache
+		if( $expire === false ){
+			//	Does not fetch cache.
+		}else if( $json = $this->Cache()->Get($url) ){
+			//	Return cache.
+			return $json;
+		}
+		
+		//	Set timeout time.
 		$conf['http']['timeout'] = Toolbox::isLocalhost() ? 5: 10;
 		$context = stream_context_create($conf);
 		
@@ -197,9 +208,14 @@ class i18n extends OnePiece5
 		//	E_WARNING
 		ini_set('display_errors',true);
 		
+		//	Decode to json.
 		if(!$json = json_decode($body,true)){
 			return false;
 		}
+		
+		//	Save to cache.
+		if(!$expire){ $expire = 60*60*24*30; }
+		$this->Cache()->Set($url,$json,$expire);
 		
 		return isset($json) ? $json: false;
 	}
@@ -404,7 +420,12 @@ class i18n extends OnePiece5
 		
 		//	Save database
 		if( $this->_use_database and $translate ){
-			$this->Insert( $text, $from, $to, $translate );
+			$io = $this->Insert( $text, $from, $to, $translate );
+			if( $io ){
+				$this->_debug->hit->insert->true++;
+			}else{
+				$this->_debug->hit->insert->false++;
+			}
 		}
 		
 		//	Case of does not fetch.
