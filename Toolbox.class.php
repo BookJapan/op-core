@@ -483,7 +483,8 @@ class Toolbox
 		
 		*/
 
-		$mime = __LINE__;
+		
+		$mime = Env::Get('mime');
 		
 		//	Route table base.
 		if( $route = Env::Get('route') ){
@@ -491,18 +492,7 @@ class Toolbox
 		}else{
 			list($uri) = explode('?', $_SERVER['REQUEST_URI'].'?');
 			if( preg_match('|\.([a-z0-9]+)$|i',$uri,$match) ){
-				switch(strtolower($match[1])){
-					case 'css':
-						$mime = 'text/css';
-						break;
-					case 'js':
-						$mime = 'text/javascript';
-						break;
-					default:
-						$mime = __LINE__;
-				}
-			}else{
-				$mime = __LINE__;
+				$mime = Router::CalcMime($match[1]);
 			}
 		}
 		
