@@ -627,6 +627,12 @@ class Toolbox
 	
 	static function ConvertURL($url)
 	{
+		//	OP Root
+		if( preg_match('|^op:/|i',$url) ){
+			OnePiece5::StackError("Does not convert to url at OP-Root.");
+			return null;
+		}
+		
 		//	Document root
 		if( $url{0} === '/' ){
 			return $url;
