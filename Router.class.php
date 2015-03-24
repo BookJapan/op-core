@@ -92,6 +92,27 @@ class Router extends OnePiece5
 		
 		return $route;
 	}
+
+	/**
+	 * Calculate route to end-point file.
+	 *
+	 * @param  string $extension
+	 * @return string $mime
+	 */
+	static function CalcMime($extension)
+	{
+		switch( strtolower($extension) ){
+			case 'js':
+				$mime = 'text/javascript';
+				break;
+			case 'css':
+				$mime = 'text/css';
+				break;
+			default:
+				$mime = 'text/html';
+		}
+		return $mime;
+	}
 	
 	/**
 	 * Build base route table.
@@ -112,18 +133,6 @@ class Router extends OnePiece5
 		}else{
 			$file_name = null;
 			$extension = null;
-		}
-		
-		//	mime
-		switch( $extension ){
-			case 'js':
-				$mime = 'text/javascript';
-				break;
-			case 'css':
-				$mime = 'text/css';
-				break;
-			default:
-				$mime = 'text/html';
 		}
 		
 		//	Check alias.
@@ -183,7 +192,7 @@ class Router extends OnePiece5
 		$route['extension']	 = $extension;
 		$route['arguments']	 = $arguments;
 		$route['smart_url']	 = $smart_url;
-		$route['mime']		 = $mime;
+		$route['mime']		 = self::CalcMime($extension);
 		
 		//	SET REWRITE_BASE
 		$_SERVER['REWRITE_BASE'] = rtrim($rewrite_base,'/').'/';
