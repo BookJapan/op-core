@@ -74,6 +74,34 @@ class Selftest extends OnePiece5
 	 */
 	private $_log;
 	
+	/**
+	 * Stack class name.
+	 * 
+	 * @var array
+	 */
+	private $_registration = array();
+	
+	/**
+	 * Stack self-test config.
+	 * 
+	 * @var array
+	 */
+	private $_selftest_config = array();
+	
+	/**
+	 * Carpenter
+	 *
+	 * @return Carpenter
+	 */
+	function Carpenter()
+	{
+		return $this->Singleton('Carpenter');
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see OnePiece5::Init()
+	 */
 	function Init()
 	{
 		parent::Init();
@@ -82,6 +110,9 @@ class Selftest extends OnePiece5
 		}
 	}
 	
+	/**
+	 * Init diagnosis Config.
+	 */
 	function InitDiagnosis()
 	{
 		$this->_is_diagnosis = true;
@@ -102,77 +133,28 @@ class Selftest extends OnePiece5
 		$this->_blueprint->pkey->drop	 = array();
 		$this->_blueprint->pkey->add	 = array();
 		$this->_blueprint->ai = array();
-		
-		//	Init self-test config.
-		$this->ClearSelftestConfig();
-		foreach( $this->_registration as $model_name ){
-			//	Get model instance.
-			$model = $this->Model($model_name);
-			//	Check model exists.
-			if(!class_exists("Model_{$model_name}")){
-				continue;
-			}
-			//	Get class name.
-			$class_name = get_class($model);
-			//	Get self-test config.
-			$config = $model->Config()->selftest();
-			//	Set self-test config.
-			$this->SetSelftestConfig($class_name, $config);
-		}
 	}
 	
 	/**
-	 * Carpenter
-	 * 
-	 * @return Carpenter
+	 * Set root user name and password.
+	 *
+	 * @param string $user
+	 * @param string $password
 	 */
-	function Carpenter()
-	{
-		return $this->Singleton('Carpenter');
-	}
-	
 	function Root($user, $password)
 	{
 		$this->_root_user     = $user;
 		$this->_root_password = $password;
 	}
 	
-	private $_registration = array();
-	private $_selftest_config = array();
-	
-	function Registration($model_name)
+	/**
+	 * Registaration class name.
+	 *
+	 * @param string $name
+	 */
+	function Registration($label, Config $config)
 	{
-		if( is_string($model_name) ){
-			$args[] = $model_name;
-		}else if( is_array($model_name) ){
-			$args = $model_name;
-		}else{
-			$type = gettype($model_name);
-			$this->StackError("Does not support this type. ($type)", 'en');
-		}
-		
-		foreach($args as $model_name){
-			$this->_registration[md5($model_name)] = $model_name;
-		}
-	}
-	
-	function SetSelftestConfig( $class_name, Config $config )
-	{
-		if( isset($this->_selftest_config[$class_name]) ){
-			$this->StackError("This class's self-test config is already exists. ($class_name)");
-			return;
-		}
-		$this->_selftest_config[$class_name] = clone($config);
-	}
-	
-	function GetSelftestConfig()
-	{
-		return $this->_selftest_config;
-	}
-	
-	function ClearSelftestConfig()
-	{
-		$this->_selftest_config = null;
+		$this->_selftest_config[$label] = $config;
 	}
 	
 	function GetBlueprint()
@@ -195,12 +177,20 @@ class Selftest extends OnePiece5
 		return $this->_is_diagnosis;
 	}
 	
-	function Diagnose($root=null)
+	function Diagnose($password=null, $user='root')
 	{
+		//	Set Root user's password.
+		if( $password ){
+			$this->Root($user, $password);
+		}
+		
+		//	Init diagnosis.
 		$this->InitDiagnosis();
 		
-		//	each per config.
-		foreach( $this->GetSelftestConfig() as $class_name => $origin ){
+		//	Each per config.
+		foreach( $this->_selftest_config as $class_name => $origin ){
+			$this->mark("$class_name",__CLASS__);
+			
 			$config = $origin->Copy();
 			
 			//	Set config. (Is this required?)

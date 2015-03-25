@@ -403,8 +403,18 @@ class App extends NewWorld5
 	 */
 	function SetSelftestModelName($model_name)
 	{
+		$args = $this->GetSelftestModelName();
+		
+		if(!$args){
+			$args = array();
+		}
+		
 		if( is_string($model_name)){
-			$args[] = $model_name;
+			if( strpos($model_name,',') ){
+				$args = array_merge($args,explode(',', str_replace(' ','',$model_name)));
+			}else{
+				$args[] = $model_name;
+			}
 		}else{
 			$args = $model_name;
 		}
@@ -418,6 +428,7 @@ class App extends NewWorld5
 	 */
 	function GetSelftestModelName()
 	{
-		return $this->GetEnv('selftest-model-name');
+		$list = $this->GetEnv('selftest-model-name');
+		return $list ? $list: array();
 	}
 }
