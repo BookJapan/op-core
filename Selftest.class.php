@@ -376,13 +376,25 @@ class Selftest extends OnePiece5
 		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
+		//$this->D($struct);
 		
 		//	Check each column(exists).
 		$columns = array();
 		foreach($table->column as $column_name => $column){
-		//	$column = clone($column);
 			$column = $column->Copy();
+			
+			//	Use column diff.
 			$columns[$column_name] = true;
+			
+			//
+			if( $struct[$column_name]['extra'] === 'auto_increment' ){
+				$this->_diagnosis->AI->$db_name->$table_name->$column_name = true;
+			}
+			
+			//	
+			if( $struct[$column_name]['key'] === 'PRI' ){
+				$this->_diagnosis->PRI->$db_name->$table_name->$column_name = true;
+			}
 			
 			//	Compensate name.
 			$table->name  = $table_name;
@@ -414,8 +426,7 @@ class Selftest extends OnePiece5
 		}
 		
 		//	This column is not used.
-		$temp = array_diff_key( $struct, $columns );
-		foreach($temp as $column_name => $column){
+		foreach(array_diff_key($struct,$columns) as $column_name => $column){
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name = null;
 		}
 	}
@@ -574,22 +585,40 @@ class Selftest extends OnePiece5
 		
 		foreach( $this->_diagnosis->pkey as $db_name => $table ){
 			foreach( $table as $table_name => $column ){
+				//	Convert to Array from Config. 
 				$pkeys = Toolbox::toArray($column);
+				
+				//	Check issue.
 				if(!in_array(false, $pkeys)){
 					continue;
 				}
 				
-				//	Will add pkey in auto increment.  
-				if( empty($this->_diagnosis->ai->$db_name->$table_name) ){
-					if( in_array(true, $pkeys, true) ){
-						//	Drop existing PKEY.
-						$this->WritePKEY($db_name, $table_name, null, 'drop');
-					}
-					
-					//	Build primary key.
-					$pkeys = array_merge(array_keys($pkeys,true), array_keys($pkeys,false,true));
-					$this->WritePKEY($db_name, $table_name, $pkeys,'add');
+				//	drop flag
+				$drop = false;
+				
+				//	Will drop pkey if in auto increment.  
+				if( isset($this->_diagnosis->ai->$db_name->$table_name) ){
+					$drop = true;
 				}
+
+				//	Drop existing PKEY.
+				if( in_array(true, $pkeys, true) ){
+					$drop = true;
+				}
+				
+				//	Current diff
+				if( isset($this->_diagnosis->PRI->$db_name->$table_name) ){
+					$drop = true;
+				}
+				
+				if( $drop ){
+				//	$this->WriteColumn($db_name, $table_name, $column, 'modify');
+					$this->WritePKEY($db_name, $table_name, null, 'drop');
+				}
+				
+				//	Build primary key.
+				$pkeys = array_merge(array_keys($pkeys,true), array_keys($pkeys,false,true));
+				$this->WritePKEY($db_name, $table_name, $pkeys,'add');
 			}
 		}
 	}
@@ -720,6 +749,8 @@ class Selftest extends OnePiece5
 	 */
 	function WriteColumn($database_name, $table_name, $column, $acmd)
 	{
+		$column = $column->Copy();
+		
 		if( $acmd === 'change' ){
 			$column->rename = $column->name;
 			$column->name = $column->renamed;
@@ -736,7 +767,6 @@ class Selftest extends OnePiece5
 		$alter = new Config();
 		$alter->database = $database_name;
 		$alter->table	 = $table_name;
-	//	$alter->column->$acmd->{(string)$column_name} = clone($column);
 		$alter->column->$acmd->{(string)$column_name} = $column->Copy();
 		
 		//	Stack create table config.
@@ -878,7 +908,7 @@ class Poneglyph extends OnePiece5
 		print "<ol>";
 		foreach( $diagnosis as $user => $dsn ){
 			
-			if( $user === 'ai' or $user === 'pkey' ){
+			if( $user === 'ai' or $user === 'pkey' or $user === 'PRI' or $user === 'AI' ){
 				continue;
 			}
 			
