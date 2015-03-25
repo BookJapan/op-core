@@ -368,7 +368,7 @@ abstract class NewWorld5 extends OnePiece5
 		}else{
 			$temp = explode('?',$_SERVER['REQUEST_URI']);
 			if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
-				$this->mark("Location is Infinite loop. ($url)");
+				$this->mark("![.red[Location is Infinite loop. ($url)]]");
 				return false;
 			}
 		}
