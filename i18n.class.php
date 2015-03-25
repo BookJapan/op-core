@@ -55,6 +55,8 @@ class i18n extends OnePiece5
 		
 		$this->_debug = new Config();
 		
+		$this->_debug->skip = 0;
+		
 		if( $this->_use_memcache ){
 			$this->_debug->hit->memcache = 0;
 		}
@@ -67,11 +69,16 @@ class i18n extends OnePiece5
 		
 		$this->_debug->hit->internet	 = 0;
 		$this->_debug->hit->disconnect	 = 0;
+		
+		$this->_debug->text = array();
 	}
 	
 	function Debug()
 	{
-		$this->D($this->_debug);
+		if( $this->Admin() ){
+			$this->D($this->_debug);
+			echo "<hr/>";
+		}
 	}
 	
 	function SetProp( $key, $var )
@@ -322,7 +329,11 @@ class i18n extends OnePiece5
 		}
 		
 		//	Translate
-		$text = $this->_Get($text, $from, $to);
+		if( $from === $to ){
+			$this->_debug->skip++;
+		}else{
+			$text = $this->_Get($text, $from, $to);
+		}
 		
 		//	Word recovery from pool.
 		foreach($pool as $key => $var){
@@ -337,6 +348,14 @@ class i18n extends OnePiece5
 	{
 		//	Connection to cloud.
 		static $_connection = true;
+		
+		//	Stack source text.
+		$this->_debug->text[] = "{$text}, from={$from}, to={$to}";
+		
+		//	Cloud connection.
+		if(!$_connection){
+			return $text;
+		}
 		
 		//	Get locale. (ja-JP, en-US, en-UK, zh-CN, zh-TW, zh-HK )
 		if(!$to){
@@ -386,12 +405,6 @@ class i18n extends OnePiece5
 				//	return result.
 				return $translate;
 			}
-		}
-		
-		//	Cloud connection.
-		if(!$_connection){
-			$this->_debug->hit->disconnect++;
-			return $text;
 		}
 		
 		//	Get translate from API
