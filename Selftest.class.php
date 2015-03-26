@@ -813,8 +813,11 @@ class Selftest extends OnePiece5
 	
 	function WriteAI($db_name, $table_name, $column)
 	{
-		//	Supplement.
+		//	Get column name.
 		$column_name = $column->name;
+
+		//	Supplement.
+	//	$column->pkey = false;
 		unset($column->name);
 		unset($column->renamed);
 		

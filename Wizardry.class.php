@@ -59,6 +59,12 @@ class Wizardry extends OnePiece5
 		$form_name = $this->Config()->form_name();
 		return $this->Form()->GetInputValue('password', $form_name);
 	}
+	
+	function Clear()
+	{
+		$form_name = $this->Config()->form_name();
+		return $this->Form()->Clear($form_name);
+	}
 }
 
 class Config_Wizardry extends OnePiece5
