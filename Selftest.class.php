@@ -188,13 +188,12 @@ class Selftest extends OnePiece5
 		$this->InitDiagnosis();
 		
 		//	Each per config.
-		foreach( $this->_selftest_config as $class_name => $origin ){
-			$this->mark("$class_name",__CLASS__);
-			
+		foreach( $this->_selftest_config as $label => $origin ){
+			//	Clone of nesting property.
 			$config = $origin->Copy();
 			
 			//	Set config. (Is this required?)
-			$this->_blueprint->config->$class_name = Toolbox::toObject($config);
+			$this->_blueprint->config->$label = Toolbox::toObject($config);
 			
 			//	Set root and password.
 			if( $this->_root_user ){
@@ -388,7 +387,8 @@ class Selftest extends OnePiece5
 			
 			//
 			if( $struct[$column_name]['extra'] === 'auto_increment' ){
-				$this->_diagnosis->AI->$db_name->$table_name->$column_name = true;
+				$column->name = $column_name;
+				$this->_diagnosis->AI->$db_name->$table_name = $column;
 			}
 			
 			//	
@@ -563,7 +563,7 @@ class Selftest extends OnePiece5
 			//	Diagnosis
 			$this->_is_diagnosis = false;
 			
-			//	CheckPKey
+			//	Primary key is skip.
 			if( $key === 'PRI' ){ continue; }
 			
 			//	Add, Change, Drop
@@ -593,26 +593,24 @@ class Selftest extends OnePiece5
 					continue;
 				}
 				
-				//	drop flag
+				//	Drop flag
 				$drop = false;
 				
 				//	Will drop pkey if in auto increment.  
-				if( isset($this->_diagnosis->ai->$db_name->$table_name) ){
+				if( isset($this->_diagnosis->AI->$db_name->$table_name) ){
 					$drop = true;
+					//	Remove auto increment if will drop pkey.
+					$column = $this->_diagnosis->AI->$db_name->$table_name;
+					$this->WriteColumn($db_name, $table_name, $column, 'modify');
 				}
-
-				//	Drop existing PKEY.
+				
+				//	In case of existing pkey.
 				if( in_array(true, $pkeys, true) ){
 					$drop = true;
 				}
 				
-				//	Current diff
-				if( isset($this->_diagnosis->PRI->$db_name->$table_name) ){
-					$drop = true;
-				}
-				
+				//	Drop existing pkey.
 				if( $drop ){
-				//	$this->WriteColumn($db_name, $table_name, $column, 'modify');
 					$this->WritePKEY($db_name, $table_name, null, 'drop');
 				}
 				
