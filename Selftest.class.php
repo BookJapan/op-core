@@ -350,12 +350,13 @@ class Selftest extends OnePiece5
 			$table->database = $db_name;
 			$table->name = $table_name;
 			
-			$this->CheckColumnEach($user, $db_name, $table);
+			//	
+			$this->CheckColumnName($user, $db_name, $table);
 			$this->CheckColumnIndex($user, $db_name, $table);
 		}
 	}
 	
-	function CheckColumnEach($user, $db_name, $table)
+	function CheckColumnName($user, $db_name, $table)
 	{
 		//	Init
 		$dsn	 = $this->PDO()->GetDSN();
@@ -368,7 +369,7 @@ class Selftest extends OnePiece5
 			return;
 		}
 		
-		//	
+		//	Only privilege
 		if(!isset($table->column)){
 			return;
 		}
@@ -404,7 +405,7 @@ class Selftest extends OnePiece5
 			if( array_key_exists($column_name, $struct) ){
 				
 				//	Check column's struct.
-				$this->CheckColumnEachStruct($user, $db_name, $table_name, $column, $struct[$column_name]);
+				$this->CheckColumnStruct($user, $db_name, $table_name, $column, $struct[$column_name]);
 				
 			}else{
 				//	Fail
@@ -431,7 +432,7 @@ class Selftest extends OnePiece5
 		}
 	}
 	
-	function CheckColumnEachStruct($user, $db_name, $table_name, $column, $struct)
+	function CheckColumnStruct($user, $db_name, $table_name, $column, $struct)
 	{
 		//	Init
 		$dsn	 = $this->PDO()->GetDSN();
@@ -444,25 +445,18 @@ class Selftest extends OnePiece5
 				case 'debug':
 				case 'name':
 				case 'index':
-				case 'pkey':
+			//	case 'pkey':
 				case 'unique':
 				case 'renamed':
-					$continue = true;
-					break;
+					continue 2;
 					
 				case 'ai':
 					$key = 'extra';
 					$var = 'auto_increment';
-					break;
-					
-				default:
-					$continue = false;
+				break;
 			}
 			
-			if( $continue ){
-				continue;
-			}
-			
+			//	Illigal key name.
 			if(!isset($struct[$key])){
 				$this->StackError("This key has not been set. \($key)\\",'en');
 				continue;
@@ -471,6 +465,22 @@ class Selftest extends OnePiece5
 			//	Save column type.
 			if( $key === 'type' ){
 				$type = $var;
+			}
+			
+			//	In case of pkey.
+			if( $key === 'pkey' ){
+				if( $type === 'varchar' ){
+					if( $length > 255 ){
+						$this->StackError("Specified key was too long. Max key length is 767 bytes. UTF-8 is use 3 byte at 1 character.",'en');
+						continue;
+					}
+				}
+				continue;
+			}
+			
+			//	In case of NULL
+			if( $key === 'null' ){
+				$var = $var ? 'YES': 'NO';
 			}
 			
 			//	Evaluation
