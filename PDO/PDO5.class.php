@@ -215,15 +215,22 @@ class PDO5 extends OnePiece5
 	
 	private function _query_error_mysql()
 	{
+		//	Get error
 		$temp = $this->pdo->errorInfo();
 		$error_id = $temp[0];
 		$error_no = $temp[1];
 		
-		if( preg_match("|'([\.-_a-z0-9]+)'@'([\.-_a-z0-9]+)'|",$temp[2],$match) ){
+		//	Get host and user
+		$patt = "|'([\.-_a-z0-9]+)'@'([\.-_a-z0-9]+)'|";
+		if( preg_match($patt,$temp[2],$match) ){
 			$user = $match[1];
 			$host = $match[2];
 		}
 		
+		//	Escape at backslash.
+		$temp[2] = preg_replace($patt, "\\ \\1@\\2 \\", $temp[2]);
+		
+		//	Branch
 		switch($error_no){
 			case 1044:
 				$message = "This user's access was deny. \\{$user}@{$host}\\";
