@@ -109,6 +109,8 @@ class Error
 		foreach($_SESSION[self::_NAME_SPACE_] as $key => $backtraces){
 			//	Generate error message.
 			$message = $backtraces['message'];
+			$message = OnePiece5::Wiki2($message);
+			$message = strip_tags($message);
 			return $message;
 		}
 	}
