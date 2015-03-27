@@ -439,13 +439,22 @@ class Selftest extends OnePiece5
 		$column_name = $column->name;
 		$join_name = $db_name.'.'.$table_name;
 		
+		//	In case of pkey.
+		if( !empty($column->pkey) or !empty($column->ai) ){
+			if( $column->type === 'varchar' ){
+				if( $column->length > 255 ){
+					$this->StackError("Primary key's length was too long. Limit 767 bytes. UTF-8 is use 3 byte at 1 character.",'en');
+				}
+			}
+		}
+		
 		//	Each check.
 		foreach($column as $key => $var){
 			switch($key){
 				case 'debug':
 				case 'name':
 				case 'index':
-			//	case 'pkey':
+				case 'pkey':
 				case 'unique':
 				case 'renamed':
 					continue 2;
@@ -465,17 +474,6 @@ class Selftest extends OnePiece5
 			//	Save column type.
 			if( $key === 'type' ){
 				$type = $var;
-			}
-			
-			//	In case of pkey.
-			if( $key === 'pkey' ){
-				if( $type === 'varchar' ){
-					if( $length > 255 ){
-						$this->StackError("Specified key was too long. Max key length is 767 bytes. UTF-8 is use 3 byte at 1 character.",'en');
-						continue;
-					}
-				}
-				continue;
 			}
 			
 			//	In case of NULL
