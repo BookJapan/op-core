@@ -486,26 +486,23 @@ class Toolbox
 		}
 		
 		if( empty($mime) ){
-			$mime = OnePiece5::GetEnv('mime');
+			$mime = Env::Get('mime');
+		}
+
+		if( empty($mime) ){
+			//	Route table base.
+			if( $route = Env::Get('route') ){
+				$mime = $route['mime'];
+			}else{
+				list($uri) = explode('?', $_SERVER['REQUEST_URI'].'?');
+				if( preg_match('|\.([a-z0-9]+)$|i',$uri,$match) ){
+					$mime = Router::CalcMime($match[1]);
+				}
+			}
 		}
 		
 		if( empty($mime) ){
 			$mime = 'text/html';
-		}
-		
-		*/
-
-		
-		$mime = Env::Get('mime');
-		
-		//	Route table base.
-		if( $route = Env::Get('route') ){
-			$mime = $route['mime'];
-		}else{
-			list($uri) = explode('?', $_SERVER['REQUEST_URI'].'?');
-			if( preg_match('|\.([a-z0-9]+)$|i',$uri,$match) ){
-				$mime = Router::CalcMime($match[1]);
-			}
 		}
 		
 		//	parse
