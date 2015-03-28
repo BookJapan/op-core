@@ -143,7 +143,7 @@ abstract class NewWorld5 extends OnePiece5
 			//	Switch
 			if( Toolbox::isHtml() ){
 				//	If content-type is html.
-				$this->_doWizard();
+			//	$this->_doWizard();
 				$this->_doLayout();
 			}else{
 				//	Case of css and js, output of content buffer.
