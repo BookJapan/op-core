@@ -431,4 +431,14 @@ class App extends NewWorld5
 		$list = $this->GetEnv('selftest-model-name');
 		return $list ? $list: array();
 	}
+	
+	/**
+	 * Init Self-test config.
+	 */
+	function InitSelftest()
+	{
+		foreach( $this->GetSelftestModelName() as $model_name ){
+			$selftest->Registration( $model_name, $this->Model($model_name)->Config()->selftest() );
+		}
+	}
 }
