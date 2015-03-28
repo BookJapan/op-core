@@ -1983,6 +1983,11 @@ class Env
 		
 		//	Output shutdown label
 		switch( $mime = Toolbox::GetMIME(true) ){
+			case 'json':
+				//	json
+				$label = null;
+				break;
+				
 			case 'plain':
 				if( Env::Get('cli') ){
 					$label = ' -- OnePiece is shutdown -- ';
@@ -1994,7 +1999,6 @@ class Env
 				
 			case 'css':
 			case 'javascript':
-			case 'json':
 			case 'csv':
 				$label = ' /* OnePiece is shutdown */ ';
 				break;
