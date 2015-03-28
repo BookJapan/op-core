@@ -251,6 +251,8 @@ class Toolbox
 	
 	static function Copy($object)
 	{
+		$this->StackError("Used checking. Is this use?");
+		
 		if( !$object ){
 			return new OnePiece5();
 		}
@@ -345,6 +347,8 @@ class Toolbox
 	
 	static function GetFileListFromDir($path='./')
 	{
+		$this->StackError("Used checking. Is this use?");
+		
 		$list = array();
 		
 		if( $dir = opendir($path) ){
@@ -370,6 +374,8 @@ class Toolbox
 	 */
 	static function GetURL($conf=array())
 	{
+		$this->StackError("Used checking. Is this use?");
+		
 		//	cache feature
 		$ckey = md5(serialize($conf));
 		static $cache;
@@ -441,6 +447,8 @@ class Toolbox
 	 */
 	static function GetDomain( $conf=array() )
 	{
+		$this->StackError("Used checking. Is this use?");
+		
 		$conf['scheme'] = isset($conf['scheme']) ? $conf['scheme']: false;
 		$conf['port']   = isset($conf['port'])   ? $conf['port']  : false;
 		$conf['path']   = isset($conf['path'])   ? $conf['path']  : false;
@@ -461,8 +469,6 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		/*
-		
 		//	Header has already been sent.
 		$_is_send = headers_sent($file,$line);
 		
