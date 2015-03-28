@@ -286,28 +286,33 @@ class Toolbox
 	}
 	
 	/**
-	 *
-	 * ex. 接続しているリモートがサーバーのアドレスと同一ネットワーク内かチェックする
-	 * self::CIDR( $_SERVER['SERVER_ADDR'], $_SERVER['REMOTE_ADDR'], 27 )
+	 * Will check whether within the same network.
+	 * 
+	 * <pre>
+	 * self::CIDR( $_SERVER['SERVER_ADDR'], $_SERVER['REMOTE_ADDR'], 27 );
+	 * </pre>
 	 *
 	 * @param  string  $ip1
 	 * @param  string  $ip2
 	 * @param  integer $prefix
 	 * @return boolean
 	 */
-	function CIDR( $ip1, $ip2, $prefix ){
-		//	maskする分をビットシフトして戻すと、末尾が等しくなる
+	function CIDR( $ip1, $ip2, $prefix )
+	{
+		$this->StackError("Used checking. Is this use?");
+		
 		$mask = 32 - $prefix;
 		$ip1 = ip2long($ip1) >> $mask << $mask;
 		$ip2 = ip2long($ip2) >> $mask << $mask;
 		return $ip1 === $ip2 ? true: false;
 	}
 	
+	/*
 	function ConvertConfigFromPath( $args )
 	{
-		
 		return $config;
 	}
+	*/
 	
 	function ConvertConfigToArray( $args )
 	{
