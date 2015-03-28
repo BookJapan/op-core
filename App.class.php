@@ -438,7 +438,7 @@ class App extends NewWorld5
 	function InitSelftest()
 	{
 		foreach( $this->GetSelftestModelName() as $model_name ){
-			$selftest->Registration( $model_name, $this->Model($model_name)->Config()->selftest() );
+			$this->selftest()->Registration( $model_name, $this->Model($model_name)->Config()->selftest() );
 		}
 	}
 }
