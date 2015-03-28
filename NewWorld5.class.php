@@ -396,11 +396,15 @@ abstract class NewWorld5 extends OnePiece5
 	function Content()
 	{
 		switch( $mime = strtolower(Toolbox::GetMIME(true)) ){
+	//	switch( $sub ){
+			//	json
+			case 'json':
+				$this->_doJson();
+				break;
+				
 			//	plain text
 			case 'csv':
 			case 'plain':
-			case 'json':
-				$this->_doJson();
 				break;
 				
 			case 'html':
@@ -496,11 +500,17 @@ abstract class NewWorld5 extends OnePiece5
 		static $init;
 		if(!$init){
 			$init = true;
-			if(!$html = Toolbox::GetRequest('html')){
-				Toolbox::SetMIME('text/plain');
+			//	In case of debug.
+			if( $html = Toolbox::GetRequest('html') ){
+				//	Debugging.
+			}else{
+				//	Change MIME.
+				Toolbox::SetMIME('text/json');
 			}
+			//	Layout will off.
 			Env::Set('layout',false);
 		}
+		//	Set json value.
 		$this->_json[$key] = $var;
 	}
 	
