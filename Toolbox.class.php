@@ -251,7 +251,7 @@ class Toolbox
 	
 	static function Copy($object)
 	{
-		$this->StackError("Used checking. Is this use?");
+		OnePiece5::StackError("Used checking. Is this use?");
 		
 		if( !$object ){
 			return new OnePiece5();
@@ -299,7 +299,7 @@ class Toolbox
 	 */
 	function CIDR( $ip1, $ip2, $prefix )
 	{
-		$this->StackError("Used checking. Is this use?");
+		OnePiece5::StackError("Used checking. Is this use?");
 		
 		$mask = 32 - $prefix;
 		$ip1 = ip2long($ip1) >> $mask << $mask;
@@ -316,7 +316,7 @@ class Toolbox
 	
 	function ConvertConfigToArray( $args )
 	{
-		$this->StackError("Used checking. Is this use?");
+		OnePiece5::StackError("Used checking. Is this use?");
 		
 		$type = gettype($args);
 		
@@ -352,7 +352,7 @@ class Toolbox
 	
 	static function GetFileListFromDir($path='./')
 	{
-		$this->StackError("Used checking. Is this use?");
+		OnePiece5::StackError("Used checking. Is this use?");
 		
 		$list = array();
 		
@@ -379,8 +379,6 @@ class Toolbox
 	 */
 	static function GetURL($conf=array())
 	{
-		$this->StackError("Used checking. Is this use?");
-		
 		//	cache feature
 		$ckey = md5(serialize($conf));
 		static $cache;
@@ -452,8 +450,6 @@ class Toolbox
 	 */
 	static function GetDomain( $conf=array() )
 	{
-		$this->StackError("Used checking. Is this use?");
-		
 		$conf['scheme'] = isset($conf['scheme']) ? $conf['scheme']: false;
 		$conf['port']   = isset($conf['port'])   ? $conf['port']  : false;
 		$conf['path']   = isset($conf['path'])   ? $conf['path']  : false;
