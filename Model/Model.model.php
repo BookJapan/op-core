@@ -54,10 +54,7 @@ abstract class Model_Model extends OnePiece5
 			
 			//  database connection
 			if(!$io = $pdo->Connect($database)){
-				//	Set selftest flag
-				$this->Wizard()->isFailed(true);
-				$error = $this->FetchError();
-				throw new OpException($error['message']);
+				throw new OpException("Connection was failed.",'en');
 			}
 		}
 		return $pdo;
