@@ -484,7 +484,7 @@ class Toolbox
 		if( empty($mime) ){
 			$mime = Env::Get('mime');
 		}
-
+		
 		if( empty($mime) ){
 			//	Route table base.
 			if( $route = Env::Get('route') ){

@@ -92,7 +92,18 @@ class Router extends OnePiece5
 		
 		return $route;
 	}
-
+	
+	static function CalcExtension($uri)
+	{
+		list($path, $query) = explode('?',$uri.'?');
+		if( preg_match('|\.([-_a-z0-9]{2,5})$|i',$path,$match) ){
+			$extension = $match[1];
+		}else{
+			$extension = null;
+		}
+		return $extension;
+	}
+	
 	/**
 	 * Calculate route to end-point file.
 	 *
