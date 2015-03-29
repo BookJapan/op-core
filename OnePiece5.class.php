@@ -1275,8 +1275,7 @@ class OnePiece5
 		try{
 			//  name check
 			if(!$name){
-				$msg = "Model name is empty.";
-				throw new OpException($msg);
+				throw new OpException("Model name is empty.",'en');
 			}
 			
 			//	hogeHoge -> HogeHoge	//	hogeHoge -> Hogehoge
@@ -1292,7 +1291,6 @@ class OnePiece5
 			
 			//  already instanced?
 			if( isset( $_SERVER[__CLASS__]['model'][$name] ) ){
-			//	$this->mark("Singleton!! ($name)");
 				return $_SERVER[__CLASS__]['model'][$name];
 			}
 			
@@ -1308,6 +1306,8 @@ class OnePiece5
 			//  include from app's model dir
 			$model_dir = self::GetEnv('model-dir');
 			$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
+			
+			//	Execute
 			if( $io = file_exists($path) ){
 				$io = include_once($path);
 			}
@@ -1322,15 +1322,14 @@ class OnePiece5
 			
 			//  include check 
 			if(!$io){
-				$msg = "Failed to include the $name. ($path)";
-				throw new OpException($msg);
+				throw new OpException("Failed to include the $name. ($path)",'en');
 			}
 			
 			//  instance of model
-			$model_name = 'Model_'.$name;//.'_model';
-			if(!$_SERVER[__CLASS__]['model'][$name] = new $model_name ){
-				$msg = "Failed to include the $model_name. ($path)";
-				throw new OpException($msg);
+			$model_name = 'Model_'.$name;
+			
+			if(!$_SERVER[__CLASS__]['model'][$name] = new $model_name() ){
+				throw new OpException("Failed to include the $model_name. ($path)",'en');
 			}
 			
 			//  Instance is success.
