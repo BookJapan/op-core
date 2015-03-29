@@ -401,13 +401,14 @@ class App extends NewWorld5
 			//	Only HTML
 			if( $mime === 'text/html' ){
 				//	Compare
-				$a = rtrim($this->CompressPath($_SERVER['REQUEST_URI']),'/');
-				$b = rtrim($this->ConvertURL('app:/_self-test/').'/');
-				if( $a !== $b ){
-					//	Do Self-test.
+				list($uri) = explode('?',$_SERVER['REQUEST_URI'].'?');
+				$a = rtrim($this->CompressPath($uri), '/');
+				$uri = rtrim($this->ConvertURL('app:/_self-test/'), '/');
+				if(!preg_match("|^$uri|i",$_SERVER['REQUEST_URI'])){
+					//	Transfer self-test page.
 					$this->InitSelftest();
 					if(!$this->Doctor()->Diagnose()){
-					//	$this->Location('app:/_self-test');
+						$this->Location('app:/_self-test');
 					}
 				}
 			}
