@@ -383,6 +383,7 @@ class App extends NewWorld5
 		$admin_ip	 = Env::Get('admin-ip');
 		$admin_email = Env::Get('admin-mail');
 		
+		//	Checking Administrators settings.
 		if(!Toolbox::isLocalhost() and (!$admin_ip or !$admin_email) ){
 			$this->SetLayoutName(false);
 			$path = $this->ConvertPath('op:/Template/introduction-app.phtml');
@@ -391,6 +392,25 @@ class App extends NewWorld5
 			$route['mime']		 = Router::CalcMime('phtml');
 			$route['debug'][] = 'App have created a route table.';
 			$route['debug'][] = __FILE__.', '.__METHOD__.', '.__LINE__;
+		}else
+		
+		if( $this->Admin() ){
+			$ext  = Router::CalcExtension($_SERVER['REQUEST_URI']);
+			$mime = Router::CalcMime($ext);
+			
+			//	Only HTML
+			if( $mime === 'text/html' ){
+				//	Compare
+				$a = rtrim($this->CompressPath($_SERVER['REQUEST_URI']),'/');
+				$b = rtrim($this->ConvertURL('app:/_self-test/').'/');
+				if( $a !== $b ){
+					//	Do Self-test.
+					$this->InitSelftest();
+					if(!$this->Selftest()->Diagnose()){
+					//	$this->Location('app:/_self-test');
+					}
+				}
+			}
 		}
 		
 		parent::Dispatch($route);
