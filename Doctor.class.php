@@ -479,20 +479,19 @@ class Doctor extends OnePiece5
 				continue;
 			}
 			
-			//	Save column type.
-			if( $key === 'type' ){
-				$type = $var;
-			}
-			
 			//	In case of NULL
 			if( $key === 'null' ){
 				$var = $var ? 'YES': 'NO';
 			}
 			
 			//	Evaluation
-			if( ($type === 'enum' or $type === 'set') and $key === 'length' ){
-				foreach(explode(',',$var) as $temp){
-					$arr1[] = trim($temp);
+			if( ($column->type === 'enum' or $column->type === 'set') and $key === 'length' ){
+				if( is_string($var) ){
+					foreach(explode(',',$var) as $temp){
+						$arr1[] = trim($temp);
+					}
+				}else{
+					$arr1 = Toolbox::toArray($var);
 				}
 				foreach(explode(',',$struct[$key]) as $temp){
 					$arr2[] = trim($temp,"'");
