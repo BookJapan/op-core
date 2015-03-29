@@ -154,7 +154,15 @@ class Doctor extends OnePiece5
 	 */
 	function Registration($label, Config $config)
 	{
-		$this->_selftest_config[$label] = $config;
+		$config = Toolbox::toConfig($config);
+		if( empty($config->database->name) ){
+			if( empty($config->database->database) ){
+				$this->StackError("Empty database name.");
+				return;
+			}
+			$config->database->name = $config->database->database;
+		}
+		$this->_selftest_config[$label] = $config->Copy();
 	}
 	
 	function GetBlueprint()
