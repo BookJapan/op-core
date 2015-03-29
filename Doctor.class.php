@@ -1,8 +1,8 @@
 <?php
 /**
- * Selftest.class.php
+ * Doctor.class.php
  * 
- * @creation 2014-09-16
+ * @creation  2014-09-16
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -10,15 +10,15 @@
  */
 
 /**
- * Selftest
+ * Doctor
  * 
- * @creation 2014-09-16
+ * @creation  2014-09-16
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2014 (C) Tomoaki Nagahara All right reserved.
  */
-class Selftest extends OnePiece5
+class Doctor extends OnePiece5
 {
 	/**
 	 * 
@@ -89,13 +89,13 @@ class Selftest extends OnePiece5
 	private $_selftest_config = array();
 	
 	/**
-	 * Carpenter
+	 * Operation
 	 *
-	 * @return Carpenter
+	 * @return DoctorX
 	 */
-	function Carpenter()
+	function Operation()
 	{
-		return $this->Singleton('Carpenter');
+		return $this->Singleton('DoctorX');
 	}
 	
 	/**

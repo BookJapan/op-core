@@ -406,7 +406,7 @@ class App extends NewWorld5
 				if( $a !== $b ){
 					//	Do Self-test.
 					$this->InitSelftest();
-					if(!$this->Selftest()->Diagnose()){
+					if(!$this->Doctor()->Diagnose()){
 					//	$this->Location('app:/_self-test');
 					}
 				}
@@ -458,7 +458,28 @@ class App extends NewWorld5
 	function InitSelftest()
 	{
 		foreach( $this->GetSelftestModelName() as $model_name ){
-			$this->selftest()->Registration( $model_name, $this->Model($model_name)->Config()->selftest() );
+			$model = $this->Model($model_name);
+			
+			$class_name = get_class($model);
+			if( $class_name === 'OnePiece5'){
+				$this->StackError("Failed instance. ($model_name)",'en');
+				continue;
+			}
+			
+			if(!method_exists($model,'Config') ){
+				$this->StackError("Does not have Config method. ($model_name)",'en');
+				continue;
+			}
+			
+			$config = $model->Config();
+			if(!method_exists($config,'selftest') ){
+				$class_name = get_class($config);
+				$this->StackError("Does not have selftest method. ($class_name)",'en');
+				continue;
+			}
+			
+			$data = $config->selftest();
+			$this->Doctor()->Registration( $model_name, $data );
 		}
 	}
 }

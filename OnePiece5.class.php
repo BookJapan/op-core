@@ -1535,13 +1535,13 @@ class OnePiece5
 	}
 	
 	/**
-	 * Selftest
+	 * Doctor
 	 * 
-	 * @return Selftest
+	 * @return Doctor
 	 */
-	function Selftest()
+	function Doctor()
 	{
-		return $this->Singleton('Selftest');
+		return $this->Singleton('Doctor');
 	}
 	
 	/**

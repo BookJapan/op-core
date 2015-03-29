@@ -1,6 +1,6 @@
 <?php
 /**
- * Carpenter.class.php
+ * DoctorX.class.php
  * 
  * Creation: 2015-03-02
  * 
@@ -11,7 +11,7 @@
  */
 
 /**
- * Carpenter
+ * DoctorX
  * 
  * Creation: 2015-03-02
  *
@@ -20,7 +20,7 @@
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */
-class Carpenter extends OnePiece5
+class DoctorX extends OnePiece5
 {
 	/**
 	 * Error message.
@@ -87,7 +87,7 @@ class Carpenter extends OnePiece5
 	
 	function PrintLog()
 	{
-		$this->p("![.bold[Display Carpenter's build log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		$this->p("![.bold[Display Operation build log:]] ![.gray .small[".$this->GetCallerLine()."]]");
 		
 		if(!$this->_log){
 			$this->p("![ margin-left:0.6em .gray [Nothing.]]");
@@ -114,7 +114,7 @@ class Carpenter extends OnePiece5
 	
 	function PrintError()
 	{
-		$this->p("![.bold[Display Carpenter's error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		$this->p("![.bold[Display Operation error log:]] ![.gray .small[".$this->GetCallerLine()."]]");
 		
 		if( empty($this->_error) ){
 			$this->p("![margin:0.7em .gray[Nothing]]");
