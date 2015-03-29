@@ -73,7 +73,7 @@ abstract class Model_Model extends OnePiece5
  */
 abstract class Config_Model extends OnePiece5
 {
-	function _database( $user_name=null )
+	function __database()
 	{
 		$database = new Config();
 		$database->driver	 = 'mysql';
@@ -81,17 +81,17 @@ abstract class Config_Model extends OnePiece5
 		$database->port		 = '3306';
 		$database->name		 = 'onepiece';
 		$database->charset	 = 'utf8';
-		$database->user		 = $user_name ? $user_name: 'op_mdl_model';
-		$database->password	 = $this->_password($database);
+		$database->user		 = 'op_mdl_model';
+		$database->password	 = $this->__password($database);
 		return $database;
 	}
 	
-	function _password($database)
+	function __password($database)
 	{
 		return md5($_SERVER['SERVER_ADDR'].', '.$database->name.', '.$database->user);
 	}
 	
-	function _select()
+	function __select()
 	{
 		$config = new Config();
 		$config->where->deleted = null;
@@ -100,14 +100,14 @@ abstract class Config_Model extends OnePiece5
 		return $config;
 	}
 	
-	function _insert()
+	function __insert()
 	{
 		$config = new Config();
 		$config->set->created = gmdate('Y-m-d H:i:s');
 		return $config;
 	}
 	
-	function _update()
+	function __update()
 	{
 		$config = new Config();
 		$config->set->updated = gmdate('Y-m-d H:i:s');
@@ -115,7 +115,7 @@ abstract class Config_Model extends OnePiece5
 		return $config;
 	}
 	
-	function _delete()
+	function __delete()
 	{
 		$config = new Config();
 		$config->set->deleted = gmdate('Y-m-d H:i:s');
