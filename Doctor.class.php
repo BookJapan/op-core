@@ -242,7 +242,12 @@ class Doctor extends OnePiece5
 		$database = $config->database->Copy();
 		
 		//	Connection
-		$io	 = $this->PDO()->Connect($database);
+		if(!$io = $this->PDO()->Connect($database) ){
+			$error = $this->FetchError();
+		//	$this->D($error);
+			return;
+		}
+		
 		$dsn = $this->PDO()->GetDSN();
 		$user = $database->user;
 		
@@ -537,6 +542,7 @@ class Doctor extends OnePiece5
 		//	Check each column.
 		foreach($table->column as $column_name => $column){
 			if( empty($this->_diagnosis->$user->$dsn->column->$join_name->$column_name) ){
+				//	Only privirage?
 				$struct[$column_name]['key'] = '';
 			}
 			
