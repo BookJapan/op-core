@@ -159,7 +159,7 @@ class Doctor extends OnePiece5
 		$config = $config->Copy();
 		
 		//	Pre process.
-		$this->_registaration();
+		$this->_registaration($config);
 		$this->_selftest_config[$label] = $config;
 	}
 	
@@ -178,9 +178,11 @@ class Doctor extends OnePiece5
 		foreach( $config->table as $table_name => $table ){
 			foreach( $table->column as $column_name => $column ){
 				if( isset($column->index) ){
-					if( $column->index == 'PRI' ){
-						unset($column->index);
-						$column->pkey = true;
+					switch( strtoupper($column->index) ){
+						case 'PRI':
+							unset($column->index);
+							$column->pkey = true;
+							break;
 					}
 				}
 			}
