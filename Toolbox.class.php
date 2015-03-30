@@ -104,6 +104,7 @@ class Toolbox
 		$obj = new Config();
 		foreach($arr as $key => $var){
 			switch($type = gettype($var)){
+				case 'object':
 				case 'array':
 					$obj->$key = Toolbox::toObjectFromArray($var);
 					break;
