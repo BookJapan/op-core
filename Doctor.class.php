@@ -8,7 +8,6 @@
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2014 (C) Tomoaki Nagahara All right reserved.
  */
-
 /**
  * Doctor
  * 
@@ -129,7 +128,6 @@ class Doctor extends OnePiece5
 		$this->_blueprint->alter	 = array();
 		$this->_blueprint->index->add	 = array();
 		$this->_blueprint->index->drop	 = array();
-		$this->_blueprint->index->change = array();
 		$this->_blueprint->pkey->drop	 = array();
 		$this->_blueprint->pkey->add	 = array();
 		$this->_blueprint->ai = array();
@@ -160,6 +158,7 @@ class Doctor extends OnePiece5
 		
 		//	Pre process.
 		$this->_registaration($config);
+	//	$this->d($config->table);
 		$this->_selftest_config[$label] = $config;
 	}
 	
@@ -177,15 +176,36 @@ class Doctor extends OnePiece5
 		//	Pkey
 		foreach( $config->table as $table_name => $table ){
 			foreach( $table->column as $column_name => $column ){
-				if( isset($column->index) ){
-					switch( strtoupper($column->index) ){
-						case 'PRI':
-							unset($column->index);
-							$column->pkey = true;
-							break;
-					}
-				}
+				$this->_key($column);
 			}
+		}
+	}
+	
+	private function _Key($column)
+	{
+		if( !empty($column->pkey) or !empty($column->ai) ){
+			$key = 'PRI';
+		}else if(!empty($column->unique)){
+			unset($column->unique);
+			$key = 'UNI';
+		}else if(!empty($column->index)){
+			unset($column->index);
+			switch( strtolower($column->index) ){
+				case 'pkey':
+					$key = 'PRI';
+					$column->pkey = true;
+					break;
+				case 'unique':
+					$key = 'UNI';
+					break;
+				default:
+					$key = 'MUL';
+			}
+		}
+		
+		//	Set key.
+		if( isset($key) ){
+			$column->key = $key;
 		}
 	}
 	
@@ -413,7 +433,7 @@ class Doctor extends OnePiece5
 		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
-		//$this->D($struct);
+	//	$this->D($struct);
 		
 		//	Check each column(exists).
 		$columns = array();
@@ -617,7 +637,8 @@ class Doctor extends OnePiece5
 			}else if(!$struct[$column_name]['key'] ){
 				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
 			}else{
-				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'change');
+				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'drop');
+				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
 			}
 		}
 	}
@@ -762,9 +783,11 @@ class Doctor extends OnePiece5
 			/*
 			unset($column->ai);
 			unset($column->pkey);
-			unset($column->index);
-			unset($column->unique);
 			*/
+			if(!empty($column->index)){
+				$this->WriteIndex($table->database, $table->name, $column_name, $column->index, 'add');
+			}
+			unset($column->index);
 		}
 		
 		if( $rename_flag ){
@@ -816,7 +839,7 @@ class Doctor extends OnePiece5
 		$this->_blueprint->alter[] = $alter;
 	}
 	
-	function WriteIndex($database_name, $table_name, $column_name, $key, $acmd)
+	function WriteIndex($database_name, $table_name, $column_name, $key, $verb)
 	{
 		switch($key){
 			case 'PRI':
@@ -838,7 +861,7 @@ class Doctor extends OnePiece5
 		$alter->type	 = $type;
 		$alter->debug = $this->GetCallerLine();
 		
-		$this->_blueprint->index->{$acmd}[] = $alter;
+		$this->_blueprint->index->{$verb}[] = $alter;
 	}
 	
 	function WritePKEY($db_name, $table_name, $column_names, $modifier)
