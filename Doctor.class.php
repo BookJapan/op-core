@@ -154,7 +154,18 @@ class Doctor extends OnePiece5
 	 */
 	function Registration($label, Config $config)
 	{
+		//	Init config.
 		$config = Toolbox::toConfig($config);
+		$config = $config->Copy();
+		
+		//	Pre process.
+		$this->_registaration();
+		$this->_selftest_config[$label] = $config;
+	}
+	
+	private function _registaration($config)
+	{
+		//	Database name.
 		if( empty($config->database->name) ){
 			if( empty($config->database->database) ){
 				$this->StackError("Empty database name.");
@@ -162,7 +173,18 @@ class Doctor extends OnePiece5
 			}
 			$config->database->name = $config->database->database;
 		}
-		$this->_selftest_config[$label] = $config->Copy();
+		
+		//	Pkey
+		foreach( $config->table as $table_name => $table ){
+			foreach( $table->column as $column_name => $column ){
+				if( isset($column->index) ){
+					if( $column->index == 'PRI' ){
+						unset($column->index);
+						$column->pkey = true;
+					}
+				}
+			}
+		}
 	}
 	
 	function GetBlueprint()
