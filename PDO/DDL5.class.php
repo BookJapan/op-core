@@ -323,7 +323,7 @@ class DDL5 extends OnePiece5
 		return $this->_GetIndex($args, 'drop');
 	}
 	
-	private function _GetIndex( $args, $acd )
+	private function _GetIndex( $args, $verb )
 	{
 		if(!empty($args['database'])){
 			$database_name = ConfigSQL::Quote($args['database'], $this->driver) . '.';
@@ -358,7 +358,7 @@ class DDL5 extends OnePiece5
 		}else{ $label = null; }
 		
 		//	Upper case
-		$acd  = strtoupper($acd);
+		$verb = strtoupper($verb);
 		$type = strtoupper($type);
 		
 		//	Check index type
@@ -376,16 +376,17 @@ class DDL5 extends OnePiece5
 		}
 		
 		//	Check Add or Drop
-		if( 'ADD' === $acd ){
+		if( 'ADD' === $verb ){
 			if( $label ){
 				$target = "$label ($column)";
 			}else{
 				$target = "($column)";
 			}
-		}else if( 'DROP' === $acd ){
+		}else if( 'DROP' === $verb ){
 			if( $type === 'PRIMARY KEY' ){
 				$target = null;
 			}else{
+				$type = 'INDEX';
 				$target = "$column";
 			}
 		}else{
@@ -407,7 +408,7 @@ class DDL5 extends OnePiece5
 		//		DROP PRIMARY KEY,
 		//		ADD  PRIMARY KEY(`id`);
 		
-		return "ALTER TABLE $database_name $table_name $acd $type $target";
+		return "ALTER TABLE $database_name $table_name $verb $type $target";
 	}
 	
 	function GetDropDatabase( $args )
