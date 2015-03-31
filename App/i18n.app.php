@@ -25,6 +25,9 @@ class App_i18n extends App
 	function Dispatch($route=null)
 	{
 		if(!$route){
+			//	Entry i18n env.
+			$this->SetEnv('app.i18n',true);
+			
 			//	Set default user lang.
 			$this->i18n()->SetLang('en');
 			
