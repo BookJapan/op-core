@@ -28,9 +28,6 @@ class App_i18n extends App
 			//	Entry i18n env.
 			$this->SetEnv('app.i18n',true);
 			
-			//	Set default user lang.
-			$this->i18n()->SetLang('en');
-			
 			//	init
 			list($request_uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
 			$rewrite_base = rtrim($_SERVER['REWRITE_BASE'],'/').'/';
@@ -56,8 +53,19 @@ class App_i18n extends App
 			
 			//	rebuild request uri
 			$request_uri = '/'.join('/',$path);
-			if($query){
+			if( $query ){
 				$request_uri .= '?'.$query;
+			}
+			
+			//	Check lang.
+			if( array_key_exists($lang,$list) ){
+				//	Set lang for i18n
+				$this->i18n()->SetLang($lang);
+			}else{
+				$lang = $this->i18n()->GetLang();
+				$url  = '/'.$lang.'/'.ltrim($request_uri,'/');
+				$this->Location($url);
+			//	$this->Mark($url);
 			}
 			
 			switch(strtolower($extension)){
@@ -65,13 +73,11 @@ class App_i18n extends App
 				case 'js':
 				case 'css':
 				case 'html':
-					//	Check lang.
-					$lang = array_key_exists($lang,$list) ? $lang: 'en';
-					
-					//	Set lang for i18n
-					$this->i18n()->SetLang($lang);
+					//	Does not transfer.
 					break;
+					
 				default:
+					//	Transfer real path. (ex. /img/logo.png)
 					header("Location: $request_uri");
 					exit;
 			}
