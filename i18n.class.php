@@ -143,6 +143,9 @@ class i18n extends OnePiece5
 		if(!$lang = $this->_lang){
 			$lang = $this->GetCookie('lang','en'); // default is 'en'
 		}
+		
+		list($lang,$country) = explode('-',$lang.'-');
+		
 		return $lang;
 	}
 	
