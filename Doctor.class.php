@@ -189,7 +189,6 @@ class Doctor extends OnePiece5
 			unset($column->unique);
 			$key = 'UNI';
 		}else if(!empty($column->index)){
-			unset($column->index);
 			switch( strtolower($column->index) ){
 				case 'pkey':
 					$key = 'PRI';
@@ -201,6 +200,7 @@ class Doctor extends OnePiece5
 				default:
 					$key = 'MUL';
 			}
+			unset($column->index);
 		}
 		
 		//	Set key.
@@ -972,77 +972,84 @@ class Doctor extends OnePiece5
  */
 class Poneglyph extends OnePiece5
 {
+	private $_tank = array();
+	
 	function Display($diagnosis)
 	{
-		print "<ol>";
 		foreach( $diagnosis as $user => $dsn ){
-			
-			if( $user === 'ai' or $user === 'pkey' or $user === 'PRI' or $user === 'AI' ){
+			//	continue
+			if( $user === 'PRI' or $user === 'AI' ){
+				continue;
+			}
+			//	continue
+			if( $user === 'ai' or $user === 'pkey' ){
 				continue;
 			}
 			
-			$this->li("User name is \\$user\.");
+			//	init
+			$_tank = array();
 			
+			//	User
+			$this->_tank['users'][$user]['io'] = true;
+			
+			//	parse dns
 			foreach( $dsn as $dsn_key => $dsn_var){
-				
 				//	init
 				list($product, $temp) = explode(':', $dsn_key);
 				list($temp, $host) = explode('=', $temp);
-				
+				//	
 				foreach($dsn_var as $key => $var){
-					print "<ol>";
-					
 					//	switch
 					switch( $key ){
 						case 'connection':
-							$this->_connection($host, $var);
+							$this->_tank['users'][$user]['connection']['io'] = $var;
 							break;
 						case 'database':
+							foreach($var as $database => $io){
+								$this->_tank['users'][$user]['databases'][$database]['io'] = $io;
+							}
 							break;
 						case 'table':
+							foreach($var as $database_table => $io){
+								$temp = explode('.', $database_table);
+								$database = array_shift($temp);
+								$table = join('.',$temp);
+								$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['io'] = $io;
+							}
 							break;
 						case 'column':
-							break;
-						case 'ai':
-							break;
-						case 'pkey':
+							foreach($var as $database_table => $columns){
+								$temp = explode('.', $database_table);
+								$database = array_shift($temp);
+								$table = join('.',$temp);
+								
+								foreach($columns as $column => $struct){
+
+									if( is_null($struct) ){
+										$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['columns'][$column]['io'] = null;
+										continue;
+									}
+									
+									foreach($struct as $attr => $io){
+										$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['columns'][$column]['struct'][$attr]['io'] = $io;
+									}
+								}
+							}
 							break;
 						default:
-						//	$this->d($dsn);
-						//	$this->d($dsn_key);
-						//	$this->d($dsn_var);
-							$this->d($key);
-						//	$this->d($var);
-					}
-					print "</ol>";					
+						$this->Mark($key);
+						$this->D($var);
+					}				
 				}
-			}
-		}
-		print "</ol>";
-	}
-	
-	function li($text, $io=null)
-	{
-		if( $io === null ){
-			$class = 'black';
-		}else{
-			$class = $io === true ? 'blue': 'red';
+			} // end dns;
 		}
 		
-		print "<li>";
-		print "<span class=\"$class\">";
-		print $this->i18n()->En($text);
-		print "</span>";
-		print "</li>";
+		$this->_Ignition();
 	}
 	
-	function _connection($host, $io)
+	private function _Ignition()
 	{
-		if( $io === true ){
-			$text = "Connection to \\$host\ is successful.";
-		}else{
-			$text = "Connection to \\$host\ is failed.";
-		}
-		$this->li($text, $io);
+		$this->p(__METHOD__);
+		Dump::D($this->_tank);
 	}
 }
