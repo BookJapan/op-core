@@ -1031,6 +1031,12 @@ class Poneglyph extends OnePiece5
 									}
 									
 									foreach($struct as $attr => $io){
+										if( $io === false ){
+											$this->_tank['users'][$user]['io'] = $io;
+											$this->_tank['users'][$user]['databases'][$database]['io'] = $io;
+											$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['io'] = $io;
+											$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['columns'][$column]['io'] = $io;
+										}
 										$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['columns'][$column]['struct'][$attr]['io'] = $io;
 									}
 								}
@@ -1049,7 +1055,51 @@ class Poneglyph extends OnePiece5
 	
 	private function _Ignition()
 	{
-		$this->p(__METHOD__);
-		Dump::D($this->_tank);
+		echo '<ol>';
+		foreach($this->_tank['users'] as $user => $_user){
+			echo '<li>';
+			$color = $_user['io'] ? 'blue': 'red';
+			echo "<span style='color:$color;'>user: $user</span>";
+			if( $_user['io'] ){
+				continue;
+			}
+			echo '<ol>';
+			$color = $_user['connection']['io'] ? 'blue': 'red';
+			echo "<li style='color:$color;'>connection</li>";
+			foreach($_user['databases'] as $database => $_database ){
+				$color = $_database['io']  ? 'blue': 'red';
+				echo "<li style='color:$color;'>database: $database</li>";
+				echo '<ol>';
+				foreach($_database['tables'] as $table => $_table){
+					$color = $_table['io']  ? 'blue': 'red';
+					echo "<li style='color:$color;'>table: $table</li>";
+					if( $_table['io'] ){
+						continue;
+					}
+					echo '<ol>';
+					foreach($_table['columns'] as $column => $_column){
+						$color = isset($_column['io']) ? 'red': 'blue';
+						echo "<li style='color:$color;'>$column</li>";
+						if( !isset($_column['io']) ){
+							continue;
+						}
+						echo '<ol>';
+						foreach($_column['struct'] as $attr => $_attr){
+							$color = $_attr['io']  ? 'blue': 'red';
+							echo "<li style='color:$color;'>$attr</li>";
+						}
+						echo '</ol>';
+					}
+					echo '</ol>';
+				}
+				echo '</ol>';
+			}
+			echo '</ol>';
+			echo '</li>';
+		}
+		echo '</ol>';
+		
+	//	$this->p(__METHOD__);
+	//	Dump::D($this->_tank);
 	}
 }
