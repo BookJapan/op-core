@@ -189,12 +189,16 @@ class Doctor extends OnePiece5
 			unset($column->unique);
 			$key = 'UNI';
 		}else if(!empty($column->index)){
-			switch( strtolower($column->index) ){
-				case 'pkey':
+			switch( strtoupper($column->index) ){
+				case 'PRI':
+				case 'PRIMARY':
+				case 'PKEY':
+				case 'PRIMARY_KEY':
 					$key = 'PRI';
 					$column->pkey = true;
 					break;
-				case 'unique':
+				case 'UNI':
+				case 'UNIQUE':
 					$key = 'UNI';
 					break;
 				default:
