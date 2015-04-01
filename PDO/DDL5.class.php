@@ -586,8 +586,8 @@ class DDL5 extends OnePiece5
 			
 			//	index
 			if( empty($index) ){
-				$index = null;
-			}else if( $index === 'unique' ){
+				$indexes = null;
+			}else if( $index === 'unique' or $index === 'uni' ){
 				$unique = true;
 			}else{
 				$indexes[] = $name;
@@ -597,6 +597,8 @@ class DDL5 extends OnePiece5
 			//	uniques
 			if( $unique ){
 				$uniques[] = $name;
+			}else{
+				$uniques = null;
 			}
 			
 			//  default
@@ -655,8 +657,8 @@ class DDL5 extends OnePiece5
 			//  Create define
 			switch($verb){
 				case '':
-					$index  = $this->_ConvertIndexKey('INDEX',  $indexes, null);
-					$unique = $this->_ConvertIndexKey('UNIQUE', $uniques, null);
+					$index  = $this->ConvertIndexKey('INDEX',  $indexes, null);
+					$unique = $this->ConvertIndexKey('UNIQUE', $uniques, null);
 					$definition = "$name $type $unsigned $charset $collate $attributes $null $default $comment $index $unique";
 					$indexes = null;
 					$uniques = null;
@@ -675,7 +677,7 @@ class DDL5 extends OnePiece5
 					$definition = "{$verb} {$name}";
 					break;
 			}
-				
+			
 			//	Anti oracle only?
 			switch( strtolower($this->driver) ){
 				case 'oracle':
@@ -691,6 +693,10 @@ class DDL5 extends OnePiece5
 					$this->core->StackError('Undefined product name. ($product)');
 			}
 			$column[] = $definition;
+		}
+		
+		if( isset($args['index']) ){
+			//	TODO:
 		}
 		
 		// primary key(s)
@@ -721,6 +727,10 @@ class DDL5 extends OnePiece5
 	
 	function ConvertIndexKey($key, $indexes)
 	{
+		if( empty($indexes) ){
+			return null;
+		}
+		
 		$join = array();
 		if( is_string($indexes) ){
 			$join[] = $this->_ConvertIndexKey($key, $indexes);
