@@ -313,7 +313,7 @@ class i18n extends OnePiece5
 	function Get( $text, $from='en-US', $to=null )
 	{
 		if( empty($text) ){
-			return null;
+			return $text;
 		}
 		
 		//	Word swap to pool.
