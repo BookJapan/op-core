@@ -508,6 +508,7 @@ class Doctor extends OnePiece5
 		//	Each check.
 		foreach($column as $key => $var){
 			switch($key){
+				case 'key':
 				case 'debug':
 				case 'name':
 				case 'index':
@@ -594,20 +595,24 @@ class Doctor extends OnePiece5
 			$key = $this->_ConvertColumnKey($column);
 			
 			//	Evaluation
-			$io = $key === $struct[$column_name]['key'];
+			$io = $key == $struct[$column_name]['key'];
 			
 			//	Diagnosis (In case of not empty)
 			if( !empty($key) or !empty($struct[$column_name]['key']) ){
 				//	In case of boolean. (Column is not exists in table)
-				if(!is_bool($this->_diagnosis->$user->$dsn->column->$join_name->$column_name)){
+				if( is_bool($this->_diagnosis->$user->$dsn->column->$join_name->$column_name) ){
+					/*
 					if(!$key){
 						//	Supplement index name
-						$key = $struct[$column_name]['key']; 
+						$key = $struct[$column_name]['key'];
 					}
-					//	Write
-					$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
+					*/
 				}
 			}
+			
+			//	Write
+			$temp = $key ? $key: $struct[$column_name]['key'];
+			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$temp = $io;
 			
 			//	Save the column name with primary key value. and set Add/Drop flag.
 			if( $key === 'PRI' ){
@@ -627,13 +632,13 @@ class Doctor extends OnePiece5
 			
 			//	Diagnosis
 			$this->_is_diagnosis = false;
-			
+						
 			//	Primary key is skip.
 			if( $key === 'PRI' ){ continue; }
 			
 			//	Add, Change, Drop
 			if(!$key ){
-				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'drop');
+				$this->WriteIndex($db_name, $table_name, $column_name, $struct[$column_name]['key'], 'drop');
 			}else if(!$struct[$column_name]['key'] ){
 				$this->WriteIndex($db_name, $table_name, $column_name, $key, 'add');
 			}else{
@@ -730,7 +735,11 @@ class Doctor extends OnePiece5
 					$this->D($column);
 			}
 		}else{
-			$key = '';
+			if( isset($column->key) ){
+				$key = $column->key;
+			}else{
+				$key = null;
+			}
 		}
 		
 		return $key;
@@ -813,11 +822,11 @@ class Doctor extends OnePiece5
 	 * @param Config $column
 	 * @param string $acmd
 	 */
-	function WriteColumn($database_name, $table_name, $column, $acmd)
+	function WriteColumn($database_name, $table_name, $column, $verb)
 	{
 		$column = $column->Copy();
 		
-		if( $acmd === 'change' ){
+		if( $verb === 'change' ){
 			$column->rename = $column->name;
 			$column->name = $column->renamed;
 		}
@@ -833,7 +842,7 @@ class Doctor extends OnePiece5
 		$alter = new Config();
 		$alter->database = $database_name;
 		$alter->table	 = $table_name;
-		$alter->column->$acmd->{(string)$column_name} = $column->Copy();
+		$alter->column->$verb->{(string)$column_name} = $column->Copy();
 		
 		//	Stack create table config.
 		$this->_blueprint->alter[] = $alter;
@@ -852,6 +861,7 @@ class Doctor extends OnePiece5
 				$type = 'UNIQUE';
 				break;
 			default:
+				$type = null;
 		}
 		
 		$alter = new Config();
@@ -1074,6 +1084,9 @@ class Poneglyph extends OnePiece5
 					$color = $_table['io']  ? 'blue': 'red';
 					echo "<li style='color:$color;'>table: $table</li>";
 					if( $_table['io'] ){
+						continue;
+					}
+					if( empty($_table['columns']) ){
 						continue;
 					}
 					echo '<ol>';
