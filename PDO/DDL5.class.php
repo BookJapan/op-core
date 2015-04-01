@@ -390,7 +390,7 @@ class DDL5 extends OnePiece5
 				$target = "$column";
 			}
 		}else{
-			$this->StackError("Does not define this definition. ($acd)");
+			$this->StackError("Does not define this definition. ($verb)");
 			return false;
 		}
 		
@@ -469,14 +469,13 @@ class DDL5 extends OnePiece5
 		//DROP USER 'op_wizard'@'localhost';
 	}
 	
-	function ConvertColumn($args, $ACD='' )
+	function ConvertColumn($args, $verb='' )
 	{
 		//	INIT
 		$indexes = array();
 		
 		//  loop from many columns
 		foreach($args as $name => $temp){
-			
 			//	column name
 			if( empty($temp['name']) ){
 				if( isset($temp['field']) ){
@@ -491,20 +490,20 @@ class DDL5 extends OnePiece5
 			$name		 = isset($temp['name'])       ? $temp['name']             : $name;
 			$rename		 = isset($temp['rename'])     ? $temp['rename']           : null;
 			$length		 = isset($temp['length'])     ? $temp['length']           : null;
-			$value		 = isset($temp['value'])      ? $temp['value']            : null; // 複数形苦手対応
+			$value		 = isset($temp['value'])      ? $temp['value']            : null; // Plural form does not know.
 			$values		 = isset($temp['values'])     ? $temp['values']           : $value;
 			$unsigned	 = isset($temp['unsigned'])   ? $temp['unsigned']         : null;
-			$attribute	 = isset($temp['attribute'])  ? $temp['attribute']        : null; // 複数形苦手対応
+			$attribute	 = isset($temp['attribute'])  ? $temp['attribute']        : null; // Plural form does not know.
 			$attributes	 = isset($temp['attributes']) ? $temp['attributes']       : $attribute;
 			$charset	 = isset($temp['charset'])	  ? $temp['charset']          : null;
 			$charset	 = isset($temp['character'])  ? $temp['character']        : $charset;
-			$collate	 = isset($temp['collate'])    ? $temp['collate']          : null; // 英語圏対応
+			$collate	 = isset($temp['collate'])    ? $temp['collate']          : null; // For English-speaking countries.
 			$collate	 = isset($temp['collation'])  ? $temp['collation']        : $collate;
 			$null		 = isset($temp['null'])	      ? $temp['null']             : null;
 			$default	 = isset($temp['default'])	  ? $temp['default']          : null;
 			$comment	 = isset($temp['comment'])    ? $temp['comment']          : null;
-			$first		 = (isset($temp['first']) and $temp['first']) ? $temp['first'] : null; // Add top.
-			$after		 = (isset($temp['after']) and $temp['after']) ? $temp['after'] : null; // Add after specified column.
+			$first		 = isset($temp['first'])      ? $temp['first']            : null; // Add as the first column.
+			$after		 = isset($temp['after'])      ? $temp['after']            : null; // Add after specified column.
 			
 			$ai			 = isset($temp['auto_increment'])	 ? $temp['auto_increment']	 : null;
 			$ai			 = isset($temp['a_i'])				 ? $temp['a_i']				 : $ai;
@@ -581,7 +580,6 @@ class DDL5 extends OnePiece5
 			
 			//	PRIMARY KEY
 			if( $pkey ){
-			//	$pkey = "PRIMARY KEY"; // TODO: only mysql, other engine unknown.
 				$pkey = null;
 				$pkeys[] = $name;
 			}
@@ -592,8 +590,6 @@ class DDL5 extends OnePiece5
 			}else if( $index === 'unique' ){
 				$unique = true;
 			}else{
-			//	$index_type = 'USING BTREE';
-			//	$indexes[] = sprintf('INDEX %s %s (%s)', 'index_'.count($indexes), $index_type, $name );
 				$indexes[] = $name;
 				$index = null;
 			}
@@ -602,7 +598,7 @@ class DDL5 extends OnePiece5
 			if( $unique ){
 				$uniques[] = $name;
 			}
-				
+			
 			//  default
 			if( isset($temp['default']) ){
 				$default = $temp['default'];
@@ -657,22 +653,26 @@ class DDL5 extends OnePiece5
 			}
 			
 			//  Create define
-			switch($ACD){
+			switch($verb){
 				case '':
-					$definition = "$name $type $unsigned $charset $collate $attributes $pkey $null $default $comment";
+					$index  = $this->_ConvertIndexKey('INDEX',  $indexes, null);
+					$unique = $this->_ConvertIndexKey('UNIQUE', $uniques, null);
+					$definition = "$name $type $unsigned $charset $collate $attributes $null $default $comment $index $unique";
+					$indexes = null;
+					$uniques = null;
 					break;
 					
 				case 'CHANGE':
 				case 'MODIFY':
 				case 'ADD':
-				//	ALTER TABLE `t_table` ADD `id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`thread_id`) ;
+				//	ALTER TABLE `t_table` ADD `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`user_id`) ;
 				//	ALTER TABLE `t_table` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
 				//	ALTER TABLE `t_table`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
-					$definition = "$ACD $index $name $rename $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
+					$definition = "$verb $index $name $rename $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
 					break;
 					
 				case 'DROP':
-					$definition = "{$ACD} {$name}";
+					$definition = "{$verb} {$name}";
 					break;
 			}
 				
@@ -700,22 +700,46 @@ class DDL5 extends OnePiece5
 				$join[] = $name;
 			}
 			//	modifire
-			$modifire = $ACD ? 'ADD': null;
+			$modifire = $verb ? 'ADD': null;
 			$column[] = $modifire.' PRIMARY KEY('.join(',',$join).')';
 		}
 		
 		// indexes
 		if( $indexes ){
-			$modifire = $ACD ? 'ADD': null;
+			$modifire = $verb ? 'ADD': null;
 			$column[] = sprintf('%s INDEX(%s)', $modifire, join(",",$indexes));
 		}
 		
 		// uniques
 		if( isset($uniques) ){
-			$modifire = $ACD ? 'ADD': null;
+			$modifire = $verb ? 'ADD': null;
 			$column[] = sprintf('%s UNIQUE(%s)', $modifire, join(",",$uniques));
 		}
 		
 		return isset($column) ? join(', ', $column): false;
+	}
+	
+	function ConvertIndexKey($key, $indexes)
+	{
+		$join = array();
+		if( is_string($indexes) ){
+			$join[] = $this->_ConvertIndexKey($key, $indexes);
+		}else if( is_array($indexes) ){
+			foreach($indexes as $index){
+				$join[] = $this->_ConvertIndexKey($key, $index);
+			}
+		}
+		return join(', ', $join);
+	}
+
+	private function _ConvertIndexKey($key, $name, $comment=null)
+	{
+		$key  = ConfigSQL::Quote($key,  $this->driver);
+		$name = ConfigSQL::Quote($name, $this->driver);
+		if( $comment ){
+			$comment = ConfigSQL::Quote($comment, $this->driver);
+			$comment = "COMMENT '$comment'";
+		}
+		return "$key `$name` (`$name`) $comment";
 	}
 }
