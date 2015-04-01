@@ -383,6 +383,7 @@ class Doctor extends OnePiece5
 			
 			//	Write blueprint.
 			$this->WriteTable($table->Copy(), $rename_flag);
+			$this->CheckColumnIndex($user, $db_name, $table);
 		}
 	}
 	
@@ -582,17 +583,31 @@ class Doctor extends OnePiece5
 		$join_name	 = $db_name.'.'.$table_name;
 		
 		//	Get column struct.
-		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
+		if(!$struct = $this->PDO()->GetTableStruct($table_name, $db_name)){
+			$struct = array();
+			$error = $this->FetchError();
+		//	$this->D($error);
+		}
 		
 		//	Check each column.
 		foreach($table->column as $column_name => $column){
+			/*
 			if( empty($this->_diagnosis->$user->$dsn->column->$join_name->$column_name) ){
 				//	Only privirage?
 				$struct[$column_name]['key'] = '';
 			}
+			*/
 			
 			//	Get column's key.
 			$key = $this->_ConvertColumnKey($column);
+			
+			//	Table has not been created yet.
+			if(!isset($struct[$column_name]['key'])){
+				if( $key === 'PRI' ){
+					continue;
+				}
+				$struct[$column_name]['key'] = null;
+			}
 			
 			//	Evaluation
 			$io = $key == $struct[$column_name]['key'];
@@ -1025,6 +1040,10 @@ class Poneglyph extends OnePiece5
 								$database = array_shift($temp);
 								$table = join('.',$temp);
 								$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['io'] = $io;
+								if( $io === false ){
+									$this->_tank['users'][$user]['io'] = $io;
+									$this->_tank['users'][$user]['databases'][$database]['io'] = $io;
+								}
 							}
 							break;
 						case 'column':
@@ -1112,7 +1131,7 @@ class Poneglyph extends OnePiece5
 		}
 		echo '</ol>';
 		
-	//	$this->p(__METHOD__);
-	//	Dump::D($this->_tank);
+		$this->p(__METHOD__);
+		Dump::D($this->_tank);
 	}
 }
