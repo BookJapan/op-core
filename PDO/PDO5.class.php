@@ -215,16 +215,25 @@ class PDO5 extends OnePiece5
 	
 	private function _query_error_mysql()
 	{
-		//	Get error
+		//	Get error.
 		$temp = $this->pdo->errorInfo();
 		$error_id = $temp[0];
 		$error_no = $temp[1];
 		
-		//	Get host and user
+		//	Get host and user.
 		$patt = "|'([\.-_a-z0-9]+)'@'([\.-_a-z0-9]+)'|";
 		if( preg_match($patt,$temp[2],$match) ){
 			$user = $match[1];
 			$host = $match[2];
+		}
+		
+		//	Get database and table.
+		$patt = "|'([\.-_a-z0-9]+)\.([\.-_a-z0-9]+)'|";
+		if( preg_match($patt,$temp[2],$match) ){
+			$database = $match[1];
+			$table = $match[2];
+		}else{
+			$this->Mark($temp[2]);
 		}
 		
 		//	Escape at backslash.
@@ -247,6 +256,9 @@ class PDO5 extends OnePiece5
 				
 			case 1091:
 				$message = "Cannot DROP \PRIMARY KEY\. Check that column/key exists.";
+				break;
+			case 1146:
+				$message = "Table does not exist. ({$database}.{$table})";
 				break;
 				
 			default:
