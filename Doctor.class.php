@@ -290,13 +290,8 @@ class Doctor extends OnePiece5
 		$database = $config->database->Copy();
 		
 		//	Connection
-		if(!$io = $this->PDO()->Connect($database) ){
-			$error = $this->FetchError();
-		//	$this->D($error);
-			return;
-		}
-		
-		$dsn = $this->PDO()->GetDSN();
+		$io   = $this->PDO()->Connect($database);
+		$dsn  = $this->PDO()->GetDSN();
 		$user = $database->user;
 		
 		//	Write diagnosis
@@ -585,12 +580,20 @@ class Doctor extends OnePiece5
 		$dsn = $this->PDO()->GetDSN();
 		$table_name	 = $table->name;
 		$join_name	 = $db_name.'.'.$table_name;
+
+		//	Check connection
+		if(!$this->_diagnosis->$user->$dsn->connection){
+			return;
+		}
 		
 		//	Get column struct.
 		if(!$struct = $this->PDO()->GetTableStruct($table_name, $db_name)){
 			$struct = array();
+			
+			//	Error
 			$error = $this->FetchError();
-		//	$this->D($error);
+			$this->_log($error['message'],false);
+			return false;
 		}
 		
 		//	Check each column.
