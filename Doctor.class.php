@@ -279,6 +279,7 @@ class Doctor extends OnePiece5
 		}
 		
 		$this->CheckPkey();
+		$this->CheckPkeyDrop();
 		$this->CehckAutoIncrement();
 		
 		return $this->_is_diagnosis;
@@ -686,6 +687,8 @@ class Doctor extends OnePiece5
 					continue;
 				}
 				
+				/*
+				
 				//	Drop flag
 				$drop = false;
 				
@@ -707,9 +710,36 @@ class Doctor extends OnePiece5
 					$this->WritePKEY($db_name, $table_name, null, 'drop');
 				}
 				
+				*/
+				
 				//	Build primary key.
 				$pkeys = array_merge(array_keys($pkeys,true), array_keys($pkeys,false,true));
 				$this->WritePKEY($db_name, $table_name, $pkeys,'add');
+			}
+		}
+	}
+	
+	function CheckPkeyDrop()
+	{
+		//	Does not add pkey.
+		if( empty( $this->_blueprint->pkey->add ) ){
+			return;
+		}
+		
+		//	Search pkey.
+		foreach( $this->_blueprint->pkey->add as $temp ){
+			//	Get table struct.
+			$db_name    = $temp->database;
+			$table_name = $temp->table;
+			$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
+			
+			foreach($struct as $column_name => $detail){ 
+				foreach($detail as $key => $var){
+					if( $key === 'key' and $var === 'PRI' ){
+						$this->WritePKEY($db_name, $table_name, null, 'drop');
+						continue 2;
+					}
+				}
 			}
 		}
 	}
@@ -1138,7 +1168,7 @@ class Poneglyph extends OnePiece5
 		}
 		echo '</ol>';
 		
-		$this->p(__METHOD__);
-		Dump::D($this->_tank);
+	//	$this->p(__METHOD__);
+	//	Dump::D($this->_tank);
 	}
 }
