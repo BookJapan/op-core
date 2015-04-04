@@ -300,7 +300,7 @@ class Toolbox
 	 * @param  integer $prefix
 	 * @return boolean
 	 */
-	function CIDR( $ip1, $ip2, $prefix )
+	static function CIDR( $ip1, $ip2, $prefix )
 	{
 		OnePiece5::StackError("Used checking. Is this use?");
 		
@@ -317,7 +317,7 @@ class Toolbox
 	}
 	*/
 	
-	function ConvertConfigToArray( $args )
+	static function ConvertConfigToArray( $args )
 	{
 		OnePiece5::StackError("Used checking. Is this use?");
 		
