@@ -628,16 +628,55 @@ class Toolbox
 		return $path;
 	}
 	
+	/**
+	 * Used at file system. (convert to real path)
+	 * 
+	 * @param string $path
+	 */
+	static function ConvertPathForApp($path)
+	{
+		static $app;
+		if(!$app){
+			$app = dirname($_SERVER['SCRIPT_FILENAME']).'/';
+		}
+		return preg_replace('|^app:/|', $app, $path);
+	}
+	
+	/**
+	 * Used at Browser. (From document root path.)
+	 * 
+	 * @param string $path
+	 */
+	static function ConvertURLforApp($url)
+	{
+		static $app;
+		if(!$app){
+			$app = $_SERVER['REWRITE_BASE'] = dirname($_SERVER['SCRIPT_NAME']).'/';
+		}
+		return preg_replace('|^app:/|', $app, $url);
+	}
+	
 	static function ConvertPath($path)
 	{
+		//	APP Root
+		if( preg_match('|^app:/|i',$path) ){
+			return self::ConvertPathForApp($path);
+		}
+		
+		//	ConvertMeta
 		return self::ConvertMeta($path);
 	}
 	
 	static function ConvertURL($url)
 	{
+		//	APP Root
+		if( preg_match('|^app:/|i',$url) ){
+			return self::ConvertURLforApp($url);
+		}
+		
 		//	OP Root
 		if( preg_match('|^op:/|i',$url) ){
-			OnePiece5::StackError("Does not convert to url at OP-Root.");
+			OnePiece5::StackError("Can not convert to URL at OP-Root.");
 			return null;
 		}
 		
@@ -669,19 +708,10 @@ class Toolbox
 		//	Convert
 		$path = self::ConvertPath($url);
 		
-		//	App root
+		//	Ganarate app-root preg pattern.
 		$app_root = $_SERVER['APP_ROOT'];
 		$app_root = preg_quote($app_root,'/');
 		$pattern  = "/^($app_root)/";
-		
-		/*
-		//	Alias root
-		if( isset($_SERVER['REWRITE_BASE']) ){
-			$ali_root = $_SERVER['REWRITE_BASE'];
-			$ali_root = preg_quote($ali_root,'/');
-			$pattern  = "/^($app_root|$ali_root)/";
-		}
-		*/
 		
 		//	Check root
 		if(!preg_match($pattern,$path,$match)){
