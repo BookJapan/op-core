@@ -422,7 +422,7 @@ class Doctor extends OnePiece5
 		$join_name = $db_name.'.'.$table_name;
 		$after = null;
 		
-		//	Table had no problem.
+		//	Table has already problem.
 		if( $this->_diagnosis->$user->$dsn->table->$join_name !== true ){
 			return;
 		}
@@ -444,23 +444,23 @@ class Doctor extends OnePiece5
 			//	Use column diff.
 			$columns[$column_name] = true;
 			
-			//
-			if( $struct[$column_name]['extra'] === 'auto_increment' ){
-				$column->name = $column_name;
-				$this->_diagnosis->AI->$db_name->$table_name = $column;
-			}
-			
-			//	
-			if( $struct[$column_name]['key'] === 'PRI' ){
-				$this->_diagnosis->PRI->$db_name->$table_name->$column_name = true;
-			}
-			
 			//	Compensate name.
 			$table->name  = $table_name;
 			$column->name = $column_name;
 			
 			//	Check column exists.
 			if( array_key_exists($column_name, $struct) ){
+				
+				//	Add AI list.
+				if( $struct[$column_name]['extra'] === 'auto_increment' ){
+					$column->name = $column_name;
+					$this->_diagnosis->AI->$db_name->$table_name = $column;
+				}
+					
+				//	Add PRI list.
+				if( $struct[$column_name]['key'] === 'PRI' ){
+					$this->_diagnosis->PRI->$db_name->$table_name->$column_name = true;
+				}
 				
 				//	Check column's struct.
 				$this->CheckColumnStruct($user, $db_name, $table_name, $column, $struct[$column_name]);
@@ -631,11 +631,13 @@ class Doctor extends OnePiece5
 					}
 					*/
 				}
+			}else if( empty($key) and empty($struct[$column_name]['key']) ){
+				continue;
 			}
-			
+
 			//	Write
-			$temp = $key ? $key: $struct[$column_name]['key'];
-			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$temp = $io;
+			$key_type = $key ? $key: $struct[$column_name]['key'];
+			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key_type = $io;
 			
 			//	Save the column name with primary key value. and set Add/Drop flag.
 			if( $key === 'PRI' ){
