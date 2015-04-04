@@ -233,6 +233,7 @@ class Toolbox
 		$request[$key] = OnePiece5::Escape($value);
 	}
 	
+	/*
 	function Module( $name, $args=null )
 	{
 		$path  = self::ConvertPath(OnePiece5::GetEnv('module-dir'));
@@ -249,6 +250,7 @@ class Toolbox
 		
 		return new $module_name($args);
 	}
+	*/
 	
 	static function Copy($object)
 	{
