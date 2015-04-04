@@ -118,6 +118,7 @@ class App_i18n extends App
 		
 		//	build url by document root
 		$url = $_SERVER['REWRITE_BASE'].$lang.$app_root;
+		$url = '/'.ltrim($url,'/');
 		
 		//	return result
 		return $domain ? $domain.$url: $url;
