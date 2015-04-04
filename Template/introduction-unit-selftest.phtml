@@ -1,0 +1,32 @@
+<?php
+/* @var $this App */
+
+$cmd = "git clone https://github.com/TomoakiNagahara/op-unit-selftest.git _self-test";
+
+if( $this->Cache()->Get(md5(__FILE__)) ){
+	$this->Cache()->Set(md5(__FILE__), true, 60*60*24*30);
+	if( $temp = shell_exec('ls') ){
+		print "<pre>$temp</pre>";
+		$temp = shell_exec($cmd);
+		print "<pre>$temp</pre>";
+	}
+}
+
+?>
+<div>
+	<h1>About self-test</h1>
+	<p>Please enter this command.</p>
+	<div style="border: 1px solid black; margin:1em; padding:1em;">
+		<code>
+			cd <?= $this->ConvertPath('app:/') ?><br/>
+			<?= $cmd ?><br/>
+		</code>
+	</div>
+	<p>
+		Or Download here =&gt; 
+		<a href="https://github.com/TomoakiNagahara/op-unit-selftest/archive/master.zip">
+			https://github.com/TomoakiNagahara/op-unit-selftest/archive/master.zip
+		</a>
+	</p>
+</div>
+<?php
