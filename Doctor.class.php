@@ -1096,6 +1096,15 @@ class Poneglyph extends OnePiece5
 										continue;
 									}
 									
+									if( empty($struct) ){
+										$io = false;
+										$this->_tank['users'][$user]['io'] = $io;
+										$this->_tank['users'][$user]['databases'][$database]['io'] = $io;
+										$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['io'] = $io;
+										$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['columns'][$column]['io'] = $io;
+										continue;
+									}
+									
 									foreach($struct as $attr => $io){
 										if( $io === false ){
 											$this->_tank['users'][$user]['io'] = $io;
@@ -1131,14 +1140,14 @@ class Poneglyph extends OnePiece5
 			}
 			echo '<ol>';
 			$color = $_user['connection']['io'] ? 'blue': 'red';
-			echo "<li style='color:$color;'>connection</li>";
+			echo "<li><span style='color:$color;'>connection</span></li>";
 			foreach($_user['databases'] as $database => $_database ){
 				$color = $_database['io']  ? 'blue': 'red';
-				echo "<li style='color:$color;'>database: $database</li>";
+				echo "<li><span style='color:$color;'>database: $database</span></li>";
 				echo '<ol>';
 				foreach($_database['tables'] as $table => $_table){
 					$color = $_table['io']  ? 'blue': 'red';
-					echo "<li style='color:$color;'>table: $table</li>";
+					echo "<li><span style='color:$color;'>table: $table</span></li>";
 					if( $_table['io'] ){
 						continue;
 					}
@@ -1148,14 +1157,24 @@ class Poneglyph extends OnePiece5
 					echo '<ol>';
 					foreach($_table['columns'] as $column => $_column){
 						$color = isset($_column['io']) ? 'red': 'blue';
-						echo "<li style='color:$color;'>$column</li>";
+						echo "<li><span style='color:$color;'>$column</span></li>";
+						
 						if( !isset($_column['io']) ){
 							continue;
 						}
+
+						if( $_column['io'] ){
+							continue;
+						}
+						
+						if( empty($_column['struct']) ){
+							continue;
+						}
+						
 						echo '<ol>';
 						foreach($_column['struct'] as $attr => $_attr){
 							$color = $_attr['io']  ? 'blue': 'red';
-							echo "<li style='color:$color;'>$attr</li>";
+							echo "<li><span style='color:$color;'>$attr</span></li>";
 						}
 						echo '</ol>';
 					}
