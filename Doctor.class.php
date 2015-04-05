@@ -264,7 +264,6 @@ class Doctor extends OnePiece5
 				
 				//	Grant will done every time.
 				foreach( $config->table as $table_name => $table ){
-				//	$table = clone($table);
 					$table = $table->Copy();
 					$table->name = $table_name;
 					$this->WriteGrant($origin->database, $table);
@@ -623,18 +622,18 @@ class Doctor extends OnePiece5
 			//	Diagnosis (In case of not empty)
 			if( !empty($key) or !empty($struct[$column_name]['key']) ){
 				//	In case of boolean. (Column is not exists in table)
+				/*
 				if( is_bool($this->_diagnosis->$user->$dsn->column->$join_name->$column_name) ){
-					/*
 					if(!$key){
 						//	Supplement index name
 						$key = $struct[$column_name]['key'];
 					}
-					*/
 				}
+				*/
 			}else if( empty($key) and empty($struct[$column_name]['key']) ){
 				continue;
 			}
-
+						
 			//	Write
 			$key_type = $key ? $key: $struct[$column_name]['key'];
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key_type = $io;
