@@ -1143,6 +1143,10 @@ class Poneglyph extends OnePiece5
 	
 	private function _Ignition()
 	{
+		if( empty($this->_tank['users']) ){
+			return;
+		}
+		
 		echo '<ol>';
 		foreach($this->_tank['users'] as $user => $_user){
 			echo '<li>';
