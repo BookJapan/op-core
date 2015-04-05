@@ -753,6 +753,18 @@ class Doctor extends OnePiece5
 		
 		foreach( $this->_diagnosis->ai as $db_name => $table ){
 			foreach( $table as $table_name => $column ){
+				//	Checking duplicate auto increment.
+				$count = 0;
+				$column_names = array();
+				foreach( $this->_diagnosis->ai->$db_name->$table_name as $column_name => $temp){
+					$count++;
+					$column_names[] = $column_name;
+				}
+				if( $count > 1 ){
+					$columns = '\\'.join('\ AND \\',$column_names).'\\';
+					$this->StackError("Auto increment of $columns is duplicated. \(Database: $db_name, Table: $table_name)\\",'en');
+				}
+				
 				foreach( $column as $column_name => $column ){
 					if( $column === true ){
 						continue;
