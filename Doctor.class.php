@@ -895,25 +895,30 @@ class Doctor extends OnePiece5
 	 * @param Config $column
 	 * @param string $acmd
 	 */
-	function WriteColumn($database_name, $table_name, $column, $verb)
+	function WriteColumn($db_name, $table_name, $column, $verb)
 	{
 		$column = $column->Copy();
 		
 		if( $verb === 'change' ){
 			$column->rename = $column->name;
 			$column->name = $column->renamed;
+			
+			if( $column->ai ){
+				$this->WritePKEY($db_name, $table_name, null, 'drop');
+			}
+		}else{
+			unset($column->name);
+			unset($column->renamed);
+			unset($column->ai);
+			unset($column->pkey);
+			unset($column->index);
+			unset($column->unique);
 		}
 		
 		$column_name = $column->name;
-		unset($column->name);
-		unset($column->renamed);
-		unset($column->ai);
-		unset($column->pkey);
-		unset($column->index);
-		unset($column->unique);
 		
 		$alter = new Config();
-		$alter->database = $database_name;
+		$alter->database = $db_name;
 		$alter->table	 = $table_name;
 		$alter->column->$verb->{(string)$column_name} = $column->Copy();
 		

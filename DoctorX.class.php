@@ -177,8 +177,9 @@ class DoctorX extends OnePiece5
 			$this->CreateUser($blueprint);
 			$this->CreateDatabase($blueprint);
 			$this->CreateTable($blueprint);
+			$this->CreatePkeyDrop($blueprint);
 			$this->CreateAlter($blueprint);
-			$this->CreatePkey($blueprint);
+			$this->CreatePkeyAdd($blueprint);
 			$this->CreateIndex($blueprint);
 			$this->CreateAI($blueprint);
 			$this->CreateGrant($blueprint);
@@ -264,19 +265,20 @@ class DoctorX extends OnePiece5
 			$this->Log($this->PDO()->Qu(), $io);
 		}
 	}
-	
-	function CreatePkey($blueprint)
+
+	function CreatePkeyAdd($blueprint)
 	{
-		//	Drop first
-		foreach($blueprint->pkey->drop as $alter){
-			$io = $this->PDO()->DropPrimarykey($alter);
+		foreach($blueprint->pkey->add as $alter){
+			$io = $this->PDO()->AddPrimaryKey($alter);
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
-
-		//	Add Primary key
-		foreach($blueprint->pkey->add as $alter){
-			$io = $this->PDO()->AddPrimaryKey($alter);
+	}
+	
+	function CreatePkeyDrop($blueprint)
+	{
+		foreach($blueprint->pkey->drop as $alter){
+			$io = $this->PDO()->DropPrimarykey($alter);
 			//	log
 			$this->Log($this->PDO()->Qu(), $io);
 		}
