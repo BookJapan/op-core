@@ -917,7 +917,10 @@ class OnePiece5
 	
 	function SetHeader( $str, $replace=null, $code=null )
 	{
-	//	$cgi = $this->GetEnv('cgi'); // FastCGI
+		//	2015-04-06
+		self::StackError("Will abolished.");
+		
+		$cgi = $this->GetEnv('cgi'); // FastCGI
 		
 		switch($code){
 			case '500':
@@ -997,61 +1000,6 @@ class OnePiece5
 	}
 	
 	/**
-	 * 
-	 * @param string $label
-	 */
-	function time($label=null){
-		static $offset = null;
-		
-		if( true ){
-			list($usec, $sec) = explode(" ", microtime());
-			
-			$sec = (int)$sec;
-			
-			if(!$offset){
-				$offset  = ((float)$usec + (float)$sec);
-				$elapsed = 0.0;
-				$lap     = 0.0;
-			}else{
-				$count   = count($this->laptime)-1;
-				$elapsed = ((float)$usec + (float)$sec) - $offset;
-				$lap     = $elapsed - $this->laptime[$count]['elapsed'];
-			}
-		}else{
-			/**
-			 * I don't know. Mac OS X microtime is bugg???
-			 */
-			if(!$offset){
-				$offset  = microtime(true); // Windows and Linux is OK.
-				$elapsed = 0.0;
-				$lap     = 0.0;
-			}else{
-				$count   = count($this->laptime) -1;
-				$elapsed = microtime(true) - $offset;
-				$lap     = $elapsed - $this->laptime[$count]['elapsed'];
-			}
-		}
-		
-		$this->laptime[] = array(
-				'label'   => $label,
-				'lap'     => $lap,
-				'elapsed' => $elapsed
-				);
-		
-		return "$elapsed ($lap)";
-	}
-	
-	/*
-	function PrintTime(){
-		if($this->GetEnv('cli')){ return; }
-		if(!$this->laptime){ return; }
-		if( $this->laptime ){
-			self::d($this->laptime);
-		}
-	}
-	*/
-	
-	/**
 	 * Send mail method
 	 * 
 	 * @param  array|Config $config Mail config. (Config is convert to array)
@@ -1059,6 +1007,9 @@ class OnePiece5
 	 */
 	function Mail( $args )
 	{
+		//	2015-04-06
+		self::StackError("Will abolished.");
+		
 		// optimize
 	//	$lang = $this->GetEnv('lang');
 		$lang = 'uni'; // Unicode only
