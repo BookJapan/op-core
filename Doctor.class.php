@@ -175,7 +175,23 @@ class Doctor extends OnePiece5
 		
 		//	Pkey
 		foreach( $config->table as $table_name => $table ){
+			//	Check config object.
+			if(!$table instanceof Config){
+				unset($config->table->$table_name);
+				$this->StackError("This table configuration is not a \config\ object. \($table_name)\\",'en');
+				continue;
+			}
+			
+			//	Each column.
 			foreach( $table->column as $column_name => $column ){
+				//	Check config object.
+				if(!$column instanceof Config){
+					unset($table->column->$column_name);
+					$this->StackError("This column configuration is not a \config\ object. \({$table_name}.{$column_name})\\",'en');
+					continue;
+				}
+				
+				//	Convert.
 				$this->_key($column);
 			}
 		}
@@ -441,7 +457,9 @@ class Doctor extends OnePiece5
 		
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
+		
 	//	$this->D($struct);
+	//	$this->d($table);
 		
 		//	Check each column(exists).
 		$columns = array();
@@ -481,9 +499,13 @@ class Doctor extends OnePiece5
 				
 				//	Alter is add or rename.
 				$acmd = empty($column->renamed) ? 'add': 'change'; 
-				
+								
 				//	Add new column.
-				$column->after = $after;
+				if( $after ){
+					$column->first = true;
+				}else{
+					$column->after = $after;
+				}
 				$this->WriteColumn($db_name, $table_name, $column, $acmd);
 			}
 			
@@ -907,13 +929,12 @@ class Doctor extends OnePiece5
 				$this->WritePKEY($db_name, $table_name, null, 'drop');
 			}
 		}else{
-			unset($column->name);
-			unset($column->renamed);
 			unset($column->ai);
 			unset($column->pkey);
 			unset($column->index);
 			unset($column->unique);
 		}
+		
 		
 		$column_name = $column->name;
 		
