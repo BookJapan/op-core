@@ -13,9 +13,28 @@ class PDO5 extends OnePiece5
 	private $dcl = null;
 	private $ddl = null;
 	private $dml = null;
+	
+	/**
+	 * Last sql query.
+	 * 
+	 * @var string
+	 */
 	private $qu	 = null;
+	
+	/**
+	 * Stacking all sql query.
+	 * 
+	 * @var array
+	 */
 	private $qus = array();
+	
+	/**
+	 * Is connection.
+	 * 
+	 * @var boolean
+	 */
 	private $isConnect	 = null;
+	
 	private $driver		 = null;
 	private $host		 = null;
 	private $port		 = null;
@@ -23,11 +42,21 @@ class PDO5 extends OnePiece5
 	private $database	 = null;
 	private $charset	 = null;
 	
+	function Init()
+	{
+		parent::Init();
+		$this->qus[] = 'init';
+	}
+	
 	/**
 	 * Debug information.
 	 */
 	function Debug()
 	{
+		if(!$this->Admin()){
+			return;
+		}
+		$this->P('Queries');
 		$this->D($this->qus);
 	}
 	
@@ -228,47 +257,59 @@ class PDO5 extends OnePiece5
 		}
 		
 		//	Get database and table.
-		$patt = "|'([\.-_a-z0-9]+)\.([\.-_a-z0-9]+)'|";
-		if( preg_match($patt,$temp[2],$match) ){
+		$patt_1 = "|'([\.-_a-z0-9]+)'|";
+		$patt_2 = "|'([\.-_a-z0-9]+)\.([\.-_a-z0-9]+)'|";
+		if( preg_match($patt_2,$temp[2],$match) ){
+			//	Escape at backslash.
 			$database = $match[1];
-			$table = $match[2];
+			$table    = $match[2];
+			$temp[2] = preg_replace($patt, "\\ \\1@\\2 \\", $temp[2]);
+		}else if( preg_match($patt_1,$temp[2],$match) ){
+			//	Escape at backslash.
+			$database = $match[1];
+			$temp[2] = preg_replace($patt, "\\ \\1 \\", $temp[2]);
 		}else{
 			$this->Mark($temp[2]);
 		}
 		
-		//	Escape at backslash.
-		$temp[2] = preg_replace($patt, "\\ \\1@\\2 \\", $temp[2]);
-		
 		//	Branch
 		switch($error_no){
 			case 1044:
+				$this->D($temp);
 				$message = "This user's access was deny. \\{$user}@{$host}\\";
 				break;
 				
 			case 1062:
+				$this->D($temp);
 				$message = "Duplicate entry.";
 				break;
 				
 			case 1064:
+				$this->D($temp);
 				$message = "You have an error in your SQL syntax. "; 
 				$message.= "Check the manual that corresponds to your MySQL server version. ";
 				break;
 				
 			case 1091:
+				$this->D($temp);
 				$message = "Cannot DROP \PRIMARY KEY\. Check that column/key exists.";
 				break;
+				
 			case 1146:
-				$message = "Table does not exist. ({$database}.{$table})";
+				//	Table '_database_._table_' doesn't exist
+				$database = ConfigSQL::Quote( $database, $this->driver );
+				$table    = ConfigSQL::Quote( $table,    $this->driver );
+				$message  = "Table does not exist. ({$database}.{$table})";
 				break;
 				
 			default:
 				$message = $temp[2];
 				$message = preg_replace("| '|", ' \"', $message);
 				$message = preg_replace("|' ?|",'"\ ', $message);
-				$message = rtrim($message).". \#{$temp[1]}\ ";
+				$message = rtrim($message).".";
 		}
 		
-		return $message;
+		return "{$message} \#{$error_no}\ ";
 	}
 	
 	function ConvertCharset( $charset=null )
@@ -521,7 +562,7 @@ class PDO5 extends OnePiece5
 	 * @param string $charset
 	 * @return boolean|array
 	 */
-	function GetTableStruct( $table_name, $db_name=null, $charset=null )
+	function GetTableStruct( $table_name, $db_name=null, $charset=null, $locale=null )
 	{
 		//  Check table name
 		if( !$table_name ){
@@ -531,14 +572,15 @@ class PDO5 extends OnePiece5
 		
 		//  Check database
 		if( $db_name ){
-			$this->Database( $db_name, $charset );
+		//	$this->SetDatabase( $db_name, $charset, $locale );
+			$db_name = ConfigSQL::Quote( $db_name, $this->driver ).'.';
 		}
 		
 		//	Escape
 		$table_name = ConfigSQL::Quote( $table_name, $this->driver );
 		
 		//  create query
-		$qu = "SHOW FULL COLUMNS FROM $table_name";
+		$qu = "SHOW FULL COLUMNS FROM {$db_name}{$table_name}";
 		
 		//  get table struct
 		if(!$records = $this->query($qu) ){
