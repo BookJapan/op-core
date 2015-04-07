@@ -487,9 +487,10 @@ class DDL5 extends OnePiece5
 			}
 			
 			//	init
-			$type		 = isset($temp['type'])       ? strtoupper($temp['type']) : null;
+			$name_old	 = null;
 			$name		 = isset($temp['name'])       ? $temp['name']             : $name;
 			$rename		 = isset($temp['rename'])     ? $temp['rename']           : null;
+			$type		 = isset($temp['type'])       ? strtoupper($temp['type']) : null;
 			$length		 = isset($temp['length'])     ? $temp['length']           : null;
 			$value		 = isset($temp['value'])      ? $temp['value']            : null; // Plural form does not know.
 			$values		 = isset($temp['values'])     ? $temp['values']           : $value;
