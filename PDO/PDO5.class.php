@@ -304,8 +304,7 @@ class PDO5 extends OnePiece5
 				
 			default:
 				$message = $temp[2];
-				$message = preg_replace("| '|", ' \"', $message);
-				$message = preg_replace("|' ?|",'"\ ', $message);
+				$message = preg_replace("|'([-_a-z0-9\.]+)'|", ' \\ \\1 \\ ', $message);
 				$message = rtrim($message).".";
 		}
 		
