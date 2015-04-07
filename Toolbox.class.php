@@ -655,7 +655,7 @@ class Toolbox
 			$document_root    = $_SERVER['DOCUMENT_ROOT'];
 			$document_root    = preg_quote($document_root,'|');
 			$rewrite_base = preg_replace("|^$document_root|", '', $script_file_name);
-			$rewrite_base = dirname($rewrite_base).'/';
+			$rewrite_base = rtrim(dirname($rewrite_base),'/').'/';
 			$_SERVER['REWRITE_BASE'] = $rewrite_base;
 			$app = $rewrite_base;
 		}
