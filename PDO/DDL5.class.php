@@ -471,7 +471,8 @@ class DDL5 extends OnePiece5
 	
 	function ConvertColumn($args, $verb='' )
 	{
-		//	INIT
+		//	Init
+		$verb = strtoupper($verb);
 		$indexes = array();
 		
 		//  loop from many columns
@@ -513,10 +514,16 @@ class DDL5 extends OnePiece5
 			$index		 = isset($temp['index'])			 ? $temp['index']			 : null;
 			$unique		 = isset($temp['unique'])			 ? $temp['unique']			 : null;
 			
+			if( $verb === 'CHANGE' ){
+				$name_old = $name;
+				$name = $rename;
+				unset($rename);
+			}
+			
 			//	Quote value
+			$name_old	 = ConfigSQL::Quote($name_old,$this->driver);
 			$name		 = ConfigSQL::Quote($name,$this->driver);
 			$type		 = ConfigSQL::QuoteType($type,$this->driver);
-			$rename		 = ConfigSQL::Quote($rename,$this->driver);
 			$values		 = ConfigSQL::Quote($values,$this->driver);
 			$attributes	 = ConfigSQL::Quote($attributes,$this->driver);
 			$charset	 = ConfigSQL::Quote($charset,$this->driver);
@@ -663,14 +670,14 @@ class DDL5 extends OnePiece5
 					$indexes = null;
 					$uniques = null;
 					break;
-					
+
+				case 'ADD':
 				case 'CHANGE':
 				case 'MODIFY':
-				case 'ADD':
 				//	ALTER TABLE `t_table` ADD `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`user_id`) ;
 				//	ALTER TABLE `t_table` CHANGE `_read_` `read_` DATETIME NULL DEFAULT NULL COMMENT 'check already read'
 				//	ALTER TABLE `t_table`.`t_count` CHANGE unique `date` `date` DATE , ADD UNIQUE(`date`)
-					$definition = "$verb $index $name $rename $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
+					$definition = "$verb $index $name_old $name $type $unsigned $charset $collate $attributes $null $default $comment $first $after";
 					break;
 					
 				case 'DROP':
