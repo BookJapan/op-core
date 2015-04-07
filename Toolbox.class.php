@@ -651,7 +651,13 @@ class Toolbox
 	{
 		static $app;
 		if(!$app){
-			$app = $_SERVER['REWRITE_BASE'] = dirname($_SERVER['SCRIPT_NAME']).'/';
+			$script_file_name = $_SERVER['SCRIPT_FILENAME'];
+			$document_root    = $_SERVER['DOCUMENT_ROOT'];
+			$document_root    = preg_quote($document_root,'|');
+			$rewrite_base = preg_replace("|^$document_root|", '', $script_file_name);
+			$rewrite_base = dirname($rewrite_base).'/';
+			$_SERVER['REWRITE_BASE'] = $rewrite_base;
+			$app = $rewrite_base;
 		}
 		return preg_replace('|^app:/|', $app, $url);
 	}
