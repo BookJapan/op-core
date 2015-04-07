@@ -288,6 +288,8 @@ class Doctor extends OnePiece5
 	{
 		//	Database connection config.
 		$database = $config->database->Copy();
+		unset($database->database);
+		unset($database->name);
 		
 		//	Connection
 		$io   = $this->PDO()->Connect($database);
@@ -322,17 +324,22 @@ class Doctor extends OnePiece5
 			$io = in_array($db_name, $db_list);
 		}
 		
-		//	result
-		if(!$io){
-			$this->_is_diagnosis = false;
-			$this->_blueprint->database[] = $config->database->Copy();
-		}
-		
 		//	Diagnosis
 		$db_name = $config->database->name;
 		$user	 = $config->database->user;
 		$dsn	 = $this->PDO()->GetDSN();
 		$this->_diagnosis->$user->$dsn->database->$db_name = $io;
+		
+		//	Blueprint
+		if(!$io){
+			$this->_is_diagnosis = false;
+			$this->_blueprint->database[] = $config->database->Copy();
+			return;
+		}
+		
+		//	Database select.
+		$charset = isset($config->database->charset) ? $config->database->charset: null;
+		$this->PDO()->SetDatabase($db_name, $charset);
 	}
 	
 	function CheckTable($config)
@@ -347,8 +354,9 @@ class Doctor extends OnePiece5
 		if( $this->_diagnosis->$user->$dsn->connection === true ){
 			if(!$table_list = $this->PDO()->GetTableList($db_name)){
 				$table_list = array();
+				//	Error process.
 				$error = $this->FetchError();
-				$this->mark($error['message'],__CLASS__);
+				$this->_log($error['message'],false);
 			}
 		}else{
 			$table_list = array();
@@ -978,23 +986,35 @@ class Doctor extends OnePiece5
 		
 		$this->_blueprint->ai[] = $alter;
 	}
-
-
-	private function _Log($message, $result=null, $from='en')
+	
+	function _Log($message, $result=null, $from='en')
 	{
+		return $this->_pdo_error_($message, $result, $from);
+	}
+	
+	function _pdo_error_($message, $result=null, $from='en')
+	{
+		list($message, $query) = explode("\n",$message."\n");
+		
 		//	Generate log array.
 		$log = array();
 		$log['from']	 = $from;
 		$log['result']	 = $result;
 		$log['message']	 = $message;
-	
+		$log['query']	 = $query;
+		
 		//	Stack log array.
 		$this->_log[] = $log;
 	}
 	
 	function PrintLog()
 	{
-		$this->p("![.bold .bigger[Display Selftest's diagnosis log:]] ![.gray .small[".$this->GetCallerLine()."]]");
+		return $this->PrintPdoError();
+	}
+	
+	function PrintPdoError()
+	{
+		$this->p("![.bold .bigger[Display Selftest's diagnosis log:]]");
 		if( $this->_is_diagnosis ){
 			$class = 'green';
 			$message = "Diagnostic results was no problem.";
@@ -1004,21 +1024,24 @@ class Doctor extends OnePiece5
 		}
 		$message = $this->i18n()->Bulk($message,'en');
 		$this->p("![.{$class} margin:1em [$message]]");
-	
+		
 		//	Display diagnosis.
 		$Poneglyph = new Poneglyph();
 		$Poneglyph->Display($this->GetDiagnosis());
-	
+		
 		print '<ol>';
 		while($log = array_shift($this->_log)){
 			//	init
 			$from	 = $log['from'];
 			$result  = $log['result'];
 			$message = $log['message'];
+			$query	 = $log['query'];
+			
 			//	translate
 			if( $from ){
 				$message = $this->i18n()->Bulk($message, $from);
 			}
+			
 			//	class
 			if( $result === null ){
 				$class = 'gray';
@@ -1027,8 +1050,9 @@ class Doctor extends OnePiece5
 			}else{
 				$class = $result;
 			}
+			
 			//	print
-			print $this->p("![li .small .{$class}[{$message}]]");
+			print $this->p("![li .small .{$class}[{$message} \n $query]]");
 		}
 		print '</ol>';
 	}
