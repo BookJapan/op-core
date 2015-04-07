@@ -26,19 +26,20 @@ switch( $unit_name ){
 
 ?>
 <div>
-	<h1><?= $this->i18n()->Get('Introduction of method') ?></h1>
-	<p><?= $this->i18n()->Get('Please enter this command.') ?></p>
+	<h1><?= $this->i18n()->En('Introduction of method') ?></h1>
+	<p><?= $this->i18n()->En('Please execute this command.') ?></p>
 	<div style="border: 1px solid black; margin:1em; padding:1em;">
 		<code>
 			cd <?= $this->ConvertPath('app:/') ?><br/>
-			git clone https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>.git <?= $unit_name ?><br/><br/>
+			git clone https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>.git <?= $unit_name ?><br/>
 		</code>
 	</div>
 	<p>
-		<?= $this->i18n()->Get('Or Download here') ?> =&gt; 
+		<?= $this->i18n()->En('Or Download here') ?> =&gt; 
 		<a href="https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>/archive/master.zip">
 			https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>/archive/master.zip
 		</a>
 	</p>
+	<p>And then reload this page.</p>
 </div>
 <?php
