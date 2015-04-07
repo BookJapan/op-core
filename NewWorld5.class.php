@@ -1,5 +1,9 @@
 <?php
 /**
+ * NewWorld.class.php
+ */
+
+/**
  * The NewWorld is the new world.
  * 
  * NewWorld's job is only to dispatch the index.php.
@@ -336,58 +340,6 @@ abstract class NewWorld5 extends OnePiece5
 				$this->StackError("\ob_start\ was failed. Does not run selftest.",'en');
 			}
 		}
-	}
-	
-	function Header( $str, $replace=null, $code=null )
-	{
-		if( headers_sent() ){
-			$io = false;
-			$this->StackError("already header sent.");
-		}else{
-			$io = true;
-			$str = str_replace( array("\n","\r"), '', $str );
-			header( $str, $replace, $code );
-		}
-		
-		return $io;
-	}
-	
-	/**
-	 * Forward local location.(not external URL)
-	 * 
-	 * @param string  $url  transfer url.
-	 * @param boolean $exit default is true.
-	 * @return void|boolean
-	 */
-	function Location( $url, $exit=true )
-	{
-		//	Document root path
-		$url = $this->ConvertUrl($url,false);
-		
-		//	Check infinity loop.
-		if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
-			//	Does not for infinity.
-		}else{
-			$temp = explode('?',$_SERVER['REQUEST_URI']);
-			if( $io = rtrim($url,'/') == rtrim($temp[0],'/') ){
-				$this->mark("![.red[Location is Infinite loop. ($url)]]");
-				return false;
-			}
-		}
-		
-		$io = $this->Header("Location: " . $url);
-		if( $io ){
-			$location['message'] = 'Do Location!!' . date('Y-m-d H:i:s');
-			$location['post']	 = $_POST;
-			$location['get']	 = $_GET;
-			$location['referer'] = $_SERVER['REQUEST_URI'];
-			$this->SetSession( 'Location', $location );
-			if($exit){
-				$this->__destruct();
-				exit(0);
-			}
-		}
-		return $io;
 	}
 	
 	function GetContent()
