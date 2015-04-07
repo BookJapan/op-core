@@ -11,6 +11,8 @@
  */
 abstract class NewWorld5 extends OnePiece5
 {
+	const _UNIT_URL_SELFTEST_ = '/_self-test/';
+	
 	/**
 	 * routing table
 	 * 

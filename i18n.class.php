@@ -75,10 +75,13 @@ class i18n extends OnePiece5
 	
 	function Debug()
 	{
-		if( $this->Admin() ){
-			$this->D($this->_debug);
-			echo "<hr/>";
+		if(!$this->Admin()){
+			return;
 		}
+		
+		$this->P("i18n");
+		$this->D($this->_debug);
+		print "<hr/>";
 	}
 	
 	function SetProp( $key, $var )
@@ -263,7 +266,7 @@ class i18n extends OnePiece5
 	 * @param  string $name
 	 * @return PDO5
 	 */
-	function pdo($name=null)
+	function pdo()
 	{
 		static $_is_connect = null;
 		if( $_is_connect === false ){
@@ -271,17 +274,38 @@ class i18n extends OnePiece5
 		}
 		
 		if(!$this->_pdo){
-			$this->_pdo = parent::PDO($name);
+			$this->_pdo = parent::PDO();
 		}
 		
-		if(!$io = $this->_pdo->isConnect()){
-			if(!$_is_connect = $this->_pdo->Connect($this->Config()->database())){
-				if( $this->Admin() ){
-					$this->Wizard()->SetNameByClass(__CLASS__);
-				}else{
-					$this->StackError("Does not connect to i18n database.");
+		if( is_null($_is_connect) and !$io = $this->_pdo->isConnect()){
+			
+			try {
+				$_is_connect = $this->_pdo->Connect( $this->Config()->database() );
+			}catch ( OpException $e ){
+				$_is_connect = false;
+				$message = $e->GetError();
+				$lang = $e->GetLang();
+				$this->Mark("![.red[$message]]");
+			}
+			
+			//	Connection was failed.
+			if(!$_is_connect){
+				//	Error process.
+				if(empty($message)){
+					$error = $this->FetchError();
+					$message = $error['message'];
 				}
-				return false;
+				$this->Mark("![.red[$message]]",__CLASS__);
+				
+				//	Transfer self-test page.
+				$page = NewWorld5::_UNIT_URL_SELFTEST_;
+				if(!preg_match("|$page|",$_SERVER['REQUEST_URI'],$match)){
+					$this->Location("app:/".trim($page,'/').'/');
+				}
+				
+				//	Setup self-test.
+				$this->Doctor()->Registration(__CLASS__,$this->Config()->selftest());
+				$this->Doctor()->Diagnose();
 			}
 		}
 		return $this->_pdo;
@@ -624,21 +648,20 @@ class Config_i18n extends OnePiece5
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'char';
 		$config->table->{$table_name}->column->{$column_name}->length	 = '32';
-		//	$config->table->{$table_name}->column->{$column_name}->index	 = true;
 		$config->table->{$table_name}->column->{$column_name}->pkey		 = true;
-		$config->table->{$table_name}->column->{$column_name}->comment	 = '';
+		$config->table->{$table_name}->column->{$column_name}->comment	 = 'MD5 key.';
 		
 		$column_name = self::_COLUMN_LANG_FROM_;
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'varchar';
 		$config->table->{$table_name}->column->{$column_name}->length	 = '5';
-		$config->table->{$table_name}->column->{$column_name}->comment	 = 'Original language';
+		$config->table->{$table_name}->column->{$column_name}->comment	 = 'Original language.';
 		
 		$column_name = self::_COLUMN_LANG_TO_;
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
 		$config->table->{$table_name}->column->{$column_name}->type		 = 'varchar';
 		$config->table->{$table_name}->column->{$column_name}->length	 = '5';
-		$config->table->{$table_name}->column->{$column_name}->comment	 = 'Translation language';
+		$config->table->{$table_name}->column->{$column_name}->comment	 = 'Translation language.';
 		
 		$column_name = self::_COLUMN_TEXT_FROM_;
 		$config->table->{$table_name}->column->{$column_name}->name		 = $column_name;
