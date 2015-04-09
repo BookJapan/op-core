@@ -30,7 +30,7 @@ class EMail extends OnePiece5
 			return;
 		}
 		
-		$this->P(__METHOD__,'h1');
+		$this->P('![.bold['.__METHOD__.']]');
 		$this->D($this->_debug);
 	}
 	
@@ -115,7 +115,7 @@ class EMail extends OnePiece5
 		$to = $this->_get_to(null);
 		$subject = $this->_get_subject();
 		$content = $this->_get_content();
-		$headers = $this->_get_headers();
+		$headers = $this->_get_headers(null, array('from','cc','bcc'));
 		$parameters = $this->_get_parameters();
 		
 		//	Debug
@@ -132,21 +132,21 @@ class EMail extends OnePiece5
 		if(!$io = mail($to, $subject, $content, $headers, $parameters)){
 			OnePiece5::P('Failed to send the error mail.');
 		}
+		$debug['io'] = $io;
 		
 		return $debug;
 	}
-		
-	private function _get_headers()
+	
+	private function _get_headers($body, $addr)
 	{
 		$content_type = $this->_get_content_type();
-		$mail_address = $this->_get_mail_address();
-		$headers = trim($content_type)."\n".trim($mail_address)."\n";
-		return OnePiece5::Escape($headers);
+		$mail_address = $this->_get_mail_address($addr);
+		return trim($content_type)."\n".trim($mail_address)."\n";
 	}
 	
-	private function _get_mail_address()
+	private function _get_mail_address($keys)
 	{
-		foreach(array('from','to','cc','bcc') as $key){
+		foreach($keys as $key){
 			if(empty($this->_head[$key])){ continue; }
 			$full_name = array();
 			foreach($this->_head[$key] as $temp){
@@ -215,14 +215,14 @@ class EMail extends OnePiece5
 	private function _get_parameters()
 	{
 		//	parameters
-		$local_user  = get_current_user().'@'.$_SERVER['SERVER_ADDR'];
+		$local_user  = get_current_user().'@'.gethostbyaddr($_SERVER['SERVER_ADDR']);
 		$parameters = "-f $local_user";
 		return $parameters;
 	}
 	
 	private function _get_content_type()
 	{
-		return "Content-type: text/html; charset=UTF-8";
+		return "Content-type: text/plain; charset=UTF-8";
 	}
 	
 	private function _get_content()
@@ -232,7 +232,7 @@ class EMail extends OnePiece5
 		}
 		return join('',$join);
 	}
-
+	
 	private function _get_subject()
 	{
 		return mb_encode_mimeheader($this->_head['subject']);
