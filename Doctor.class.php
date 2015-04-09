@@ -443,7 +443,9 @@ class Doctor extends OnePiece5
 		$dsn	 = $this->PDO()->GetDSN();
 		$table_name = $table->name;
 		$join_name = $db_name.'.'.$table_name;
-		$after = null;
+		$i		 = 0;
+		$after	 = null;
+		$columns = array();
 		
 		//	Table has already problem.
 		if( $this->_diagnosis->$user->$dsn->table->$join_name !== true ){
@@ -462,9 +464,15 @@ class Doctor extends OnePiece5
 	//	$this->d($table);
 		
 		//	Check each column(exists).
-		$columns = array();
 		foreach($table->column as $column_name => $column){
+			//	Count
+			$i++;
+			
+			//	Clone
 			$column = $column->Copy();
+			
+			//	after
+			$after = $column_name;
 			
 			//	Use column diff.
 			$columns[$column_name] = true;
@@ -501,7 +509,7 @@ class Doctor extends OnePiece5
 				$acmd = empty($column->renamed) ? 'add': 'change'; 
 								
 				//	Add new column.
-				if( $after ){
+				if( $i === 1 ){
 					$column->first = true;
 				}else{
 					$column->after = $after;
