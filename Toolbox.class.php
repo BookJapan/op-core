@@ -151,6 +151,7 @@ class Toolbox
 				
 			case 'head':
 			case 'quit':
+			case 'options':
 				$request = array();
 				break;
 				
