@@ -261,13 +261,49 @@ class EMail extends OnePiece5
 	private function _get_content()
 	{
 		if( count($this->_body) > 1 ){
-			foreach($this->_body as $body){
-				
-			}
+			$body = $this->_get_content_multipart();
 		}else{
 			$body = isset($this->_body[0]['body']) ? $this->_body[0]['body']: null;
 		}
 		return $body;
+	}
+	
+	private function _get_content_multipart()
+	{
+		$i = 0;
+		$multibody = '';
+		$boundary  = $this->_get_boundary();
+		
+		foreach($this->_body as $body){
+			$i++;
+			$multibody .= "--{$boundary}\n";
+			
+			$mime = $body['mime'];
+			$body = $body['body'];
+			
+			list($type,$ext) = explode('/', $mime);
+			
+			if( $type === 'text' ){
+				$multibody .= "Content-Type: {$mime}; charset=\"utf-8\"\n";
+				$multibody .= "Content-Transfer-Encoding: 7bit\n";
+				$multibody .= "\n";
+				$multibody .= "$body\n";
+			}else{
+				$name = isset($body['name']) ? $body['name']: "attachment-{$i}.{$ext}";
+			//	$name = mb_convert_encoding($name,'utf-8');
+				$name = mb_encode_mimeheader($name);
+				
+				$multibody .= "Content-Type: application/octet-stream; name=\"{$name}\"\n";
+				$multibody .= "Content-Transfer-Encoding: base64\n";
+				$multibody .= "Content-Disposition: attachment; filename=\"{$name}\"\n";
+				$multibody .= "\n";
+				$multibody .= chunk_split( base64_encode($body) );
+				$multibody .= "\n\n";
+			}
+		}
+		
+		$multibody .= "--{$boundary}--\n";
+		return $multibody;
 	}
 	
 	private function _get_subject()
