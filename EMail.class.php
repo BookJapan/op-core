@@ -157,6 +157,12 @@ class EMail extends OnePiece5
 			$key = ucfirst($key);
 			$header[] = "$key: ".join(', ',$full_name);
 		}
+		
+		if( false ){
+			$header[] = "Return-Path: $error_address";
+			$header[] = "Errors-To: $error_address";
+		}
+		
 		return join("\n", $header);
 	}
 	
@@ -220,17 +226,48 @@ class EMail extends OnePiece5
 		return $parameters;
 	}
 	
+	private function _get_boundary()
+	{
+		static $boundary;
+		if(!$boundary){
+			$boundary = "-*-*-*-*-*-*-*-*-Boundary_" . uniqid("b");
+		}
+		return $boundary;
+	}
+	
 	private function _get_content_type()
 	{
-		return "Content-type: text/plain; charset=UTF-8";
+		$multipart = null;
+		$mime_version = 'MIME-Version: 1.0';
+		
+		if( count($this->_body) > 1 ){
+			$multipart = true;
+			$boundary  = $this->_get_boundary();
+		}else{
+			$mime = isset($this->_body[0]['mime']) ? $this->_body[0]['mime']: 'text/plain';
+		}
+		
+		if( $multipart ){
+			$content_type = "Content-Type: Multipart/Mixed; boundary=\"$boundary\"";
+			$content_encoding = 'Content-Transfer-Encoding: Base64';
+		}else{
+			$content_type = "Content-Type: {$mime}; charset=\"utf-8\"";
+			$content_encoding = 'Content-Transfer-Encoding: 7bit';
+		}
+		
+		return "{$mime_version}\n{$content_type}\n{$content_encoding}\n";
 	}
 	
 	private function _get_content()
 	{
-		foreach($this->_body as $body){
-			$join[] = $body['body'];
+		if( count($this->_body) > 1 ){
+			foreach($this->_body as $body){
+				
+			}
+		}else{
+			$body = isset($this->_body[0]['body']) ? $this->_body[0]['body']: null;
 		}
-		return join('',$join);
+		return $body;
 	}
 	
 	private function _get_subject()
