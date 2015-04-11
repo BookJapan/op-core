@@ -404,7 +404,12 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}
 		
-		print json_encode($this->_json);
+		if(!Toolbox::GetRequest('jsonp') ){
+			print json_encode($this->_json);
+		}else{
+			$callback = Toolbox::GetRequest('callback',null,'callback');
+			print "{$callback}(".json_encode($this->_json).')';
+		}
 	}
 	
 	function SetJson( $key, $var )
@@ -417,7 +422,7 @@ abstract class NewWorld5 extends OnePiece5
 				//	Debugging.
 			}else{
 				//	Change MIME.
-				Toolbox::SetMIME('text/json');
+				Toolbox::SetMIME('application/json');
 			}
 			//	Layout will off.
 			Env::Set('layout',false);
