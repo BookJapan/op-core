@@ -205,26 +205,6 @@ abstract class NewWorld5 extends OnePiece5
 		header("Access-Control-Allow-Headers: X-TRICORDER");
 		header("Access-Control-Max-Age: 1728000");
 		*/
-
-		/*
-		switch( $route['extension'] ){
-			case 'css':
-				header("Content-Type: text/css");
-				Env::Set('mime','text/css');
-				Env::Set('cli',true);
-				Env::Set('css',true);
-				break;
-				
-			case 'js':
-				header("Content-Type: text/javascript");
-				Env::Set('mime','text/javascript');
-				Env::Set('cli',true);
-				Env::Set('js',true);
-				break;
-				
-			default:
-		}
-		*/
 		
 		//	Output content header.
 		header("Content-Type: {$route['mime']}");
@@ -350,7 +330,6 @@ abstract class NewWorld5 extends OnePiece5
 	function Content()
 	{
 		switch( $mime = strtolower(Toolbox::GetMIME(true)) ){
-	//	switch( $sub ){
 			//	json
 			case 'json':
 				$this->_doJson();
@@ -410,27 +389,6 @@ abstract class NewWorld5 extends OnePiece5
 			$this->StackError('Does not set env "NotFound" page path. Please call $this->SetEnv("NotFound").');
 		}
 	}
-	
-	/*
-	function doJson($is_get=null)
-	{
-		if( $this->admin() ){
-			if( strlen($this->_content) ){
-				if( Toolbox::GetRequest('html') ){
-					print $this->_content;
-				}else{
-					$this->_json['_LEAKED_CONTENT_'] = strip_tags($this->_content);
-				}
-				$this->_content = '';
-			}
-		}
-		if( $is_get ){
-			return $this->_json;
-		}else if($this->_json){
-			print json_encode($this->_json);
-		}
-	}
-	*/
 	
 	private function _doJson()
 	{
