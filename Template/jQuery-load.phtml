@@ -1,9 +1,8 @@
-<?php
-/* @var $this App */
-?>
+<?php /* @var $this App */ ?>
 <!-- jQuery -->
 <?php if(Toolbox::isLocalhost()): ?>
-<script type="text/javascript" src="http://localhost/jquery/jquery-1.js"></script>
+	<?php $v = isset($version) ? $version: 1; ?>
+	<script type="text/javascript" src="//localhost/jquery/jquery-<?= $v ?>.js"></script>
 <?php else: ?>
-<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/<?= $v ?>/jquery.min.js"></script>
 <?php endif; ?>
