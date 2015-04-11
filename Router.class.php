@@ -277,7 +277,7 @@ class Router extends OnePiece5
 	}
 	
 	/**
-	 * Used to _CheckFileExists method.
+	 * Used to _CheckFileExists() only.
 	 * 
 	 * @var string
 	 */
