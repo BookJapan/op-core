@@ -184,12 +184,16 @@ abstract class NewWorld5 extends OnePiece5
 		//	Change current directory.
 		chdir($ctrl_root);
 		
-		//	@see http://d.hatena.ne.jp/sen-u/20131130/p1
 		header("X-Frame-Options: SAMEORIGIN");
 		header("X-XSS-Protection: 1; mode=block");
 		header("X-Permitted-Cross-Domain-Policies: master-only");
 		header("X-Download-Options: noopen");
-		header("X-Content-Type-Options: nosniff");
+		
+		if( Toolbox::GetRequest('jsonp') ){
+			if( $this->Model('UA')->GetBrowser() !== Model_UA::_CHROME_ ){
+				header("X-Content-Type-Options: nosniff");
+			}
+		}
 		
 	//	header("Content-Security-Policy: default-src 'self'");
 	//	header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
