@@ -15,6 +15,7 @@ class Model_UA extends Model_Model
 	const _IE_			 = 'IE';
 	const _CHROME_		 = 'CHROME';
 	const _FIREFOX_		 = 'FIREFOX';
+	const _SAFARI_		 = 'SAFARI';
 	
 	//	MOBILE CARRIER
 	const _KDDI_		 = 'KDDI';
@@ -32,7 +33,6 @@ class Model_UA extends Model_Model
 	
 	function GetOS()
 	{
-		//	Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:26.0) Gecko/20100101 Firefox/26.0
 		$ua = $_SERVER['HTTP_USER_AGENT'];
 		
 		if( preg_match('/Mac OS X/i',$ua) ){
@@ -45,10 +45,19 @@ class Model_UA extends Model_Model
 	function GetBrowser()
 	{
 		//	Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:26.0) Gecko/20100101 Firefox/26.0
+		//	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36
+		//	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/600.3.18 (KHTML, like Gecko) Version/6.2.3 Safari/537.85.12
+		
 		$ua = $_SERVER['HTTP_USER_AGENT'];
 		
-		if( preg_match('/Firefox/i') ){
+		if( preg_match('/Firefox/i',$ua) ){
 			$var = self::_FIREFOX_;
+		}else
+		if( preg_match('/Chrome/i',$ua) ){
+			$var = self::_CHROME_;
+		}else
+		if( preg_match('/Safari/i',$ua) ){
+			$var = self::_CHROME_;
 		}
 		
 		return $var;
