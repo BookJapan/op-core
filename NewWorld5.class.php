@@ -243,7 +243,7 @@ abstract class NewWorld5 extends OnePiece5
 				
 				//  Does not set layout.
 				if( $this instanceof App ){
-					$method = "\$this->SetLayoutName('layout-name');";
+					$method = "\$app->SetLayoutName('your-use-layout-name');";
 				}else{
 					$method = "\$this->SetEnv('layout','app:/path/to/your/self');";
 				}

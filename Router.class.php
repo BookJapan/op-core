@@ -75,7 +75,11 @@ class Router extends OnePiece5
 				if( Env::Get('HtmlPassThrough') ){
 					$_is_html_pass_through = true;
 				}else{
-					self::Mark('![.red[HtmlPassThrough is off. please $this->SetEnv("HtmlPassThrough",true);]]');
+					if( true ){
+						self::Mark('![.red[HtmlPassThrough is off. please set $app->HtmlPassThrough(true);]]');
+					}else{
+						self::Mark('![.red[HtmlPassThrough is off. please set $this->SetEnv("HtmlPassThrough",true);]]');
+					}
 				}
 			}
 		}
