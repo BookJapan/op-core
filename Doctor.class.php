@@ -366,16 +366,23 @@ class Doctor extends OnePiece5
 		$user	 = $database->user;
 		$dsn	 = $this->PDO()->GetDSN();
 		
+		//	Does not connection.
+		if( empty($this->_diagnosis->$user->$dsn->connection) ){
+			return;
+		}
+		
+		//	Does not exists dabatabse
+		if( empty($this->_diagnosis->$user->$dsn->database->$db_name) ){
+			return;
+		}
+		
 		//	This connection's found list.
-		if( $this->_diagnosis->$user->$dsn->connection === true ){
-			if(!$table_list = $this->PDO()->GetTableList($db_name)){
-				$table_list = array();
-				//	Error process.
-				$error = $this->FetchError();
-				$this->_log($error['message'],false);
-			}
-		}else{
-			$table_list = array();
+		$table_list = $this->PDO()->GetTableList($db_name);
+		if(!$table_list){
+			//	Error process.
+			$error = $this->FetchError();
+			$this->_log($error['message'],false);
+			return;
 		}
 		
 		//	Check each table.
@@ -619,11 +626,16 @@ class Doctor extends OnePiece5
 		$table_name	 = $table->name;
 		$join_name	 = $db_name.'.'.$table_name;
 
-		//	Check connection
+		//	Does not connect database.
 		if(!$this->_diagnosis->$user->$dsn->connection){
 			return;
 		}
 		
+		//	Does not exists database.
+		if( empty($this->_diagnosis->$user->$dsn->database->$db_name) ){
+			return;
+		}
+				
 		//	Get column struct.
 		if(!$struct = $this->PDO()->GetTableStruct($table_name, $db_name)){
 			$struct = array();
@@ -1140,6 +1152,9 @@ class Poneglyph extends OnePiece5
 						case 'database':
 							foreach($var as $database => $io){
 								$this->_tank['users'][$user]['databases'][$database]['io'] = $io;
+								if( $io === false ){
+									$this->_tank['users'][$user]['io'] = $io;
+								}
 							}
 							break;
 						case 'table':
@@ -1219,6 +1234,9 @@ class Poneglyph extends OnePiece5
 			foreach($_user['databases'] as $database => $_database ){
 				$color = $_database['io']  ? 'blue': 'red';
 				echo "<li><span style='color:$color;'>database: $database</span></li>";
+				if(!isset($_database['tables'])){
+					continue;
+				}
 				echo '<ol>';
 				foreach($_database['tables'] as $table => $_table){
 					$color = $_table['io']  ? 'blue': 'red';
