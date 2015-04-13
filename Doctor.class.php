@@ -368,17 +368,19 @@ class Doctor extends OnePiece5
 		
 		//	Does not connection.
 		if( empty($this->_diagnosis->$user->$dsn->connection) ){
-			return;
-		}
+			$table_list = array();
+		}else 
 		
 		//	Does not exists dabatabse
 		if( empty($this->_diagnosis->$user->$dsn->database->$db_name) ){
-			return;
+			$table_list = array();
 		}
 		
-		//	This connection's found list.
-		$table_list = $this->PDO()->GetTableList($db_name);
-		if(!$table_list){
+		else{
+			$table_list = $this->PDO()->GetTableList($db_name);
+		}
+		
+		if(!is_array($table_list)){
 			//	Error process.
 			$error = $this->FetchError();
 			$this->_log($error['message'],false);
@@ -392,7 +394,7 @@ class Doctor extends OnePiece5
 			
 			//	Check table exists.
 			$io = in_array($table_name, $table_list);
-
+			
 			//	Write diagnosis.
 			$this->_diagnosis->$user->$dsn->table->$join_name = $io;
 			
@@ -1126,6 +1128,7 @@ class Poneglyph extends OnePiece5
 			if( $user === 'PRI' or $user === 'AI' ){
 				continue;
 			}
+			
 			//	continue
 			if( $user === 'ai' or $user === 'pkey' ){
 				continue;
@@ -1160,8 +1163,8 @@ class Poneglyph extends OnePiece5
 						case 'table':
 							foreach($var as $database_table => $io){
 								$temp = explode('.', $database_table);
-								$database = array_shift($temp);
-								$table = join('.',$temp);
+								$table = array_pop($temp);
+								$database = join('.',$temp);
 								$this->_tank['users'][$user]['databases'][$database]['tables'][$table]['io'] = $io;
 								if( $io === false ){
 									$this->_tank['users'][$user]['io'] = $io;
