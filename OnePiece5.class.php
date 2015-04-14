@@ -10,6 +10,11 @@
  * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
  */
 
+//	Deactivates the circular reference collector.
+if( $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ){
+	gc_disable();
+}
+
 //	Check mbstring installed.
 if(!function_exists('mb_language') ){
 	print "<p>Does not install php-mbstring. (ex: sudo yum install php-mbstring)</p>".PHP_EOL;
