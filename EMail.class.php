@@ -6,7 +6,7 @@
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */
 
 /**
@@ -16,7 +16,7 @@
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */
 class EMail extends OnePiece5
 {
@@ -73,6 +73,35 @@ class EMail extends OnePiece5
 		$this->_body[] = $body;
 	}
 	
+	function Attachment($file_path, $file_name=null, $mime=null)
+	{
+		if(!file_exists($file_path)){
+			throw OpException("Does not exists this file. ($file_path)");
+		}
+		$content = file_get_contents($file_path);
+	//	$content = chunk_split(base64_encode($file));
+		
+		if(!$file_name){
+			$temp = explode(DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR.$file_path);
+			$file_name = array_pop($temp);
+		}
+		
+		if(!$mime){
+			if( function_exists("finfo_file") ){
+				$finfo = finfo_open(FILEINFO_MIME_TYPE);
+				$mime  = finfo_file($finfo, $file_path);
+				finfo_close($finfo);
+			}else if(!$mime = exec('file -ib '.$file_path)){
+				$mime = mime_content_type($file_path);
+			}
+		}
+		
+		$body['body'] = $content;
+		$body['mime'] = $mime;
+		$body['name'] = $file_name;
+		$this->_body[] = $body;
+	}
+	
 	function Send($type=null)
 	{
 		$save_lang = mb_language();
@@ -126,6 +155,7 @@ class EMail extends OnePiece5
 			$debug['content'] = $content;
 			$debug['headers'] = $headers;
 			$debug['parameters'] = $parameters;
+			$debug['body'] = $this->_body;
 		}
 		
 		//	Send mail.
@@ -289,13 +319,18 @@ class EMail extends OnePiece5
 				$multibody .= "\n";
 				$multibody .= "$body\n";
 			}else{
-				$name = isset($body['name']) ? $body['name']: "attachment-{$i}.{$ext}";
-			//	$name = mb_convert_encoding($name,'utf-8');
+				$attachment_name = "attachment-{$i}.{$ext}";
+				$name = isset($body['name']) ? $body['name']: $attachment_name;
+				$name = mb_convert_encoding($name,'utf-8');
 				$name = mb_encode_mimeheader($name);
+				if(!$name){
+					$name = $attachment_name;
+				}
 				
-				$multibody .= "Content-Type: application/octet-stream; name=\"{$name}\"\n";
-				$multibody .= "Content-Transfer-Encoding: base64\n";
+			//	$multibody .= "Content-Type: application/octet-stream; name=\"{$name}\"\n";
+				$multibody .= "Content-Type: {$mime}; name=\"{$name}\"\n";
 				$multibody .= "Content-Disposition: attachment; filename=\"{$name}\"\n";
+				$multibody .= "Content-Transfer-Encoding: base64\n";
 				$multibody .= "\n";
 				$multibody .= chunk_split( base64_encode($body) );
 				$multibody .= "\n\n";
