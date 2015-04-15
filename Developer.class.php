@@ -4,7 +4,10 @@
  * 
  * Set the only features that developers use.
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2014 (C) Tomoaki Nagahara All right reserved.
  */
 
 //	Developer is not read from not admin.
@@ -15,7 +18,10 @@ if(!OnePiece5::Admin()){
 /**
  * Developer
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2014 (C) Tomoaki Nagahara All right reserved.
  */
 class Developer extends OnePiece5
 {

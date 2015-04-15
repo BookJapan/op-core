@@ -128,4 +128,3 @@ function _i18n(){
 		}
 	});
 }
-/* onepiece */
