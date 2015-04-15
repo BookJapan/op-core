@@ -70,7 +70,7 @@ function _i18n(){
 		//	Replace join character.
 		html = html.replace("\r",'');
 		//	Swap html tag.
-		while( result = html.match(/<([a-z0-9])[^>]*>([^<>]+)<\/\1>/i) ){
+		while( result = html.match(/<([a-z0-9]+)[^>]*>([^<>]+)<\/\1>/i) ){
 			if( result ){
 				n++;
 				var target = result[0];
