@@ -2028,6 +2028,8 @@ class Vivre
 {
 	static function Warning($message=null)
 	{
+		$this->StackError("This method is to abolished.");
+		
 		//	local info
 		$nl		 = "\r\n";
 		
