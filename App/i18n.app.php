@@ -2,13 +2,19 @@
 /**
  * i18n.app.php
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2013 (C) Tomoaki Nagahara All right reserved.
  */
 
 /**
  * App_i18n
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2013 (C) Tomoaki Nagahara All right reserved.
  */
 class App_i18n extends App
 {
@@ -28,62 +34,52 @@ class App_i18n extends App
 			//	Entry i18n env.
 			$this->SetEnv('app.i18n',true);
 			
-			//	init
-			list($request_uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
-			$rewrite_base = rtrim($_SERVER['REWRITE_BASE'],'/').'/';
-			
-			//	Get App root url
-			$patt = preg_quote($rewrite_base);
-			$path = explode('/', preg_replace("|^{$patt}|", '', $request_uri));
+			//	Parse URL arguments.
+			if( strpos($_SERVER['REQUEST_URI'], '?') ){
+				list($request_uri, $query) = explode('?',$_SERVER['REQUEST_URI']);
+				$query = '?'.$query;
+			}else{
+				$request_uri = $_SERVER['REQUEST_URI'];
+				$query = null;
+			}
+			$args = explode('/',ltrim($request_uri, '/'));
 			
 			//	Get language list
 			if(!$list = $this->i18n()->GetLanguageList()){
 				throw new OpException("Empty language list from api.uqunie.com");
 			}
 			
-			//	Get extension
-			if( preg_match('|\.([0-9a-z]{2,4})$|i',$request_uri,$match) ){
-				$extension = $match[1];
-			}else{
-				$extension = null;
-			}
-			
-			//	Get lang.
-			$lang = array_shift($path);
-			
-			//	rebuild request uri
-			$request_uri = '/'.join('/',$path);
-			if( $query ){
-				$request_uri .= '?'.$query;
-			}
-			
-			//	Check lang.
-			if( array_key_exists($lang,$list) ){
-				//	Set lang for i18n
-				$this->i18n()->SetLang($lang);
-			}else{
+			//	Check language code.
+			if(!array_key_exists($args[0], $list) ){
 				$lang = $this->i18n()->GetLang();
-				$url  = '/'.$lang.'/'.ltrim($request_uri,'/');
-				$this->Location($url);
-			//	$this->Mark($url);
+				$url = "/{$lang}/".trim(join('/',$args),'/').$query;
+				header("Location: $url");
 			}
 			
-			switch(strtolower($extension)){
-				case '':
-				case 'js':
-				case 'css':
-				case 'html':
-					//	Does not transfer.
-					break;
-					
-				default:
-					//	Transfer real path. (ex. /img/logo.png)
-					header("Location: $request_uri");
-					exit;
+			//	Get language code.
+			$lang = array_shift($args);
+			$this->i18n()->SetLang($lang);
+			
+			//	Re:Build Request URI.
+			$request_uri = '/'.join('/',$args);
+			
+			//	Check extension.
+			if( preg_match('|\.([0-9a-z]{2,5})$|i',$request_uri,$match) ){
+				switch(strtolower($match[1])){
+					case '':
+					case 'js':
+					case 'css':
+					case 'html':
+						//	Does not dispatch.
+						break;
+					default:
+						//	Transfer real path. (ex. /img/logo.png)
+						header("Location: {$request_uri}{$query}"); exit;
+				}
 			}
 			
 			//	Get route infomation.
-			$route = Router::GetRoute($request_uri);
+			$route = Router::GetRoute($request_uri.$query);
 		}
 		
 		return parent::Dispatch($route);
