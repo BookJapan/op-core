@@ -62,16 +62,20 @@ class App_i18n extends App
 			
 			//	Re:Build Request URI.
 			$request_uri = '/'.join('/',$args);
+
+			//	Path info
+			$pathinfo = pathinfo($request_uri);
 			
-			//	Check extension.
-			if( preg_match('|\.([0-9a-z]{2,5})$|i',$request_uri,$match) ){
-				switch(strtolower($match[1])){
+			//	Branch by extension.
+			if( isset($pathinfo['extension']) ){
+				switch(strtolower($pathinfo['extension'])){
 					case '':
 					case 'js':
 					case 'css':
 					case 'html':
-						//	Does not dispatch.
+					case 'php':
 						break;
+						
 					default:
 						//	Transfer real path. (ex. /img/logo.png)
 						header("Location: {$request_uri}{$query}"); exit;
