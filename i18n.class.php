@@ -79,7 +79,8 @@ class i18n extends OnePiece5
 			return;
 		}
 		
-		$this->P("i18n");
+		$call = $this->GetCallerLine();
+		$this->P("![h1[Debug for i18n: ![.small .gray[$call]] ]]");
 		$this->D($this->_debug);
 		print "<hr/>";
 	}
@@ -189,7 +190,7 @@ class i18n extends OnePiece5
 		}
 		
 		//	Set timeout time.
-		$conf['http']['timeout'] = Toolbox::isLocalhost() ? 5: 10;
+		$conf['http']['timeout'] = Toolbox::isLocalhost() ? 1: 3;
 		$context = stream_context_create($conf);
 		
 		//	E_WARNING
