@@ -326,8 +326,8 @@ class OnePiece5
 			OnePiece5::StackError("expire does not set. (ex. 0 is 365days, -1 is out of valid expire.)");
 		}
 		
-		if( headers_sent() ){
-			OnePiece5::StackError("already header sent.");
+		if( headers_sent($file,$line) ){
+			OnePiece5::StackError("Header has already been sent. File: {$file}, Line number #{$line}.");
 			return false;
 		}
 		
