@@ -787,4 +787,51 @@ class Toolbox
 		OnePiece5::StackError("Abolish this method.");
 		return toBinary($int, $bit);
 	}
+	
+	/**
+	 * Detect character code from string.
+	 * 
+	 * @see http://dwm.me/archives/3562
+	 * @param  string $str
+	 * @return string|NULL
+	 */
+	static function GetCharset($str)
+	{
+		$sets[] = 'UTF-8';
+		$sets[] = 'SJIS';
+		$sets[] = 'SJIS-WIN';
+		$sets[] = 'EUC-JP';
+		$sets[] = 'EUCJP-win';
+		$sets[] = 'CP51932';
+		$sets[] = 'ISO-2022-JP';
+		$sets[] = 'ISO-2022-JP-MS';
+		$sets[] = 'ASCII';
+		$sets[] = 'JIS';
+		foreach($sets as $charset){
+			if( mb_convert_encoding($str, $charset, $charset) == $str ){
+				return $charset;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Will convert the string to UTF-8.
+	 * 
+	 * @param  string $str
+	 * @param  string $from
+	 * @return string
+	 */
+	static function toUTF8($str, $from=null)
+	{
+		if(!$from){
+			$from = self::GetCharset($str);
+		}else{
+			$from = strtoupper($from);
+		}
+		if( $from === 'UTF-8'){
+			return $str;
+		}
+		return mb_convert_encoding($str, 'utf-8', $from);
+	}
 }
