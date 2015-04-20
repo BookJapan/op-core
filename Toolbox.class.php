@@ -663,6 +663,12 @@ class Toolbox
 		return preg_replace('|^app:/|', $app, $url);
 	}
 	
+	/**
+	 * Convert to path of file system from meta string.
+	 * 
+	 * @param  string $path
+	 * @return string
+	 */
 	static function ConvertPath($path)
 	{
 		//	APP Root
@@ -674,6 +680,12 @@ class Toolbox
 		return self::ConvertMeta($path);
 	}
 	
+	/**
+	 * Convert to URL of file system from meta string.
+	 * 
+	 * @param  string $url
+	 * @return string
+	 */
 	static function ConvertURL($url)
 	{
 		//	APP Root
