@@ -748,18 +748,43 @@ class Toolbox
 		return $url;
 	}
 	
-	static function is64bit()
-	{
-		//	http://stackoverflow.com/questions/2353473/can-php-tell-if-the-server-os-it-64-bit
-		return intval("9223372036854775807") == 9223372036854775807 ? true: false;
-	}
-	
-	static function Dec2Bin($dec, $bit=null)
+	/**
+	 * Intger is convert to binary.
+	 * 
+	 * @param integer $int
+	 * @param string  $bit
+	 */
+	static function toBinary($int, $bit=null)
 	{
 		if(!$bit){
 			$bit = self::is64bit() ? 64: 32;
 		}
-		$bin = decbin($dec);
-		return str_pad($bin,$bit,0,STR_PAD_LEFT);
+		$bin = decbin($int);
+		return str_pad($bin, $bit, 0, STR_PAD_LEFT);
+	}
+	
+	/**
+	 * Checking of 64bit memories.
+	 *
+	 * @see http://stackoverflow.com/questions/2353473/can-php-tell-if-the-server-os-it-64-bit
+	 * @return boolean
+	 */
+	static function is64bit()
+	{
+		return intval("9223372036854775807") == 9223372036854775807 ? true: false;
+	}
+	
+	/**
+	 * Intger is convert to binary.
+	 * 
+	 * @param  integer $int
+	 * @param  string  $bit
+	 * @return string
+	 */
+	static function Dec2Bin($int, $bit=null)
+	{
+		//	2015-04-20
+		OnePiece5::StackError("Abolish this method.");
+		return toBinary($int, $bit);
 	}
 }
