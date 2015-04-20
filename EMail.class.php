@@ -79,7 +79,6 @@ class EMail extends OnePiece5
 			throw OpException("Does not exists this file. ($file_path)");
 		}
 		$content = file_get_contents($file_path);
-	//	$content = chunk_split(base64_encode($file));
 		
 		if(!$file_name){
 			$temp = explode(DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR.$file_path);
@@ -260,7 +259,7 @@ class EMail extends OnePiece5
 	{
 		static $boundary;
 		if(!$boundary){
-			$boundary = "-*-*-*-*-*-*-*-*-Boundary_" . uniqid("b");
+			$boundary = "--onepiece-framework--Boundary--" . uniqid("b");
 		}
 		return $boundary;
 	}
@@ -304,12 +303,12 @@ class EMail extends OnePiece5
 		$multibody = '';
 		$boundary  = $this->_get_boundary();
 		
-		foreach($this->_body as $body){
+		foreach($this->_body as $_body){
 			$i++;
 			$multibody .= "--{$boundary}\n";
 			
-			$mime = $body['mime'];
-			$body = $body['body'];
+			$mime = $_body['mime'];
+			$body = $_body['body'];
 			
 			list($type,$ext) = explode('/', $mime);
 			
@@ -320,12 +319,9 @@ class EMail extends OnePiece5
 				$multibody .= "$body\n";
 			}else{
 				$attachment_name = "attachment-{$i}.{$ext}";
-				$name = isset($body['name']) ? $body['name']: $attachment_name;
-				$name = mb_convert_encoding($name,'utf-8');
-				$name = mb_encode_mimeheader($name);
-				if(!$name){
-					$name = $attachment_name;
-				}
+				$name = isset($_body['name']) ? $_body['name']: $attachment_name;
+				$name = Toolbox::toUTF8($name);
+				$name = mb_encode_mimeheader($name,'utf-8');
 				
 			//	$multibody .= "Content-Type: application/octet-stream; name=\"{$name}\"\n";
 				$multibody .= "Content-Type: {$mime}; name=\"{$name}\"\n";
