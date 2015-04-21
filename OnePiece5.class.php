@@ -1572,6 +1572,17 @@ class OnePiece5
 			return nl2br( self::Escape(trim($string)) ) . PHP_EOL;
 		}
 	}
+	
+	/**
+	 * EMail
+	 * 
+	 * @see http://onepiece-framework.com/reference/email
+	 * @return EMail
+	 */
+	function EMail()
+	{
+		return $this->Singleton('EMail');
+	}
 }
 
 /**
