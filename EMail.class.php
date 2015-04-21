@@ -73,7 +73,7 @@ class EMail extends OnePiece5
 		$this->_body[] = $body;
 	}
 	
-	function Attachment($file_path, $file_name=null, $mime=null)
+	function Attachment($file_path, $mime=null, $file_name=null)
 	{
 		if(!file_exists($file_path)){
 			throw OpException("Does not exists this file. ($file_path)");
