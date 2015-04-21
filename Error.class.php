@@ -214,76 +214,20 @@ class Error
 	
 	static private function _toMail()
 	{
-		$from_addr = get_current_user().'@'.$_SERVER['SERVER_ADDR'];
+		$from_addr = EMail::GetLocalAddress();
 		$from_name = 'op-core/Error';
 		
-		$to = Env::GetAdminMailAddress();
+		$to_addr = Env::GetAdminMailAddress();
+		$to_name = $_SERVER['HTTP_HOST'];
 		$subject = '[Error] '.self::_getMailSubject();
-		$message = '';
-		$headers = '';
-		$parameters = "-f $from_addr";
-	//	$boundary = "--".uniqid(rand(),1)."--";
-		
-		//	get html message
 		$html = self::_getMailMessage();
-	//	$text = strip_tags($html);
 		
-		//	create multipart message
-		/*
-		$message .= "$boundary\r\n";
-		$message .= "Content-Type: text/plain; charset=UTF-8\r\n";
-		$message .= "Content-Disposition: inline\r\n";
-		$message .= "Content-Transfer-Encoding: quoted-printable\r\n";
-		$message .= "\r\n";
-		$message .= quoted_printable_decode($text)."\r\n";
-		$message .= "\r\n";
-		$message .= "$boundary\r\n";
-		$message .= "Content-Type: text/html; charset=UTF-8\r\n";
-		$message .= "Content-Disposition: inline\r\n";
-		$message .= "Content-Transfer-Encoding: quoted-printable\r\n";
-		$message .= "\r\n";
-		$message .= quoted_printable_decode($html)."\r\n";
-		$message .= "$boundary\r\n";
-		*/
-
-		//	Character
-		$lang = 'uni'; // Unicode only
-		$char = Env::Get('charset');
-		
-		//	Change encoding.
-		if( $lang and $char ){
-			// Save original.
-			$save_lang = mb_language();
-			$save_char = mb_internal_encoding();
-							
-			// Set language use mail function.
-			mb_language($lang);
-			mb_internal_encoding($char);
-		}
-
-		//	header
-	//	$headers .= "Content-Type: multipart/alternative; boundary=\"$boundary\"\r\n";
-	//	$headers .= "Content-Transfer-Encoding: binary\r\n";
-	//	$headers .= "MIME-Version: 1.0\r\n";
-		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
-		$headers .= "From: ".mb_encode_mimeheader($from_name)."<$from_addr>\r\n";
-		
-		//	subject
-		$subject = mb_encode_mimeheader($subject);
-		
-		//	message
-		$message = $html;
-		
-		//	Send mail.
-		if(!$io = mail($to, $subject, $message, $headers, $parameters)){
-			OnePiece5::P('Failed to send the error mail.');
-		}
-
-		// Recovery encoding.
-		if( $save_lang and $save_char ){
-			mb_language($save_lang);
-			mb_internal_encoding($save_char);
-		}
+		$mail = new EMail();
+		$mail->From($from_addr, $from_name);
+		$mail->To($to_addr, $to_name);
+		$mail->Subject($subject);
+		$mail->Content($html,'text/html');
+		$mail->Send();
 		
 		return $io;
 	}
