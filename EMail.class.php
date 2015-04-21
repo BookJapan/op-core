@@ -247,10 +247,14 @@ class EMail extends OnePiece5
 		return $full_name;
 	}
 	
+	static function GetLocalAddress()
+	{
+		return get_current_user().'@'.gethostbyaddr($_SERVER['SERVER_ADDR']);
+	}
+	
 	private function _get_parameters()
 	{
-		//	parameters
-		$local_user  = get_current_user().'@'.gethostbyaddr($_SERVER['SERVER_ADDR']);
+		$local_user = self::GetLocalAddress();
 		$parameters = "-f $local_user";
 		return $parameters;
 	}
