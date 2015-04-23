@@ -1,9 +1,15 @@
 <?php
 /**
- * NewWorld.class.php
+ * NewWorld5.class.php
+ * 
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2010 (C) Tomoaki Nagahara All right reserved.
  */
 
 /**
+ * NewWorld5
+ * 
  * The NewWorld is the new world.
  * 
  * NewWorld's job is only to dispatch the index.php.
@@ -149,7 +155,7 @@ abstract class NewWorld5 extends OnePiece5
 			//	Switch
 			if( Toolbox::isHtml() ){
 				//	If content-type is html.
-				$this->_doLayout();
+				$this->Layout();
 			}else{
 				//	Case of css and js, output of content buffer.
 				$this->Content();
@@ -311,20 +317,6 @@ abstract class NewWorld5 extends OnePiece5
 		}else{
 			$msg = "Does not set file name.($file_name)";
 			throw new OpException($msg);
-		}
-	}
-	
-	private function _doWizard()
-	{
-		//	do wizard
-		if( $this->admin() ){
-			if( ob_start() ){
-				$this->Wizard()->Selftest();
-				$this->_content .= ob_get_contents();
-				ob_end_clean();
-			}else{
-				$this->StackError("\ob_start\ was failed. Does not run selftest.",'en');
-			}
 		}
 	}
 	
