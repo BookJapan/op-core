@@ -149,7 +149,6 @@ abstract class NewWorld5 extends OnePiece5
 			//	Switch
 			if( Toolbox::isHtml() ){
 				//	If content-type is html.
-			//	$this->_doWizard();
 				$this->_doLayout();
 			}else{
 				//	Case of css and js, output of content buffer.
@@ -183,20 +182,11 @@ abstract class NewWorld5 extends OnePiece5
 		
 		//	Change current directory.
 		chdir($ctrl_root);
-		
-		header("X-Frame-Options: SAMEORIGIN");
-		header("X-XSS-Protection: 1; mode=block");
-		header("X-Permitted-Cross-Domain-Policies: master-only");
-		header("X-Download-Options: noopen");
-		
-		if( Toolbox::GetRequest('jsonp') ){
-			if( $this->Model('UA')->GetBrowser() !== Model_UA::_CHROME_ ){
-				header("X-Content-Type-Options: nosniff");
-			}
-		}
-		
-	//	header("Content-Security-Policy: default-src 'self'");
-	//	header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
+
+		/*
+		 header("Content-Security-Policy: default-src 'self'");
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
+		*/
 		
 		/* cache control
 		header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -204,17 +194,29 @@ abstract class NewWorld5 extends OnePiece5
 		*/
 		
 		/* permit cross domain
-		header("Access-Control-Allow-Origin: http://www.example.com");
+		 header("Access-Control-Allow-Origin: http://www.example.com");
 		header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 		header("Access-Control-Allow-Headers: X-TRICORDER");
 		header("Access-Control-Max-Age: 1728000");
 		*/
 		
-		//	Output content header.
-		header("Content-Type: {$route['mime']}");
+		header("X-Frame-Options: SAMEORIGIN");
+		header("X-XSS-Protection: 1; mode=block");
+		header("X-Permitted-Cross-Domain-Policies: master-only");
+		header("X-Download-Options: noopen");
+		
+		if( Toolbox::GetRequest('jsonp') ){
+		//	if( $this->Model('UA')->GetBrowser() !== Model_UA::_CHROME_ ){
+				header("X-Content-Type-Options: nosniff");
+		//	}
+			header('Content-Type: application/javascript');
+		}else{
+			//	Output content header.
+			header("Content-Type: {$route['mime']}");
+		}
 		
 		//  Execute.
-		$this->Template( $route['real_path'] );
+		$this->Template($route['real_path']);
 		
 		return true;
 	}
@@ -336,6 +338,7 @@ abstract class NewWorld5 extends OnePiece5
 		switch( $mime = strtolower(Toolbox::GetMIME(true)) ){
 			//	json
 			case 'json':
+			case 'javascript':
 				$this->_doJson();
 				break;
 				
@@ -418,6 +421,9 @@ abstract class NewWorld5 extends OnePiece5
 		if(!Toolbox::GetRequest('jsonp') ){
 			print json_encode($this->_json);
 		}else{
+
+			print __FILE__.__LINE__;exit;
+			
 			$callback = Toolbox::GetRequest('callback',null,'callback');
 			print "{$callback}(".json_encode($this->_json).')';
 		}
