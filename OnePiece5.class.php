@@ -1353,6 +1353,9 @@ class OnePiece5
 	
 	function Module($name)
 	{
+		//	2015-04-24
+		$this->StackError("This method is to abolished.");
+		
 		try{
 			//  name check
 			if(!$name){
