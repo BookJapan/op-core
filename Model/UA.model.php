@@ -48,7 +48,11 @@ class Model_UA extends Model_Model
 		//	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36
 		//	Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/600.3.18 (KHTML, like Gecko) Version/6.2.3 Safari/537.85.12
 		
-		$ua = $_SERVER['HTTP_USER_AGENT'];
+		if( isset($_SERVER['HTTP_USER_AGENT']) ){
+			$ua = $_SERVER['HTTP_USER_AGENT'];
+		}else{
+			return 'Empty';
+		}
 		
 		if( preg_match('/Firefox/i',$ua) ){
 			$var = self::_FIREFOX_;
@@ -58,6 +62,8 @@ class Model_UA extends Model_Model
 		}else
 		if( preg_match('/Safari/i',$ua) ){
 			$var = self::_CHROME_;
+		}else{
+			$var = "unknown ($ua)";
 		}
 		
 		return $var;
