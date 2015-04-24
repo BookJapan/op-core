@@ -329,15 +329,6 @@ class App extends NewWorld5
 		$this->SetEnv('table_prefix',$prefix);
 	}
 	
-	/*
-	function Selftest()
-	{
-		$io = $this->Wizard()->Selftest();
-		$io = $this->Wizard()->isSelftest();
-		return $io;
-	}
-	*/
-	
 	function En($english)
 	{
 		return $this->i18n()->En($english);
