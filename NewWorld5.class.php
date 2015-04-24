@@ -147,7 +147,8 @@ abstract class NewWorld5 extends OnePiece5
 			$this->_content .= ob_get_contents(); ob_clean();
 			
 			//  Execute end point program.
-			$this->_doContent($route);
+		//	$this->_doContent($route);
+			$this->Execute($route);
 			
 			//	Save to content buffer.
 			$this->_content .= ob_get_contents(); ob_clean();
@@ -165,6 +166,28 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Execute end-point file.
+	 * 
+	 * @param array $route
+	 */
+	function Execute($route)
+	{
+		//	Check file exists.
+		if(!file_exists($route['real_path'])){
+			$this->StackError("Does not file exists. ({$route['real_path']})");
+		}
+		
+		//	Get execute file.
+		$file_path = $route['real_path'];
+		
+		//	Get end-point root.
+		$ctrl_root = dirname($file_path);
+		
+		//  Execute.
+		$this->Template($route['real_path']);
 	}
 	
 	/**
@@ -225,6 +248,17 @@ abstract class NewWorld5 extends OnePiece5
 		$this->Template($route['real_path']);
 		
 		return true;
+	}
+	
+	function Layout()
+	{
+		static $layout = null;
+		if(!$layout){
+			$layout = new Layout();
+		}
+		
+		$layout->Dispatcher($this);
+		$layout->Execute($this->_content);
 	}
 	
 	private function _doLayout()
