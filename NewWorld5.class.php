@@ -153,19 +153,31 @@ abstract class NewWorld5 extends OnePiece5
 			//	Save to content buffer.
 			$this->_content .= ob_get_contents(); ob_clean();
 			
-			//	Switch
-			if( Toolbox::isHtml() ){
-				//	If content-type is html.
-				$this->Layout();
-			}else{
-				//	Case of css and js, output of content buffer.
-				$this->Content();
+			//	Get mime by route table.
+			$mime = strtolower($route['mime']);
+			
+			//	Content type.
+			$this->ContentType($mime);
+			
+			//	Execute layout system.
+			switch( $mime ){
+				case 'text/html':
+					$this->Layout();
+					break;
+				default:
+					$this->Content();
 			}
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
 		
 		return true;
+	}
+	
+	function ContentType($mime)
+	{
+		$charset = $this->GetEnv('charset');
+		header("Content-type: $mime; charset=\"$charset\"");
 	}
 	
 	/**
