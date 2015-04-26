@@ -662,7 +662,7 @@ class Toolbox
 	 */
 	static function ConvertURLforApp($url)
 	{
-		$app = self::GetRewriteBase();
+		$app = rtrim(self::GetRewriteBase(),'/').'/';
 		return preg_replace('|^app:/|', $app, $url);
 	}
 	
