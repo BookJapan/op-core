@@ -60,6 +60,10 @@ class App_i18n extends App
 			$lang = array_shift($args);
 			$this->i18n()->SetLang($lang);
 			
+			//	Set Rewrite base.
+			$rewrite_base = Toolbox::GetRewriteBase().$lang.'/';
+			Toolbox::SetRewriteBase($rewrite_base);
+			
 			//	Re:Build Request URI.
 			$request_uri = '/'.join('/',$args);
 
