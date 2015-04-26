@@ -373,10 +373,13 @@ abstract class NewWorld5 extends OnePiece5
 				}else{
 					$this->_json['_LEAKED_CONTENT_'] = strip_tags($this->_content);
 				}
-				$this->_content = '';
 			}
 		}
 		
+		//	
+		$this->_content = null;
+		
+		//	
 		if(!Toolbox::GetRequest('jsonp') ){
 			print json_encode($this->_json);
 		}else{
