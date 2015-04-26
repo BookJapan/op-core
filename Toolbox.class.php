@@ -664,6 +664,49 @@ class Toolbox
 	}
 	
 	/**
+	 * Calculate rewrite base.
+	 * 
+	 * It's application directory from document root.
+	 * 
+	 * @return string;
+	 */
+	static function GetRewriteBase()
+	{
+		if( empty($_SERVER['_REWRITE_BASE_']) ){
+			//	root
+			$app_root = dirname($_SERVER['SCRIPT_FILENAME']);
+			$doc_root = rtrim($_SERVER['DOCUMENT_ROOT'],'/');
+			
+			//	Check alias.
+			if( preg_match("|^($doc_root)(.*)|",$app_root,$match) ){
+				//	not alias
+				$is_alias = false;
+				$real_app_dir = $match[1];
+				$rewrite_base = $match[2] ? $match[2]: '/';
+			}else{
+				//	alias
+				$is_alias = true;
+				$real_app_dir = dirname($_SERVER['SCRIPT_FILENAME']);
+				$rewrite_base = dirname($_SERVER['SCRIPT_NAME']).'/';
+			}
+			
+			$_SERVER['_REWRITE_BASE_'] = $rewrite_base;
+		}
+		
+		return $_SERVER['_REWRITE_BASE_'];
+	}
+	
+	/**
+	 * Set rewrite base.
+	 * 
+	 * @param string $rewrite_base
+	 */
+	static function SetRewriteBase($rewrite_base)
+	{
+		$_SERVER['_REWRITE_BASE_'] = $rewrite_base;
+	}
+	
+	/**
 	 * Convert to path of file system from meta string.
 	 * 
 	 * @param  string $path
