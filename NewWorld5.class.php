@@ -55,7 +55,14 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var array
 	 */
-	private $_json		 = null;
+	private $_json = null;
+	
+	/**
+	 * MIME
+	 * 
+	 * @var string
+	 */
+	private $_mime = null;
 	
 	function __construct($args=array())
 	{
@@ -146,28 +153,32 @@ abstract class NewWorld5 extends OnePiece5
 			//	Get leaked content.
 			$this->_content .= ob_get_contents(); ob_clean();
 			
+			//	Set default mime.
+			$this->_mime = strtolower($route['mime']);
+			
 			//  Execute a end-point program.
 			$this->Execute($route);
 			
 			//	Save to content buffer.
 			$this->_content .= ob_get_contents(); ob_clean();
 			
-			//	Get mime by route table.
-			$mime = strtolower($route['mime']);
-			
-			//	Content type.
-			$this->ContentType($mime);
+			//	Output content-type header.
+			$this->ContentType();
 			
 			//	Other headers
 			$this->Headers();
 			
 			//	Execute layout system.
-			switch( $mime ){
+			switch($this->_mime){
 				case 'text/html':
 					$this->Layout();
 					break;
+				case 'application/json':
+				case 'application/javascript':
+					$this->_doJson();
+					break;
 				default:
-					$this->Content($mime);
+					$this->Content();
 			}
 		}catch( Exception $e ){
 			$this->StackError($e);
@@ -198,8 +209,9 @@ abstract class NewWorld5 extends OnePiece5
 		$this->Template($route['real_path']);
 	}
 
-	function ContentType($mime)
+	function ContentType()
 	{
+		$mime = $this->_mime;
 		$charset = $this->GetEnv('charset');
 		header("Content-type: $mime; charset=\"$charset\"");
 	}
@@ -248,13 +260,9 @@ abstract class NewWorld5 extends OnePiece5
 		return $this->_content;
 	}
 	
-	function Content($mime=null)
+	function Content()
 	{
-		if(!$mime){
-			$mime = strtolower(Toolbox::GetMIME());
-		}
-		
-		list($main, $sub) = explode('/',$mime);
+		list($main, $sub) = explode('/', $this->_mime);
 		
 		switch($main){
 			case 'text':
@@ -264,7 +272,7 @@ abstract class NewWorld5 extends OnePiece5
 				$this->ContentIsApplication($sub);
 				break;
 			default:
-				$this->StackError("Does not support this mime. ($mime)");
+				$this->StackError("Does not support this mime. ({$main}/{$sub})");
 		}
 	}
 	
@@ -372,26 +380,40 @@ abstract class NewWorld5 extends OnePiece5
 		if(!Toolbox::GetRequest('jsonp') ){
 			print json_encode($this->_json);
 		}else{
-			$callback = Toolbox::GetRequest('callback',null,'callback');
+			if(!$callback = Toolbox::GetRequest('callback') ){
+				$callback = 'callback';
+			}
 			print "{$callback}(".json_encode($this->_json).')';
 		}
 	}
 	
 	function SetJson( $key, $var )
 	{
-		static $init;
+		static $init = null;
+		
 		if(!$init){
 			$init = true;
+			
 			//	In case of debug.
-			if( $html = Toolbox::GetRequest('html') ){
+			if( Toolbox::GetRequest('html') ){
 				//	Debugging.
+				$mime = 'text/html';
 			}else{
 				//	Change MIME.
-				Toolbox::SetMIME('application/json');
+				if( Toolbox::GetRequest('jsonp') ){
+					$mime = 'application/javascript';
+				}else{
+					$mime = 'application/json';
+				}
+				
+				//	Layout will off.
+				Env::Set('layout',false);
 			}
-			//	Layout will off.
-			Env::Set('layout',false);
+
+			//	Change MIME.
+			$this->_mime = $mime;
 		}
+		
 		//	Set json value.
 		$this->_json[$key] = $var;
 	}
