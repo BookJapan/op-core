@@ -5,7 +5,7 @@
  */
 jQuery(function($){
 	//	Loaded message.
-	console.log('jQuery was loaded.');
+//	console.log('jQuery was loaded.');
 	
 	//	Get GeoIP Information.
 	_get_geo_ip();
@@ -17,7 +17,7 @@ jQuery(function($){
 function _get_geo_ip(){
 	//	API's URL
 	var url = '//api.uqunie.com/geo/language/?ip=own&jsonp=1&callback=geoip';
-	console.log(url);
+//	console.log(url);
 	
 	$.ajax({
 		type: 'GET',
@@ -43,7 +43,7 @@ function _get_geo_ip(){
 			sessionStorage.setItem('__language__',language);
 		},
 		error: function(e){
-			console.log(e);
+		//	console.log(e);
 			alert('unknown error');
 		}
 	});
@@ -58,7 +58,7 @@ function _i18n(){
 	
 	//	API's URL
 	var url = '//api.uqunie.com/i18n/?jsonp=1&callback=i18n';
-	console.log(url);
+//	console.log(url);
 	
 	var i = 0;
 	var n = 0;
@@ -120,10 +120,10 @@ function _i18n(){
 				i++;
 			});
 			
-			console.log('Translation was successful.');
+		//	console.log('Translation was successful.');
 		},
 		error: function(e){
-			console.dir(e);
+		//	console.dir(e);
 			alert('unknown error');
 		}
 	});
