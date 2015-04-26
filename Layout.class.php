@@ -96,10 +96,18 @@ class Layout extends OnePiece5
 			
 			//	Assembly of layout.
 			ob_start();
-			$this->mark($path,'layout');
-			include($path);
-			${$file_name} = ob_get_contents();
-			${$var_name}  = & ${$file_name}; // TODO: & <- ???
+			try{
+				$this->mark($path,'layout');
+				include($path);
+				${$file_name} = ob_get_contents();
+				${$var_name}  = & ${$file_name}; // TODO: & <- ???
+			}catch( Exception $e ){
+				$text = $e->getMessage();
+				if( method_exists($e,'getLang') ){
+					$lang = $e->getLang();
+				}else{ $lang = null; }
+				$this->StackError($text,$lang);
+			}
 			ob_end_clean();
 		}
 		
@@ -118,7 +126,7 @@ class Layout extends OnePiece5
 	 * Dispatcher
 	 *
 	 * @see http://onepiece-framework.com/reference/dispatcher
-	 * @return EMail
+	 * @return NewWorld5 | App | App_i18n
 	 */
 	function Dispatcher($dispatcher=null)
 	{
@@ -135,6 +143,38 @@ class Layout extends OnePiece5
 		throw new OpException("Dispatcher has not been registered.",'en');
 	}
 	
+	function __call($name, $args)
+	{
+		if( $dispatcher = $this->Dispatcher() ){
+			if( method_exists($dispatcher, $name) ){
+				if( count($args) > 10 ){
+					$this->StackError("Limit of argument is exceeded.",'en');
+				}
+				for($i=0; $i<10; $i++){
+					${"arg{$i}"} = isset($args[$i]) ? $args[$i]: null;
+				}
+				return $dispatcher->$name($arg0, $arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7, $arg8, $arg9);
+			}
+		}
+		parent::__call($name, $args);
+	}
+	
+	static function __callStatic($name, $args)
+	{
+		if( $dispatcher = $this->Dispatcher() ){
+			if( method_exists($dispatcher, $name) ){if( count($args) > 10 ){
+					$this->StackError("Limit of argument is exceeded.",'en');
+				}
+				for($i=0; $i<10; $i++){
+					${"arg{$i}"} = isset($args[$i]) ? $args[$i]: null;
+				}
+				return $dispatcher::$name($arg0, $arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7, $arg8, $arg9);
+			}
+		}
+		parent::__callStatic($name, $args);
+	}
+	
+	/*
 	function Doctype()
 	{
 		echo "<!DOCTYPE html>";
@@ -167,4 +207,5 @@ class Layout extends OnePiece5
 	{
 		return $this->GetEnv('title');
 	}
+	*/
 }

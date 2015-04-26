@@ -82,13 +82,13 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		//  flush buffer
-		ob_end_flush();
+	//	ob_end_flash(); // TODO: E_NOTICE will occur.
 		
 		//  Check content
 		if( $this->_content ){
 			//	HTML mode
-			$this->p('![ .big .red [Does not call ![ .bold ["Content"]] method. Please call to ![ .bold ["Content"]] method from layout.]]');
-			$this->p('![ .big .red [Example: <?php $this->Content(); ?>]]');
+			$message = 'Does not call \Content\ method. \Example: <?php $this->Content(); ?>\\';
+			$this->p("![ .big .red [$message]]",'en');
 			$this->content();
 		}
 		
@@ -118,7 +118,7 @@ abstract class NewWorld5 extends OnePiece5
 	}
 	
 	/**
-	 * Dispatch to the End-Point by route arguments. (End-point is page-controller file) 
+	 * Dispatch to the End-Point by route table. (End-point is page-controller file) 
 	 * 
 	 * @param  array   $route
 	 * @return boolean
@@ -138,16 +138,15 @@ abstract class NewWorld5 extends OnePiece5
 			$route = Router::GetRoute();
 		}
 		
-		//	Save route.
+		//	Save route table.
 		Env::Set('route',$route);
 		
 		//	Execute end point program from route information.
 		try{
-			//	Flash buffer 
+			//	Get leaked content.
 			$this->_content .= ob_get_contents(); ob_clean();
 			
-			//  Execute end point program.
-		//	$this->_doContent($route);
+			//  Execute a end-point program.
 			$this->Execute($route);
 			
 			//	Save to content buffer.
@@ -159,25 +158,22 @@ abstract class NewWorld5 extends OnePiece5
 			//	Content type.
 			$this->ContentType($mime);
 			
+			//	Other headers
+			$this->Headers();
+			
 			//	Execute layout system.
 			switch( $mime ){
 				case 'text/html':
 					$this->Layout();
 					break;
 				default:
-					$this->Content();
+					$this->Content($mime);
 			}
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
 		
 		return true;
-	}
-	
-	function ContentType($mime)
-	{
-		$charset = $this->GetEnv('charset');
-		header("Content-type: $mime; charset=\"$charset\"");
 	}
 	
 	/**
@@ -201,6 +197,40 @@ abstract class NewWorld5 extends OnePiece5
 		//  Execute.
 		$this->Template($route['real_path']);
 	}
+
+	function ContentType($mime)
+	{
+		$charset = $this->GetEnv('charset');
+		header("Content-type: $mime; charset=\"$charset\"");
+	}
+	
+	function Headers()
+	{
+		/*
+		header("Content-Security-Policy: default-src 'self'");
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // force https
+		*/
+		
+		/* cache control
+		header("Cache-Control: no-cache, no-store, must-revalidate");
+		header("pragma: no-cache");
+		*/
+		
+		/* permit cross domain
+		header("Access-Control-Allow-Origin: http://www.example.com");
+		header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+		header("Access-Control-Allow-Headers: X-TRICORDER");
+		header("Access-Control-Max-Age: 1728000");
+		*/
+		
+		header("X-Frame-Options: SAMEORIGIN");
+		header("X-XSS-Protection: 1; mode=block");
+		header("X-Permitted-Cross-Domain-Policies: master-only");
+		header("X-Download-Options: noopen");
+		
+		//	Brower checking mime.
+		header("X-Content-Type-Options: nosniff");
+	} 
 	
 	/**
 	 * Execute controller.
@@ -270,7 +300,7 @@ abstract class NewWorld5 extends OnePiece5
 		}
 		
 		$layout->Dispatcher($this);
-		$layout->Execute($this->_content);
+		$layout->Execute();
 	}
 	
 	private function _doLayout()
@@ -371,26 +401,47 @@ abstract class NewWorld5 extends OnePiece5
 		return $this->_content;
 	}
 	
-	function Content()
+	function Content($mime=null)
 	{
-		switch( $mime = strtolower(Toolbox::GetMIME(true)) ){
+		if(!$mime){
+			$mime = strtolower(Toolbox::GetMIME());
+		}
+		
+		list($main, $sub) = explode('/',$mime);
+		
+		switch($main){
+			case 'text':
+				$this->ContentIsText($sub);
+				break;
+			case 'application':
+				$this->ContentIsApplication($sub);
+				break;
+			default:
+				$this->StackError("Does not support this mime. ($mime)");
+		}
+	}
+	
+	function ContentIsText($sub)
+	{
+		switch($sub){
 			//	json
 			case 'json':
-			case 'javascript':
 				$this->_doJson();
 				break;
 				
-			//	plain text
+				//	plain text
 			case 'csv':
 			case 'plain':
 				break;
-				
+
+			case 'javascript':
+			case 'css':
 			case 'html':
 				//	If json.
 				if( $this->_json ){
 					Dump::D($this->_json);
 				}
-				
+		
 				//	If is admin.
 				if( $this->Admin() ){
 					//	Notice un exists file.
@@ -401,9 +452,24 @@ abstract class NewWorld5 extends OnePiece5
 						unset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]);
 					}
 				}
-				
+				break;
+
 			default:
-			//	end of default
+				$this->StackError("Does not support this mime. (text/{$sub})");
+		}
+		
+		//	Output content to stdout.
+		print $this->_content;
+		$this->_content = '';
+	}
+	
+	function ContentIsApplication($sub)
+	{
+		switch($sub){
+			case 'javascript':
+				break;
+			default:
+				$this->StackError("Does not support this mime. (application/{$sub})");
 		}
 		
 		//	Output content to stdout.
@@ -459,9 +525,6 @@ abstract class NewWorld5 extends OnePiece5
 		if(!Toolbox::GetRequest('jsonp') ){
 			print json_encode($this->_json);
 		}else{
-
-			print __FILE__.__LINE__;exit;
-			
 			$callback = Toolbox::GetRequest('callback',null,'callback');
 			print "{$callback}(".json_encode($this->_json).')';
 		}
