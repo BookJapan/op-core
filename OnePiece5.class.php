@@ -87,6 +87,8 @@ class OnePiece5
 			}
 			$this->Init();
 		}
+		
+		$_SERVER[Env::_NAME_SPACE_]['INIT'] += 1;
 	}
 	
 	/**
