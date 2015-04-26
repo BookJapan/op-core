@@ -53,7 +53,7 @@ class App_i18n extends App
 			if(!array_key_exists($args[0], $list) ){
 				$lang = $this->i18n()->GetLang();
 				$url = "/{$lang}/".trim(join('/',$args),'/').$query;
-				header("Location: $url");
+				header("Location: $url"); exit;
 			}
 			
 			//	Get language code.
