@@ -88,40 +88,4 @@ class App_i18n extends App
 		
 		return parent::Dispatch($route);
 	}
-	
-	/**
-	 * Wrap the OnePiece ConvertURL method.
-	 * Support langage code URL.
-	 * 
-	 * @see OnePiece5::ConvertURL()
-	 * @param string  $meta   meta path
-	 * @param boolean $domain Add domain
-	 * @return string
-	 */
-	static function ConvertURL($meta,$domain=false)
-	{
-		//	if include want to domain.
-		if( $domain ){
-			$domain = Toolbox::GetDomain(array('scheme'=>true));
-		}
-		
-		//	standard
-		$app_root = parent::ConvertURL($meta,false);
-		
-		//	remove rewrite base
-		$app_root = preg_replace("|^{$_SERVER['REWRITE_BASE']}|",'/',$app_root);
-		
-		//	get i18n's set language code
-		if(!$lang = OnePiece5::i18n()->GetLang()){
-			$lang = 'en';
-		}
-		
-		//	build url by document root
-		$url = $_SERVER['REWRITE_BASE'].$lang.$app_root;
-		$url = '/'.ltrim($url,'/');
-		
-		//	return result
-		return $domain ? $domain.$url: $url;
-	}
-	
 }
