@@ -139,6 +139,10 @@ class Router extends OnePiece5
 	static private function _GetRouteAsBase($request_uri)
 	{
 		//	init
+		$route['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
+		$route['request_uri'] = $request_uri;
+		$route['HTTP_REFERER'] = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER']: null;
+		
 		$app_root = dirname($_SERVER['SCRIPT_FILENAME']);
 		$doc_root = rtrim($_SERVER['DOCUMENT_ROOT'],'/');
 		
@@ -177,30 +181,9 @@ class Router extends OnePiece5
 			$real_path = $real_app_dir .'/'. $smart_url;
 		}
 		
-		/*
-		//	debug
-		$route['match'] = $match;
-		$route['DOCUMENT_ROOT_']	 = $_SERVER['DOCUMENT_ROOT']; // Was not match at https.
-		$route['DOCUMENT_ROOT']		 = $doc_root;
-		$route['APP_ROOT']			 = $app_root;
-		$route['SCRIPT_FILENAME']	 = $_SERVER['SCRIPT_FILENAME'];
-		$route['SCRIPT_NAME']		 = $_SERVER['SCRIPT_NAME'];
-
-		$route['$is_alias']		 = $is_alias;
-		$route['$request_uri']	 = $request_uri;
-		
-		$route['$real_app_dir']	 = $real_app_dir;
-		$route['$rewrite_base']	 = $rewrite_base;
-		$route['$smart_url']	 = $smart_url;
-		
-		$route['$arguments']	 = $arguments;
-		$route['$real_path']	 = $real_path;
-		//OnePiece5::D($route);
-		*/
-		
 		//	Build base route table
 		$route['alias']		 = $is_alias;
-		$route['rewrite_base'] = $rewrite_base;
+		$route['rewrite_base'] = $rewrite_base; // TODO: Toolbox::GetRewriteBase();
 		$route['app_root']	 = $app_root;
 		$route['meta_path']	 = $_SERVER['DOCUMENT_ROOT'].$request_uri;
 		$route['real_path']	 = $real_path;

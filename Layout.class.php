@@ -18,6 +18,11 @@
  */
 class Layout extends OnePiece5
 {
+	/**
+	 * Directory where layout is in.
+	 * 
+	 * @return string
+	 */
 	private function _GetLayoutDir()
 	{
 		if(!$layout_dir = $this->GetEnv('layout-dir')){
@@ -35,6 +40,11 @@ class Layout extends OnePiece5
 		return $layout_dir;
 	}
 	
+	/**
+	 * To be used.
+	 * 
+	 * @return string
+	 */
 	private function _GetLayout()
 	{
 		if(!$layout = $this->GetEnv('layout') ){
@@ -54,13 +64,18 @@ class Layout extends OnePiece5
 	}
 	
 	/**
-	 * Call from inner layout.
+	 * Call from layout class inner method.
 	 */
-	private function Content()
+	function Content()
 	{
 		$this->Dispatcher()->Content();
 	}
 	
+	/**
+	 * Execute layout.
+	 * 
+	 * @return boolean
+	 */
 	function Execute()
 	{
 		//	Get layout settings.
@@ -84,14 +99,14 @@ class Layout extends OnePiece5
 		//  Rebuild layout directory.
 		$layout_dir = dirname($layout_path) . '/';
 		
-		//	Execute each layout.
+		//	Execute each part.
 		foreach($_layout as $var_name => $file_name){
 			//	Build path.
 			$path = $layout_dir . $file_name;
 			
 			if(!file_exists($path)){
 				$this->StackError("Does not exists layout file. \($path)\\",'en');
-				return;
+				return false;
 			}
 			
 			//	Assembly of layout.
@@ -173,39 +188,4 @@ class Layout extends OnePiece5
 		}
 		parent::__callStatic($name, $args);
 	}
-	
-	/*
-	function Doctype()
-	{
-		echo "<!DOCTYPE html>";
-	}
-	
-	function GetLang()
-	{
-		if(!$lang = $this->GetEnv('lang')){
-			$lang = $this->GetCookie('lang');
-		}
-		return $lang;
-	}
-	
-	function GetCharset()
-	{
-		return $this->GetEnv('charset');
-	}
-	
-	function GetKeywords()
-	{
-		return $this->GetEnv('keywords');
-	}
-	
-	function GetDescription()
-	{
-		return $this->GetEnv('description');
-	}
-	
-	function GetTitle()
-	{
-		return $this->GetEnv('title');
-	}
-	*/
 }
