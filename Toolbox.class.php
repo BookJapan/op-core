@@ -650,16 +650,7 @@ class Toolbox
 	 */
 	static function ConvertURLforApp($url)
 	{
-		static $app;
-		if(!$app){
-			$script_file_name = $_SERVER['SCRIPT_FILENAME'];
-			$document_root    = $_SERVER['DOCUMENT_ROOT'];
-			$document_root    = preg_quote($document_root,'|');
-			$rewrite_base = preg_replace("|^$document_root|", '', $script_file_name);
-			$rewrite_base = rtrim(dirname($rewrite_base),'/').'/';
-			$_SERVER['REWRITE_BASE'] = $rewrite_base;
-			$app = $rewrite_base;
-		}
+		$app = self::GetRewriteBase();
 		return preg_replace('|^app:/|', $app, $url);
 	}
 	
