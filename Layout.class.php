@@ -76,28 +76,37 @@ class Layout extends OnePiece5
 	 * 
 	 * @return boolean
 	 */
-	function Execute()
+	function Execute($execute_file=null)
 	{
-		//	Get layout settings.
-		$layout_dir	 = $this->_GetLayoutDir();
-		$layout		 = $this->_GetLayout();
+		if(!$execute_file){
+			//	Get layout settings.
+			$layout_dir	 = $this->_GetLayoutDir();
+			$layout		 = $this->_GetLayout();
+			
+			//	Do not want to layout. (False is if not want layout.)
+			if( $layout === false ){
+				$this->Content();
+				return;
+			}
+			
+			//  Get controller name (layout controller)
+			$controller = $this->GetEnv('controller-name');
+			
+			//	Get layout controller path.
+			$execute_file = rtrim($layout_dir,'/')."/{$layout}/{$controller}";
+			$execute_file = $this->ConvertPath($execute_file);
+		}
 		
-		//  Get controller name (layout controller)
-		$controller = $this->GetEnv('controller-name');
-		
-		//	Get layout controller path.
-		$layout_path = rtrim($layout_dir,'/')."/{$layout}/{$controller}";
-		$layout_path = $this->ConvertPath($layout_path);
-		if(!file_exists($layout_path)){
+		if(!file_exists($execute_file)){
 			$this->StackError("Does not exists this file. \($layout_path)\\",'en');
 			return false;
 		}
 		
 		//	Execute layout controller.
-		include($layout_path);
+		include($execute_file);
 		
 		//  Rebuild layout directory.
-		$layout_dir = dirname($layout_path) . '/';
+		$layout_dir = dirname($execute_file) . '/';
 		
 		//	Execute each part.
 		foreach($_layout as $var_name => $file_name){
