@@ -385,12 +385,19 @@ abstract class NewWorld5 extends OnePiece5
 		return Toolbox::GetRequest( $keys, $method );
 	}
 	
+	const _NOT_FOUND_ = 'NotFoundPage';
+	
 	function NotFound()
 	{
-		if( $page = $this->GetEnv('NotFound') ){
+		if( $page = $this->GetEnv(self::_NOT_FOUND_) ){
 			return $this->template($page);
 		}else{
-			$this->StackError('Does not set env "NotFound" page path. Please call $this->SetEnv("NotFound").');
+			if( $this instanceof App ){
+				$example = '$this->SetNotFoundPage("filepath")';
+			}else{
+				$example = '$this->SetEnv(NewWrold5::_NOT_FOUND_,"filepath")';
+			}
+			$this->StackError("NotFound-page has not been set. Please call this method: \\$example\.",'en');
 		}
 	}
 	

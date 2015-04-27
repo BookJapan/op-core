@@ -298,6 +298,11 @@ class App extends NewWorld5
 		print '<meta name="description" content="'.$this->GetDescription().'">';
 	}
 	
+	function SetNotFound($filepath)
+	{
+		$this->SetEnv(NewWorld5::_NOT_FOUND_, $filepath);
+	}
+	
 	function SetMemcache($memcache)
 	{
 		$this->SetEnv('memcache',$memcache);
