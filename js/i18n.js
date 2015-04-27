@@ -9,25 +9,45 @@ jQuery(function($){
 	
 	//	op-unit-language if include.
 	if( language = $('#language-selector-current').text() ){
-		SetLanguage(language);
+		i18n.SetLanguage(language);
 	}
 	
 	//	Do translation by cloud.
-	_i18n();
+	i18n.Translation();
 });
 
-function SetLanguage(language){
-	//	Save to local web strage.
+//	i18n object.
+var i18n = new Object;
+
+i18n.GetDomain = function(){
+	var domain;
+	/* <?php if( Toolbox::isLocalhost() ): ?> */
+	domain = 'local.api.uqunie.com';
+	/* <?php else: ?> */
+	domain = 'api.uqunie.com';
+	/* <?php endif; ?> */
+	return domain;
+};
+
+//	Save to local web session storage.
+i18n.SetLanguage = function(language){
 	sessionStorage.setItem('__language__',language);
-}
+};
 
-function GetLanguage(){
-	return sessionStorage.getItem('__language__');
-}
+//	Get from local web session storage.
+i18n.GetLanguage = function(){
+	var language = sessionStorage.getItem('__language__');
+	if(!language){
+		language = i18n.GetLanguageFromCloudByGeoIP();
+	}
+	return language;
+};
 
-function _get_geo_ip(){
+//	Get language from cloud by GeoIP.
+i18n.GetLanguageFromCloudByGeoIP = function(){
 	//	API's URL
-	var url = '//api.uqunie.com/geo/language/?ip=own&jsonp=1&callback=geoip';
+	var domain = i18n.GetDomain();
+	var url = '//' + domain + '/geo/language/?ip=own&jsonp=1&callback=geoip';
 	if(console){ console.log(url); }
 	
 	$.ajax({
@@ -48,24 +68,27 @@ function _get_geo_ip(){
 			}
 			
 			//	Set language by GeoIP.
-			SetLanguage(json['language']);
+			i18n.SetLanguage(json['language']);
 		},
 		error: function(e){
 			if(console){ console.log(e); }
 			alert('unknown error');
 		}
 	});
-}
+};
 
-function _i18n(){
-	var language = GetLanguage();
+i18n.Translation = function(language){
 	if(!language){
-		setTimeout('_i18n()',1000);
-		return;
+		language = i18n.GetLanguage();
+		if(!language){
+			setTimeout('_i18n()',1000);
+			return;
+		}
 	}
 	
 	//	API's URL
-	var url = '//api.uqunie.com/i18n/?jsonp=1&callback=i18n';
+	var domain = i18n.GetDomain();
+	var url = '//' + domain + '/i18n/?jsonp=1&callback=i18n';
 	if(console){ console.log(url); }
 	
 	var i = 0;
@@ -138,4 +161,4 @@ function _i18n(){
 			alert('unknown error');
 		}
 	});
-}
+};
