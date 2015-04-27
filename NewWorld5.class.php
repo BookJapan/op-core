@@ -196,7 +196,8 @@ abstract class NewWorld5 extends OnePiece5
 	{
 		//	Check file exists.
 		if(!file_exists($route['real_path'])){
-			$this->StackError("Does not file exists. ({$route['real_path']})");
+			$this->NotFound();
+			return;
 		}
 		
 		//	Get execute file.
