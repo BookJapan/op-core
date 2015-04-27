@@ -5,24 +5,35 @@
  */
 jQuery(function($){
 	//	Loaded message.
-//	console.log('jQuery was loaded.');
+	if(console){ console.log('jQuery was loaded.'); }
 	
-	//	Get GeoIP Information.
-	_get_geo_ip();
+	//	op-unit-language if include.
+	if( language = $('#language-selector-current').text() ){
+		SetLanguage(language);
+	}
 	
 	//	Do translation by cloud.
 	_i18n();
 });
 
+function SetLanguage(language){
+	//	Save to local web strage.
+	sessionStorage.setItem('__language__',language);
+}
+
+function GetLanguage(){
+	return sessionStorage.getItem('__language__');
+}
+
 function _get_geo_ip(){
 	//	API's URL
 	var url = '//api.uqunie.com/geo/language/?ip=own&jsonp=1&callback=geoip';
-//	console.log(url);
+	if(console){ console.log(url); }
 	
 	$.ajax({
 		type: 'GET',
 		url: url,
-		cache: false,
+		cache: true,
 		data: {
 		},
 		async: true,
@@ -36,21 +47,18 @@ function _get_geo_ip(){
 				return;
 			}
 			
-			//	Get language by GeoIP.
-			language = json['language'];
-			
-			//	Save to local web strage.
-			sessionStorage.setItem('__language__',language);
+			//	Set language by GeoIP.
+			SetLanguage(json['language']);
 		},
 		error: function(e){
-		//	console.log(e);
+			if(console){ console.log(e); }
 			alert('unknown error');
 		}
 	});
 }
 
 function _i18n(){
-	var language = sessionStorage.getItem('__language__');
+	var language = GetLanguage();
 	if(!language){
 		setTimeout('_i18n()',1000);
 		return;
@@ -58,7 +66,7 @@ function _i18n(){
 	
 	//	API's URL
 	var url = '//api.uqunie.com/i18n/?jsonp=1&callback=i18n';
-//	console.log(url);
+	if(console){ console.log(url); }
 	
 	var i = 0;
 	var n = 0;
@@ -83,6 +91,11 @@ function _i18n(){
 		texties[i] = html;
 		i++;
 	});
+	
+	//	If not set i18n class.
+	if( texties.length < 1){
+		retrun;
+	}
 	
 	$.ajax({
 		type: 'GET',
@@ -119,11 +132,9 @@ function _i18n(){
 				$(this).html(texties[i]);
 				i++;
 			});
-			
-		//	console.log('Translation was successful.');
 		},
 		error: function(e){
-		//	console.dir(e);
+			if(console){ console.dir(e); }
 			alert('unknown error');
 		}
 	});
