@@ -269,13 +269,16 @@ class OnePiece5
 		return Env::Get($key);
 	}
 	
+	/**
+	 * Initialized the session reference to private property.
+	 */
 	private function _InitSession()
 	{
 		/**
 		 * @see http://www.glamenv-septzen.net/view/29
 		 */
 		session_cache_limiter('private_no_expire');
-
+		
 		//  separate session.
 		$this->session = &$_SESSION[self::_KEY_SESSION_NAME_SPACE_][get_class($this)];
 	}
@@ -373,6 +376,13 @@ class OnePiece5
 		return $io;
 	}
 	
+	/**
+	 * Get Cookie by key.
+	 * 
+	 * @param string $key
+	 * @param string $default
+	 * @return Ambigous <string, string|array|object, Config>
+	 */
 	static function GetCookie( $key, $default=null )
 	{
 		$key = md5($key);
@@ -387,6 +397,7 @@ class OnePiece5
 	}
 	
 	/**
+	 * Get call line.
 	 * 
 	 * @param integer $depth
 	 * @param integer $num
@@ -793,6 +804,13 @@ class OnePiece5
 		}
 	}
 	
+	/**
+	 * Decode value.
+	 * 
+	 * @param string|array|object $args
+	 * @param string $charset
+	 * @return string|array|object
+	 */
 	static function Decode( $args, $charset=null)
 	{
 		//  Accelerate
@@ -836,8 +854,9 @@ class OnePiece5
 	}
 	
 	/**
+	 * Escape value.
 	 * 
-	 * @param string|array $args
+	 * @param string|array|object $args
 	 * @param string $charset
 	 */
 	static function Escape( $args, $charset=null )
@@ -870,11 +889,12 @@ class OnePiece5
 	}
 	
 	/**
+	 * Escape string.
 	 * 
 	 * @param string $args
 	 * @param string $charset
 	 */
-	static private function _EscapeString( /*&*/$args, $charset )
+	static private function _EscapeString( $args, $charset )
 	{
 		//  Anti null byte attack
 		$args = str_replace("\0", '\0', $args);
@@ -896,11 +916,12 @@ class OnePiece5
 	}
 	
 	/**
+	 * Escape array.
 	 * 
 	 * @param array  $args
 	 * @param string $charset
 	 */
-	static private function _EscapeArray( /*&*/$args, $charset )
+	static private function _EscapeArray( $args, $charset )
 	{
 		$temp = array();
 		foreach ( $args as $key => $var ){
@@ -912,11 +933,12 @@ class OnePiece5
 	}
 	
 	/**
+	 * Escape object.
 	 * 
 	 * @param array  $args
 	 * @param string $charset
 	 */
-	static private function _EscapeObject( /*&*/$args, $charset )
+	static private function _EscapeObject( $args, $charset )
 	{
 		$temp = new Config();
 		foreach ( $args as $key => $var ){
@@ -959,6 +981,14 @@ class OnePiece5
 		return $io;
 	}
 
+	/**
+	 * Set http header.
+	 * 
+	 * @param string $str
+	 * @param string $replace
+	 * @param string $code
+	 * @return boolean
+	 */
 	function Header( $str, $replace=null, $code=null )
 	{
 		if( headers_sent() ){
@@ -1142,6 +1172,7 @@ class OnePiece5
 	}
 	
 	/**
+	 * Genarate Model object.
 	 * 
 	 * @param  string $name
 	 * @throws OpModelException
