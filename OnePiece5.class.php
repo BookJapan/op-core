@@ -1141,12 +1141,6 @@ class OnePiece5
 		return Toolbox::ConvertPath($meta);
 	}
 	
-	function _setDeveloper( $name, $ip )
-	{
-		$developer = self::GetEnv('developer');
-		$developer[$name] = $ip;
-		self::SetEnv('developer',$developer);
-	}
 	
 	function _isDeveloper()
 	{
