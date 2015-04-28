@@ -69,9 +69,11 @@
 
 /* table */
 #OnePiece table{
+	/*
 	border: 1px solid black;
 	border-collapse: separate;
 	border-spacing: 1px;
+	*/
 }
 
 #OnePiece th,td{

@@ -258,7 +258,6 @@ class Config_CreditCard extends Config_Base
 		$config->input->$input_name->label	 = $this->i18n()->ja('分割回数');
 		$config->input->$input_name->type	 = 'select';
 		$config->input->$input_name->id		 = $input_name;
-		//	$config->input->$input_name->validate->required = true;
 		
 		foreach(array(1,2,3,4,5,6,10,12,24,36,48) as $num){
 			$config->input->$input_name->options->$num->label = $this->i18n()->ja($num."回");
@@ -267,7 +266,7 @@ class Config_CreditCard extends Config_Base
 		
 		$input_name = self::_INPUT_SUBMIT_;
 		$config->input->$input_name->type  = 'submit';
-		$config->input->$input_name->value = 'submit';
+		$config->input->$input_name->value = $this->i18n()->ja("送信");
 		
 		return $config;
 	}

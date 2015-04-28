@@ -27,6 +27,9 @@ if(!ini_get('date.timezone')){
 	date_default_timezone_set('UTC');
 }
 
+//	Security.
+$_SERVER['PHP_SELF'] = "OP:/OnePiece5.class.php, ".__LINE__;
+
 //	OP_ROOT
 $op_root = $_SERVER['OP_ROOT'] = dirname(__FILE__).'/';
 
