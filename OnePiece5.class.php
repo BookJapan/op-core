@@ -1141,16 +1141,6 @@ class OnePiece5
 		return Toolbox::ConvertPath($meta);
 	}
 	
-	
-	function _isDeveloper()
-	{
-		$developer = self::GetEnv('developer');
-		if(!$developer){
-			$developer = array();
-		}
-		return in_array( $_SERVER['REMOTE_ADDR'], $developer);
-	}
-	
 	/**
 	 * 
 	 * @param  string $name
