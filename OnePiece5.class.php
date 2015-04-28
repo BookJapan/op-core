@@ -802,6 +802,9 @@ class OnePiece5
 		}
 		
 		switch($type = gettype($args)){
+			case 'string':
+				$args = html_entity_decode($args, ENT_QUOTES, $charset);
+				break;
 			
 			case 'array':
 				foreach( $args as $key => $var ){
@@ -826,7 +829,6 @@ class OnePiece5
 				break;
 				
 			default:
-				$args = html_entity_decode( $args, ENT_QUOTES, $charset );
 				break;
 		}
 		
