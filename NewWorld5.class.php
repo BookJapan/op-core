@@ -206,6 +206,9 @@ abstract class NewWorld5 extends OnePiece5
 		//	Get end-point root.
 		$ctrl_root = dirname($file_path);
 		
+		//	Change current directory.
+		chdir( dirname($route['real_path']) );
+		
 		//  Execute.
 		$this->Template($route['real_path']);
 	}
