@@ -219,7 +219,7 @@ class Error
 		
 		$to_addr = Env::GetAdminMailAddress();
 		$to_name = $_SERVER['HTTP_HOST'];
-		$subject = '[Error] '.self::_getMailSubject();
+		$subject = '[Error] '. OnePiece5::Decode(self::_getMailSubject());
 		$html = self::_getMailMessage();
 		
 		$mail = new EMail();
