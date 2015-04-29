@@ -3,6 +3,7 @@
  * 
  * Copyright 2015-04-11 Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  */
+
 jQuery(function($){
 	//	Loaded message.
 	if(console){ console.log('jQuery was loaded.'); }
@@ -57,7 +58,7 @@ i18n.GetLanguageFromCloudByGeoIP = function(){
 		data: {
 		},
 		async: true,
-		contentType: "application/json",
+		contentType: "application/javascript",
 		dataType: 'jsonp',
 		jsonpCallback: 'geoip',
 		success: function(json){
@@ -130,7 +131,7 @@ i18n.Translation = function(language){
 			to: language
 		},
 		async: true,
-		contentType: "application/json",
+		contentType: "application/javascript",
 		dataType: 'jsonp',
 		jsonpCallback: 'i18n',
 		success: function(json){
