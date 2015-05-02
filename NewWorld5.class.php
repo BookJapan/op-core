@@ -21,6 +21,18 @@
  */
 abstract class NewWorld5 extends OnePiece5
 {
+	/**
+	 * SetEnv key name, for not found page path.
+	 * 
+	 * @var string
+	 */
+	const _NOT_FOUND_ = 'NotFoundPage';
+	
+	/**
+	 * op-unit-selftest directory name.
+	 * 
+	 * @var string
+	 */
 	const _UNIT_URL_SELFTEST_ = '/_self-test/';
 	
 	/**
@@ -64,47 +76,55 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	private $_mime = null;
 	
+	/**
+	 * Start buffering.
+	 * 
+	 * @param array $args
+	 */
 	function __construct($args=array())
 	{
-		//  output is buffering.
-		if(!ob_start()){
-			print __FILE__.', '.__LINE__;
-		}
+		ob_start();
 		
 		//	Get Rewrite base.
+		/*
 		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
 		$path = preg_replace("|^$patt|", '', $_SERVER['SCRIPT_FILENAME']);
 		$_SERVER['REWRITE_BASE'] = rtrim(dirname($path),'/').'/';
+		*/
 		
 		parent::__construct($args);
 	}
 	
+	/**
+	 * Finish buffering.
+	 * 
+	 * @see OnePiece5::__destruct()
+	 */
 	function __destruct()
 	{
-		//  Called dispatch?
+		//  Dispatched check.
 		if(!$this->_isDispatch and strlen($this->_content)){
 			$class_name = get_class($this);
-			$message = "$class_name has not dispatched. Please call \$app->Dispatch();";
-			$this->StackError($message);
+			$message = "\\$class_name\ does not call the \Dispatch\ method.";
+			$this->StackError($message,'en');
 		}
 		
-		//  flush buffer
-	//	ob_end_flash(); // TODO: E_NOTICE will occur.
+		//	Get buffering content.
+		$this->_content .= ob_get_contents();
 		
-		//  Check content
-		if( $this->_content ){
-			//	HTML mode
-			$message = 'Does not call \Content\ method. \Example: <?php $this->Content(); ?>\\';
-			$this->p("![ .big .red [$message]]",'en');
-			$this->content();
-		}
+		//  End of buffering.
+		ob_end_clean();
 		
-		//  
-		$io = parent::__destruct();
+		//	Output of content.
+		echo $this->_content;
 		
-		return $io;
+		//  Do parent destruct.
+		return parent::__destruct();
 	}
 	
+	/**
+	 * For developper method.
+	 */
 	function Debug()
 	{
 		if(!$this->Admin() ){
@@ -113,15 +133,6 @@ abstract class NewWorld5 extends OnePiece5
 		$this->p('Debug of NewWorld5');
 		$debug['route'] = Env::Get('route');
 		$this->D($debug);
-	}
-	
-	function Init()
-	{
-		parent::Init();
-		
-		//	Set default value
-		$this->GetEnv('doctype','html');
-		$this->GetEnv('title','The NewWorld is the new world');
 	}
 	
 	/**
@@ -162,23 +173,11 @@ abstract class NewWorld5 extends OnePiece5
 			//	Save to content buffer.
 			$this->_content .= ob_get_contents(); ob_clean();
 			
-			//	Output content-type header.
-			$this->ContentType();
-			
-			//	Other headers
-			$this->Headers();
-			
 			//	Execute layout system.
-			switch($this->_mime){
-				case 'text/html':
-					$this->Layout();
-					break;
-				case 'application/json':
-				case 'application/javascript':
-					$this->_doJson();
-					break;
-				default:
-					$this->Content();
+			if( $this->_mime == 'text/html' ){
+				$this->Layout();
+			}else{
+				$this->Content();
 			}
 		}catch( Exception $e ){
 			$this->StackError($e);
@@ -212,14 +211,21 @@ abstract class NewWorld5 extends OnePiece5
 		//  Execute.
 		$this->Template($route['real_path']);
 	}
-
+	
+	/**
+	 * Output content type.
+	 */
 	function ContentType()
 	{
 		$mime = $this->_mime;
 		$charset = $this->GetEnv('charset');
+		$this->SetEnv('mime', $mime);
 		header("Content-type: $mime; charset=\"$charset\"");
 	}
 	
+	/**
+	 * Output other header.
+	 */
 	function Headers()
 	{
 		/*
@@ -248,6 +254,9 @@ abstract class NewWorld5 extends OnePiece5
 		header("X-Content-Type-Options: nosniff");
 	}
 	
+	/**
+	 * Execute of layout.
+	 */
 	function Layout()
 	{
 		static $layout = null;
@@ -255,15 +264,26 @@ abstract class NewWorld5 extends OnePiece5
 			$layout = new Layout();
 		}
 		
+		//	Register of dispatcher.
 		$layout->Dispatcher($this);
+		
+		//	Execute of layout.
 		$layout->Execute();
 	}
 	
+	/**
+	 * Get buffering content.
+	 * 
+	 * @return string
+	 */
 	function GetContent()
 	{
 		return $this->_content;
 	}
 	
+	/**
+	 * Output of content.
+	 */
 	function Content()
 	{
 		list($main, $sub) = explode('/', $this->_mime);
@@ -278,6 +298,16 @@ abstract class NewWorld5 extends OnePiece5
 			default:
 				$this->StackError("Does not support this mime. ({$main}/{$sub})");
 		}
+		
+		//	Output content-type header.
+		$this->ContentType();
+		
+		//	Other headers
+		$this->Headers();
+		
+		//	Output content to stdout.
+		print $this->_content;
+		$this->_content = '';
 	}
 	
 	function ContentIsText($sub)
@@ -316,24 +346,17 @@ abstract class NewWorld5 extends OnePiece5
 			default:
 				$this->StackError("Does not support this mime. (text/{$sub})");
 		}
-		
-		//	Output content to stdout.
-		print $this->_content;
-		$this->_content = '';
 	}
 	
 	function ContentIsApplication($sub)
 	{
 		switch($sub){
 			case 'javascript':
+				$this->_doJson();
 				break;
 			default:
 				$this->StackError("Does not support this mime. (application/{$sub})");
 		}
-		
-		//	Output content to stdout.
-		print $this->_content;
-		$this->_content = '';
 	}
 	
 	function GetArgs()
@@ -351,8 +374,6 @@ abstract class NewWorld5 extends OnePiece5
 		return Toolbox::GetRequest( $keys, $method );
 	}
 	
-	const _NOT_FOUND_ = 'NotFoundPage';
-	
 	function NotFound()
 	{
 		if( $page = $this->GetEnv(self::_NOT_FOUND_) ){
@@ -369,6 +390,9 @@ abstract class NewWorld5 extends OnePiece5
 	
 	private function _doJson()
 	{
+		$this->_content .= ob_get_contents();
+		ob_clean();
+		
 		if( $this->Admin() ){
 			//	Help to debug information.
 			if( strlen($this->_content) ){
@@ -380,17 +404,14 @@ abstract class NewWorld5 extends OnePiece5
 			}
 		}
 		
-		//	
-		$this->_content = null;
-		
-		//	
+		//	Execute
 		if(!Toolbox::GetRequest('jsonp') ){
-			print json_encode($this->_json);
+			$this->_content = json_encode($this->_json);
 		}else{
 			if(!$callback = Toolbox::GetRequest('callback') ){
 				$callback = 'callback';
 			}
-			print "{$callback}(".json_encode($this->_json).')';
+			$this->_content = "{$callback}(".json_encode($this->_json).')';
 		}
 	}
 	
@@ -410,7 +431,7 @@ abstract class NewWorld5 extends OnePiece5
 				if( Toolbox::GetRequest('jsonp') ){
 					$mime = 'application/javascript';
 				}else{
-					$mime = 'application/json';
+					$mime = 'text/json';
 				}
 				
 				//	Layout will off.

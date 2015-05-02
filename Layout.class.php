@@ -147,7 +147,7 @@ class Layout extends OnePiece5
 	}
 
 	/**
-	 * Dispatcher
+	 * Register of dispatcher.
 	 *
 	 * @see http://onepiece-framework.com/reference/dispatcher
 	 * @return NewWorld5 | App | App_i18n
