@@ -474,15 +474,27 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		//	Header has already been sent.
-		$_is_send = headers_sent($file,$line);
-		
-		//	Get headers list.
-		foreach( $list = headers_list() as $header ){
-			list( $key, $var ) = explode(':',$header);
-			if( strtolower($key) === 'content-type' ){
-				list($mime,$charset) = explode(';',trim($var).';'); // ; is anti notice
+		static $_mime = null;
+		if( $_mime ){
+			if( $only_sub_type ){
+				list($main, $sub) = explode('/',$_mime);
+				$mime = $sub;
+			}else{
+				$mime = $_mime;
 			}
+			return $mime;
+		}
+		
+		//	Header has already been sent.
+		if( $_is_send = headers_sent($file,$line) ){
+			//	Get headers list.
+			foreach( $list = headers_list() as $header ){
+				list($key, $var) = explode(':',$header);
+				if( strtolower($key) === 'content-type' ){
+					list($mime, $charset) = explode(';',trim($var).';');
+				}
+			}
+			$_mime = $mime;
 		}
 		
 		if( empty($mime) ){
