@@ -149,6 +149,7 @@ class Toolbox
 				$request = $_GET + $_POST;
 				break;
 				
+			case 'put':
 			case 'head':
 			case 'quit':
 			case 'options':
