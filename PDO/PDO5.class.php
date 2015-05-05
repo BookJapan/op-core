@@ -595,15 +595,29 @@ class PDO5 extends OnePiece5
 			if( preg_match("|^([a-z]+)(\(.+\))?(.+)?|i",$record['type'],$match) ){
 				$record['type']   = $match[1];
 				$record['length'] = isset($match[2]) ? trim($match[2],'()'): null;
-				if(isset($match[3])){
-					$record['attribute'] = $match[3];
-					if( preg_match('/unsigned/',$match[3]) ){
-						$record['unsigned'] = true;
+				//	attributes
+				if( empty($match[3]) ){
+					$attribute = null;
+					$unsigned  = false;
+					$zerofill  = false;
+				}else{
+					$attribute = $match[3];
+					//	unsigned
+					if( preg_match('/unsigned/',$attribute) ){
+						$unsigned = true;
+					}else{
+						$unsigned = false;
 					}
-					if( preg_match('/zerofill/',$match[3]) ){
-						$record['zerofill'] = true;
-					} 
+					//	zerofil
+					if( preg_match('/zerofill/',$attribute) ){
+						$zerofill = true;
+					}else{
+						$zerofill = false;
+					}
 				}
+				$record['attribute'] = $attribute;
+				$record['unsigned']  = $unsigned;
+				$record['zerofill']  = $zerofill;
 			}else{
 				$record['type']   = $record['type'];
 				$record['length'] = null;
