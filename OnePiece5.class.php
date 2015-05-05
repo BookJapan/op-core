@@ -1194,9 +1194,8 @@ class OnePiece5
 			//  Notice
 			if( strpos( $name, '_') !== false ){
 				$message = 'Underscore(_) is reserved. For the feature functions. (maybe, namespace)';
-				$english = self::i18n()->En($message,'En');
-				$translate = self::i18n()->En($message);
-				$this->mark("$translate ($english)");
+				$message = self::i18n()->Bulk($message);
+				$this->StackError("$message");
 			}
 			
 			//  already instanced?
@@ -1204,7 +1203,8 @@ class OnePiece5
 				return $_SERVER[__CLASS__]['model'][$name];
 			}
 			
-			//  include Model_model
+			/*
+			//  include Model_Model
 			if(!class_exists( 'Model_Model', false ) ){
 				$path = self::ConvertPath('op:/Model/Model.model.php');
 				if(!$io = include_once($path)){
@@ -1212,10 +1212,15 @@ class OnePiece5
 					throw new OpException($msg);
 				}
 			}
+			*/
 			
 			//  include from app's model dir
 			$model_dir = self::GetEnv('model-dir');
-			$path  = self::ConvertPath("{$model_dir}{$name}.model.php");
+			$model_dir = self::ConvertPath($model_dir);
+			if(!file_exists($model_dir)){
+				throw new OpException("This directory has not exists. \($model_dir)\\",'en');
+			}
+			$path = "{$model_dir}{$name}.model.php";
 			
 			//	Execute
 			if( $io = file_exists($path) ){
