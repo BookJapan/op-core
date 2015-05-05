@@ -416,6 +416,20 @@ class App extends NewWorld5
 	/**
 	 * Set self-test model name.
 	 * 
+	 * <pre>
+	 * Example:
+	 * 
+	 * 1. String.
+	 * $app->SetSelftestModelName('User');
+	 * $app->SetSelftestModelName('Role');
+	 * 
+	 * 2. String, comma separate.
+	 * $app->SetSelftestModelName('User, Role');
+	 * 
+	 * 3. Array.
+	 * $app->SetSelftestModelName(array('User','Role'));
+	 * </pre>
+	 * 
 	 * @param array $model_name
 	 */
 	function SetSelftestModelName($model_name)
