@@ -23,7 +23,7 @@ var i18n = new Object;
 i18n.GetDomain = function(){
 	var domain;
 	/* <?php if( Toolbox::isLocalhost() ): ?> */
-	domain = 'local.api.uqunie.com';
+	domain = 'api.uqunie.com';
 	/* <?php else: ?> */
 	domain = 'api.uqunie.com';
 	/* <?php endif; ?> */
@@ -48,8 +48,7 @@ i18n.GetLanguage = function(){
 i18n.GetLanguageFromCloudByGeoIP = function(){
 	//	API's URL
 	var domain = i18n.GetDomain();
-	var url = '//' + domain + '/geo/language/?ip=own&jsonp=1&callback=geoip';
-	if(console){ console.log(url); }
+	var url = '//' + domain + '/geo/language/?ip=own&jsonp=1&callback=_geoip';
 	
 	$.ajax({
 		type: 'GET',
@@ -60,7 +59,7 @@ i18n.GetLanguageFromCloudByGeoIP = function(){
 		async: true,
 		contentType: "application/javascript",
 		dataType: 'jsonp',
-		jsonpCallback: 'geoip',
+		jsonpCallback: '_geoip',
 		success: function(json){
 			//	error process
 			if( json['error'] ){
@@ -72,7 +71,10 @@ i18n.GetLanguageFromCloudByGeoIP = function(){
 			i18n.SetLanguage(json['language']);
 		},
 		error: function(e){
-			if(console){ console.log(e); }
+			if(console){
+				console.log('function: i18n.GetLanguageFromCloudByGeoIP');
+				console.dir(e); 
+			}
 			alert('unknown error');
 		}
 	});
@@ -82,15 +84,14 @@ i18n.Translation = function(language){
 	if(!language){
 		language = i18n.GetLanguage();
 		if(!language){
-			setTimeout('_i18n()',1000);
+			setTimeout('i18n.Translation()',1000);
 			return;
 		}
 	}
 	
 	//	API's URL
 	var domain = i18n.GetDomain();
-	var url = '//' + domain + '/i18n/?jsonp=1&callback=i18n';
-	if(console){ console.log(url); }
+	var url = '//' + domain + '/i18n/?jsonp=1&callback=_translation';
 	
 	var i = 0;
 	var n = 0;
@@ -118,7 +119,7 @@ i18n.Translation = function(language){
 	
 	//	If not set i18n class.
 	if( texties.length < 1){
-		retrun;
+		return;
 	}
 	
 	$.ajax({
@@ -133,7 +134,7 @@ i18n.Translation = function(language){
 		async: true,
 		contentType: "application/javascript",
 		dataType: 'jsonp',
-		jsonpCallback: 'i18n',
+		jsonpCallback: '_translation',
 		success: function(json){
 			//	error process
 			if( json['error'] ){
@@ -154,11 +155,15 @@ i18n.Translation = function(language){
 			var i = 0;
 			$(".i18n").each(function(){
 				$(this).html(texties[i]);
+				$(this).removeClass('i18n');
 				i++;
 			});
 		},
 		error: function(e){
-			if(console){ console.dir(e); }
+			if(console){
+				console.log('function: i18n.Translation');
+				console.dir(e);
+			}
 			alert('unknown error');
 		}
 	});
