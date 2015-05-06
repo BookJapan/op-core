@@ -150,7 +150,7 @@ class Error
 			}
 		}
 		
-		$info = "<tr style='font-size:small;' class='{$style}'><td>{$index}</td><td>{$file}</td><td style='text-align:right;'>{$line}</td><td>{$tail}</td></tr>".PHP_EOL;
+		$info = "<tr style='font-size:small;' class='{$style}'><th>{$index}</th><td>{$file}</td><th style='text-align:right;'>{$line}</th><td>{$tail}</td></tr>".PHP_EOL;
 		
 		return $info.PHP_EOL;
 	}
@@ -196,11 +196,6 @@ class Error
 			print self::_getBacktrace();
 			self::_stackErrorJs();
 			Dump::PrintAttach();
-		}else{
-			/*
-			print PHP_EOL.PHP_EOL;
-			print html_entity_decode(strip_tags(self::_getBacktrace()),ENT_QUOTES);
-			*/
 		}
 		return true;
 	}
@@ -304,8 +299,12 @@ class Error
 		$join = array();
 		foreach( $args as $temp ){
 			switch( $type = strtolower(gettype($temp)) ){
+				case 'null':
+					$join[] = '<span style="color:red;">null</span>';
+					break;
+					
 				case 'boolean':
-					$join[] = $temp ? 'true': 'false';
+					$join[] = $temp ? '<span style="color:blue;">true</span>':'<span style="color:red;">false</span>';
 					break;
 					
 				case 'integer':
@@ -314,18 +313,18 @@ class Error
 					break;
 					
 				case 'string':
-					$join[] = "'".OnePiece5::Escape($temp)."'";
+					$join[] = "<span style='color:gray;'>'".OnePiece5::Escape($temp)."'</span>";
 					break;
 					
 				case 'object':
 					$is_dump = true;
 					$class_name = get_class($temp);
-					$join[] = $class_name;
+					$join[] = '<span style="color:green;">'.$class_name.'</span>';
 					break;
 					
 				case 'array':
 					$is_dump = true;
-					$join[] = 'array';
+					$join[] = '<span style="color:green;">array</span>';
 					break;
 					
 				default:
