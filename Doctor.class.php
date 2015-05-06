@@ -469,9 +469,6 @@ class Doctor extends OnePiece5
 		//	Get column struct.
 		$struct = $this->PDO()->GetTableStruct($table_name, $db_name);
 		
-	//	$this->D($struct);
-	//	$this->d($table);
-		
 		//	Check each column(exists).
 		foreach($table->column as $column_name => $column){
 			//	Count
@@ -479,9 +476,6 @@ class Doctor extends OnePiece5
 			
 			//	Clone
 			$column = $column->Copy();
-			
-			//	after
-			$after = $column_name;
 			
 			//	Use column diff.
 			$columns[$column_name] = true;
