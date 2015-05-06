@@ -93,12 +93,17 @@ class Layout extends OnePiece5
 			$controller = $this->GetEnv('controller-name');
 			
 			//	Get layout controller path.
-			$execute_file = rtrim($layout_dir,'/')."/{$layout}/{$controller}";
-			$execute_file = $this->ConvertPath($execute_file);
+			$layout_dir = $this->ConvertPath(rtrim($layout_dir,'/')."/$layout");
+			$execute_file = "$layout_dir/$controller";
+		}
+		
+		if(!file_exists($layout_dir)){
+			$this->StackError("Does not exists this directory.\n $layout_dir",'en');
+			return false;
 		}
 		
 		if(!file_exists($execute_file)){
-			$this->StackError("Does not exists this file. \($layout_path)\\",'en');
+			$this->StackError("Does not exists this file.\n $execute_file",'en');
 			return false;
 		}
 		
