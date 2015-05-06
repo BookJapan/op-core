@@ -570,11 +570,13 @@ class Doctor extends OnePiece5
 				break;
 			}
 			
+			/*
 			//	Illigal key name.
 			if(!isset($struct[$key])){
 				$this->StackError("This key has not been set. \($key)\\",'en');
 				continue;
 			}
+			*/
 			
 			//	In case of NULL
 			if( $key === 'null' ){
