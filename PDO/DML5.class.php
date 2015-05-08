@@ -834,7 +834,7 @@ class DML5 extends OnePiece5
 			//  Standard (used only case?)
 			if( $join ){
 				$return .= $return ? ', ': '';
-				$return .= '`'.implode( '`, `', $join ).'`';
+				$return .= $this->ql.implode("{$this->qr}, {$this->ql}", $join).$this->qr;
 			}
 			
 			//  aggregate
