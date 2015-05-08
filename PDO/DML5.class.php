@@ -808,7 +808,21 @@ class DML5 extends OnePiece5
 			}
 		}
 		
-		//  COUNT(), MAX(), MIN(), AVG() 
+		//  COUNT(), MAX(), MIN(), AVG()
+		foreach( array('count','max','min','avg') as $key ){
+			if( isset($conf[$key]) ){
+				$conf['agg'][$key] = $conf[$key];
+			}
+		}
+		
+		//	DISTANCE
+		if( isset($conf['distance']) ){
+			$latitude  = $conf['distance']['latitude'];
+			$longitude = $conf['distance']['longitude'];
+			$agg[] = "((ACOS(SIN({$latitude} * PI() / 180) * SIN(latitude * PI() / 180) + COS({$latitude} * PI() / 180) * COS(latitude * PI() / 180) * COS(({$longitude} - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) as DISTANCE";
+		}
+		
+		//	Aggregate
 		if( isset($conf['agg']) ){
 			if(!$this->ConvertAggregate( $conf, $agg )){
 				return false;
