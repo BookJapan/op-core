@@ -4,6 +4,7 @@
  * 
  * @creation  2015-04-24
  * @version   1.0
+ * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */
@@ -13,6 +14,7 @@
  * 
  * @creation  2015-04-24
  * @version   1.0
+ * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */

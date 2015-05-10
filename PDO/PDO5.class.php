@@ -431,7 +431,7 @@ class PDO5 extends OnePiece5
 	{
 		return $this->SetDatabase( $db_name, $charset, $locale );
 	}
-	
+		
 	function SetDatabase( $db_name, $charset=null, $locale=null )
 	{
 		//	
