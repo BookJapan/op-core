@@ -362,14 +362,14 @@ class Error
 	
 	static function MagicMethodSet( $class, $name, $args, $call )
 	{
-		$bulk = OnePiece5::i18n()->Bulk("\{$class}::{$name}\ is not accessible property.","en");
+		$bulk = OnePiece5::i18n()->Bulk("\\{$class}::{$name}\ can not be accessible.","en");
 		$message = "$bulk ({$call}, value={$args})";
 		OnePiece5::StackError($message);
 	}
 	
 	static function MagicMethodGet( $class, $name, $call )
 	{
-		$bulk = OnePiece5::i18n()->Bulk("\{$class}::{$name}\ is not accessible property.","en");
+		$bulk = OnePiece5::i18n()->Bulk("\\{$class}::{$name}\ can not be accessible.","en");
 		$message = "$bulk ({$call})";
 		OnePiece5::StackError($message);
 	}
