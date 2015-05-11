@@ -26,7 +26,7 @@ abstract class NewWorld5 extends OnePiece5
 	 * 
 	 * @var string
 	 */
-	const _NOT_FOUND_ = 'NotFoundPage';
+	const _NOT_FOUND_PAGE_ = 'NotFoundPage';
 	
 	/**
 	 * op-unit-selftest directory name.
@@ -376,13 +376,13 @@ abstract class NewWorld5 extends OnePiece5
 	
 	function NotFound()
 	{
-		if( $page = $this->GetEnv(self::_NOT_FOUND_) ){
+		if( $page = $this->GetEnv(self::_NOT_FOUND_PAGE_) ){
 			return $this->template($page);
 		}else{
 			if( $this instanceof App ){
 				$example = '$this->SetNotFoundPage("filepath")';
 			}else{
-				$example = '$this->SetEnv(NewWrold5::_NOT_FOUND_,"filepath")';
+				$example = '$this->SetEnv(NewWrold5::_NOT_FOUND_PAGE_,"filepath")';
 			}
 			$this->StackError("NotFound-page has not been set. Please call this method: \\$example\.",'en');
 		}
