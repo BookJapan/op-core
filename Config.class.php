@@ -8,26 +8,6 @@
  */
 class Config extends stdClass
 {
-	/*
-	function Config()
-	{
-		
-	}
-	*/
-	
-	/*
-	function Set( $key,  $val )
-	{
-		$this->$key = $val;
-		return $this;
-	}
-	
-	function Get( $key )
-	{
-		return $this->$key;
-	}
-	*/
-	
 	function __set( $name, $value )
 	{
 		if(!isset($this->{$name})){
