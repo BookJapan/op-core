@@ -394,16 +394,20 @@ class App extends NewWorld5
 			$ext  = Router::CalcExtension($_SERVER['REQUEST_URI']);
 			$mime = Router::CalcMime($ext);
 			
-			//	Only HTML
 			if( $mime === 'text/html' ){
-				//	Compare
+				//	Get current uri.
 				list($uri) = explode('?',$_SERVER['REQUEST_URI'].'?');
-				$a = rtrim($this->CompressPath($uri), '/');
 				$uri = rtrim($this->ConvertURL('app:/_self-test/'), '/');
-				if(!preg_match("|^$uri|i",$_SERVER['REQUEST_URI'])){
-					//	Transfer self-test page.
+
+				//	Compare of URI.
+				if( preg_match("|^$uri|i",$_SERVER['REQUEST_URI']) ){
+					//	Does not diagnosis.
+				}else{
+					//	Do diagnosis.
 					$this->InitSelftest();
-					if(!$this->Doctor()->Diagnose()){
+					$io = $this->Doctor()->Diagnose();
+					if( $io == false ){
+						//	Transfer self-test page.
 						$this->Location('app:/_self-test');
 					}
 				}
