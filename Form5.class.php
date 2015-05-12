@@ -1201,6 +1201,11 @@ class Form5 extends OnePiece5
 	
 	public function AddForm( $config )
 	{
+		if( empty($config) ){
+			$this->StackError('Argument has not been set.','en');
+			return false;
+		}
+		
 		if( is_string($config) ){
 			$config = $this->AddFormFromPath($config);
 		}
