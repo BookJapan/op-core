@@ -49,13 +49,12 @@ i18n.GetLanguageFromCloudByGeoIP = function(){
 	//	API's URL
 	var domain = i18n.GetDomain();
 	var url = '//' + domain + '/geo/language/?ip=own&jsonp=1&callback=_geoip';
-	
+	var data = {};
 	$.ajax({
 		type: 'GET',
-		url: url,
+		url:   url,
 		cache: true,
-		data: {
-		},
+		data:  data,
 		async: true,
 		contentType: "application/javascript",
 		dataType: 'jsonp',
@@ -73,9 +72,13 @@ i18n.GetLanguageFromCloudByGeoIP = function(){
 		error: function(e){
 			if(console){
 				console.log('function: i18n.GetLanguageFromCloudByGeoIP');
-				console.dir(e); 
+				console.log('URL: ' + url);
+				console.dir(data);
+				console.dir(e);
 			}
-			alert('unknown error');
+			/* <?php if($this->Admin()): ?> */
+			alert('Please see console');
+			/* <?php endif; ?> */
 		}
 	});
 };
@@ -91,7 +94,7 @@ i18n.Translation = function(language){
 	
 	//	API's URL
 	var domain = i18n.GetDomain();
-	var url = '//' + domain + '/i18n/?jsonp=1&callback=_translation';
+	var url = '//' + domain + '/i18n/?jsonp=1';
 	
 	var i = 0;
 	var n = 0;
@@ -122,19 +125,21 @@ i18n.Translation = function(language){
 		return;
 	}
 	
+	var data = {
+		text: texties,
+		from: 'en',
+		to: language
+	};
+	
 	$.ajax({
 		type: 'GET',
-		url: url,
-		cache: false,
-		data: {
-			text: texties,
-			from: 'en',
-			to: language
-		},
+		url:   url,
+		cache: true,
+		data:  data,
 		async: true,
 		contentType: "application/javascript",
 		dataType: 'jsonp',
-		jsonpCallback: '_translation',
+		jsonpCallback: 'callback',
 		success: function(json){
 			//	error process
 			if( json['error'] ){
@@ -159,12 +164,18 @@ i18n.Translation = function(language){
 				i++;
 			});
 		},
-		error: function(e){
+		error: function(e1, e2, e3){
 			if(console){
 				console.log('function: i18n.Translation');
-				console.dir(e);
+				console.log('URL: ' + url);
+				console.dir(data);
+				console.dir(e1);
+				console.log(e2);
+				console.log(e3);
 			}
-			alert('unknown error');
+			/* <?php if($this->Admin()): ?> */
+			alert('Please see console');
+			/* <?php endif; ?> */
 		}
 	});
 };
