@@ -300,7 +300,7 @@ class App extends NewWorld5
 	
 	function SetNotFoundPage($filepath)
 	{
-		$this->SetEnv(NewWorld5::_NOT_FOUND_, $filepath);
+		$this->SetEnv(NewWorld5::_NOT_FOUND_PAGE_, $filepath);
 	}
 	
 	function SetMemcache($memcache)
