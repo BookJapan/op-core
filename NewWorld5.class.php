@@ -332,7 +332,7 @@ abstract class NewWorld5 extends OnePiece5
 				}
 		
 				//	If is admin.
-				if( $this->Admin() ){
+				if( $this->Admin() and Toolbox::isHtml() ){
 					//	Notice un exists file.
 					if( isset($_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_]) ){
 						$path = $_SESSION[Router::_KEY_FILE_DOES_NOT_EXISTS_];
