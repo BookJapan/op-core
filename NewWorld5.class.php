@@ -78,26 +78,20 @@ abstract class NewWorld5 extends OnePiece5
 	
 	/**
 	 * Start buffering.
-	 * 
+	 *
 	 * @param array $args
 	 */
 	function __construct($args=array())
 	{
+		//	Buffering
 		ob_start();
-		
-		//	Get Rewrite base.
-		/*
-		$patt = preg_quote($_SERVER['DOCUMENT_ROOT'],'|');
-		$path = preg_replace("|^$patt|", '', $_SERVER['SCRIPT_FILENAME']);
-		$_SERVER['REWRITE_BASE'] = rtrim(dirname($path),'/').'/';
-		*/
 		
 		parent::__construct($args);
 	}
 	
 	/**
 	 * Finish buffering.
-	 * 
+	 *
 	 * @see OnePiece5::__destruct()
 	 */
 	function __destruct()
@@ -108,15 +102,17 @@ abstract class NewWorld5 extends OnePiece5
 			$message = "\\$class_name\ does not call the \Dispatch\ method.";
 			$this->StackError($message,'en');
 		}
-		
+	
 		//	Get buffering content.
-		$this->_content .= ob_get_contents();
+	//	$this->_content .= ob_get_contents();
 		
 		//  End of buffering.
-		ob_end_clean();
-		
+	//	ob_end_clean();
+	//	ob_end_flush();
+	
 		//	Output of content.
-		echo $this->_content;
+	//	echo $this->_content;
+	//	$this->_content = '';
 		
 		//  Do parent destruct.
 		return parent::__destruct();
@@ -167,7 +163,7 @@ abstract class NewWorld5 extends OnePiece5
 			//	Set default mime.
 			$this->_mime = strtolower($route['mime']);
 			
-			//  Execute a end-point program.
+			//  Execute end-point file.
 			$this->Execute($route);
 			
 			//	Save to content buffer.
