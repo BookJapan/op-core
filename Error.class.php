@@ -169,7 +169,7 @@ class Error
 			//	i18n
 			if( $from ){
 				$temp = explode(PHP_EOL, $message.PHP_EOL);
-				$message = OnePiece5::i18n()->Bulk($temp[0], $from );
+				$message = self::_i18n($temp[0], $from );
 				if( isset($temp[1]) ){
 					$message .= trim($temp[1],'\\');
 				}
@@ -362,14 +362,14 @@ class Error
 	
 	static function MagicMethodSet( $class, $name, $args, $call )
 	{
-		$bulk = OnePiece5::i18n()->Bulk("\\{$class}::{$name}\ can not be accessible.","en");
+		$bulk = self::_i18n("\\{$class}::{$name}\ can not be accessible.","en");
 		$message = "$bulk ({$call}, value={$args})";
 		OnePiece5::StackError($message);
 	}
 	
 	static function MagicMethodGet( $class, $name, $call )
 	{
-		$bulk = OnePiece5::i18n()->Bulk("\\{$class}::{$name}\ can not be accessible.","en");
+		$bulk = self::_i18n("\\{$class}::{$name}\ can not be accessible.","en");
 		$message = "$bulk ({$call})";
 		OnePiece5::StackError($message);
 	}
@@ -434,11 +434,31 @@ class Error
 		
 		//	to translate
 		if( $lang ){
-			$message = OnePiece5::i18n()->Bulk($message);
+			$message = self::_i18n($message);
 		}
 		
 		//	join
 		$error = "$class: $file [$line] $message";
 		OnePiece5::StackError($error,$lang);
+	}
+	
+	static private function _i18n($text, $from='en')
+	{
+		static $flag = null;
+		if( $flag === null ){
+			$var = OnePiece5::GetEnv('i18n');
+			if( strtolower($var) === 'off' or $var === false ){
+				$flag = false;
+			}else{
+				$flag = true;
+			}
+		}
+		
+		if(!$flag){
+			return $text;
+		}
+		
+		$to = OnePiece5::GetEnv('lang');
+		return OnePiece5::i18n()->Get($text, $from, $to);
 	}
 }
