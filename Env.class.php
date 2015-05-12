@@ -32,6 +32,8 @@ class Env extends OnePiece5
 	const _SERVER_IS_LOCALHOST_	 = 'OP_IS_LOCALHOST';
 	const _SERVER_IS_ADMIN_		 = 'OP_IS_ADMIN';
 	
+	const _KEY_LOCALE_ = 'locale';
+	
 	static private function _Convert( $key, $var=null )
 	{
 		$key = strtoupper($key);
@@ -220,7 +222,7 @@ class Env extends OnePiece5
 		 */
 		
 		//	Get last time locale.
-		if(!$locale = OnePiece5::GetCookie('locale') ){
+		if(!$locale = OnePiece5::GetCookie(self::_KEY_LOCALE_) ){
 			$locale = 'ja_JP.utf-8';
 		}
 		
@@ -230,13 +232,13 @@ class Env extends OnePiece5
 	
 	static function GetLocale()
 	{
-		return Env::Get('locale');
+		return Env::Get(self::_KEY_LOCALE_);
 	}
 	
 	static function SetLocale( $locale )
 	{
 		//	Save to cookie.
-		OnePiece5::SetCookie('locale', $locale);
+		OnePiece5::SetCookie(self::_KEY_LOCALE_, $locale);
 		
 		//	parse
 		if( preg_match('|([a-z]+)[-_]([a-z]+)\.([-_a-z0-9]+)|i', $locale, $match) or true){
@@ -260,7 +262,7 @@ class Env extends OnePiece5
 		*/
 		
 		//	Set each value
-		Env::Set('locale', $locale);
+		$_SERVER[self::_NAME_SPACE_][self::_KEY_LOCALE_] = $locale;
 		Env::Set('lang',   $lang);
 		Env::Set('area',   $area);
 		Env::Set('charset',$code);
@@ -285,22 +287,37 @@ class Env extends OnePiece5
 		$area = Env::Get('area');
 		
 		//	detect order value
-		if( $lang == 'ja'){
-			$codes[] = 'eucjp-win';
-			$codes[] = 'sjis-win';
-			$codes[] = 'UTF-8';
-			$codes[] = 'ASCII';
-			$codes[] = 'JIS';
+		switch($lang){
+			case 'en':
+				$codes[] = 'UTF-8';
+				$codes[] = 'ASCII';
+				break;
+				
+			case 'ja':
+				$codes[] = 'eucjp-win';
+				$codes[] = 'sjis-win';
+				$codes[] = 'UTF-8';
+				$codes[] = 'ASCII';
+				$codes[] = 'JIS';
+				break;
+			default:
+			$this->StackError("Does not define this language code. ($lang)",'en');
 		}
 		
 		/**
 		 * timezone list
 		 * @see http://jp2.php.net/manual/ja/timezones.php
 		 */
-		switch( $area ){
+		switch($area){
+			case 'US':
+				$timezone = 'America/Chicago';
+				break;
+				
 			case 'JP':
 				$timezone = 'Asia/Tokyo';
 				break;
+			default:
+			$this->StackError("Does not define this country code. ($lang)",'en');
 		}
 		
 		return array( $codes, $timezone );
@@ -374,17 +391,20 @@ class Env extends OnePiece5
 	{
 		//	Convert
 		list( $key, $var ) = self::_Convert( $key, $var );
-
+		
 		//	Reset admin flag.
 		if( $key === self::_ADMIN_IP_ADDR_ ){
-			self::SetAdminIpAddress($var);
-			return;
+			return self::SetAdminIpAddress($var);
 		}
 		
 		//	Admin's E-Mail
 		if( $key === self::_ADMIN_EMAIL_ADDR_ ){
-			self::SetAdminMailAddress($var);
-			return;
+			return self::SetAdminMailAddress($var);
+		}
+		
+		//	Set locale.
+		if( $key === strtoupper(self::_KEY_LOCALE_) ){
+			return self::SetLocale($var);
 		}
 		
 		//	Set
