@@ -175,7 +175,8 @@ class Error
 				}
 			}
 			
-			$message = OnePiece5::Escape($message);
+			//	Wiki2 convert. 
+			$message = OnePiece5::Wiki2($message);
 			
 			//	Sequence no.
 			$return .= "<tr><td colspan=4 class='' style='padding:0.5em 1em; color:red; font-weight: bold; font-size:small;'>Error #{$i} $message</td></tr>".PHP_EOL;
