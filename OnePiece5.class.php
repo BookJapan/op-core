@@ -1172,90 +1172,115 @@ class OnePiece5
 	}
 	
 	/**
-	 * Genarate Model object.
+	 * Returns a singleton of the model.
+	 * 
+	 * <pre>
+	 * $this->Model('Login')->GetLoginId();
+	 * </pre>
 	 * 
 	 * @param  string $name
-	 * @throws OpModelException
 	 * @throws OpException
-	 * @throws OpWzException
 	 * @return Model_Model
 	 */
 	static function Model($name)
 	{
 		try{
-			//  name check
 			if(!$name){
 				throw new OpException("Model name is empty.",'en');
 			}
-			
+
 			//	hogeHoge -> HogeHoge	//	hogeHoge -> Hogehoge
-			$name = ucfirst($name);		//	$name = ucfirst(strtolower($name));
+			//	$name = ucfirst($name);		//	$name = ucfirst(strtolower($name));
 			
-			//  Notice
-			if( strpos( $name, '_') !== false ){
-				$message = 'Underscore(_) is reserved. For the feature functions. (maybe, namespace)';
-				$message = self::i18n()->Bulk($message);
-				$this->StackError("$message");
-			}
-			
-			//  already instanced?
-			if( isset( $_SERVER[__CLASS__]['model'][$name] ) ){
-				return $_SERVER[__CLASS__]['model'][$name];
-			}
-			
-			/*
-			//  include Model_Model
-			if(!class_exists( 'Model_Model', false ) ){
-				$path = self::ConvertPath('op:/Model/Model.model.php');
-				if(!$io = include_once($path)){
-					$msg = "Failed to include the Model_model. ($path)";
-					throw new OpException($msg);
+			if( empty($_SERVER[__CLASS__]['model'][$name]) ){
+
+				$model_name = $name;
+				$class_name = "Model_{$name}";
+				$file_name  = "{$name}.model.php";
+				
+				self::_ModelNameCheck($name);
+				
+				if( class_exists($class_name,false) ){
+					//  OK
+				}else if( file_exists(getcwd()."/{$file_name}") ){
+					//  OK
+					include(getcwd()."/{$file_name}");
+				}else if( self::_ModelLoadFromApp($file_name) ){
+					//  OK
+				}else if( self::_ModelLoadFromCore($file_name) ){
+					//  OK
+				}else{
+					throw new OpException("This file not found. \($file_name)\\",'en');
+				}
+				
+				if( class_exists($class_name,false) ){
+					$_SERVER[__CLASS__]['model'][$name] = new $class_name();
+				}else{
+					throw new OpException("This file could not be loaded. \($class_name)\\",'en');
 				}
 			}
-			*/
-			
-			//  include from app's model dir
-			$model_dir = self::GetEnv('model-dir');
-			$model_dir = self::ConvertPath($model_dir);
-			if(!file_exists($model_dir)){
-				throw new OpException("This directory has not exists. \($model_dir)\\",'en');
-			}
-			$path = "{$model_dir}{$name}.model.php";
-			
-			//	Execute
-			if( $io = file_exists($path) ){
-				$io = include_once($path);
-			}
-			
-			//  include from op-core's model dir
-			if(!$io){
-				$path = self::ConvertPath("op:/Model/{$name}.model.php");
-				if( $io = file_exists($path) ){
-					$io = include_once($path);
-				}
-			}
-			
-			//  include check 
-			if(!$io){
-				throw new OpException("Failed to include the $name. ($path)",'en');
-			}
-			
-			//  instance of model
-			$model_name = 'Model_'.$name;
-			
-			if(!$_SERVER[__CLASS__]['model'][$name] = new $model_name() ){
-				throw new OpException("Failed to include the $model_name. ($path)",'en');
-			}
-			
-			//  Instance is success.
-			return $_SERVER[__CLASS__]['model'][$name];
-			
 		}catch( Exception $e ){
 			$file = $e->getFile();
 			$line = $e->getLine();
-			self::StackError( $e->getMessage() . "($file, $line)" );
+			$text = $e->getMessage();
+			self::StackError("$text\n ![.gray[$file, $line]]",'en');
 			return new OnePiece5();
 		}
+		
+		return $_SERVER[__CLASS__]['model'][$name];
+	}
+	
+	static private function _ModelNameCheck($name)
+	{
+		//  Notice
+		if( strpos( $name, '_') !== false ){
+			$message = 'Underscore(_) is reserved. For the feature functions. (maybe, namespace)';
+			$message = self::i18n()->Bulk($message);
+			$this->StackError("$message");
+		}
+	}
+	
+	/**
+	 * File include from app's model directory.
+	 */
+	static private function _ModelLoadFromApp($file_name)
+	{
+		//	App's model directory.
+		if(!$model_dir = self::GetEnv('model-dir')){
+			return false;
+		}
+		
+		//	Convert path.
+		$path = self::ConvertPath($model_dir);
+		
+		//	Check model directory.
+		if(!file_exists($path)){
+			throw new OpException("This directory has not exists. \($path)\\",'en');
+		}
+		
+		//	Added file name.
+		$path .= $file_name;
+		
+		//	include
+		if( $io = file_exists($path) ){
+			$io = include_once($path);
+		}
+		
+		return $io;
+	}
+	
+	/**
+	 * File include from op-core's model directory.
+	 */
+	static private function _ModelLoadFromCore($file_name)
+	{
+		$path = self::ConvertPath("op:/Model/$file_name");
+		
+		if( $io = file_exists($path) ){
+			$io = include_once($path);
+		}
+		
+		return $io;
 	}
 	
 	/**
