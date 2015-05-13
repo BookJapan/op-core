@@ -224,7 +224,7 @@ class Error
 		$mail->Content($html,'text/html');
 		$mail->Send();
 		
-		return $io;
+		return true;
 	}
 	
 	static private function _getMailMessage()
