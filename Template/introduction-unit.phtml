@@ -23,23 +23,22 @@ switch( $unit_name ){
 	$this->StackError("Does not define this unit name. \($unit_name)\\",'en');
 }
 
-
 ?>
-<div>
-	<h1><?= $this->i18n()->En('Introduction of method') ?></h1>
-	<p><?= $this->i18n()->En('Please execute this command.') ?></p>
+<div style="margin: 1em;">
+	<h1 class="i18n">Introduction of \<?= $unit_name ?>\</h1>
+	<p  class="i18n">Please execute this command.</p>
 	<div style="border: 1px solid black; margin:1em; padding:1em;">
 		<code>
 			cd <?= $this->ConvertPath('app:/') ?><br/>
 			git clone https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>.git <?= $unit_name ?><br/>
 		</code>
 	</div>
-	<p>
-		<?= $this->i18n()->En('Or Download here') ?> =&gt; 
+	<p  class="i18n">
+		Or Download here =&gt; 
 		<a href="https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>/archive/master.zip">
 			https://github.com/TomoakiNagahara/op-unit-<?= $_unit_name ?>/archive/master.zip
 		</a>
 	</p>
-	<p><?php $this->i18n()->En('And then reload this page.') ?></p>
+	<p class="i18n">And then reload this page.</p>
 </div>
 <?php
