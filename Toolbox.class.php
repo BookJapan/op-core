@@ -256,7 +256,7 @@ class Toolbox
 	
 	static function Copy($object)
 	{
-		OnePiece5::StackError("Used checking. Is this use?");
+	//	OnePiece5::StackError("Used checking. Is this use?"); // Use Form5
 		
 		if( !$object ){
 			return new OnePiece5();
