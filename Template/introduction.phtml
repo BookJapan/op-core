@@ -14,8 +14,12 @@
  */
 /* @var $this App */
 
+OnePiece5::SetEnv('i18n','off');
+
 //	get software name
 list( $software, $version ) = explode('/',$_SERVER['SERVER_SOFTWARE'].'/');
+
+include('introduction-head.phtml');
 
 //	branch each software
 switch(strtolower($software)){
@@ -28,3 +32,5 @@ switch(strtolower($software)){
 	defualt:
 		print __FILE__.', '.__LINE__.", $software<br/>\n";
 }
+
+include('introduction-foot.phtml');
