@@ -1,21 +1,34 @@
 <?php
 /**
+ * Login.model.php
+ * 
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
+ */
+
+/**
  * Manages the login status.
  * Only do it.
  * 
+ * <pre>
  * ex.
  * if( Model_Login::isLoggedin() ){
- *   //  Already logged in.
- *   $id = Model_Login::GetLoginId();
+ *     //  Already logged in.
+ *     $id = Model_Login::GetLoginId();
  * }else{
- *   //  Does not login.
- *   if( DO_ACCOUNT_CHECK($id,$pass) ){
- *     Model_Login::SetLoginId($id);
- *   }
+ *     //  Does not login.
+ *     if( $id = Model_Account::Auth($account, $password) ){
+ *         Model_Login::SetLoginId($id);
+ *     }
  * }
+ * </pre>
  * 
- * @author Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
- *
+ * @version   1.0
+ * @package   op-core
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2015 (C) Tomoaki Nagahara All right reserved.
  */
 class Model_Login extends Model_Model
 {
