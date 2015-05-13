@@ -301,7 +301,8 @@ class i18n extends OnePiece5
 				//	Transfer self-test page.
 				$page = NewWorld5::_UNIT_URL_SELFTEST_;
 				if(!preg_match("|$page|",$_SERVER['REQUEST_URI'],$match)){
-					$this->Location("app:/".trim($page,'/').'/');
+					$url = $this->ConvertURL("app:/{$page}").'?class=i18n';
+					$this->Location($url);
 				}
 				
 				//	Setup self-test.
