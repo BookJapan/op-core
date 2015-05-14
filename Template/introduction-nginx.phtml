@@ -19,6 +19,7 @@ $port = $_SERVER['SERVER_PORT'];
 $host = $_SERVER['SERVER_NAME'];
 $root = $_SERVER['DOCUMENT_ROOT'];
 $index = 'index.php';
+$extensions = 'php|phtml|html|css|js';
 
 //	Separate URL-Query.
 list($uri,$query) = explode('?',$_SERVER['REQUEST_URI'].'?');
@@ -81,7 +82,7 @@ server {
 
 	<?php if( $uri === '/' ): ?> 
 	<i class="blue"># No.2: <span class="i18n">Specify a file extension to controlled from <i>NewWorld</i>.</span></i>
-	location ~ \.(php|phtml|html|css|js)$ {
+	location ~ \.(<?php print $extensions ?>)$ {
 		fastcgi_pass	127.0.0.1:9000;
 		fastcgi_param	SCRIPT_FILENAME  $document_root/app.php; <i class="blue"># <span class="i18n">Always <i>app.php</i> is executed.</span></i>
 		fastcgi_param	SERVER_ADMIN	 <?php print $mail ?>;
@@ -100,7 +101,7 @@ server {
 		}
 		<?php if( $uri !== '/' ): ?> 
 		<i class="blue"># No.2: <span class="i18n">Specify a file extension to controlled from <i>NewWorld</i>.</span></i>
-		location ~ \.(php|phtml|html|css|js)$ {
+		location ~ \.(<?php print $extensions ?>)$ {
 			fastcgi_pass   127.0.0.1:9000;
 			fastcgi_param  SCRIPT_FILENAME  $document_root<?php print $uri ?>app.php; <i class="blue"># <span class="i18n">Always app.php is executed.</span></i>
 			fastcgi_param  SERVER_ADMIN     tomoaki.nagahara@gmail.com;
