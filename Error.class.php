@@ -215,7 +215,7 @@ class Error
 		
 		$to_addr = Env::GetAdminMailAddress();
 		$to_name = $_SERVER['HTTP_HOST'];
-		$subject = '[Error] '. OnePiece5::Decode(self::_getMailSubject());
+		$subject = '[Error] '.self::_getMailSubject();
 		$html = self::_getMailMessage();
 		
 		$mail = new EMail();
@@ -252,9 +252,36 @@ class Error
 		
 		$table = '![table['.join('',$tr).']]'.PHP_EOL;
 		
-		$message  = Wiki2Engine::Wiki2($table);
+		//	INIT
+		$message = '';
+		
+		//	HTML
+		$message .= '<html>'.PHP_EOL;
+		
+		//	HEAD
+		$message .= '<head>'.PHP_EOL;
+		
+		//	STYLE
+		$message .= '<style type="text/css">'.PHP_EOL;
+		$message .= file_get_contents(OnePiece5::ConvertPath('op:/Template/dump.css'));
+		$message .= '</style>'.PHP_EOL;
+		
+		//	HEAD CLOSE
+		$message .= '</head>'.PHP_EOL;
+		
+		//	BODY
+		$message .= '<body>'.PHP_EOL;
+		
+		//	HTML
+		$message .= Wiki2Engine::Wiki2($table);
 		$message .= '<hr/>'.PHP_EOL;
 		$message .= self::_getBacktrace();
+		
+		//	BODY CLOSE
+		$message .= '<body>'.PHP_EOL;
+		
+		//	HTML
+		$message .= '</html>';
 		
 		return $message;
 	}
