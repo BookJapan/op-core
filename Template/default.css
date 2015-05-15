@@ -1,0 +1,4 @@
+<?php
+$this->StackError("Did change directory structure.");
+$path = $this->ConvertPath('op:/Template/css/Default.js');
+include($path);
