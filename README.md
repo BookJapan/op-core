@@ -1,5 +1,6 @@
 op-core
 =======
 
-# OnePiece-Framework's Core
+onepiece-Framework is insanely great!!
 
+More information to access to http://onepiece-framework.com.
