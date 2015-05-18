@@ -499,10 +499,6 @@ class Toolbox
 		}
 		
 		if( empty($mime) ){
-			$mime = Env::Get('mime');
-		}
-		
-		if( empty($mime) ){
 			//	Route table base.
 			if( $route = Env::Get('route') ){
 				$mime = $route['mime'];
@@ -512,6 +508,10 @@ class Toolbox
 					$mime = Router::CalcMime($match[1]);
 				}
 			}
+		}
+		
+		if( empty($mime) ){
+			$mime = Env::Get('mime');
 		}
 		
 		if( empty($mime) ){
