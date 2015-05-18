@@ -102,17 +102,6 @@ abstract class NewWorld5 extends OnePiece5
 			$message = "\\$class_name\ does not call the \Dispatch\ method.";
 			$this->StackError($message,'en');
 		}
-	
-		//	Get buffering content.
-	//	$this->_content .= ob_get_contents();
-		
-		//  End of buffering.
-	//	ob_end_clean();
-	//	ob_end_flush();
-	
-		//	Output of content.
-	//	echo $this->_content;
-	//	$this->_content = '';
 		
 		//  Do parent destruct.
 		return parent::__destruct();
