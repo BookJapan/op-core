@@ -140,7 +140,7 @@ abstract class NewWorld5 extends OnePiece5
 		if(!$route){
 			$route = Router::GetRoute();
 		}
-		
+
 		//	Save route table.
 		Env::Set('route',$route);
 		
@@ -167,6 +167,12 @@ abstract class NewWorld5 extends OnePiece5
 		}catch( Exception $e ){
 			$this->StackError($e);
 		}
+		
+		//	Change mime.
+		$route['mime'] = $this->_mime;
+		
+		//	Save route table.
+		Env::Set('route',$route);
 		
 		return true;
 	}
@@ -271,8 +277,12 @@ abstract class NewWorld5 extends OnePiece5
 	 */
 	function Content()
 	{
+		Env::Set('mime',$this->_mime);
+		
+		//	
 		list($main, $sub) = explode('/', $this->_mime);
 		
+		//	
 		switch($main){
 			case 'text':
 				$this->ContentIsText($sub);

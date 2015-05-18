@@ -475,16 +475,9 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		static $_mime = null;
-		if( $_mime ){
-			if( $only_sub_type ){
-				list($main, $sub) = explode('/',$_mime);
-				$mime = $sub;
-			}else{
-				$mime = $_mime;
-			}
-			return $mime;
-		}
+		if( $mime = Env::Get('mime') ){
+			//	OK
+		}else
 		
 		//	Header has already been sent.
 		if( $_is_send = headers_sent($file,$line) ){
@@ -495,7 +488,7 @@ class Toolbox
 					list($mime, $charset) = explode(';',trim($var).';');
 				}
 			}
-			$_mime = $mime;
+			Env::Set('mime',$mime);
 		}
 		
 		if( empty($mime) ){
@@ -511,15 +504,11 @@ class Toolbox
 		}
 		
 		if( empty($mime) ){
-			$mime = Env::Get('mime');
-		}
-		
-		if( empty($mime) ){
 			$mime = 'text/html';
 		}
 		
 		//	parse
-		if( $mime and $only_sub_type ){
+		if( $only_sub_type ){
 			list($temp,$mime) = explode('/',$mime);
 		}
 		
