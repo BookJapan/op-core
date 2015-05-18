@@ -433,7 +433,7 @@ class Dump
 		}
 		$_print = true;
 		
-		$meta = "op:/Template/dump.css";
+		$meta = "op:/Template/css/Dump.css";
 		$path = OnePiece5::ConvertPath($meta);
 		if(file_exists($path)){
 			$file = file_get_contents($path);
@@ -453,7 +453,7 @@ class Dump
 		}
 		$_print = true;
 
-		$meta = "op:/Template/dump.js";
+		$meta = "op:/Template/js/Dump.js";
 		$path = OnePiece5::ConvertPath($meta);
 		if(file_exists($path)){
 			$file = file_get_contents($path);
