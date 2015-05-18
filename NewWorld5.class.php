@@ -362,7 +362,26 @@ abstract class NewWorld5 extends OnePiece5
 	function NotFound()
 	{
 		if( $page = $this->GetEnv(self::_NOT_FOUND_PAGE_) ){
-			return $this->template($page);
+			$uri  = OnePiece5::Escape($_SERVER['REQUEST_URI']);
+			$html = $this->GetTemplate($page, array('uri'=>$uri));
+			$mime = Toolbox::GetMIME();
+			switch( strtolower($mime) ){
+				case 'text/html':
+					print $html;
+					break;
+					
+				case 'text/javascript':
+					if( $this->Admin() ){
+						print "alert('Not found: {$uri}');";
+					}else{
+						print "/* Not found: $uri */";
+					}
+					break;
+					
+				default;
+					print strip_tags($html);
+				break;
+			}
 		}else{
 			if( $this instanceof App ){
 				$example = '$this->SetNotFoundPage("filepath")';
