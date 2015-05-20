@@ -4,6 +4,10 @@
  * Copyright 2015-04-11 Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
  */
 
+if(!jQuery){
+	alert('Has not load jQuery.');
+}
+
 jQuery(function($){
 	//	Loaded message.
 	if(console){ console.log('jQuery was loaded.'); }
@@ -83,7 +87,7 @@ i18n.GetLanguageFromCloudByGeoIP = function(){
 	});
 };
 
-i18n.Translation = function(language){
+i18n.Translation = function(language, __done__){
 	if(!language){
 		language = i18n.GetLanguage();
 		if(!language){
@@ -125,6 +129,7 @@ i18n.Translation = function(language){
 		return;
 	}
 	
+	var json = null;
 	var data = {
 		text: texties,
 		from: 'en',
@@ -140,42 +145,54 @@ i18n.Translation = function(language){
 		contentType: "application/javascript",
 		dataType: 'jsonp',
 		jsonpCallback: 'callback',
-		success: function(json){
-			//	error process
-			if( json['error'] ){
-				alert(json['error']);
-				return;
-			}
-			
-			//	recovery process
-			var translates = json['translate'].join("\r");
-			for( var n in weavers ){
-				var target = 'AAA'+n;
-				translates = translates.replace(target, weavers[n]);
-			}
-			texties = [];
-			texties = translates.split("\r");
-			
-			//	overwrite process
-			var i = 0;
-			$(".i18n").each(function(){
-				$(this).html(texties[i]);
-				$(this).removeClass('i18n');
-				i++;
-			});
-		},
-		error: function(e1, e2, e3){
-			if(console){
-				console.log('function: i18n.Translation');
-				console.log('URL: ' + url);
-				console.dir(data);
-				console.dir(e1);
-				console.log(e2);
-				console.log(e3);
-			}
-			/* <?php if($this->Admin()): ?> */
-			alert('Please see console');
-			/* <?php endif; ?> */
-		}
+		success: __success,
+		error: __error
+	}).done(function(){
+		__done__(json);
 	});
+	
+	function __save_json(_json){
+		json = _json;
+	}
+	
+	function __success(json){
+		__save_json(json);
+		
+		//	error process
+		if( json['error'] ){
+			alert(json['error']);
+			return;
+		}
+		
+		//	recovery process
+		var translates = json['translate'].join("\r");
+		for( var n in weavers ){
+			var target = 'AAA'+n;
+			translates = translates.replace(target, weavers[n]);
+		}
+		texties = [];
+		texties = translates.split("\r");
+		
+		//	overwrite process
+		var i = 0;
+		$(".i18n").each(function(){
+			$(this).html(texties[i]);
+			$(this).removeClass('i18n');
+			i++;
+		});
+	}
+	
+	function __error(e1, e2, e3){
+		if(console){
+			console.log('function: i18n.Translation');
+			console.log('URL: ' + url);
+			console.dir(data);
+			console.dir(e1);
+			console.log(e2);
+			console.log(e3);
+		}
+		/* <?php if($this->Admin()): ?> */
+		alert('Please see console');
+		/* <?php endif; ?> */
+	}
 };
