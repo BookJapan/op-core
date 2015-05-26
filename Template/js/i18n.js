@@ -144,11 +144,13 @@ i18n.Translation = function(language, __done__){
 		async: true,
 		contentType: "application/javascript",
 		dataType: 'jsonp',
-		jsonpCallback: 'callback',
+	/*	jsonpCallback: 'callback', */
 		success: __success,
 		error: __error
 	}).done(function(){
-		__done__(json);
+		if( __done__ ){
+			__done__(json);
+		}
 	});
 	
 	function __save_json(_json){
