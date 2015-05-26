@@ -111,6 +111,7 @@ class Error
 			$message = $backtraces['message'];
 			$message = OnePiece5::Wiki2($message);
 			$message = strip_tags($message);
+			$message = OnePiece5::Decode($message);
 			return $message;
 		}
 	}
