@@ -17,24 +17,26 @@ $mail = $mail = isset($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN']: 'you
 $path = $this->ConvertPath('app:/config.inc.php');
 
 ?>
+<?php include('introduction-head.phtml') ?>
 <section>
 	<div style="margin:1em; padding:1em;">
-		<h1>Please set an Administrator's IP-Address and E-Mail address.</h1>
+		<h1 class="i18n">Please set an Administrator's IP-Address and E-Mail address.</h1>
 		<div style="margin-left:1em;">
-			<p>Admin-IP is a need to a variety of features that are only notify the administrator.</p>
-			<p>Admin-Mail is when an error occurs in the app, notice to an error by E-Mail.</p>
+			<p class="i18n"><b>Admin-IP</b> is a need to a variety of features that are only notify the administrator.</p>
+			<p class="i18n"><b>Admin-Mail</b> is when an error occurs in the app, notice to an error by E-Mail.</p>
 			<p><b><?= $path ?></b></p>
 		</div>
 		
 		<div style="margin: 1em; padding: 1em; border: 1px solid black;">
 		
-		//	Set Admin's IP-Address.<br>
+		//	<span class="i18n">Set Admin's IP-Address.</span><br>
 		$this-&gt;SetAdminIP('<span style="color:red; font-weight:bold;"><?= $ip ?></span>');<br/>
 		<br/>
 		
-		//	Set Admin's E-Mail address.<br/>
+		//	<span class="i18n">Set Admin's E-Mail address.</span><br/>
 		$this-&gt;SetAdminEMail('<span style="color:red; font-weight:bold;"><?= $mail ?></span>');<br/>
 		
 		</div>
 	</div>
 </section>
+<?php include('introduction-foot.phtml') ?>
