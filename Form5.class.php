@@ -1,5 +1,13 @@
 <?php
 /**
+ * Form5.class.php
+ *
+ * @version   1.0
+ * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
+ * @copyright 2009 (C) Tomoaki Nagahara All right reserved.
+ */
+
+/**
  * Form5
  *
  * @version   1.0
@@ -506,8 +514,8 @@ class Form5 extends OnePiece5
 			}
 		}
 		
-//		print nl2br($value);
-		print $value;
+		echo nl2br($value);
+	//	print $value;
 	}
 	
 	/**
@@ -560,7 +568,7 @@ class Form5 extends OnePiece5
 			default:
 		}
 		
-		//	TODO: Please add comment.
+		/* // Do nl2br is Form5::Value only.
 		switch( $type = strtolower(gettype($value)) ){
 			case 'null':
 				return null;
@@ -576,6 +584,7 @@ class Form5 extends OnePiece5
 			default:
 				$this->mark("undefined type. ($type)");
 		}
+		*/
 		
 		//	In case of checkbox or multiple select.
 		if( is_array($value) ){
