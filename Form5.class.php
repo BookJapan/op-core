@@ -547,11 +547,14 @@ class Form5 extends OnePiece5
 			case 'file':
 				if( $value ){
 					//	If set dir
-					if(!$dir = $input->save->dir ){
-						$dir = null;
-					}					
+					$dir = isset($input->save->dir) ? $input->save->dir: null;	
 					//	If case of app:/xxx
+					$path  = $this->ConvertPath($dir.$value);
 					$value = $this->ConvertURL($dir.$value);
+					if(!file_exists($path)){
+						$value = null;
+						$this->StackError("Does not exists this file. ($path)",'en');
+					}
 				}
 				return $value;
 			default:
@@ -577,12 +580,6 @@ class Form5 extends OnePiece5
 		//	TODO: Please add comment.
 		if( is_array($value) ){
 			if( strlen(join('',$value)) ){
-				//  joint
-				/*
-				if( is_null($joint) ){
-					$joint = isset($input->joint) ? $input->joint: '';
-				}
-				*/
 				if( $joint === 'bit' ){
 					$sum = null;
 					foreach($value as $key => $var){
@@ -664,16 +661,12 @@ class Form5 extends OnePiece5
 			return false;
 		}
 		
-	//	$config = new Config();
 		$config = array();
 		foreach( $form->input as $input_name => $input ){
-		//	$config->$input_name = $this->GetInputValueRaw( $input_name, $form_name );
 			$config[$input_name] = $this->GetInputValueRaw( $input_name, $form_name );
 		}
 		
 		//  remove submit button
-	//	unset($config->submit);
-	//	unset($config->submit_button);
 		unset($config['submit']);
 		unset($config['submit_button']);
 		
@@ -685,10 +678,6 @@ class Form5 extends OnePiece5
 		if(!$options = $this->GetConfig( $form_name, $input_name, 'options' )){
 			return false;
 		}
-		
-		$this->d($options);
-		
-		
 		return $value;
 	}
 	
@@ -755,15 +744,6 @@ class Form5 extends OnePiece5
 		// 
 		$fail = null;
 		
-		/*
-
-		this is config base check.
-
-		foreach($form->input as $input){
-			$input_name = $input->name;
-			$value = isset($request[$input_name]) ? $request[$input_name]: '';
-		*/
-		
 		//  this is submit request base check.
 		foreach( $request as $input_name => $value ){
 			
@@ -825,12 +805,11 @@ class Form5 extends OnePiece5
 				if(is_string($value)){
 					$session[$form_name][$input_name]['value'] = $value;
 				}else if(is_array($value)){
-//					unset($value[0]); // I have no idea. Whether or not to delete.
 					$session[$form_name][$input_name]['value'] = $value;
 				}
 				
 				// save cookie
-				if( isset($input->cookie) and /*$input->cookie and*/ !is_null($value) ){
+				if( isset($input->cookie) and !is_null($value) ){
 					//  Remove check index.
 					if( empty($value[0]) ){
 						unset($value[0]);
@@ -909,7 +888,7 @@ class Form5 extends OnePiece5
 				$this->SetInputValue( null, $input_name, $form_name );
 			
 				//	TODO: SetInputValue fail to permit=image (Why?)
-				$_SESSION['OnePiece5']['Form5']['form'][$form_name][$input_name]['value'] = '';
+				$this->session['form'][$form_name][$input_name]['value'] = '';
 				
 				//  Status
 				$this->SetStatus( $form_name, "XX: File delete is success. ($form_name, $input_name)");
@@ -934,8 +913,6 @@ class Form5 extends OnePiece5
 			$value = $this->GetRequest($input_name, $form_name);
 			
 			if( is_string($value) ){
-				//	Use OpenSNS's extend. (delete button mode)
-			//	$this->mark($value);
 				return $value;
 			}else if( is_array($value) ){
 				if(!strlen(implode('',$value))){
@@ -957,15 +934,12 @@ class Form5 extends OnePiece5
 				}else{
 					if( isset($input->save->path) ){
 						//  hard path
-					//	$path = $this->ConvertPath( $input->save->path );
 						$origin_path = $input->save->path;
 					}else{
 						//  directory
 						if( isset($input->save->dir) ){
 							$dir = $input->save->dir;
-						//	$dir = $this->ConvertPath($dir);
 							$dir = rtrim($dir,'/\\');
-						//	$dir = rtrim($dir,'\\');
 						}else{
 							$dir = sys_get_temp_dir();
 						}
@@ -999,19 +973,12 @@ class Form5 extends OnePiece5
                 }
                 
                 //	remove dir path
-                if( $dir ){
+                if( isset($dir) ){
                 	$dir = rtrim($dir,'/').'/';
                 	$save_value = str_replace( $dir, '', $origin_path);
                 }else{
                 	$save_value = $origin_path;
                 }
-
-                $temp = array();
-                $temp['origin_path'] = $origin_path;
-                $temp['save_value'] = $save_value;
-                $temp['dir']    = $dir;
-                $temp['search'] = $this->ConvertPath($dir);
-             //   $this->d($temp);
                 
 				//	Saved value
 				$this->SetStatus( $form_name, "OK: file copy to $path");
@@ -1019,7 +986,6 @@ class Form5 extends OnePiece5
 				
 				return $save_value;
 			
-			//  
 			case 4:
 				$this->SetStatus( $form_name, "XX: File has not been submit. ($form_name, $input_name)");
 				return null;
@@ -1603,11 +1569,6 @@ class Form5 extends OnePiece5
 					break;
 					
 				case 'value':
-					/*
-					if( is_null($value_default) ){
-						$value_default = $var;
-					}
-					*/
 					$value_of_input = $var;
 					break;
 				
@@ -1635,7 +1596,6 @@ class Form5 extends OnePiece5
 					
 				case 'class':
 					$class = $var;
-				//	$this->mark($var);
 					
 				default:
 					if(!is_string($var)){
@@ -1792,8 +1752,16 @@ class Form5 extends OnePiece5
 			case 'file':
 				//  remove checkbox
 				$value = $this->GetInputValue($input_name);
+				if( $value ){
+					$path  = $_SERVER['DOCUMENT_ROOT'].$value;
+					if(!$exists = file_exists($path)){
+						$this->StackError("Does not exists this file. ($path)",'en');
+					}
+				}else{
+					$exists = null;
+				}
 				
-				if( is_string($value) and $value ){
+				if( is_string($value) and $value and $exists ){
 					if( isset($input->remover) and empty($input->remover)){
 						//	Does not create remover
 						$remover = null;
