@@ -577,10 +577,10 @@ class Form5 extends OnePiece5
 				$this->mark("undefined type. ($type)");
 		}
 		
-		//	TODO: Please add comment.
+		//	In case of checkbox or multiple select.
 		if( is_array($value) ){
 			if( strlen(join('',$value)) ){
-				if( $joint === 'bit' ){
+				if( $joint === 'bit' or $joint === 'binary' ){
 					$sum = null;
 					foreach($value as $key => $var){
 						$sum += $var;
