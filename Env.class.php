@@ -96,7 +96,7 @@ class Env extends OnePiece5
 	//	self::_init_cli();
 		self::_init_admin();
 		self::_init_session();
-		self::_init_cookie();
+	//	self::_init_cookie();
 		self::_init_locale();
 		self::_init_mark_label();
 	}
@@ -358,6 +358,14 @@ class Env extends OnePiece5
 	static function SetAdminMailAddress($mail_addr)
 	{
 		$_SERVER[self::_NAME_SPACE_][self::_ADMIN_EMAIL_ADDR_] = $mail_addr;
+	}
+	
+	static function UniqID()
+	{
+		if(!$uniq_id = OnePiece5::GetCookie(OnePiece5::_KEY_COOKIE_UNIQ_ID_)){
+			$uniq_id = self::_init_cookie();
+		}
+		return $uniq_id;
 	}
 	
 	static function Get( $key )
