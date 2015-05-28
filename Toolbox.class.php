@@ -409,13 +409,13 @@ class Toolbox
 		if( $domain ){
 			foreach( array('HTTP_X_FORWARDED_HOST','HTTP_HOST','HOSTNAME') as $key ){
 				if( isset($_SERVER[$key]) ){
-					$domain = $_SERVER[$key];
+					list($domain) = explode(':',$_SERVER[$key]);
 				}
 			}
 		}else{
 			$domain = null;
 		}
-		
+			
 		if( $scheme ){
 		//	$scheme = $_SERVER['SERVER_PORT'] !== '443' ? 'http://': 'https://';
 			$scheme = isset($_SERVER['HTTPS']) ? 'https://': 'http://';
