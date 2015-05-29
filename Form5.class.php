@@ -858,7 +858,7 @@ class Form5 extends OnePiece5
 	private function SaveFile( $input, $form_name )
 	{
 		$input_name = $input->name;
-		$save_value = $this->GetInputValueRaw($input->name,$form_name);
+		$save_value = $this->GetInputValueRaw($input->name, $form_name);
 		$post_value = $this->GetRequest($input->name, $form_name);
 		
 		//	$save_value is document_root path. (always?)
@@ -871,7 +871,7 @@ class Form5 extends OnePiece5
 				
 				//	Convert real path
 				$path = $this->ConvertPath($dir.$save_value);
-				
+								
 				//	Check file exists 
 				if(!file_exists($path)){
 					$this->StackError("Does not exists file. ($path)");
@@ -977,7 +977,7 @@ class Form5 extends OnePiece5
 				
 				//  file is copy
                 if(!copy($tmp, $path)){
-                	$this->StackError("Does not copy at upload file. ($tmp, $path)");
+                	$this->StackError("Did not copy upload file. ($tmp, $path)");
                 	return false;
                 }
                 
