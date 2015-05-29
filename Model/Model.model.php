@@ -2,8 +2,7 @@
 /**
  * Model.model.php
  * 
- * Creation: 2015-02-09
- * 
+ * @creation: 2015-02-09
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
@@ -13,8 +12,7 @@
 /**
  * Model_Model
  * 
- * Creation: 2015-02-09
- * 
+ * @creation: 2015-02-09
  * @version   1.0
  * @package   op-core
  * @author    Tomoaki Nagahara <tomoaki.nagahara@gmail.com>
