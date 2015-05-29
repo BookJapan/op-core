@@ -82,7 +82,7 @@ class Model_Upload extends Model_Model
 	function _CalcFilePath($dir, $file_name, $name)
 	{
 		if( $file_name ){
-			if( preg_match('/\.([-_a-z0-9]{3,5})$/', $file_name, $match) ){
+			if( preg_match('/\.([-_a-z0-9]{3,5})$/', $name, $match) ){
 				$ext = $match[1];
 			}else{
 				$ext = null;
@@ -97,10 +97,10 @@ class Model_Upload extends Model_Model
 		return rtrim($dir,'/')."/".$file_name;
 	}
 	
-	function Copy($input_name, $dir, $file_name=null)
+	function Copy($input_name, $dir, $file_name=null, &$path)
 	{
 		if(!isset($_FILES[$input_name])){
-			$this->SetError("Does not upload files. ($form_name, $input_name)");
+			$this->SetError("Does not upload files. ($input_name)");
 			return;
 		}
 		
