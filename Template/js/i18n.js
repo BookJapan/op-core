@@ -144,7 +144,6 @@ i18n.Translation = function(language, __done__){
 		async: true,
 		contentType: "application/javascript",
 		dataType: 'jsonp',
-	/*	jsonpCallback: 'callback', */
 		success: __success,
 		error: __error
 	}).done(function(){
@@ -184,14 +183,14 @@ i18n.Translation = function(language, __done__){
 		});
 	}
 	
-	function __error(e1, e2, e3){
+	function __error(XMLHttpRequest, textStatus, errorThrown){
 		if(console){
 			console.log('function: i18n.Translation');
 			console.log('URL: ' + url);
 			console.dir(data);
-			console.dir(e1);
-			console.log(e2);
-			console.log(e3);
+			console.dir(XMLHttpRequest);
+			console.log(textStatus);
+			console.log(errorThrown);
 		}
 		/* <?php if($this->Admin()): ?> */
 		alert('Please see console');
