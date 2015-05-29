@@ -1,8 +1,3 @@
-.buildpath
-.project
-.settings/
-.DS_Store
-*.orig
-model/
-_i18n/
+.*
+_*
 
