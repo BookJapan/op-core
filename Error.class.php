@@ -205,7 +205,7 @@ class Error
 	static private function _stackErrorJs()
 	{
 		print "<script>".PHP_EOL;
-		print file_get_contents(Toolbox::ConvertPath('op:/Template/StackError.js')).PHP_EOL;
+		print file_get_contents(Toolbox::ConvertPath('op:/Template/js/StackError.js')).PHP_EOL;
 		print "</script>".PHP_EOL;
 	}
 	
