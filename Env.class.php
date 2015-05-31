@@ -449,7 +449,8 @@ class Env extends OnePiece5
 		}
 		
 		//	Output shutdown label
-		switch( $mime = Toolbox::GetMIME(true) ){
+		list($main, $sub) = explode('/',Toolbox::GetMIME());
+		switch($sub){
 			case 'json':
 				//	json
 				$label = null;

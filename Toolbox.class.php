@@ -475,12 +475,14 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		if( $mime = Env::Get('mime') ){
-			//	OK
-		}else
+		static $mime;
+		if( $mime ){
+			return $mime;
+		}
 		
 		//	Header has already been sent.
 		if( $_is_send = headers_sent($file,$line) ){
+			
 			//	Get headers list.
 			foreach( $list = headers_list() as $header ){
 				list($key, $var) = explode(':',$header);
@@ -488,10 +490,13 @@ class Toolbox
 					list($mime, $charset) = explode(';',trim($var).';');
 				}
 			}
+			
+			//	Will save the already sent mime.
 			Env::Set('mime',$mime);
-		}
-		
-		if( empty($mime) ){
+			
+		}else if( $mime = Env::Get('mime') ){
+			//	OK
+		}else if( empty($mime) ){
 			//	Route table base.
 			if( $route = Env::Get('route') ){
 				$mime = $route['mime'];
