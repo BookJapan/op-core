@@ -348,7 +348,7 @@ class Dump
 		}else
 		
 		if( $type === 'boolean' ){
-			$args = $args ? '<span class="blue">true</span>': '<span class="red">false</span>';
+			$args = $args ? '<span class="true">true</span>': '<span class="false">false</span>';
 		}else
 		
 		if( $type === 'array' or $type === 'object' ){
