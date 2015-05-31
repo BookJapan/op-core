@@ -475,10 +475,10 @@ class Toolbox
 	
 	static function GetMIME($only_sub_type=null)
 	{
-		static $mime;
-		if( $mime ){
-			return $mime;
-		}
+		static $_determined;
+		if( $_determined ){
+			$mime = $_determined;
+		}else 
 		
 		//	Header has already been sent.
 		if( $_is_send = headers_sent($file,$line) ){
@@ -494,6 +494,8 @@ class Toolbox
 			//	Will save the already sent mime.
 			Env::Set('mime',$mime);
 			
+			//	Determined.
+			$_determined = $mime;
 		}else if( $mime = Env::Get('mime') ){
 			//	OK
 		}else if( empty($mime) ){
