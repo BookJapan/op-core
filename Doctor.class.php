@@ -597,6 +597,11 @@ class Doctor extends OnePiece5
 			//	Diagnosis
 			$this->_diagnosis->$user->$dsn->column->$join_name->$column_name->$key = $io;
 			
+			//	Comment difference does not rebuild.
+			if( $key === 'comment' ){
+				$io = true;
+			}
+			
 			//	Auto Increment
 			if( $key === 'extra' and $var === 'auto_increment'){
 				if( $io === true ){
